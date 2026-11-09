@@ -111,7 +111,7 @@ class QEAddressCoinListModel(QAbstractListModel, QtEventListener):
 
     # define listmodel rolemap
     _ROLE_NAMES=('type', 'addridx', 'address', 'label', 'balance', 'numtx', 'held', 'height', 'amount', 'outpoint',
-                 'short_outpoint', 'short_id', 'txid')
+                 'short_outpoint', 'short_id', 'txid', 'addr_held')
     _ROLE_KEYS = range(Qt.ItemDataRole.UserRole, Qt.ItemDataRole.UserRole + len(_ROLE_NAMES))
     _ROLE_MAP  = dict(zip(_ROLE_KEYS, [bytearray(x.encode()) for x in _ROLE_NAMES]))
     _ROLE_RMAP = dict(zip(_ROLE_NAMES, _ROLE_KEYS))
@@ -188,8 +188,11 @@ class QEAddressCoinListModel(QAbstractListModel, QtEventListener):
             'short_outpoint': coin.prevout.short_name(),
             'short_id': short_id,
             'txid': txid,
-            'label': self.wallet.get_label_for_txid(txid) or '',
+            # Easy Heirs: the coin's own note, else the note of the payment it came from
+            'label': self.wallet.get_label_for_outpoint(coin.prevout.to_str()) or self.wallet.get_label_for_txid(txid) or '',
             'held': self.wallet.is_frozen_coin(coin),
+            # Easy Heirs: blocked because its whole address is blocked
+            'addr_held': self.wallet.is_frozen_address(coin.address),
             'coin': coin
         }
         return item

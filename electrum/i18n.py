@@ -99,6 +99,11 @@ def _ensure_translation_keeps_format_string_syntax_similar(translator):
 def _(msg: str, *, context=None) -> str:
     if msg == "":
         return ""  # empty string must not be translated. see #7158
+    # Easy Heirs: our own texts first
+    from .eh_strings import lookup as _eh_lookup
+    eh = _eh_lookup(_language_code, msg)
+    if eh is not None:
+        return eh
     if context:
         contexts = [context]
         if context[-1] != "|":  # try with both "|" suffix and without
@@ -113,17 +118,25 @@ def _(msg: str, *, context=None) -> str:
     return _language.gettext(msg)
 
 
+_language_code = ''  # Easy Heirs: code of the active language, e.g. 'it_IT'
+
+
 def set_language(x: Optional[str]) -> None:
     _logger.info(f"setting language to {x!r}")
-    global _language
+    global _language, _language_code
     if not x:
         return
+    _language_code = x
     if x.startswith("en_"):
         # Setting the language to "English" is a protected special-case:
         # we disable all translations and use the source strings.
         _language = _get_null_translations()
     else:
-        _language = gettext.translation('electrum', LOCALE_DIR, fallback=True, languages=[x])
+        langs = [x]
+        if x == 'vec_IT':
+            # Easy Heirs: Veneto phrases not translated yet are shown in Italian, not English
+            langs.append('it_IT')
+        _language = gettext.translation('electrum', LOCALE_DIR, fallback=True, languages=langs)
 
 
 # note: The values (human-visible lang names) should be either in English or in their own lang,
@@ -164,6 +177,7 @@ languages = {
     'th_TH': 'Thai',
     'tr_TR': 'Turkish',
     'uk_UA': 'Ukrainian',
+    'vec_IT': 'Veneto',  # Easy Heirs
     'vi_VN': 'Vietnamese',
     'zh_CN': 'Chinese Simplified',
     'zh_TW': 'Chinese Traditional',

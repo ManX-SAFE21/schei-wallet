@@ -1,7 +1,7 @@
 [app]
 
 # (str) Title of your application
-title = Electrum
+title = Schȅi Wallet
 
 # (str) Package name
 package.name = Electrum
@@ -83,12 +83,13 @@ requirements =
     libzxing
 
 # (str) Presplash of the application
-presplash.filename = %(source.dir)s/electrum/gui/icons/electrum_presplash.png
+presplash.filename = %(source.dir)s/electrum/gui/icons/eh_presplash.png
+android.presplash_color = #faf7ef
 
 # (str) Icon of the application
-icon.filename = %(source.dir)s/electrum/gui/icons/android_electrum_icon_legacy.png
-icon.adaptive_foreground.filename = %(source.dir)s/electrum/gui/icons/android_electrum_icon_foreground.png
-icon.adaptive_background.filename = %(source.dir)s/electrum/gui/icons/android_electrum_icon_background.png
+icon.filename = %(source.dir)s/electrum/gui/icons/eh_icon_legacy.png
+icon.adaptive_foreground.filename = %(source.dir)s/electrum/gui/icons/eh_icon_foreground.png
+icon.adaptive_background.filename = %(source.dir)s/electrum/gui/icons/eh_icon_background.png
 
 # (str) Supported orientation (one of landscape, portrait or all)
 orientation = portrait
@@ -176,7 +177,7 @@ android.add_activities = org.electrum.biometry.BiometricActivity
 # 3) A directory, here 'legal_resources' must contain one or more directories,
 # each of a resource kind:  drawable, xml, etc...
 # android.add_resources = legal_resources
-android.add_resources = electrum/gui/icons/electrum_light_icon.png:drawable
+android.add_resources = electrum/gui/icons/electrum_light_icon.png:drawable, electrum/gui/icons/eh_notify_icon.png:drawable, electrum/gui/icons/eh_presplash_xxxhdpi.png:drawable-xxxhdpi/presplash.png
 
 # (str) python-for-android branch to use, if not master, useful to try
 # not yet merged features.

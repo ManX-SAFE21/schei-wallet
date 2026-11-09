@@ -28,6 +28,7 @@ if TYPE_CHECKING:
 # wallet list model. supports both wallet basenames (wallet file basenames)
 # and whole Wallet instances (loaded wallets)
 from .util import check_password_strength
+from . import qeehvault
 
 
 class QEWalletListModel(QAbstractListModel):
@@ -457,6 +458,67 @@ class QEDaemon(AuthMixin, QObject):
             self.requestNewPassword.emit()
         else:
             self.currentWallet.requestNewPassword.emit()
+
+    # ---------- Easy Heirs: phone safe + PIN (see qeehvault.py) ----------
+    @pyqtSlot(result=bool)
+    def ehVaultReady(self):
+        """True when the wallets use the secret kept by the phone's safe."""
+        return bool(qeehvault.get_secret(self.daemon.config)) and qeehvault.pin_is_set(self.daemon.config)
+
+    @pyqtSlot(result=str)
+    def ehVaultSecret(self):
+        return qeehvault.get_secret(self.daemon.config)
+
+    @pyqtSlot(result=str)
+    def ehVaultSecretOrCreate(self):
+        try:
+            return qeehvault.get_or_create_secret(self.daemon.config)
+        except Exception as e:
+            self._logger.error(f'eh vault: {e!r}')
+            return ''
+
+    @pyqtSlot(result=bool)
+    def ehPinIsSet(self):
+        return qeehvault.pin_is_set(self.daemon.config)
+
+    @pyqtSlot(str)
+    def ehPinSet(self, pin):
+        qeehvault.set_pin(self.daemon.config, pin)
+
+    @pyqtSlot(str, result=bool)
+    def ehPinCheck(self, pin):
+        return qeehvault.check_pin(self.daemon.config, pin)
+
+    @pyqtSlot(str, result=bool)
+    def ehMigrateToVault(self, pin):
+        """Old wallets were locked with PIN+"00". Right after they were opened
+        with the PIN, move every wallet of the folder to the safe's secret and
+        keep the PIN as the app's own check. Done once."""
+        secret = self.ehVaultSecretOrCreate()
+        if not secret:
+            return False
+        if self._use_single_password and self._password:
+            # all wallets share the PIN: move the whole folder at once
+            if self._password != secret:
+                if not self._update_password_for_directory_and_unlock_wallets(old_password=self._password, new_password=secret):
+                    self._logger.error('eh vault: could not change the wallet passwords')
+                    return False
+        else:
+            # wallets with different passwords: move only the one just opened;
+            # the others move when they are opened with their PIN
+            w = self._current_wallet
+            if w is None or not w.setPassword(secret):
+                self._logger.error('eh vault: could not change the password of the open wallet')
+                return False
+        if self.daemon.config.WALLET_SHOULD_USE_SINGLE_PASSWORD:
+            self._password = secret
+            self.singlePasswordChanged.emit()
+        # one PIN for all wallets: an old wallet opened later with a different
+        # PIN does not replace the PIN already in use
+        if not qeehvault.pin_is_set(self.daemon.config):
+            qeehvault.set_pin(self.daemon.config, pin)
+        self._logger.info('eh vault: wallets moved to the phone safe')
+        return True
 
     @pyqtSlot(str, result=bool)
     def setPassword(self, password):

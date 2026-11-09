@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Set, List, Optional, Callable
 
 from PyQt6.QtCore import (pyqtSlot, pyqtSignal, pyqtProperty, QObject, QT_VERSION_STR, PYQT_VERSION_STR,
                           qInstallMessageHandler, QTimer, QSortFilterProxyModel)
-from PyQt6.QtGui import QGuiApplication
+from PyQt6.QtGui import QGuiApplication, QFontDatabase
 from PyQt6.QtQml import qmlRegisterType, QQmlApplicationEngine
 
 import electrum
@@ -169,17 +169,17 @@ class QEAppController(BaseCrashReporter, QObject):
             icon = ""  # plyer wants image to be in .ico format on Windows
         else:
             icon = os.path.join(
-                os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "icons", "electrum.png",
+                os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "icons", "eh_icon_legacy.png",
             )
         try:
             if self.isAndroid():
-                self._notify_android('Electrum', message, large_icon=icon)
+                self._notify_android('Schèi Wallet', message, large_icon=icon)
                 return
             # TODO: lazy load not in UI thread please
             global notification
             if not notification:
                 from plyer import notification
-            notification.notify('Electrum', message, app_icon=icon, app_name='Electrum')
+            notification.notify('Schèi Wallet', message, app_icon=icon, app_name='Schèi Wallet')
         except ImportError:
             self.logger.warning('Notification: needs plyer; `python3 -m pip install plyer`')
         except Exception as e:
@@ -203,7 +203,8 @@ class QEAppController(BaseCrashReporter, QObject):
             jNotificationChannel(channel_id, jString(title), jNotificationManager.IMPORTANCE_DEFAULT))
 
         # electrum_light_icon.png is added to res/drawable by android.add_resources in buildozer_qml.spec
-        small_icon = jpythonActivity.getResources().getIdentifier('electrum_light_icon', 'drawable', package_name)
+        # Easy Heirs: white è with the two accents (eh_notify_icon.png, see buildozer spec)
+        small_icon = jpythonActivity.getResources().getIdentifier('eh_notify_icon', 'drawable', package_name)
         if not small_icon:  # not packaged as expected, fall back to app icon
             self.logger.warning('Notification icon not found')
             small_icon = jpythonActivity.getApplicationInfo().icon
@@ -574,6 +575,22 @@ class ElectrumQmlApplication(QGuiApplication):
             self.logger.warning('Could not load font PT Mono')
             self.fixedFont = 'Monospace' # hope for the best
 
+        # Easy Heirs: Red Hat Text for the whole app (OFL, see fonts/RedHatText.LICENSE)
+        self.appFont = ''
+        for w in ('Regular', 'Medium', 'Bold'):
+            font_id = get_font_id(f'RedHatText-{w}.ttf')
+            if font_id >= 0 and not self.appFont:
+                families = QFontDatabase.applicationFontFamilies(font_id)
+                if families:
+                    self.appFont = families[0]
+        if not self.appFont:
+            self.logger.warning('Could not load font Red Hat Text')
+        self.titleFont = ''
+        font_id = get_font_id('RedHatDisplay-Black.ttf')
+        if font_id >= 0:
+            families = QFontDatabase.applicationFontFamilies(font_id)
+            self.titleFont = families[0] if families else ''
+
         self.context = self.engine.rootContext()
         self.plugins = plugins
         self.config = QEConfig(config)
@@ -587,6 +604,8 @@ class ElectrumQmlApplication(QGuiApplication):
         self.context.setContextProperty('Network', self.network)
         self.context.setContextProperty('Daemon', self.daemon)
         self.context.setContextProperty('FixedFont', self.fixedFont)
+        self.context.setContextProperty('AppFont', self.appFont)
+        self.context.setContextProperty('TitleFont', self.titleFont)
         self.context.setContextProperty('MAX', self.maxAmount)
         self.context.setContextProperty('QRIP', self.qr_ip_h)
         self.context.setContextProperty('Biometrics', self.biometrics)

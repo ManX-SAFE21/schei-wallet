@@ -67,11 +67,11 @@ class QENewWalletWizard(NewWalletWizard, QEAbstractWizard):
             'wallet_name': {'gui': 'WCWalletName'},
             'wallet_type': {'gui': 'WCWalletType'},
             'keystore_type': {'gui': 'WCKeystoreType'},
-            'create_seed': {'gui': 'WCCreateSeed'},
+            'create_seed': {'gui': 'WCEasyCreateSeed'},  # Easy Heirs
             'create_ext': {'gui': 'WCEnterExt'},
-            'confirm_seed': {'gui': 'WCConfirmSeed'},
+            'confirm_seed': {'gui': 'WCEasyConfirmSeed'},  # Easy Heirs: tap the words in order
             'confirm_ext': {'gui': 'WCConfirmExt'},
-            'have_seed': {'gui': 'WCHaveSeed'},
+            'have_seed': {'gui': 'WCEasyHaveSeed'},  # Easy Heirs: big choices + our keyboard
             'have_ext': {'gui': 'WCEnterExt'},
             'script_and_derivation': {'gui': 'WCScriptAndDerivation'},
             'have_master_key': {'gui': 'WCHaveMasterKey'},
@@ -82,8 +82,38 @@ class QENewWalletWizard(NewWalletWizard, QEAbstractWizard):
             'multisig_cosigner_have_ext': {'gui': 'WCEnterExt'},
             'multisig_cosigner_script_and_derivation': {'gui': 'WCScriptAndDerivation'},
             'imported': {'gui': 'WCImport'},
-            'wallet_password': {'gui': 'WCWalletPassword'}
+            'wallet_password': {'gui': 'WCEasyPin'},  # Easy Heirs: 4-digit PIN
+            # Easy Heirs: one Welcome screen instead of name / type / keystore type
+            'eh_welcome': {
+                'gui': 'WCEasyWelcome',
+                'accept': self.eh_welcome_accept,
+                'next': self.on_keystore_type,
+            },
         })
+
+    def start(self, *, start_viewstate=None):
+        # Easy Heirs: the new wallet wizard starts at the Welcome screen
+        if start_viewstate is None:
+            from electrum.wizard import WizardViewState
+            self.reset()
+            self._current = WizardViewState('eh_welcome', {}, {})
+            return self._current
+        return super().start(start_viewstate=start_viewstate)
+
+    def eh_welcome_accept(self, wizard_data: dict) -> None:
+        """Easy Heirs: standard wallet, 12-word segwit seed, automatic name."""
+        wizard_data['wallet_type'] = 'standard'
+        wizard_data['seed_type'] = 'segwit'
+        if not wizard_data.get('wallet_name'):
+            wizard_data['wallet_name'] = self.eh_free_wallet_name()
+
+    def eh_free_wallet_name(self) -> str:
+        base = 'Portafoglio'
+        name, n = base, 1
+        while os.path.exists(self._qedaemon.wallet_path_from_wallet_name(name)):
+            n += 1
+            name = f'{base}_{n}'
+        return name
 
     pathChanged = pyqtSignal()
     @pyqtProperty(str, notify=pathChanged)

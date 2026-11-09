@@ -1,0 +1,49 @@
+// Easy Heirs (schèi): hills background with the gold Bitcoin sun.
+// The hills stretch to any width; the sun is drawn on top so it stays round.
+// band: true = thin strip used at the top of pages, false = big landscape.
+import QtQuick
+
+Item {
+    id: root
+    property bool band: false
+    property bool fade: true      // "luce colorata": the hills melt into the page
+    property real sunSize: -1     // >0: fixed sun size (home: small sun next to the logo)
+    property real sunTop: -1      // >=0: sun top edge
+    property real sunRight: 16    // gap between the sun and the right edge, with sunSize
+    property bool showSun: true   // pages with the steps bar: no sun behind the last step
+
+    Image {
+        anchors.fill: parent
+        source: Qt.resolvedUrl(root.band ? '../../../icons/eh_band.svg' : '../../../icons/eh_hills.svg')
+        sourceSize.width: 1080
+        fillMode: Image.Stretch
+    }
+
+    Image {
+        // same place as the sun in the original drawings (viewBox 340x250 / 340x74)
+        readonly property real d: root.sunSize > 0 ? root.sunSize : (root.band ? root.height * 0.62 : root.height * 0.5)
+        readonly property real cx: root.sunSize > 0 ? root.width - root.sunRight - d / 2 : root.width * (root.band ? 290 : 250) / 340
+        readonly property real cy: root.sunTop >= 0 ? root.sunTop + d / 2 : root.height * (root.band ? 26 : 78) / (root.band ? 74 : 250)
+        visible: root.showSun
+        x: cx - d / 2
+        y: cy - d / 2
+        width: d
+        height: d
+        source: Qt.resolvedUrl('../../../icons/eh_sun.svg')
+        sourceSize.width: 256
+        sourceSize.height: 256
+        smooth: true
+    }
+
+    Rectangle {
+        visible: root.fade
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        height: parent.height * (root.band ? 0.42 : 0.3)
+        gradient: Gradient {
+            GradientStop { position: 0.0; color: Qt.rgba(0.980, 0.969, 0.937, 0) }
+            GradientStop { position: 1.0; color: Qt.rgba(0.980, 0.969, 0.937, 1) }
+        }
+    }
+}

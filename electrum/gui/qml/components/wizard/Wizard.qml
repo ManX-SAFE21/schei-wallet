@@ -14,6 +14,8 @@ ElDialog {
     height: parent.height
 
     padding: 0
+    // Easy Heirs: no top gap on pages with their own design
+    topPadding: (pages.currentItem && pages.currentItem.hideWizardButtons === true) ? 0 : 16
 
     title: (pages.currentItem.wizard_title ? pages.currentItem.wizard_title : wizardTitle) +
         (pages.currentItem.title ? ' - ' + pages.currentItem.title : '')
@@ -24,6 +26,14 @@ ElDialog {
     closePolicy: Popup.NoAutoClose
 
     property string wizardTitle
+
+    // Easy Heirs: pages with their own design (hideWizardButtons) hide the header too
+    Binding {
+        target: wizard.header
+        when: wizard.header !== null
+        property: 'visible'
+        value: !(pages.currentItem && pages.currentItem.hideWizardButtons === true)
+    }
 
     property var wizard_data
     property alias pages: pages
@@ -162,6 +172,8 @@ ElDialog {
 
         DialogButtonContainer {
             Layout.fillWidth: true
+            // Easy Heirs: pages with their own big buttons hide this bar
+            visible: !(pages.currentItem && pages.currentItem.hideWizardButtons === true)
 
             FlatButton {
                 Layout.fillWidth: true

@@ -70,6 +70,11 @@ class ElectrumGui(BaseElectrumGui, Logger):
         if "QT_QUICK_CONTROLS_STYLE" not in os.environ:
             os.environ["QT_QUICK_CONTROLS_STYLE"] = "Material"
 
+        # Easy Heirs: "Bigger text" (Settings). Everything grows by 15%, read at
+        # start, so the app must be reopened after changing it.
+        if config.get('eh_opt_bigtext', False) is True and 'QT_SCALE_FACTOR' not in os.environ:
+            os.environ['QT_SCALE_FACTOR'] = '1.15'
+
         self.gui_thread = threading.current_thread()
         self.app = ElectrumQmlApplication(sys.argv, config=config, daemon=daemon, plugins=plugins)
         self.translator = ElectrumTranslator()

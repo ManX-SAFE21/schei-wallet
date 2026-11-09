@@ -36,7 +36,7 @@ Item {
 
             Image {
                 visible: _qrprops.valid
-                source: '../../../icons/electrum.png'
+                source: '../../../icons/eh_bitcoin_logo.svg'
                 x: 1
                 y: 1
                 width: parent.width - 2

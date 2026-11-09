@@ -204,6 +204,13 @@ class QENetwork(QObject, QtEventListener):
     def autoConnectDefined(self):
         return self.network.config.cv.NETWORK_AUTO_CONNECT.is_set()
 
+    @pyqtSlot()
+    def enableAutoConnect(self):
+        """Easy Heirs: no server choice, always connect automatically."""
+        if self.network.config.cv.NETWORK_AUTO_CONNECT.is_modifiable():
+            self.network.config.NETWORK_AUTO_CONNECT = True
+        self.autoConnectChanged.emit()
+
     @pyqtProperty(str, notify=statusChanged)
     def server(self):
         return self._server

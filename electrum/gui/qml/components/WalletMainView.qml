@@ -28,13 +28,19 @@ Item {
     }
 
     function openRequest(key) {
+        // Easy Heirs: our Ricevi screen
+        var ehdialog = ehReceiveDialog.createObject(app, { key: key })
+        ehdialog.open()
+        return ehdialog
+    }
+    function openRequestElectrum(key) {
         var dialog = receiveDialog.createObject(app, { key: key })
         dialog.open()
         return dialog
     }
 
     function openSendDialog() {
-        _sendDialog = qtSendDialog.createObject(mainView, {invoiceParser: invoiceParser, piResolver: piResolver})
+        _sendDialog = ehSendDialog.createObject(mainView, {invoiceParser: invoiceParser, piResolver: piResolver})  // Easy Heirs
         _sendDialog.open()
     }
 
@@ -242,54 +248,190 @@ Item {
         Component.onCompleted: updateImplicitWidth()
     }
 
+    // Easy Heirs (schèi): home in the "Colline del vino" style.
+    // The app header is hidden on this page (ehHideHeader); our own top bar has
+    // the logo and a small gear button for the settings.
+    property bool ehHideHeader: true
+    // T2 (phone test 2026-11-09): on the Pixel the home already starts below the
+    // status bar, so adding statusBarHeight again pushed logo and sun down.
+    // ehTop = only the part of the status bar that really covers this page.
+    property real ehTop: app.statusBarHeight
+    function ehFixTop() {
+        var p = mainView.mapToItem(null, 0, 0)
+        mainView.ehTop = Math.max(0, app.statusBarHeight - p.y)
+    }
+    onHeightChanged: Qt.callLater(ehFixTop)
+    Material.theme: Material.Light
+    Material.foreground: '#2a2220'
+
+    Rectangle {
+        anchors.fill: parent
+        color: '#faf7ef'
+    }
+
+    // hills behind the top of the page: the wallet card sits on them
+    EhHills {
+        band: true
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: parent.top
+        height: mainView.ehTop + 150
+        sunSize: 40
+        sunTop: mainView.ehTop + 6
+    }
+
     ColumnLayout {
         anchors.fill: parent
-        spacing: 0
+        anchors.bottomMargin: 16 + app.navigationBarHeight
+        spacing: 6
 
-        History {
-            id: history
+        // logo "schèi Wallet" at the top, in the sky
+        Item {
             Layout.fillWidth: true
-            Layout.fillHeight: true
+            Layout.preferredHeight: mainView.ehTop + 50
+            Image {
+                id: ehLogo
+                x: 16
+                y: mainView.ehTop + 6
+                width: 92
+                height: 92 * 345 / 756
+                source: Qt.resolvedUrl('../../icons/eh_logo_wine.png')
+                fillMode: Image.PreserveAspectFit
+                mipmap: true
+            }
+            Label {
+                anchors.left: ehLogo.right
+                anchors.leftMargin: 6
+                anchors.bottom: ehLogo.bottom
+                anchors.bottomMargin: 2
+                text: 'Wallet'
+                color: '#3f0f21'
+                font.family: TitleFont ? TitleFont : font.family
+                font.weight: Font.Black
+                font.pixelSize: 18
+            }
         }
 
-        ButtonContainer {
-            id: buttonContainer
+        // offline banner
+        Rectangle {
+            visible: !Network.isConnected
             Layout.fillWidth: true
-
-            FlatButton {
-                id: receiveButton
-                Layout.fillWidth: true
-                Layout.preferredWidth: 1
-                icon.source: '../../icons/tab_receive.png'
-                text: qsTr('Receive')
-                onClicked: {
-                    var dialog = receiveDetailsDialog.createObject(mainView)
-                    dialog.open()
+            Layout.leftMargin: 16
+            Layout.rightMargin: 16
+            Layout.preferredHeight: offRow.implicitHeight + 20
+            radius: 14
+            color: '#fbf0d6'
+            border.width: 2
+            border.color: '#ecd49a'
+            RowLayout {
+                id: offRow
+                anchors.fill: parent
+                anchors.margins: 10
+                spacing: 10
+                Image {
+                    source: Qt.resolvedUrl('../../icons/eh_nowifi.svg')
+                    sourceSize.width: 28
+                    sourceSize.height: 28
                 }
-                pressAndHoldIndicator: true
-                onPressAndHold: {
-                    Config.userKnowsPressAndHold = true
-                    Daemon.currentWallet.deleteExpiredRequests()
-                    app.stack.push(Qt.resolvedUrl('ReceiveRequests.qml'))
-                    AppController.haptic()
+                Label {
+                    Layout.fillWidth: true
+                    wrapMode: Text.WordWrap
+                    textFormat: Text.StyledText
+                    color: '#5a3a08'
+                    font.pixelSize: 15
+                    text: '<b>' + qsTr('No internet.') + '</b> ' + qsTr('The balance may not be up to date.')
                 }
             }
-            FlatButton {
-                Layout.fillWidth: true
-                Layout.preferredWidth: 1
-                icon.source: '../../icons/tab_send.png'
-                text: qsTr('Send')
-                enabled: !invoiceParser.busy && !piResolver.busy && !requestDetails.busy
+        }
+
+        // expert option "two buttons": the card stays wide, above the buttons
+        EhBalanceCard {
+            visible: app.ehOption('buttons') && !app.ehOption('multi')
+            showGear: true
+            Layout.fillWidth: true
+            Layout.leftMargin: 16
+            Layout.rightMargin: 16
+        }
+        EhWalletCarousel {
+            visible: app.ehOption('buttons') && app.ehOption('multi')
+            Layout.fillWidth: true
+        }
+
+        // expert option: two big buttons instead of the slide bar
+        ColumnLayout {
+            visible: app.ehOption('buttons')
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            Layout.leftMargin: 16
+            Layout.rightMargin: 16
+            spacing: 10
+            EhPillButton {
+                text: qsTr('RECEIVE')
+                fontSize: 26
+                color: '#45541f'; textColor: '#ffffff'; tileColor: '#e6e9cf'; outlined: false
+                onClicked: Daemon.currentWallet.ehReceive()
+                Image { anchors.centerIn: parent; source: Qt.resolvedUrl('../../icons/eh_rx_olive.svg'); sourceSize.width: 38; sourceSize.height: 38 }
+            }
+            EhPillButton {
+                visible: Daemon.currentWallet && !Daemon.currentWallet.isWatchOnly
+                text: qsTr('SEND')
+                fontSize: 26
+                color: '#5e1a33'; textColor: '#ffffff'; tileColor: '#d9b25a'; outlined: false
                 onClicked: openSendDialog()
-                pressAndHoldIndicator: true
-                onPressAndHold: {
-                    Config.userKnowsPressAndHold = true
-                    app.stack.push(Qt.resolvedUrl('Invoices.qml'))
-                    AppController.haptic()
+                Image { anchors.centerIn: parent; source: Qt.resolvedUrl('../../icons/eh_tx_wine.svg'); sourceSize.width: 38; sourceSize.height: 38 }
+            }
+            EhHistoryPanel {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+            }
+        }
+
+        // the slide on the left, from the top to the bottom of the page;
+        // on the right the wallet card (narrow, on the hills) and the movements
+        RowLayout {
+            visible: !app.ehOption('buttons')
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            Layout.leftMargin: 6
+            Layout.rightMargin: 19   // room for the strap that wraps round the card edge
+            spacing: 4
+
+            EhSlideBar {
+                Layout.preferredWidth: 88
+                Layout.fillHeight: true
+                sendEnabled: Daemon.currentWallet && !Daemon.currentWallet.isWatchOnly
+                onSendRequested: openSendDialog()
+                onReceiveRequested: {
+                    // same address until money arrives on it (see qewallet.ehReceive)
+                    Daemon.currentWallet.ehReceive()
+                }
+            }
+
+            ColumnLayout {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                spacing: 8
+                EhBalanceCard {
+                    visible: !app.ehOption('multi')
+                    showGear: true
+                    compact: true
+                    Layout.fillWidth: true
+                }
+                EhWalletCarousel {
+                    visible: app.ehOption('multi')
+                    compact: true
+                    Layout.fillWidth: true
+                }
+                EhHistoryPanel {
+                    glass: true
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    Layout.bottomMargin: 8
                 }
             }
         }
     }
+
     property color navigationBarBackgroundColor: constants.highlightBackground
 
     PIResolver {
@@ -371,6 +513,12 @@ Item {
         }
         onValidationSuccess: {
             closeSendDialog()
+            if (invoiceParser.invoiceType == Invoice.OnchainInvoice) {
+                // Easy Heirs: our amount / check / slide-to-send screens
+                var ehdialog = ehInvoiceDialog.createObject(app, { invoice: invoiceParser })
+                ehdialog.open()
+                return
+            }
             var dialog = invoiceDialog.createObject(app, {
                 invoice: invoiceParser,
                 payImmediately: invoiceParser.isLnurlPay
@@ -552,6 +700,16 @@ Item {
     }
 
     Component {
+        id: ehSendDialog
+        EhSendDialog {}
+    }
+
+    Component {
+        id: ehInvoiceDialog
+        EhInvoiceDialog { onClosed: destroy() }
+    }
+
+    Component {
         id: receiveDetailsDialog
 
         ReceiveDetailsDialog {
@@ -568,6 +726,13 @@ Item {
             onRejected: {
                 console.log('rejected')
             }
+            onClosed: destroy()
+        }
+    }
+
+    Component {
+        id: ehReceiveDialog
+        EhReceiveDialog {
             onClosed: destroy()
         }
     }
@@ -709,6 +874,7 @@ Item {
 
     Component.onCompleted: {
         console.log("WalletMainView completed: ", Daemon.currentWallet.name)
+        Qt.callLater(ehFixTop)  // T2
         if (app.pendingIntent) {
             piResolver.recipient = app.pendingIntent
             app.pendingIntent = ""

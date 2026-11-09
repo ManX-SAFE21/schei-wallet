@@ -346,6 +346,7 @@ class TxFeeSlider(FeeSlider):
                 'is_mine': self._wallet.wallet.is_mine(addr),
                 'is_change': self._wallet.wallet.is_change(addr),
                 'prevout_txid': inp.prevout.txid.hex(),
+                'outpoint': inp.prevout.to_str(),   # Easy Heirs: privacy warning
                 'is_swap': False
             })
         self.inputs = inputs
@@ -412,6 +413,8 @@ class QETxFinalizer(TxFeeSlider):
         self._effectiveAmount = QEAmount()
         self._extraFee = QEAmount()
         self._canRbf = False
+        self._eh_coins = []      # Easy Heirs: outpoints chosen by hand, [] = automatic
+        self.inputsChanged.connect(self.ehInputCountChanged)
 
     addressChanged = pyqtSignal()
     @pyqtProperty(str, notify=addressChanged)
@@ -466,6 +469,24 @@ class QETxFinalizer(TxFeeSlider):
             self.canRbfChanged.emit()
         self.rbf = self._canRbf  # if we can RbF, we do RbF
 
+    ehCoinsChanged = pyqtSignal()
+    @pyqtProperty('QVariantList', notify=ehCoinsChanged)
+    def ehCoins(self):
+        return list(self._eh_coins)
+
+    @ehCoins.setter
+    def ehCoins(self, coins):
+        coins = [str(c) for c in (coins or [])]
+        if coins != self._eh_coins:
+            self._eh_coins = coins
+            self.ehCoinsChanged.emit()
+            self.update()
+
+    ehInputCountChanged = pyqtSignal()
+    @pyqtProperty(int, notify=ehInputCountChanged)
+    def ehInputCount(self):
+        return len(self._inputs) if getattr(self, '_inputs', None) else 0
+
     @profiler
     def make_tx(self, amount):
         self._logger.debug(f'make_tx amount={amount}')
@@ -475,6 +496,9 @@ class QETxFinalizer(TxFeeSlider):
         else:
             # default impl
             coins = self._wallet.wallet.get_spendable_coins(None)
+            if self._eh_coins:
+                chosen = set(self._eh_coins)
+                coins = [c for c in coins if c.prevout.to_str() in chosen]
             outputs = [PartialTxOutput.from_address_and_value(self.address, amount)]
             tx = self._wallet.wallet.make_unsigned_transaction(
                 coins=coins,

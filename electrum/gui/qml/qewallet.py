@@ -37,6 +37,35 @@ if TYPE_CHECKING:
     from electrum.invoices import Invoice
 
 
+def eh_pocket_move(wallet, outpoints, aside):
+    """Easy Heirs, privacy pockets: "Da spendere" <-> "Da parte" (= blocked).
+    - aside, all the coins of an address with more coins: block the ADDRESS
+      (also the coins that will arrive there later);
+    - aside, otherwise: block only the chosen coins;
+    - back to spend, from a blocked address: unblock the address and keep
+      blocked, one by one, its coins that were not chosen.
+    Returns the addresses touched."""
+    chosen_all = set(outpoints)
+    by_op = {c.prevout.to_str(): c for c in wallet.get_utxos()}
+    addresses = sorted({by_op[o].address for o in chosen_all if o in by_op})
+    for a in addresses:
+        coins = [c.prevout.to_str() for c in wallet.get_utxos([a])]
+        chosen = [o for o in coins if o in chosen_all]
+        rest = [o for o in coins if o not in chosen_all]
+        if aside:
+            if len(coins) > 1 and not rest:
+                wallet.set_frozen_state_of_addresses([a], True)
+            else:
+                wallet.set_frozen_state_of_coins(chosen, True)
+        else:
+            if wallet.is_frozen_address(a):
+                wallet.set_frozen_state_of_addresses([a], False)
+                if rest:
+                    wallet.set_frozen_state_of_coins(rest, True)
+            wallet.set_frozen_state_of_coins(chosen, False)
+    return addresses
+
+
 class QEWallet(AuthMixin, QObject, QtEventListener):
     __instances = []
 
@@ -297,8 +326,51 @@ class QEWallet(AuthMixin, QObject, QtEventListener):
             except queue.Empty:
                 break
 
-        for notification in self.wallet.get_user_notifications_for_new_txns(txns):
+        for notification in self._eh_notifications(txns):
             self.userNotify.emit(self.wallet, notification)
+
+    def _eh_notifications(self, txns):
+        """Easy Heirs (T17): simple texts in the chosen language, in euro
+        (bitcoin only in 'only bitcoin' mode), instead of Electrum's messages."""
+        if len(txns) > 20:
+            return [_('{} new movements').format(len(txns))]
+        cfg = self.wallet.config
+        btc_only = cfg.get('eh_opt_btc_only', False) is True
+        fx = None
+        try:
+            from .qedaemon import QEDaemon
+            fx = QEDaemon.instance.qefx.fx if QEDaemon.instance else None
+        except Exception:
+            fx = None
+
+        def money(sats):
+            try:
+                if not btc_only and fx and fx.is_enabled():
+                    rate = fx.exchange_rate()
+                    if rate is not None and rate.is_finite():
+                        v = fx.fiat_value(sats, rate)
+                        s = f'{v:,.2f}'.replace(',', ' ').replace('.', ',').replace(' ', '.')
+                        ccy = fx.get_currency()
+                        return ('€ ' + s) if ccy == 'EUR' else (s + ' ' + ccy)
+            except Exception as e:
+                self._logger.info(f'eh notify: no fiat value ({e!r})')
+            return cfg.format_amount_and_units(sats)
+
+        received = sent = 0
+        for tx in txns:
+            d = self.wallet.get_wallet_delta(tx)
+            if not d.is_relevant:
+                continue
+            if d.delta < 0:
+                sent += -d.delta
+            else:
+                received += d.delta
+        lines = []
+        if received:
+            lines.append(_('You received {}').format(money(received)))
+        if sent:
+            lines.append(_('You sent {}').format(money(sent)))
+        return ['\n'.join(lines)] if lines else []
 
     def update_sync_progress(self):
         if self.wallet.network and self.wallet.network.is_connected():
@@ -702,6 +774,238 @@ class QEWallet(AuthMixin, QObject, QtEventListener):
         keys = self.wallet.delete_expired_requests()
         for key in keys:
             self.requestModel.delete_invoice(key)
+
+    # Easy Heirs: "pull down to receive" must not use up the addresses.
+    # Every pull used to create a new request that never expires, and each one
+    # keeps an address busy: after about 20 pulls "No address available".
+    # Now the same address is shown until money arrives on it.
+    def _eh_is_plain_request(self, req) -> bool:
+        return (not req.is_lightning()) and not req.get_amount_sat() and not req.get_message()
+
+    # Easy Heirs: "Le tue monete d'oro" (one UTXO = one gold coin)
+    @pyqtSlot(str, bool)
+    def ehSetCoinFrozen(self, outpoint: str, freeze: bool):
+        """Block / unblock one coin: the app will not use it to pay."""
+        self.wallet.set_frozen_state_of_coins([outpoint], freeze)
+        self.addressCoinModel.updateCoin(outpoint)
+        self.balanceChanged.emit()
+
+    # ---- Easy Heirs T8: "I tuoi indirizzi" (opened from Receive) ----
+    def _eh_coin_dict(self, coin):
+        op = coin.prevout.to_str()
+        txid = coin.prevout.txid.hex()
+        return {
+            'outpoint': op,
+            'txid': txid,
+            'sats': int(coin.value_sats()),
+            'height': int(coin.block_height or 0),
+            'held': bool(self.wallet.is_frozen_coin(coin)),
+            'label': self.wallet.get_label_for_outpoint(op) or self.wallet.get_label_for_txid(txid) or '',
+            'origin': self._eh_origins().get(op, ''),
+        }
+
+    def _eh_address_dict(self, address, kind):
+        w = self.wallet
+        coins = w.get_utxos([address])
+        coins.sort(key=lambda x: x.block_height)
+        c, u, x = w.get_addr_balance(address)
+        return {
+            'address': address,
+            'kind': kind,                    # 'receive' or 'change'
+            'label': w.get_label_for_address(address) or '',
+            'sats': int(c + u + x),
+            'numtx': int(w.adb.get_address_history_len(address)),
+            'held': bool(w.is_frozen_address(address)),
+            'coins': [self._eh_coin_dict(coin) for coin in coins],
+        }
+
+    @pyqtSlot(result='QVariantList')
+    def ehAddresses(self):
+        """Addresses that were used or hold money, plus the first unused one to
+        receive on ('new'). Change addresses only if used."""
+        w = self.wallet
+        out = []
+        recv = w.get_receiving_addresses()
+        change = w.get_change_addresses() if w.wallet_type != 'imported' else []
+        first_new = None
+        for a in recv:
+            d = self._eh_address_dict(a, 'receive')
+            if d['numtx'] > 0 or d['sats'] > 0:
+                out.append(d)
+            elif first_new is None:
+                first_new = d
+        if first_new is not None:
+            first_new['new'] = True
+            out.append(first_new)
+        for a in change:
+            d = self._eh_address_dict(a, 'change')
+            if d['numtx'] > 0 or d['sats'] > 0:
+                out.append(d)
+        return out
+
+    @pyqtSlot(str, result='QVariantMap')
+    def ehAddressInfo(self, address):
+        w = self.wallet
+        kind = 'change' if w.is_change(address) else 'receive'
+        return self._eh_address_dict(address, kind)
+
+    # ---- Easy Heirs T20 step 3: where a coin comes from (id of an origin category) ----
+    # Kept in the wallet file (key 'eh_origins': outpoint -> category id), so it
+    # follows the wallet. Only a note for the user: Electrum itself ignores it.
+    def _eh_origins(self) -> dict:
+        try:
+            return dict(self.wallet.db.get('eh_origins') or {})
+        except Exception:
+            return {}
+
+    @pyqtSlot(str, result=str)
+    def ehCoinOrigin(self, outpoint: str) -> str:
+        return str(self._eh_origins().get(outpoint, ''))
+
+    @pyqtSlot('QVariantList', str)
+    def ehSetOrigin(self, outpoints, cat: str):
+        """Give the coins an origin category ('' = "I don't know")."""
+        d = self._eh_origins()
+        for o in outpoints:
+            o = str(o)
+            if cat:
+                d[o] = cat
+            else:
+                d.pop(o, None)
+        # forget the coins that were spent meanwhile
+        live = {c.prevout.to_str() for c in self.wallet.get_utxos()}
+        d = {k: v for k, v in d.items() if k in live}
+        self.wallet.db.put('eh_origins', d)
+        self.wallet.save_db()
+
+    @pyqtSlot(str)
+    def ehForgetOrigin(self, cat: str):
+        """A category was deleted: its coins go back to "I don't know"."""
+        d = {k: v for k, v in self._eh_origins().items() if v != cat}
+        self.wallet.db.put('eh_origins', d)
+        self.wallet.save_db()
+
+    @pyqtSlot('QVariantList', bool)
+    def ehPocketMove(self, outpoints, aside: bool):
+        """Privacy pockets: move the chosen coins "Da parte" (aside=True) or back."""
+        eh_pocket_move(self.wallet, [str(o) for o in outpoints], aside)
+        self.addressCoinModel.setDirty()
+        self.balanceChanged.emit()
+
+    @pyqtSlot(str, bool)
+    def ehSetAddressFrozen(self, address: str, freeze: bool):
+        """Block / unblock a whole address: none of its coins is used to pay,
+        also the ones that will arrive later (Electrum's 'freeze address')."""
+        self.wallet.set_frozen_state_of_addresses([address], freeze)
+        self.addressCoinModel.setDirty()
+        self.balanceChanged.emit()
+
+    @pyqtSlot(str, str)
+    def ehSetAddressNote(self, address: str, text: str):
+        self.wallet.set_label(address, text.strip() or None)
+        self.addressCoinModel.setDirty()
+
+    @pyqtSlot(str)
+    def ehReceiveOn(self, address: str):
+        """'Ricevi su questo indirizzo': open Receive with this address."""
+        w = self.wallet
+        for req in w.get_unpaid_requests():
+            if self._eh_is_plain_request(req) and req.get_address() == address:
+                self.requestCreateSuccess.emit(req.get_id())
+                return
+        try:
+            key = w.create_request(0, '', 0, address)
+        except InvoiceError as e:
+            self.requestCreateError.emit(_('Error creating payment request') + ':\n' + str(e))
+            return
+        self.requestModel.add_invoice(w.get_request(key))
+        self.requestCreateSuccess.emit(key)
+
+    @pyqtSlot(str, str)
+    def ehSetCoinNote(self, outpoint: str, text: str):
+        """Note of one gold coin (Electrum label by outpoint)."""
+        self.wallet.set_label(outpoint, text.strip() or None)
+        self.addressCoinModel.updateCoin(outpoint)
+
+    # Easy Heirs: "Cerca più indirizzi" = Electrum's gap limit (desktop: console only)
+    @pyqtSlot(result=int)
+    def ehGapLimit(self) -> int:
+        return int(getattr(self.wallet, 'gap_limit', 20) or 20)
+
+    @pyqtSlot(result=int)
+    def ehMinGapLimit(self) -> int:
+        try:
+            return int(self.wallet.min_acceptable_gap())
+        except Exception:
+            return 20
+
+    @pyqtSlot(int, result=bool)
+    def ehSetGapLimit(self, value: int) -> bool:
+        if not hasattr(self.wallet, 'change_gap_limit'):
+            return False
+        if not self.wallet.change_gap_limit(value):
+            return False
+        # create the new addresses now, so the synchronizer looks at them
+        try:
+            self.wallet.synchronize()
+        except Exception as e:
+            self._logger.warning(f'eh gap limit: synchronize: {e!r}')
+        self.addressCoinModel.setDirty()
+        self._logger.info(f'eh gap limit set to {value}')
+        return True
+
+    @pyqtSlot(str, result=str)
+    def ehSeedType(self, seed: str) -> str:
+        """Electrum seed type of the words ('segwit', 'standard'...), '' if not an Electrum seed."""
+        from electrum.mnemonic import calc_seed_type
+        try:
+            return calc_seed_type(seed) or ''
+        except Exception:
+            return ''
+
+    @pyqtSlot(str, result=int)
+    def ehTxTimestamp(self, txid: str) -> int:
+        """When the transaction that made a coin was mined (0 = not yet)."""
+        try:
+            info = self.wallet.adb.get_tx_height(txid)
+            return int(info.timestamp or 0)
+        except Exception:
+            return 0
+
+    @pyqtSlot()
+    def ehCleanRequests(self):
+        """Drop expired requests and keep at most one open request without
+        amount and text (on an address that got no money yet)."""
+        self.deleteExpiredRequests()
+        w = self.wallet
+        keep = None
+        drop = []
+        for req in w.get_unpaid_requests():
+            if not self._eh_is_plain_request(req):
+                continue
+            addr = req.get_address()
+            if keep is None and addr and not w.adb.is_used(addr):
+                keep = req
+                continue
+            drop.append(req.get_id())
+        for key in drop:
+            w.delete_request(key, write_to_disk=False)
+            self.requestModel.delete_invoice(key)
+        if drop:
+            w.save_db()
+            self._logger.info(f'eh: removed {len(drop)} old empty requests')
+
+    @pyqtSlot()
+    def ehReceive(self):
+        """The address for "Receive": the open one if it got no money yet, else a new one."""
+        self.ehCleanRequests()
+        w = self.wallet
+        for req in w.get_unpaid_requests():
+            addr = req.get_address()
+            if self._eh_is_plain_request(req) and addr and not w.adb.is_used(addr):
+                self.requestCreateSuccess.emit(req.get_id())
+                return
+        self.createRequest(QEAmount(amount_sat=0), '', 0, False, True)
 
     @pyqtSlot(QEAmount, str, int)
     @pyqtSlot(QEAmount, str, int, bool)

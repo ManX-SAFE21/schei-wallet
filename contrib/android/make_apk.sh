@@ -50,6 +50,9 @@ info "apk building phase starts."
 # Testnet4
 #export APP_PACKAGE_DOMAIN=org.electrum.testnet4
 
+# Easy Heirs wallet: own package id, so it installs next to official Electrum
+export APP_PACKAGE_DOMAIN=io.safe21.easyheirs
+
 if [ $CI ]; then
     # override log level specified in buildozer.spec to "debug":
     export BUILDOZER_LOG_LEVEL=2

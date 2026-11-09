@@ -167,6 +167,50 @@ class QEFX(QObject, QtEventListener):
         else:
             return self.config.format_amount(v)
 
+    # Easy Heirs: CSV of the wallet movements, simple columns for Excel or the accountant.
+    # Built on Electrum's export_history_to_file (confirmed movements only).
+    @pyqtSlot(QObject, int, result=str)
+    def exportHistoryCsv(self, qewallet, year=0):
+        import csv, io, os, tempfile
+        from decimal import Decimal, InvalidOperation
+        from electrum.i18n import _, _language_code
+        comma = not (_language_code or '').startswith('en')
+
+        def num(s):
+            s = (s or '').strip()
+            if s in ('', 'No Data', 'None'):
+                return ''
+            return s.replace(',', '').replace('.', ',') if comma else s.replace(',', '')
+
+        fd, path = tempfile.mkstemp(suffix='.csv')
+        os.close(fd)
+        try:
+            qewallet.wallet.export_history_to_file(fx=self.fx if self.fx.is_enabled() else None, file_path=path, is_csv=True)
+            with open(path, encoding='utf-8') as f:
+                rows = list(csv.DictReader(f))
+        finally:
+            try:
+                os.remove(path)
+            except OSError:
+                pass
+
+        out = io.StringIO()
+        w = csv.writer(out, delimiter=';' if comma else ',', lineterminator='\n')
+        w.writerow([_('Date'), _('Type'), 'BTC', _('Euro (value of the day)'), _('Sending cost €'), _('Note'), _('Confirmations'), _('Transaction code')])
+        for r in rows:
+            date = r.get('timestamp', '')
+            if year and not str(date).startswith(str(year)):
+                continue
+            try:
+                amount = Decimal((r.get('amount_chain_bc') or '0').replace(',', ''))
+            except InvalidOperation:
+                amount = Decimal(0)
+            kind = _('Received') if amount >= 0 else _('Sent')
+            w.writerow([date, kind, num(r.get('amount_chain_bc')), num(r.get('fiat_value')),
+                        num(r.get('fiat_fee')) if amount < 0 else '', r.get('label', ''),
+                        r.get('confirmations', ''), r.get('oc_transaction_hash', '')])
+        return out.getvalue()
+
     @pyqtSlot(str, result=bool)
     def isRecent(self, timestamp):
         # return True if unknown, e.g. timestamp not known yet, tx in mempool

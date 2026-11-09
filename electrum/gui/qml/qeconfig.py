@@ -17,6 +17,13 @@ if TYPE_CHECKING:
     from electrum.simple_config import SimpleConfig
 
 
+EASY_HEIRS_LANGUAGES = [
+    ('it_IT', 'Italiano'),
+    ('vec_IT', 'Veneto'),
+    ('en_UK', 'English'),
+]
+
+
 class QEConfig(AuthMixin, QObject):
     instance = None  # type: Optional[QEConfig]
     _logger = get_logger(__name__)
@@ -59,12 +66,38 @@ class QEConfig(AuthMixin, QObject):
             set_language(language)
             self.languageChanged.emit()
 
+    # Easy Heirs: small key/value store for our options (keys prefixed 'eh_')
+    @pyqtSlot(str, result='QVariant')
+    def ehGet(self, key):
+        return self.config.get('eh_' + key, None)
+
+    @pyqtSlot(str, 'QVariant')
+    def ehSet(self, key, value):
+        self.config.set_key('eh_' + key, value)
+
     languagesChanged = pyqtSignal()
     @pyqtProperty('QVariantList', notify=languagesChanged)
     def languagesAvailable(self):
-        langs = get_gui_lang_names()
-        langs_list = list(map(lambda x: {'value': x[0], 'text': x[1]}, langs.items()))
-        return langs_list
+        # Easy Heirs: only Italian, Veneto and English, each name in its own language
+        return [{'value': code, 'text': name} for code, name in EASY_HEIRS_LANGUAGES]
+
+    @pyqtProperty(bool, notify=languageChanged)
+    def languageChosen(self) -> bool:
+        return bool(self.config.LOCALIZATION_LANGUAGE)
+
+    @pyqtProperty(str, constant=True)
+    def phoneLanguage(self) -> str:
+        """The one of our 3 languages closest to the phone language."""
+        try:
+            from electrum.gui.default_lang import get_default_language
+            name = get_default_language(gui_name='qml') or ''
+        except Exception:
+            name = ''
+        if name.startswith('vec'):
+            return 'vec_IT'
+        if name.startswith('it'):
+            return 'it_IT'
+        return 'en_UK'
 
     termsOfUseChanged = pyqtSignal()
     @pyqtProperty(bool, notify=termsOfUseChanged)
