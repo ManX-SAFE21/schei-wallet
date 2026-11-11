@@ -31,8 +31,11 @@ Item {
     // going down, the coin reaches the wallet under the bar (T37)
     readonly property real travelDown: Math.max(travel, height / 2 - coinSize / 2 + coinSize * 0.35)
     // T37: how open the wallet under the bar is: it opens as the coin comes down
-    readonly property real receiveProgress: coin.offset > 0 && travelDown > 0
-                                            ? Math.pow(Math.min(1, coin.offset / travelDown), 1.4) : 0
+    readonly property real rawProgress: coin.offset > 0 && travelDown > 0
+                                        ? Math.pow(Math.min(1, coin.offset / travelDown), 1.4) : 0
+    // after a receive the wallet closes on its own, softly (with a small bounce), not in one frame
+    property real _closeK: 0
+    readonly property real receiveProgress: goIn.running ? Math.max(0, _closeK) : rawProgress
 
     implicitWidth: 95
 
@@ -93,7 +96,7 @@ Item {
         anchors.bottomMargin: 2
         anchors.horizontalCenter: parent.horizontalCenter
         spacing: 0
-        opacity: 1 - root.receiveProgress * 0.6
+        opacity: Math.max(0, 1 - root.receiveProgress * 1.6)
         Label {
             anchors.horizontalCenter: parent.horizontalCenter
             text: qsTr('pull down')
@@ -186,6 +189,7 @@ Item {
         DragHandler {
             id: drag
             target: null
+            enabled: !goIn.running   // the coin is going into the wallet: not grabbable
             yAxis.enabled: true
             xAxis.enabled: false
             property real startOffset: 0
@@ -195,11 +199,14 @@ Item {
                     startOffset = coin.offset
                 } else {
                     var limit = root.travel * 0.85
-                    if (coin.offset <= -limit && root.sendEnabled) {
+                    // review: SEND only when the coin really went up (80% of the way to the QR,
+                    // at least 40 px), like RECEIVE: never by a small drag on a short screen
+                    if (coin.offset <= -Math.max(40, limit, root.travelUp * 0.8) && root.sendEnabled) {
                         AppController.haptic()
                         root.sendRequested()
-                    } else if (coin.offset >= Math.max(limit, root.travelDown * 0.8)) {
+                    } else if (coin.offset >= Math.max(40, limit, root.travelDown * 0.8)) {
                         AppController.haptic()
+                        root._closeK = root.rawProgress
                         // T37: the coin goes into the wallet (smaller, fading), then comes back
                         goIn.restart()
                         root.receiveRequested()
@@ -217,6 +224,7 @@ Item {
             }
         }
         TapHandler {
+            enabled: !goIn.running
             onTapped: { hint.visible = true; hintTimer.restart() }
         }
     }
@@ -227,6 +235,11 @@ Item {
             NumberAnimation { target: coin; property: 'offset'; to: root.travelDown + root.coinSize * 0.4; duration: 260; easing.type: Easing.InQuad }
             NumberAnimation { target: coin; property: 'scale'; to: 0.5; duration: 260 }
             NumberAnimation { target: coin; property: 'opacity'; to: 0; duration: 260 }
+            // the wallet closes while the coin goes in
+            SequentialAnimation {
+                PauseAnimation { duration: 140 }
+                NumberAnimation { target: root; property: '_closeK'; to: 0; duration: 420; easing.type: Easing.OutBack; easing.overshoot: 2.2 }
+            }
         }
         PropertyAction { target: coin; property: 'offset'; value: 0 }
         PauseAnimation { duration: 250 }

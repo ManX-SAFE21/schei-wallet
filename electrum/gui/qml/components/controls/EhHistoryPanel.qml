@@ -121,7 +121,7 @@ ColumnLayout {
                                 text: rc.main
                                 font.pixelSize: rc.btcOnly ? 15 : 16
                                 font.bold: true
-                                font.family: rc.btcOnly ? 'monospace' : font.family
+                                font.family: rc.btcOnly ? 'monospace' : app.font.family
                                 color: row.incoming ? '#45541f' : '#5e1a33'
                                 elide: Text.ElideRight
                             }

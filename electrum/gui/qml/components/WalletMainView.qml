@@ -397,6 +397,7 @@ Item {
             spacing: 0
 
             RowLayout {
+                z: 2     // review: the coin stays above the wallet that opens under it
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 Layout.leftMargin: 14
@@ -406,6 +407,8 @@ Item {
                     glass: true
                     Layout.fillWidth: true
                     Layout.fillHeight: true
+                    // the list makes room for the inside of the wallet that rises when it opens
+                    Layout.bottomMargin: 74 * slideBar.receiveProgress
                 }
                 EhSlideBar {
                     id: slideBar
@@ -423,6 +426,11 @@ Item {
             // more wallets: which one receives
             Label {
                 visible: app.ehOption('multi') && Daemon.currentWallet !== null
+                z: 3
+                opacity: Math.max(0, 1 - 3 * slideBar.receiveProgress)   // steps aside while the wallet opens
+                Layout.fillWidth: true
+                Layout.rightMargin: 100
+                elide: Text.ElideRight
                 Layout.leftMargin: 22
                 Layout.topMargin: 2
                 textFormat: Text.StyledText

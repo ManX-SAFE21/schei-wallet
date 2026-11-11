@@ -681,7 +681,15 @@ ApplicationWindow
         function onHistoryUpdated() { app.ehFxRev++ }
     }
     // T39: when a movement happened, in words: "oggi 16:55", "ieri 14:51", "9 nov", "9 nov 2025"
+    // review: "today / yesterday" follow the clock: refreshed every minute and when the app comes back
+    property string ehToday: new Date().toDateString()
+    Timer { interval: 60000; repeat: true; running: true; onTriggered: app.ehToday = new Date().toDateString() }
+    Connections {
+        target: Qt.application
+        function onStateChanged() { if (Qt.application.state === Qt.ApplicationActive) app.ehToday = new Date().toDateString() }
+    }
     function ehWhen(timestamp, withTime) {
+        ehToday
         if (!timestamp) return ''
         var d = new Date(timestamp * 1000)
         var now = new Date()
@@ -875,11 +883,19 @@ ApplicationWindow
     function ehWalletKey() { return Daemon.currentWallet ? Daemon.currentWallet.name : '' }
     // the last balance seen of each wallet (only wallets open one at a time): shown on the
     // cards of the other wallets in the carousel
+    // review: written only when it changed (the config file is saved whole at each write)
+    property var _ehBalSeen: ({})
+    property int ehBalRev: 0
     function ehRememberBalance() {
-        if (Daemon.currentWallet) Config.ehSet('bal_' + ehWalletKey(), Daemon.currentWallet.ehTotal.satsInt)
+        if (!Daemon.currentWallet) return
+        var k = ehWalletKey(), v = Daemon.currentWallet.ehTotal.satsInt
+        if (_ehBalSeen[k] === v) return
+        _ehBalSeen[k] = v
+        if (Config.ehGet('bal_' + k) !== v) Config.ehSet('bal_' + k, v)
+        ehBalRev++
     }
     function ehLastBalanceFor(n) {
-        ehOptRev
+        ehOptRev; ehBalRev; ehFxRev
         var s = Config.ehGet('bal_' + n)
         if (s === undefined || s === null || s === '') return ''
         return ehMoney(Config.unitsToSats((Number(s) / 100000000).toFixed(8)))
