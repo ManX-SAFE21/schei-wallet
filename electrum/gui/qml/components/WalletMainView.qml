@@ -523,11 +523,14 @@ Item {
                 ehdialog.open()
                 return
             }
-            var dialog = invoiceDialog.createObject(app, {
-                invoice: invoiceParser,
-                payImmediately: invoiceParser.isLnurlPay
-            })
-            dialog.open()
+            // Easy Heirs (review 2026-11-11): Schèi pays only plain bitcoin addresses, through its
+            // own screens (PIN, two slides, countdown). Lightning invoices, also those with an
+            // on-chain fallback, would open Electrum's dialog and pay with none of that: refuse them.
+            app.ehInfoDialog.createObject(app, {
+                pageTitle: qsTr('This code cannot be paid with Schèi'),
+                bodyText: qsTr('It is a <b>Lightning</b> payment request. Schèi pays only normal bitcoin addresses (they start with bc1, 1 or 3).')
+                          + '<br><br>' + qsTr('Ask the person you pay for a normal bitcoin address.')
+            }).open()
         }
         onInvoiceCreateError: (code, message) => {
             var msg = qsTr('Cannot save invoice') + ': ' + message

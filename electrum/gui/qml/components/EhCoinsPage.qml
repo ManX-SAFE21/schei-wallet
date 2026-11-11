@@ -250,7 +250,7 @@ Item {
                             anchors.fill: parent
                             onClicked: app.stack.push(Qt.resolvedUrl('EhCoinDetailPage.qml'), {
                                 outpoint: ld.model.outpoint, txid: ld.model.txid, address: ld.model.address,
-                                amount: ld.model.amount, blockHeight: ld.model.height, held: ld.model.held,
+                                amount: ld.model.amount, blockHeight: ld.model.height, held: ld.model.held, addrHeld: ld.model.addr_held === true,
                                 note: ld.model.label || ''
                             })
                         }

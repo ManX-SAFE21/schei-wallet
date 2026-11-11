@@ -5,6 +5,13 @@
 
 STRINGS = {
     'it_IT': {
+        'This code is not an address': 'Questo codice non è un indirizzo',
+        'This QR code holds a whole transaction or a backup, not a bitcoin address to pay. Schèi cannot use it.': 'Questo codice QR contiene una transazione intera o un backup, non un indirizzo bitcoin da pagare. Schèi non lo può usare.',
+        'Ask the person you pay for their bitcoin address.': 'Chiedi a chi devi pagare il suo indirizzo bitcoin.',
+        'its whole address is blocked: unblock it from "Your addresses"': 'è bloccato tutto il suo indirizzo: sbloccalo da "I tuoi indirizzi"',
+        'This code cannot be paid with Schèi': 'Questo codice non si può pagare con Schèi',
+        'It is a <b>Lightning</b> payment request. Schèi pays only normal bitcoin addresses (they start with bc1, 1 or 3).': 'È una richiesta di pagamento <b>Lightning</b>. Schèi paga solo indirizzi bitcoin normali (cominciano con bc1, 1 o 3).',
+        'Ask the person you pay for a normal bitcoin address.': 'Chiedi a chi devi pagare un indirizzo bitcoin normale.',
         'Tap a site to choose it. The pencil changes its name and address.': 'Tocca un sito per sceglierlo. La matita cambia nome e indirizzo.',
         'NAME': 'NOME',
         'ADDRESS': 'INDIRIZZO',
@@ -587,6 +594,13 @@ STRINGS = {
         '<b>Schèi chooses a "normal" tip by itself</b>: the payment usually arrives in about ten minutes. The whole tip goes to the miners: Schèi takes nothing.': '<b>Schèi sceglie da solo una mancia "normale"</b>: il pagamento arriva di solito in una decina di minuti. La mancia va tutta ai minatori: Schèi non prende niente.',
     },
     'vec_IT': {
+        'This code is not an address': 'Sto codice no el xe un indirisso',
+        'This QR code holds a whole transaction or a backup, not a bitcoin address to pay. Schèi cannot use it.': 'Sto codice QR el ga drento na transasion intiera o un backup, no un indirisso bitcoin da pagar. Schèi no lo pol doparar.',
+        'Ask the person you pay for their bitcoin address.': 'Domanda a chi che te ghe da pagar el so indirisso bitcoin.',
+        'its whole address is blocked: unblock it from "Your addresses"': 'xe blocà tuto el so indirisso: sblochelo da "I to indirissi"',
+        'This code cannot be paid with Schèi': 'Sto codice no se pol pagarlo co Schèi',
+        'It is a <b>Lightning</b> payment request. Schèi pays only normal bitcoin addresses (they start with bc1, 1 or 3).': 'El xe na richiesta de pagamento <b>Lightning</b>. Schèi el paga solo indirissi bitcoin normali (i scominsia co bc1, 1 o 3).',
+        'Ask the person you pay for a normal bitcoin address.': 'Domanda a chi che te ghe da pagar un indirisso bitcoin normale.',
         'Tap a site to choose it. The pencil changes its name and address.': 'Toca un sito par sielzarlo. La matita la cambia nome e indirisso.',
         'NAME': 'NOME',
         'ADDRESS': 'INDIRISSO',

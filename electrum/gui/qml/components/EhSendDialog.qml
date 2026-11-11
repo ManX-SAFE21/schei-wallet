@@ -44,10 +44,16 @@ ElDialog {
 
     function dispatch(data) {
         data = data.trim()
-        if (bitcoin.isRawTx(data)) {
-            txFound(data)
-        } else if (Daemon.currentWallet.isValidChannelBackup(data)) {
-            channelBackupFound(data)
+        // review 2026-11-11: nobody listened to txFound / channelBackupFound, the QR was ignored.
+        // Schèi does not use these codes: say it, instead of doing nothing.
+        if (bitcoin.isRawTx(data) || Daemon.currentWallet.isValidChannelBackup(data)) {
+            if (camLoader.item) camLoader.item.stop()
+            app.ehInfoDialog.createObject(app, {
+                pageTitle: qsTr('This code is not an address'),
+                bodyText: qsTr('This QR code holds a whole transaction or a backup, not a bitcoin address to pay. Schèi cannot use it.')
+                          + '<br><br>' + qsTr('Ask the person you pay for their bitcoin address.')
+            }).open()
+            if (camLoader.item) camLoader.item.start()
         } else {
             piResolver.recipient = data
         }

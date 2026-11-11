@@ -761,6 +761,8 @@ ApplicationWindow
     // and the amount typed are kept, so nothing has to be typed again
     property var _ehDraft: null
     property real _ehPinOkUntil: 0
+    // review 2026-11-11: set by EhInvoiceDialog right before signAndSend(); any other payment asks the PIN
+    property bool _ehSendOk: false
     function ehBackToStep1(draft) {
         app._ehDraft = draft
         var mv = app.stack.currentItem
@@ -774,7 +776,8 @@ ApplicationWindow
         if (amount.isMax) return true
         if (ehBtcOnly() || !Daemon.fx.enabled) {
             // only bitcoin: double confirmation from 20% of what is in the wallet
-            var total = Daemon.currentWallet ? Daemon.currentWallet.totalBalance.satsInt : 0
+            var w = Daemon.currentWallet
+            var total = w ? Math.max(0, w.totalBalance.satsInt - w.frozenBalance.satsInt) : 0
             return amount.satsInt >= Math.ceil(total * 0.2)
         }
         var e = Number(Daemon.fx.fiatValue(amount, true))
@@ -1160,9 +1163,21 @@ ApplicationWindow
     // the wait are in the config, so closing the app does not reset them.
     readonly property int ehPinMaxTries: 5
     readonly property int ehPinWaitMs: 60 * 60 * 1000
+    // review 2026-11-11: the hour is measured with the clock that runs since the phone was
+    // switched on (Config.ehMonoMs), not with the date / time of the settings, which anyone
+    // can move forward. If the phone was restarted, the hour starts again from zero.
+    function ehPinLockLeftMs() {
+        var s = Config.ehGet('pin_lock_mono')
+        if (!s) return 0
+        var now = Config.ehMonoMs()
+        if (now < s) { Config.ehSet('pin_lock_mono', now); s = now }
+        var left = ehPinWaitMs - (now - s)
+        if (left <= 0) { Config.ehSet('pin_lock_mono', 0); return 0 }
+        return left
+    }
     function ehPinLockedUntil() {
-        var u = Config.ehGet('pin_lock_until')
-        return (u && Date.now() < u) ? u : 0
+        var left = ehPinLockLeftMs()
+        return left > 0 ? Date.now() + left : 0
     }
     // '' when the PIN can be typed, otherwise the text to show on the pad
     function ehPinLockMessage() {
@@ -1176,11 +1191,11 @@ ApplicationWindow
                  : (Daemon.currentWallet ? Daemon.currentWallet.verifyPassword(pin + '00') : false)
         if (ok) {
             Config.ehSet('pin_fails', 0)
-            Config.ehSet('pin_lock_until', 0)
+            Config.ehSet('pin_lock_mono', 0)
         } else {
             var n = (Config.ehGet('pin_fails') || 0) + 1
             if (n >= ehPinMaxTries) {
-                Config.ehSet('pin_lock_until', Date.now() + ehPinWaitMs)
+                Config.ehSet('pin_lock_mono', Math.max(1, Config.ehMonoMs()))
                 n = 0
             }
             Config.ehSet('pin_fails', n)
@@ -1200,7 +1215,8 @@ ApplicationWindow
                 qtobject.authProceed()
                 return
             }
-            if (method === 'payment_auth' && qtobject === Daemon.currentWallet) {
+            if (method === 'payment_auth' && qtobject === Daemon.currentWallet && app._ehSendOk) {
+                app._ehSendOk = false
                 qtobject.authProceed()
             } else {
                 handleManualAuth(qtobject, 'wallet', authMessage)

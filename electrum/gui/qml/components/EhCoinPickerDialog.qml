@@ -17,9 +17,9 @@ ElDialog {
     Material.accent: '#45541f'
 
     property var finalizer
-    property int needSats: 0           // amount + current sending cost
+    property real needSats: 0          // amount + current sending cost (real: no 21 BTC limit)
     property var chosen: ({})          // outpoint -> sats
-    property int chosenSats: 0
+    property real chosenSats: 0
 
     width: parent.width
     height: parent.height
@@ -44,8 +44,21 @@ ElDialog {
         Daemon.currentWallet.addressCoinModel.initModel(true)
         var fm = Daemon.currentWallet.addressCoinModel.filterModel
         fm.showAddressesCoins = 2
-        // start from the coins already chosen by hand, if any (filled in by the rows)
+        // start from the coins already chosen by hand, if any: filled in ONCE here
+        // (review 2026-11-11: doing it in the rows re-ticked coins when they scrolled back)
         preset = finalizer ? finalizer.ehCoins : []
+        if (preset.length > 0) {
+            var c = {}, tot = 0, addrs = Daemon.currentWallet.ehAddresses()
+            for (var i = 0; i < addrs.length; i++) {
+                if (addrs[i].held) continue
+                for (var j = 0; j < addrs[i].coins.length; j++) {
+                    var co = addrs[i].coins[j]
+                    if (!co.held && preset.indexOf(co.outpoint) >= 0) { c[co.outpoint] = co.sats; tot += co.sats }
+                }
+            }
+            chosen = c
+            chosenSats = tot
+        }
     }
     property var preset: []
 
@@ -137,7 +150,7 @@ ElDialog {
                 readonly property bool on: root.chosen[d.model.outpoint] !== undefined
                 width: ListView.view.width
                 // blocked coins are not offered
-                visible: d.model.outpoint !== undefined && d.model.outpoint !== '' && !d.model.held
+                visible: d.model.outpoint !== undefined && d.model.outpoint !== '' && !d.model.held && !d.model.addr_held
                 height: visible ? Math.max(62, dRow.implicitHeight + 14) : 0
                 Rectangle {
                     anchors.fill: parent
@@ -178,9 +191,6 @@ ElDialog {
                     }
                 }
                 TapHandler { id: dTap; onTapped: root.toggle(d.model.outpoint, d.model.amount.satsInt) }
-                // coins already chosen before: fill in their value
-                Component.onCompleted: if (d.visible && root.preset.indexOf(d.model.outpoint) >= 0 && root.chosen[d.model.outpoint] === undefined)
-                                           root.toggle(d.model.outpoint, d.model.amount.satsInt)
             }
         }
         Label {

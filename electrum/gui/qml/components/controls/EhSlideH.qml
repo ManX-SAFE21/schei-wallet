@@ -98,34 +98,36 @@ Rectangle {
         NumberAnimation on x { id: back; to: 5; duration: 220; running: false; easing.type: Easing.OutCubic }
     }
 
-    MouseArea {
-        id: ma
-        anchors.fill: parent
+    // review 2026-11-11: a DragHandler (pointer handler) gets its OWN touch point, so two
+    // fingers can push the two slides at the same time (a MouseArea only gets one touch).
+    DragHandler {
+        id: drag
+        target: null
+        parent: knob
+        margin: 14
         enabled: root.enabled && !root.locked
-        preventStealing: true
-        property real grabDx: 0
-        property bool dragging: false
-        onPressed: (mouse) => {
-            dragging = mouse.x >= knob.x - 10 && mouse.x <= knob.x + knob.width + 10
-            grabDx = mouse.x - knob.x
-            if (dragging) back.stop()
+        yAxis.enabled: false
+        grabPermissions: PointerHandler.CanTakeOverFromAnything
+        property real start: 5
+        onActiveChanged: {
+            if (active) {
+                back.stop()
+                start = knob.x
+            } else if (!root.locked) {
+                back.start()
+                root.released()
+            }
         }
-        onPositionChanged: (mouse) => {
-            if (!dragging) return
-            knob.x = Math.max(5, Math.min(root.maxX, mouse.x - grabDx))
+        onTranslationChanged: {
+            if (!active || root.locked) return
+            knob.x = Math.max(5, Math.min(root.maxX, start + translation.x))
             if (knob.x >= root.maxX - 2) {
-                dragging = false
                 knob.x = root.maxX
                 root.locked = true
                 AppController.haptic()
                 root.reached()
             }
         }
-        onReleased: {
-            if (dragging && !root.locked) { back.start(); root.released() }
-            dragging = false
-        }
-        onCanceled: { if (!root.locked) back.start(); dragging = false }
     }
     // nothing more happened: the coin goes back
     Timer {

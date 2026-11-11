@@ -75,6 +75,18 @@ class QEConfig(AuthMixin, QObject):
     def ehSet(self, key, value):
         self.config.set_key('eh_' + key, value)
 
+    @pyqtSlot(result=float)
+    def ehMonoMs(self) -> float:
+        """Milliseconds since the phone was switched on (Android SystemClock.elapsedRealtime,
+        counts also while asleep). Changing the date / time in the settings does not move it:
+        used for the PIN lockout (review 2026-11-11)."""
+        try:
+            from jnius import autoclass
+            return float(autoclass('android.os.SystemClock').elapsedRealtime())
+        except Exception:
+            import time
+            return time.monotonic() * 1000.0
+
     # ---- Easy Heirs T32: where to see a movement on the blockchain ----
     # The list = Electrum's sites for this network (best first) + "Il mio nodo" + sites added
     # by the user; every one can be renamed / given another address (owner 2026-11-11).

@@ -21,6 +21,7 @@ Item {
     property var amount
     property int blockHeight: 0      // 0 = not confirmed yet
     property bool held: false
+    property bool addrHeld: false     // blocked because its whole address is blocked
     property string note: ''
     // advanced privacy: id of the origin category ('' = I do not know)
     property string origin: ''
@@ -59,7 +60,7 @@ Item {
                 source: Qt.resolvedUrl('../../icons/eh_goldcoin_' + (!page.amount ? 2 : (page.amount.satsInt < 100000 ? 1 : (page.amount.satsInt < 1000000 ? 2 : 3))) + '.svg')
                 sourceSize.width: 260
                 sourceSize.height: 260
-                opacity: page.held ? 0.4 : 1
+                opacity: page.held || page.addrHeld ? 0.4 : 1
             }
             Label {
                 Layout.alignment: Qt.AlignHCenter
@@ -212,12 +213,15 @@ Item {
                     ColumnLayout {
                         Layout.fillWidth: true
                         spacing: 1
-                        Label { text: page.held ? qsTr('Blocked') : qsTr('It can be spent'); font.pixelSize: 16; font.bold: true }
+                        Label { text: page.held || page.addrHeld ? qsTr('Blocked') : qsTr('It can be spent'); font.pixelSize: 16; font.bold: true }
                         Label { Layout.fillWidth: true; wrapMode: Text.WordWrap; font.pixelSize: 13; color: '#6b5d55'
-                                text: page.held ? qsTr('the app will not use this coin to pay') : qsTr('turn it off to block this coin') }
+                                text: page.addrHeld ? qsTr('its whole address is blocked: unblock it from "Your addresses"')
+                                      : (page.held ? qsTr('the app will not use this coin to pay') : qsTr('turn it off to block this coin')) }
                     }
                     EhSpendSwitch {
-                        spendable: !page.held
+                        enabled: !page.addrHeld
+                        opacity: page.addrHeld ? 0.5 : 1
+                        spendable: !page.held && !page.addrHeld
                         onToggled: {
                             page.held = !spendable
                             Daemon.currentWallet.ehSetCoinFrozen(page.outpoint, page.held)

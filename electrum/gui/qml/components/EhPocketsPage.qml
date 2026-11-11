@@ -658,7 +658,7 @@ Item {
                         if (page.demo) return
                         app.stack.push(Qt.resolvedUrl('EhCoinDetailPage.qml'), {
                             outpoint: c.outpoint, txid: c.txid, address: c.address, amount: page.satsAmount(c.sats),
-                            blockHeight: c.height, held: c.held, note: c.label })
+                            blockHeight: c.height, held: c.held, addrHeld: c.af, note: c.label })
                     }
                 }
             }

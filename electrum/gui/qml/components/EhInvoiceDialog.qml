@@ -107,6 +107,8 @@ ElDialog {
         return out
     }
     property bool busy: false
+    // the Android back key does not close the page while the payment is leaving
+    allowClose: !busy
     function setBusy(b) { busy = b }
     // steps bar: back to a step already done, keeping what was typed
     function goToStep(n) {
@@ -184,6 +186,7 @@ ElDialog {
         sentEuro = app.ehMoney(finalizer.effectiveAmount)
         sentBtc = app.ehBtc(finalizer.effectiveAmount)
         dialog.setBusy(true)
+        app._ehSendOk = true      // our screens (slides, PIN when needed, countdown) were passed
         finalizer.signAndSend()
     }
 
@@ -205,6 +208,8 @@ ElDialog {
 
         Label {
             visible: dialog.phase !== 'sent'
+            enabled: !dialog.busy        // review 2026-11-11: no "Back" while the payment is leaving
+            opacity: enabled ? 1 : 0.35
             Layout.topMargin: -14
             text: '‹ ' + qsTr('Back')
             color: '#5e1a33'

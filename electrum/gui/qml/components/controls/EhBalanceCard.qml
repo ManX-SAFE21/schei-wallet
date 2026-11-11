@@ -14,8 +14,8 @@ Rectangle {
     property string btcText: ''
     readonly property bool showCash: app.ehOption('coins') && !app.ehBtcOnly() && root.euroText !== '' && root.hasMoney
     property bool hasMoney: false
-    property int frozenSats: 0         // coins blocked in "Le tue monete d'oro"
-    property int totalSats: 0
+    property real frozenSats: 0         // coins blocked in "Le tue monete d'oro"
+    property real totalSats: 0
     function satsAmount(s) { return Config.unitsToSats((s / 100000000).toFixed(8)) }
     property bool showGear: false      // home: the settings button lives in the card
     property bool compact: false       // narrow card next to the slide: status on its own line
@@ -263,7 +263,8 @@ Rectangle {
             font.weight: Font.Black
             font.pixelSize: 42
             fontSizeMode: Text.HorizontalFit
-            minimumPixelSize: 26
+            minimumPixelSize: 14     // review 2026-11-11: 26 was too big for the narrow home card
+            clip: true
         }
         Label {
             visible: root.euroText !== ''

@@ -71,11 +71,12 @@ WizardComponent {
                 phase = 'choose'
             }
         } else {
-            if (Daemon.ehPinIsSet() ? Daemon.ehPinCheck(pin) : Daemon.numWalletsWithPassword(pin + '00') > 0) {
+            // review 2026-11-11: same check and same 5-tries / 1-hour lockout as everywhere else
+            if (Daemon.ehPinIsSet() ? app.ehCheckPin(pin) : Daemon.numWalletsWithPassword(pin + '00') > 0) {
                 finishWith(pin)
             } else {
                 pad.clear()
-                pad.message = qsTr('Wrong PIN, try again.')
+                pad.message = app.ehPinLockMessage() || qsTr('Wrong PIN, try again.')
                 pad.messageBad = true
                 AppController.haptic()
             }
