@@ -842,7 +842,7 @@ ApplicationWindow
         ehOptRev
         var v = Config.ehGet('name_' + n)
         if (v) return v
-        return n === 'Portafoglio' ? qsTr('My wallet') : n.replace('_', ' ')
+        return n === 'Portafoglio' ? qsTr('My wallet') : n.replace(/_/g, ' ')
     }
     function ehWalletColorFor(n) {
         ehOptRev

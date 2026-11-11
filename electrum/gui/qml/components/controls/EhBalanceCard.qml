@@ -168,7 +168,7 @@ Rectangle {
                 elide: Text.ElideRight
             }
             Rectangle {
-                visible: root.watch
+                visible: root.watch && !root.compact   // narrow card: on its own line (T40)
                 Layout.preferredHeight: 20
                 Layout.preferredWidth: watchTag.implicitWidth + 14
                 radius: 6
@@ -210,6 +210,16 @@ Rectangle {
                     onTapped: app.stack.push(Qt.resolvedUrl('../EhSettings.qml'))
                 }
             }
+        }
+        // T40: in the narrow card the "solo da guardare" tag goes under the name
+        Rectangle {
+            visible: root.watch && root.compact
+            Layout.topMargin: 2
+            Layout.preferredHeight: 20
+            Layout.preferredWidth: watchTag2.implicitWidth + 14
+            radius: 6
+            color: root.tint(root.baseColor, 0.85)
+            Label { id: watchTag2; anchors.centerIn: parent; text: qsTr('WATCH ONLY'); color: '#ffffff'; font.pixelSize: 11; font.bold: true }
         }
 
         Label {
