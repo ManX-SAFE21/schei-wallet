@@ -1,6 +1,7 @@
 // Easy Heirs (schèi): "Dove vedere i movimenti" (T32, owner 2026-11-11).
-// The site opened by "Vedi sulla blockchain". Electrum's own setting
-// (BLOCK_EXPLORER, or BLOCK_EXPLORER_CUSTOM for one's own node); default mempool.space.
+// The site opened by "Vedi sulla blockchain": a tap chooses it, the pencil changes its
+// name and address, "+ Aggiungi un sito" adds one. Electrum's own setting underneath
+// (Config.ehExplorers / ehSelectExplorer / ehSaveExplorer / ehForgetExplorer).
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
@@ -16,15 +17,23 @@ Item {
     Material.theme: Material.Light
     Material.foreground: '#2a2220'
 
-    readonly property var sites: Config.ehExplorers()
-    readonly property var cur: Config.ehExplorer
-    property bool mineOpen: cur.custom !== ''
+    property int rev: 0
+    readonly property var sites: { page.rev; Config.ehExplorer; return Config.ehExplorers() }
+    readonly property string selId: { page.rev; return Config.ehExplorer.id }
+    property string editId: '-'          // '-' = no editor open, '' = a new site
     readonly property var hints: ({
         'mempool.space': qsTr('clear, it also shows the queue of payments'),
         'Blockstream.info': qsTr('simple and fast'),
         'Blockchair.com': qsTr('many details'),
         'mempool.emzy.de': qsTr('like mempool.space, on another server')
     })
+    function shownName(s) { return s.id === 'mine' && s.name === '' ? qsTr('My node') : s.name }
+    function choose(s) {
+        if (s.url === '') { page.editId = s.id; return }       // "Il mio nodo" without address: write it first
+        Config.ehSelectExplorer(s.id)
+        page.editId = '-'
+        page.rev++
+    }
 
     Rectangle { anchors.fill: parent; color: '#faf7ef' }
     EhGlow { tone: 'gold'; x: -page.width * 0.3; y: 40; width: page.width * 1.6; height: 380 }
@@ -36,6 +45,95 @@ Item {
         border.width: 2.5
         border.color: on ? '#45541f' : '#b9ad95'
         Rectangle { visible: parent.on; anchors.centerIn: parent; width: 12; height: 12; radius: 6; color: '#45541f' }
+    }
+
+    // the editor: name + address, save / cancel / original or delete
+    component Editor: ColumnLayout {
+        id: ed
+        property var site: ({ 'id': '', 'name': '', 'url': '', 'builtin': false })
+        spacing: 6
+        Label { text: qsTr('NAME'); font.pixelSize: 11; font.bold: true; font.letterSpacing: 0.5; color: '#6b5d55' }
+        Rectangle {
+            Layout.fillWidth: true; Layout.preferredHeight: 44; radius: 12; color: '#ffffff'
+            border.width: 2; border.color: nIn.activeFocus ? '#45541f' : '#e8dcc4'
+            TextInput {
+                id: nIn
+                anchors.fill: parent; anchors.leftMargin: 12; anchors.rightMargin: 12
+                verticalAlignment: TextInput.AlignVCenter
+                font.pixelSize: 16
+                maximumLength: 30
+                clip: true
+                text: page.shownName(ed.site)
+                Label { anchors.verticalCenter: parent.verticalCenter; visible: nIn.text === '' && !nIn.activeFocus
+                        text: qsTr('for example: my Umbrel'); color: '#b3a894'; font.pixelSize: 15 }
+            }
+        }
+        Label { text: qsTr('ADDRESS'); font.pixelSize: 11; font.bold: true; font.letterSpacing: 0.5; color: '#6b5d55' }
+        Rectangle {
+            Layout.fillWidth: true; Layout.preferredHeight: 44; radius: 12; color: '#ffffff'
+            border.width: 2; border.color: uIn.activeFocus ? '#45541f' : '#e8dcc4'
+            TextInput {
+                id: uIn
+                anchors.fill: parent; anchors.leftMargin: 12; anchors.rightMargin: 12
+                verticalAlignment: TextInput.AlignVCenter
+                font.family: FixedFont
+                font.pixelSize: 14
+                clip: true
+                inputMethodHints: Qt.ImhUrlCharactersOnly | Qt.ImhNoAutoUppercase
+                text: ed.site.url
+                Label { anchors.verticalCenter: parent.verticalCenter; visible: uIn.text === '' && !uIn.activeFocus
+                        text: 'http://umbrel.local:3006'; color: '#b3a894'; font.family: FixedFont; font.pixelSize: 14 }
+            }
+        }
+        Label {
+            id: err
+            visible: false
+            Layout.fillWidth: true
+            wrapMode: Text.WordWrap
+            font.pixelSize: 13; font.bold: true; color: '#b3261e'
+            text: qsTr('It must start with http:// or https://')
+        }
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.topMargin: 2
+            spacing: 8
+            // Electrum's site changed by hand: back to the original. Own site: delete.
+            Rectangle {
+                visible: ed.site.id !== '' && (ed.site.builtin ? (ed.site.edited === true) : true)
+                Layout.preferredHeight: 42; Layout.preferredWidth: fgL.implicitWidth + 24; radius: 18
+                color: '#ffffff'; border.width: 2; border.color: ed.site.builtin ? '#e3d9c6' : '#e6b9b3'
+                Label { id: fgL; anchors.centerIn: parent; font.pixelSize: 14; font.bold: true
+                        color: ed.site.builtin ? '#3f0f21' : '#c0392b'
+                        text: ed.site.builtin ? qsTr('Original') : qsTr('Delete') }
+                MouseArea { anchors.fill: parent; onClicked: { Config.ehForgetExplorer(ed.site.id); page.editId = '-'; page.rev++ } }
+            }
+            Rectangle {
+                Layout.preferredHeight: 42; Layout.preferredWidth: caL.implicitWidth + 24; radius: 18
+                color: '#ffffff'; border.width: 2; border.color: '#e3d9c6'
+                Label { id: caL; anchors.centerIn: parent; text: qsTr('Cancel'); font.pixelSize: 14; font.bold: true; color: '#3f0f21' }
+                MouseArea { anchors.fill: parent; onClicked: page.editId = '-' }
+            }
+            Rectangle {
+                Layout.fillWidth: true; Layout.preferredHeight: 42; radius: 18
+                color: svMa.pressed ? '#36431a' : '#45541f'
+                Label { anchors.centerIn: parent; text: qsTr('Save'); color: '#ffffff'; font.pixelSize: 15; font.bold: true }
+                MouseArea {
+                    id: svMa
+                    anchors.fill: parent
+                    onClicked: {
+                        var nm = nIn.text.trim()
+                        if (ed.site.id === 'mine' && nm === qsTr('My node')) nm = ''
+                        var id = Config.ehSaveExplorer(ed.site.id, nm, uIn.text)
+                        err.visible = id === ''
+                        if (id === '') return
+                        if (ed.site.id === '' || ed.site.id === 'mine' || page.selId === id) Config.ehSelectExplorer(id)
+                        page.editId = '-'
+                        page.rev++
+                        toaster.show(page, qsTr('Saved'))
+                    }
+                }
+            }
+        }
     }
 
     Flickable {
@@ -65,6 +163,13 @@ Item {
                 font.pixelSize: 28
                 wrapMode: Text.WordWrap
             }
+            Label {
+                Layout.fillWidth: true
+                wrapMode: Text.WordWrap
+                font.pixelSize: 14
+                color: '#6b5d55'
+                text: qsTr('Tap a site to choose it. The pencil changes its name and address.')
+            }
 
             Rectangle {
                 Layout.fillWidth: true
@@ -80,127 +185,87 @@ Item {
                     spacing: 0
                     Repeater {
                         model: page.sites
-                        Rectangle {
+                        ColumnLayout {
                             id: sr
                             required property var modelData
                             required property int index
-                            readonly property bool on: page.cur.custom === '' && page.cur.name === modelData.name && !page.mineOpen
+                            readonly property bool on: page.selId === modelData.id
+                            readonly property bool editing: page.editId === modelData.id
                             Layout.fillWidth: true
-                            Layout.preferredHeight: Math.max(58, srRow.implicitHeight + 18)
-                            color: sr.on ? '#f6f8ec' : (srMa.pressed ? '#f7f2e8' : 'transparent')
-                            Rectangle { visible: sr.index > 0; width: parent.width; height: 1; color: '#f1ebdf' }
-                            RowLayout {
-                                id: srRow
-                                anchors.fill: parent
-                                anchors.leftMargin: 14
-                                anchors.rightMargin: 12
-                                spacing: 12
-                                Radio { on: sr.on }
-                                ColumnLayout {
-                                    Layout.fillWidth: true
-                                    spacing: 0
-                                    RowLayout {
-                                        spacing: 6
-                                        Label { text: sr.modelData.name; font.pixelSize: 16; font.bold: true }
-                                        Rectangle {
-                                            visible: sr.modelData.name === 'mempool.space'
-                                            Layout.preferredWidth: recL.implicitWidth + 12; Layout.preferredHeight: 18; radius: 8
-                                            color: '#e6ecc8'
-                                            Label { id: recL; anchors.centerIn: parent; text: qsTr('recommended'); font.pixelSize: 11; font.bold: true; color: '#2f3a12' }
+                            spacing: 0
+                            Rectangle { visible: sr.index > 0; Layout.fillWidth: true; Layout.preferredHeight: 1; color: '#f1ebdf' }
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: Math.max(60, srRow.implicitHeight + 18)
+                                color: sr.on ? '#f6f8ec' : (srMa.pressed ? '#f7f2e8' : 'transparent')
+                                MouseArea { id: srMa; anchors.fill: parent; onClicked: page.choose(sr.modelData) }
+                                RowLayout {
+                                    id: srRow
+                                    anchors.fill: parent
+                                    anchors.leftMargin: 14
+                                    anchors.rightMargin: 6
+                                    spacing: 12
+                                    Radio { on: sr.on }
+                                    ColumnLayout {
+                                        Layout.fillWidth: true
+                                        spacing: 0
+                                        RowLayout {
+                                            Layout.fillWidth: true
+                                            spacing: 6
+                                            Label { Layout.maximumWidth: srRow.width - 150; elide: Text.ElideRight; text: page.shownName(sr.modelData); font.pixelSize: 16; font.bold: true }
+                                            Rectangle {
+                                                visible: sr.modelData.id === 'mempool.space' && !sr.modelData.edited
+                                                Layout.preferredWidth: recL.implicitWidth + 12; Layout.preferredHeight: 18; radius: 8
+                                                color: '#e6ecc8'
+                                                Label { id: recL; anchors.centerIn: parent; text: qsTr('recommended'); font.pixelSize: 11; font.bold: true; color: '#2f3a12' }
+                                            }
+                                        }
+                                        Label {
+                                            Layout.fillWidth: true
+                                            elide: Text.ElideRight
+                                            font.pixelSize: 13
+                                            color: '#6b5d55'
+                                            text: sr.modelData.id === 'mine' && sr.modelData.url === ''
+                                                  ? qsTr('for example Umbrel: write the address of your mempool')
+                                                  : (!sr.modelData.edited && page.hints[sr.modelData.id] !== undefined
+                                                     ? page.hints[sr.modelData.id] : sr.modelData.url)
                                         }
                                     }
-                                    Label {
-                                        Layout.fillWidth: true
-                                        wrapMode: Text.WordWrap
-                                        font.pixelSize: 13
-                                        color: '#6b5d55'
-                                        text: page.hints[sr.modelData.name] !== undefined ? page.hints[sr.modelData.name] : sr.modelData.url
+                                    // the pencil: change name and address
+                                    Rectangle {
+                                        Layout.preferredWidth: 44; Layout.preferredHeight: 44; radius: 22
+                                        color: sr.editing ? '#f7e3e8' : (pMa.pressed ? '#f1ebdf' : 'transparent')
+                                        Image { anchors.centerIn: parent; source: Qt.resolvedUrl('../../icons/eh_pen_wine.svg'); sourceSize.width: 20; sourceSize.height: 20 }
+                                        MouseArea { id: pMa; anchors.fill: parent; onClicked: page.editId = sr.editing ? '-' : sr.modelData.id }
                                     }
                                 }
                             }
-                            MouseArea { id: srMa; anchors.fill: parent; onClicked: { page.mineOpen = false; Config.ehSetExplorer(sr.modelData.name) } }
+                            Editor {
+                                visible: sr.editing
+                                Layout.fillWidth: true
+                                Layout.leftMargin: 14
+                                Layout.rightMargin: 14
+                                Layout.bottomMargin: 14
+                                site: sr.modelData
+                            }
                         }
                     }
-                    // "Il mio nodo": the address of one's own mempool
+                    // add a site
+                    Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: '#f1ebdf' }
                     Rectangle {
                         Layout.fillWidth: true
-                        Layout.preferredHeight: mCol.implicitHeight + 22
-                        color: (page.mineOpen || page.cur.custom !== '') ? '#f6f8ec' : 'transparent'
-                        Rectangle { width: parent.width; height: 1; color: '#f1ebdf' }
-                        RowLayout {
-                            x: 14; y: 11
-                            width: parent.width - 26
-                            spacing: 12
-                            Radio { Layout.alignment: Qt.AlignTop; Layout.topMargin: 2; on: page.mineOpen || page.cur.custom !== '' }
-                            ColumnLayout {
-                                id: mCol
-                                Layout.fillWidth: true
-                                spacing: 4
-                                Label { text: qsTr('My node'); font.pixelSize: 16; font.bold: true }
-                                Label { Layout.fillWidth: true; wrapMode: Text.WordWrap; font.pixelSize: 13; color: '#6b5d55'
-                                        text: qsTr('for example Umbrel: write the address of your mempool') }
-                                Rectangle {
-                                    visible: page.mineOpen || page.cur.custom !== ''
-                                    Layout.fillWidth: true
-                                    Layout.preferredHeight: 46
-                                    radius: 12
-                                    color: '#ffffff'
-                                    border.width: 2
-                                    border.color: urlIn.activeFocus ? '#45541f' : '#e8dcc4'
-                                    TextInput {
-                                        id: urlIn
-                                        anchors.fill: parent
-                                        anchors.leftMargin: 12
-                                        anchors.rightMargin: 12
-                                        verticalAlignment: TextInput.AlignVCenter
-                                        font.family: FixedFont
-                                        font.pixelSize: 15
-                                        clip: true
-                                        inputMethodHints: Qt.ImhUrlCharactersOnly | Qt.ImhNoAutoUppercase
-                                        text: page.cur.custom
-                                        Label {
-                                            anchors.verticalCenter: parent.verticalCenter
-                                            visible: urlIn.text === '' && !urlIn.activeFocus
-                                            text: 'http://umbrel.local:3006'
-                                            color: '#b3a894'
-                                            font.family: FixedFont
-                                            font.pixelSize: 15
-                                        }
-                                    }
-                                }
-                                Label {
-                                    id: urlErr
-                                    visible: false
-                                    Layout.fillWidth: true
-                                    wrapMode: Text.WordWrap
-                                    font.pixelSize: 13
-                                    font.bold: true
-                                    color: '#b3261e'
-                                    text: qsTr('It must start with http:// or https://')
-                                }
-                                Rectangle {
-                                    visible: page.mineOpen || page.cur.custom !== ''
-                                    Layout.preferredWidth: useL.implicitWidth + 36
-                                    Layout.preferredHeight: 42
-                                    radius: 21
-                                    color: useMa.pressed ? '#36431a' : '#45541f'
-                                    Label { id: useL; anchors.centerIn: parent; text: qsTr('Use this address'); color: '#ffffff'; font.pixelSize: 15; font.bold: true }
-                                    MouseArea {
-                                        id: useMa
-                                        anchors.fill: parent
-                                        onClicked: {
-                                            urlErr.visible = !Config.ehSetExplorerCustom(urlIn.text)
-                                            if (!urlErr.visible) { urlIn.focus = false; toaster.show(parent, qsTr('Saved')) }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        MouseArea {
-                            anchors.fill: parent
-                            z: -1
-                            onClicked: { page.mineOpen = true; urlIn.forceActiveFocus() }
-                        }
+                        Layout.preferredHeight: 52
+                        color: addMa.pressed ? '#f1f3e2' : 'transparent'
+                        Label { anchors.verticalCenter: parent.verticalCenter; x: 14; text: '+ ' + qsTr('Add a site'); font.pixelSize: 16; font.bold: true; color: '#45541f' }
+                        MouseArea { id: addMa; anchors.fill: parent; onClicked: page.editId = page.editId === '' ? '-' : '' }
+                    }
+                    Editor {
+                        visible: page.editId === ''
+                        Layout.fillWidth: true
+                        Layout.leftMargin: 14
+                        Layout.rightMargin: 14
+                        Layout.bottomMargin: 14
+                        site: ({ 'id': '', 'name': '', 'url': '', 'builtin': false })
                     }
                 }
             }

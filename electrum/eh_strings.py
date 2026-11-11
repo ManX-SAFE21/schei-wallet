@@ -5,6 +5,12 @@
 
 STRINGS = {
     'it_IT': {
+        'Tap a site to choose it. The pencil changes its name and address.': 'Tocca un sito per sceglierlo. La matita cambia nome e indirizzo.',
+        'NAME': 'NOME',
+        'ADDRESS': 'INDIRIZZO',
+        'for example: my Umbrel': 'per esempio: il mio Umbrel',
+        'Original': 'Originale',
+        'Add a site': 'Aggiungi un sito',
         'CODE OF THE MOVEMENT (HASH)': 'CODICE DEL MOVIMENTO (HASH)',
         'Code of the movement': 'Codice del movimento',
         'See it on the blockchain': 'Vedi sulla blockchain',
@@ -581,6 +587,12 @@ STRINGS = {
         '<b>Schèi chooses a "normal" tip by itself</b>: the payment usually arrives in about ten minutes. The whole tip goes to the miners: Schèi takes nothing.': '<b>Schèi sceglie da solo una mancia "normale"</b>: il pagamento arriva di solito in una decina di minuti. La mancia va tutta ai minatori: Schèi non prende niente.',
     },
     'vec_IT': {
+        'Tap a site to choose it. The pencil changes its name and address.': 'Toca un sito par sielzarlo. La matita la cambia nome e indirisso.',
+        'NAME': 'NOME',
+        'ADDRESS': 'INDIRISSO',
+        'for example: my Umbrel': 'par esempio: el me Umbrel',
+        'Original': 'Original',
+        'Add a site': 'Zonta un sito',
         'CODE OF THE MOVEMENT (HASH)': 'CODICE DEL MOVIMENTO (HASH)',
         'Code of the movement': 'Codice del movimento',
         'See it on the blockchain': 'Vardilo su la blockchain',

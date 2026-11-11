@@ -76,57 +76,133 @@ class QEConfig(AuthMixin, QObject):
         self.config.set_key('eh_' + key, value)
 
     # ---- Easy Heirs T32: where to see a movement on the blockchain ----
-    # Electrum's own setting (BLOCK_EXPLORER / BLOCK_EXPLORER_CUSTOM, util.block_explorer_URL).
-    # Schèi default: mempool.space, until the user chooses something else.
+    # The list = Electrum's sites for this network (best first) + "Il mio nodo" + sites added
+    # by the user; every one can be renamed / given another address (owner 2026-11-11).
+    # Kept in the config per network: eh_explorers_<net> = {id: {name, url, tx, addr}},
+    # eh_explorer_sel_<net> = id. Applied to Electrum's own BLOCK_EXPLORER(_CUSTOM).
     _EH_BE_ORDER = ('mempool.space', 'Blockstream.info', 'Blockchair.com', 'mempool.emzy.de')
     ehExplorerChanged = pyqtSignal()
 
-    def _eh_be_name(self) -> str:
+    def _eh_net(self):
+        from electrum import constants
+        return constants.net.NET_NAME
+
+    def _eh_be_defaults(self):
         from electrum.util import block_explorer_info
         info = block_explorer_info()
-        chosen = self.config.get('block_explorer', None)
-        if chosen in info:
-            return chosen
-        return 'mempool.space' if 'mempool.space' in info else self.config.cv.BLOCK_EXPLORER.get_default_value()
+        names = [n for n in self._EH_BE_ORDER if n in info] or [n for n in info if n != 'system default']
+        out = []
+        for n in names:
+            url, kinds = info[n]
+            out.append({'id': n, 'name': n, 'url': url, 'tx': kinds.get('tx', 'tx/'), 'addr': kinds.get('addr', 'address/'),
+                        'builtin': True})
+        out.append({'id': 'mine', 'name': '', 'url': '', 'tx': 'tx/', 'addr': 'address/', 'builtin': True})
+        return out
+
+    def _eh_be_saved(self) -> dict:
+        d = self.config.get('eh_explorers_' + self._eh_net(), None)
+        return dict(d) if isinstance(d, dict) else {}
 
     @pyqtSlot(result='QVariantList')
     def ehExplorers(self):
-        """The sites offered, best first (only the ones Electrum knows for this network)."""
-        from electrum.util import block_explorer_info
-        info = block_explorer_info()
-        names = [n for n in self._EH_BE_ORDER if n in info]
-        if not names:
-            names = [n for n in info if n != 'system default']
-        return [{'name': n, 'url': info[n][0]} for n in names]
+        saved = self._eh_be_saved()
+        out = []
+        for e in self._eh_be_defaults():
+            s = saved.get(e['id'])
+            if s:
+                e = dict(e, name=s.get('name', e['name']), url=s.get('url', e['url']), edited=True)
+            out.append(e)
+        for k, s in saved.items():
+            if k.startswith('u'):
+                out.append({'id': k, 'name': s.get('name', ''), 'url': s.get('url', ''), 'tx': 'tx/', 'addr': 'address/',
+                            'builtin': False})
+        # the old setting "my node" (block_explorer_custom as a plain address) shows up in "Il mio nodo"
+        custom = self.config.BLOCK_EXPLORER_CUSTOM
+        for e in out:
+            if e['id'] == 'mine' and not e['url'] and isinstance(custom, str):
+                e['url'] = custom
+        return out
+
+    def _eh_sel_id(self) -> str:
+        sel = self.config.get('eh_explorer_sel_' + self._eh_net(), None)
+        if sel:
+            return sel
+        if isinstance(self.config.BLOCK_EXPLORER_CUSTOM, str):
+            return 'mine'
+        chosen = self.config.get('block_explorer', None)
+        ids = [e['id'] for e in self._eh_be_defaults()]
+        if chosen in ids:
+            return chosen
+        return 'mempool.space' if 'mempool.space' in ids else ids[0]
 
     @pyqtProperty('QVariantMap', notify=ehExplorerChanged)
     def ehExplorer(self):
-        custom = self.config.BLOCK_EXPLORER_CUSTOM
-        return {'name': '' if custom else self._eh_be_name(), 'custom': custom if isinstance(custom, str) else ''}
+        sel = self._eh_sel_id()
+        for e in self.ehExplorers():
+            if e['id'] == sel:
+                return e
+        return {'id': '', 'name': '', 'url': ''}
+
+    def _eh_apply(self):
+        """Write the chosen site into Electrum's own setting."""
+        e = self.ehExplorer
+        if not e.get('id') or not e.get('url'):
+            return
+        if e.get('builtin') and not e.get('edited') and e['id'] != 'mine':
+            self.config.BLOCK_EXPLORER_CUSTOM = None
+            self.config.BLOCK_EXPLORER = e['id']
+        else:
+            self.config.BLOCK_EXPLORER_CUSTOM = [e['url'], {'tx': e.get('tx', 'tx/'), 'addr': e.get('addr', 'address/')}]
 
     @pyqtSlot(str)
-    def ehSetExplorer(self, name: str):
-        self.config.BLOCK_EXPLORER_CUSTOM = None
-        self.config.BLOCK_EXPLORER = name
+    def ehSelectExplorer(self, id_: str):
+        self.config.set_key('eh_explorer_sel_' + self._eh_net(), id_)
+        self._eh_apply()
         self.ehExplorerChanged.emit()
 
-    @pyqtSlot(str, result=bool)
-    def ehSetExplorerCustom(self, url: str) -> bool:
-        """'Il mio nodo': the address of one's own mempool (e.g. http://umbrel.local:3006)."""
+    @staticmethod
+    def _eh_clean_url(url: str) -> str:
         url = url.strip()
-        if not (url.startswith('http://') or url.startswith('https://')) or len(url) < 12:
-            return False
-        if not url.endswith('/'):
-            url += '/'
-        self.config.BLOCK_EXPLORER_CUSTOM = url
+        if not (url.startswith('http://') or url.startswith('https://')) or len(url) < 12 or ' ' in url:
+            return ''
+        return url if url.endswith('/') else url + '/'
+
+    @pyqtSlot(str, str, str, result=str)
+    def ehSaveExplorer(self, id_: str, name: str, url: str) -> str:
+        """Save name + address of a site ('' id = a new one). Returns its id, '' if the address is wrong."""
+        url = self._eh_clean_url(url)
+        if not url:
+            return ''
+        saved = self._eh_be_saved()
+        if not id_:
+            import time
+            id_ = 'u%d' % int(time.time() * 1000)
+        saved[id_] = {'name': name.strip()[:30], 'url': url}
+        self.config.set_key('eh_explorers_' + self._eh_net(), saved)
+        if self._eh_sel_id() == id_:
+            self._eh_apply()
         self.ehExplorerChanged.emit()
-        return True
+        return id_
+
+    @pyqtSlot(str)
+    def ehForgetExplorer(self, id_: str):
+        """A site of Electrum: back to its original name and address. A site added by the user: removed."""
+        saved = self._eh_be_saved()
+        saved.pop(id_, None)
+        self.config.set_key('eh_explorers_' + self._eh_net(), saved)
+        if id_ == 'mine' and isinstance(self.config.BLOCK_EXPLORER_CUSTOM, str):
+            self.config.BLOCK_EXPLORER_CUSTOM = None
+        if self._eh_sel_id() == id_ and not id_.startswith('u') and id_ != 'mine':
+            self._eh_apply()
+        elif self._eh_sel_id() == id_:
+            self.ehSelectExplorer('mempool.space')
+        self.ehExplorerChanged.emit()
 
     @pyqtSlot(str, result=str)
     def ehExplorerTxUrl(self, txid: str) -> str:
         from electrum.util import block_explorer_URL
         if not self.config.BLOCK_EXPLORER_CUSTOM and self.config.get('block_explorer', None) is None:
-            self.config.BLOCK_EXPLORER = self._eh_be_name()   # write the Schèi default once
+            self._eh_apply()   # write the Schèi default (mempool.space) once
         return block_explorer_URL(self.config, 'tx', txid) or ''
 
     languagesChanged = pyqtSignal()

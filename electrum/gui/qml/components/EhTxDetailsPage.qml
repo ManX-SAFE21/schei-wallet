@@ -298,7 +298,7 @@ Item {
                                 Layout.fillWidth: true
                                 elide: Text.ElideRight
                                 color: '#ffffff'; opacity: 0.9; font.pixelSize: 13
-                                text: qsTr('opens %1').arg(Config.ehExplorer.name !== '' ? Config.ehExplorer.name : Config.ehExplorer.custom)
+                                text: qsTr('opens %1').arg(Config.ehExplorer.name ? Config.ehExplorer.name : qsTr('My node'))
                             }
                         }
                         Image { source: Qt.resolvedUrl('../../icons/eh_open_white.svg'); sourceSize.width: 20; sourceSize.height: 20 }
