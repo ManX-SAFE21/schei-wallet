@@ -229,7 +229,7 @@ Item {
                 // all in one piece: it is only copied and pasted, never typed
                 Label {
                     Layout.fillWidth: true
-                    horizontalAlignment: Text.AlignHCenter
+                    horizontalAlignment: Text.AlignLeft   // left: centred it looked like two different codes
                     wrapMode: Text.WrapAnywhere
                     text: page.txid
                     font.family: FixedFont
