@@ -1,5 +1,6 @@
 // Easy Heirs (schèi): small yes / no question in our colours
-// (e.g. "Vuoi chiudere Schèi Wallet?"). Two big buttons: No (beige), Sì (wine).
+// (e.g. "Vuoi chiudere Schèi Wallet?"). Two big buttons: Sì on the left (beige), No on the right
+// (wine): the safe answer is in the easy place, "Sì" must be chosen on purpose (owner 2026-11-11).
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
@@ -59,18 +60,18 @@ Popup {
             Layout.fillWidth: true
             spacing: 10
             Repeater {
-                model: [false, true]
+                model: [true, false]
                 delegate: Rectangle {
                     id: b
                     required property bool modelData
                     Layout.fillWidth: true
                     Layout.preferredHeight: 52
                     radius: 26
-                    color: modelData ? (bt.pressed ? '#3f0f21' : '#5e1a33') : (bt.pressed ? '#e2d7c1' : '#efe6d3')
+                    color: modelData ? (bt.pressed ? '#e2d7c1' : '#efe6d3') : (bt.pressed ? '#3f0f21' : '#5e1a33')
                     Label {
                         anchors.centerIn: parent
                         text: b.modelData ? qsTr('Yes') : qsTr('No')
-                        color: b.modelData ? '#ffffff' : '#2a2220'
+                        color: b.modelData ? '#2a2220' : '#ffffff'
                         font.pixelSize: 19
                         font.bold: true
                     }
