@@ -288,7 +288,7 @@ Item {
         // logo "schèi Wallet" at the top, in the sky
         Item {
             Layout.fillWidth: true
-            Layout.preferredHeight: mainView.ehTop + 82   // T19: the movements start under the hills
+            Layout.preferredHeight: mainView.ehTop + 96   // T19: the movements start under the hills (title fully visible)
             Image {
                 id: ehLogo
                 x: 16
