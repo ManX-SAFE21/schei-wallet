@@ -206,6 +206,115 @@ Item {
             }
         }
 
+        // T32: the code of the movement (hash) and the way to see it on the blockchain
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: hCol.implicitHeight + 20
+            radius: 16
+            color: '#ffffff'
+            border.width: 2
+            border.color: '#ece4d2'
+            ColumnLayout {
+                id: hCol
+                x: 10; y: 10
+                width: parent.width - 20
+                spacing: 8
+                Label {
+                    text: qsTr('CODE OF THE MOVEMENT (HASH)')
+                    font.pixelSize: 12
+                    font.bold: true
+                    font.letterSpacing: 0.5
+                    color: '#6b5d55'
+                }
+                // all in one piece: it is only copied and pasted, never typed
+                Label {
+                    Layout.fillWidth: true
+                    horizontalAlignment: Text.AlignHCenter
+                    wrapMode: Text.WrapAnywhere
+                    text: page.txid
+                    font.family: FixedFont
+                    font.pixelSize: 13
+                    color: '#3f0f21'
+                }
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 8
+                    Repeater {
+                        model: [
+                            { 'icon': 'eh_copy.svg', 'text': qsTr('Copy'), 'act': 'copy' },
+                            { 'icon': 'eh_share.svg', 'text': qsTr('Share'), 'act': 'share' }
+                        ]
+                        Rectangle {
+                            id: hb
+                            required property var modelData
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 42
+                            radius: 21
+                            color: hbMa.pressed ? '#e4e8c8' : '#eef0dc'
+                            border.width: 2
+                            border.color: '#d6dcae'
+                            RowLayout {
+                                anchors.centerIn: parent
+                                spacing: 6
+                                Image { source: Qt.resolvedUrl('../../icons/' + hb.modelData.icon); sourceSize.width: 18; sourceSize.height: 18 }
+                                Label { text: hb.modelData.text; color: '#45541f'; font.pixelSize: 15; font.bold: true }
+                            }
+                            MouseArea {
+                                id: hbMa
+                                anchors.fill: parent
+                                onClicked: {
+                                    if (hb.modelData.act === 'copy') {
+                                        AppController.textToClipboard(page.txid)
+                                        hToast.show(hb, qsTr('Copied!'))
+                                    } else {
+                                        AppController.doShare(page.txid, qsTr('Code of the movement'))
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                // the green button: opens the chosen site (Avanzate > Dove vedere i movimenti)
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 60
+                    radius: 22
+                    gradient: Gradient {
+                        GradientStop { position: 0; color: chMa.pressed ? '#5c6a2f' : '#6f7d3b' }
+                        GradientStop { position: 1; color: chMa.pressed ? '#36431a' : '#45541f' }
+                    }
+                    EhDashedBorder { anchors.fill: parent; inset: 5; radius: 17; lineWidth: 1.4; color: Qt.rgba(1, 0.94, 0.78, 0.55) }
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.leftMargin: 16
+                        anchors.rightMargin: 16
+                        spacing: 12
+                        Image { source: Qt.resolvedUrl('../../icons/eh_blocks_white.svg'); sourceSize.width: 40; sourceSize.height: 24 }
+                        ColumnLayout {
+                            Layout.fillWidth: true
+                            spacing: 0
+                            Label { text: qsTr('See it on the blockchain'); color: '#ffffff'; font.pixelSize: 17; font.bold: true }
+                            Label {
+                                Layout.fillWidth: true
+                                elide: Text.ElideRight
+                                color: '#ffffff'; opacity: 0.9; font.pixelSize: 13
+                                text: qsTr('opens %1').arg(Config.ehExplorer.name !== '' ? Config.ehExplorer.name : Config.ehExplorer.custom)
+                            }
+                        }
+                        Image { source: Qt.resolvedUrl('../../icons/eh_open_white.svg'); sourceSize.width: 20; sourceSize.height: 20 }
+                    }
+                    MouseArea {
+                        id: chMa
+                        anchors.fill: parent
+                        onClicked: {
+                            var u = Config.ehExplorerTxUrl(page.txid)
+                            if (u !== '') Qt.openUrlExternally(u)
+                        }
+                    }
+                }
+            }
+        }
+
         Item { Layout.fillHeight: true }
 
         EhMoreInfoButton {
@@ -213,4 +322,6 @@ Item {
             onClicked: app.ehShowConfirmationsInfo()
         }
     }
+
+    Toaster { id: hToast }
 }

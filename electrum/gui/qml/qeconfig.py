@@ -75,6 +75,60 @@ class QEConfig(AuthMixin, QObject):
     def ehSet(self, key, value):
         self.config.set_key('eh_' + key, value)
 
+    # ---- Easy Heirs T32: where to see a movement on the blockchain ----
+    # Electrum's own setting (BLOCK_EXPLORER / BLOCK_EXPLORER_CUSTOM, util.block_explorer_URL).
+    # Schèi default: mempool.space, until the user chooses something else.
+    _EH_BE_ORDER = ('mempool.space', 'Blockstream.info', 'Blockchair.com', 'mempool.emzy.de')
+    ehExplorerChanged = pyqtSignal()
+
+    def _eh_be_name(self) -> str:
+        from electrum.util import block_explorer_info
+        info = block_explorer_info()
+        chosen = self.config.get('block_explorer', None)
+        if chosen in info:
+            return chosen
+        return 'mempool.space' if 'mempool.space' in info else self.config.cv.BLOCK_EXPLORER.get_default_value()
+
+    @pyqtSlot(result='QVariantList')
+    def ehExplorers(self):
+        """The sites offered, best first (only the ones Electrum knows for this network)."""
+        from electrum.util import block_explorer_info
+        info = block_explorer_info()
+        names = [n for n in self._EH_BE_ORDER if n in info]
+        if not names:
+            names = [n for n in info if n != 'system default']
+        return [{'name': n, 'url': info[n][0]} for n in names]
+
+    @pyqtProperty('QVariantMap', notify=ehExplorerChanged)
+    def ehExplorer(self):
+        custom = self.config.BLOCK_EXPLORER_CUSTOM
+        return {'name': '' if custom else self._eh_be_name(), 'custom': custom if isinstance(custom, str) else ''}
+
+    @pyqtSlot(str)
+    def ehSetExplorer(self, name: str):
+        self.config.BLOCK_EXPLORER_CUSTOM = None
+        self.config.BLOCK_EXPLORER = name
+        self.ehExplorerChanged.emit()
+
+    @pyqtSlot(str, result=bool)
+    def ehSetExplorerCustom(self, url: str) -> bool:
+        """'Il mio nodo': the address of one's own mempool (e.g. http://umbrel.local:3006)."""
+        url = url.strip()
+        if not (url.startswith('http://') or url.startswith('https://')) or len(url) < 12:
+            return False
+        if not url.endswith('/'):
+            url += '/'
+        self.config.BLOCK_EXPLORER_CUSTOM = url
+        self.ehExplorerChanged.emit()
+        return True
+
+    @pyqtSlot(str, result=str)
+    def ehExplorerTxUrl(self, txid: str) -> str:
+        from electrum.util import block_explorer_URL
+        if not self.config.BLOCK_EXPLORER_CUSTOM and self.config.get('block_explorer', None) is None:
+            self.config.BLOCK_EXPLORER = self._eh_be_name()   # write the Schèi default once
+        return block_explorer_URL(self.config, 'tx', txid) or ''
+
     languagesChanged = pyqtSignal()
     @pyqtProperty('QVariantList', notify=languagesChanged)
     def languagesAvailable(self):

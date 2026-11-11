@@ -270,6 +270,8 @@ Item {
                 Layout.fillWidth: true; Layout.preferredHeight: g5.implicitHeight; radius: 18; color: Qt.rgba(1, 1, 1, 0.7); border.width: 1; border.color: Qt.rgba(1, 1, 1, 0.9); clip: true
                 ColumnLayout { id: g5; width: parent.width; spacing: 0
                     Nav { icon: 'eh_onion.svg'; text: qsTr('Connection: your node and Tor'); onClicked: app.stack.push(Qt.resolvedUrl('EhConnectionPage.qml')) }
+                    // T32: the site for "Vedi sulla blockchain"
+                    Nav { icon: 'eh_blocks_wine.svg'; text: qsTr('Where to see the movements') + ' · ' + (Config.ehExplorer.name !== '' ? Config.ehExplorer.name : qsTr('My node')); onClicked: app.stack.push(Qt.resolvedUrl('EhExplorerPage.qml')) }
                     // look further than the usual 20 empty addresses (gap limit)
                     Nav {
                         icon: 'eh_zoom.svg'
