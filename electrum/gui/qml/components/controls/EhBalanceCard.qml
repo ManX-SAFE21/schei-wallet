@@ -19,6 +19,7 @@ Rectangle {
     function satsAmount(s) { return Config.unitsToSats((s / 100000000).toFixed(8)) }
     property bool showGear: false      // home: the settings button lives in the card
     property bool compact: false       // narrow card next to the slide: status on its own line
+    property bool strapLeft: false     // T19 home: the slide is on the right, so the strap comes out on the left
     // the balance is covered (only "€ 1" + little blocks) until it is tapped,
     // so a stranger looking at the phone cannot read it; covered again after 20 s
     property bool revealed: false
@@ -126,10 +127,12 @@ Rectangle {
     }
     // closing strap on the right; its golden button = settings
     EhWalletStrap {
+        id: strap
         visible: root.showGear
         z: 2
-        anchors.right: parent.right
-        anchors.rightMargin: -7
+        x: root.strapLeft ? -7 : root.width - width + 7
+        // mirrored: rounded end towards the middle, fold on the left edge
+        transform: Scale { origin.x: strap.width / 2; xScale: root.strapLeft ? -1 : 1 }
         anchors.bottom: parent.bottom
         anchors.bottomMargin: 12
         leather: root.baseColor
@@ -264,6 +267,7 @@ Rectangle {
             Layout.fillWidth: true
             Layout.topMargin: 6
             spacing: 8
+            layoutDirection: root.strapLeft ? Qt.RightToLeft : Qt.LeftToRight
             // expert option "banknotes and coins": the balance as real money.
             // Only a round button with banknotes drawn on it, no text.
             Rectangle {
@@ -289,7 +293,8 @@ Rectangle {
         Flow {
             visible: root.frozenSats > 0 && !root.watch
             Layout.fillWidth: true
-            Layout.rightMargin: root.showGear ? 70 : 0
+            Layout.rightMargin: root.showGear && !root.strapLeft ? 70 : 0
+            Layout.leftMargin: root.showGear && root.strapLeft ? 64 : 0
             Layout.topMargin: 4
             spacing: 6
             Rectangle {

@@ -275,7 +275,7 @@ Item {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: parent.top
-        height: mainView.ehTop + 150
+        height: mainView.ehTop + 104   // T19: hills only behind the logo, the movements start below
         sunSize: 40
         sunTop: mainView.ehTop + 6
     }
@@ -288,7 +288,7 @@ Item {
         // logo "schèi Wallet" at the top, in the sky
         Item {
             Layout.fillWidth: true
-            Layout.preferredHeight: mainView.ehTop + 50
+            Layout.preferredHeight: mainView.ehTop + 82   // T19: the movements start under the hills
             Image {
                 id: ehLogo
                 x: 16
@@ -386,15 +386,42 @@ Item {
             }
         }
 
-        // the slide on the left, from the top to the bottom of the page;
-        // on the right the wallet card (narrow, on the hills) and the movements
+        // T19 (owner 2026-11-11): the slide on the RIGHT, from the top to the bottom of the page;
+        // on the left the movements on top and the wallet card at the bottom, next to RICEVI:
+        // pulling the coin down sends it towards the wallet.
         RowLayout {
             visible: !app.ehOption('buttons')
             Layout.fillWidth: true
             Layout.fillHeight: true
-            Layout.leftMargin: 6
-            Layout.rightMargin: 19   // room for the strap that wraps round the card edge
+            Layout.leftMargin: 19    // room for the strap, now on the left edge of the card
+            Layout.rightMargin: 6
             spacing: 4
+
+            ColumnLayout {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                spacing: 8
+                EhHistoryPanel {
+                    glass: true
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                }
+                EhBalanceCard {
+                    visible: !app.ehOption('multi')
+                    showGear: true
+                    compact: true
+                    strapLeft: true
+                    Layout.fillWidth: true
+                    Layout.bottomMargin: 6
+                }
+                EhWalletCarousel {
+                    visible: app.ehOption('multi')
+                    compact: true
+                    strapLeft: true
+                    Layout.fillWidth: true
+                    Layout.bottomMargin: 6
+                }
+            }
 
             EhSlideBar {
                 Layout.preferredWidth: 88
@@ -404,29 +431,6 @@ Item {
                 onReceiveRequested: {
                     // same address until money arrives on it (see qewallet.ehReceive)
                     Daemon.currentWallet.ehReceive()
-                }
-            }
-
-            ColumnLayout {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                spacing: 8
-                EhBalanceCard {
-                    visible: !app.ehOption('multi')
-                    showGear: true
-                    compact: true
-                    Layout.fillWidth: true
-                }
-                EhWalletCarousel {
-                    visible: app.ehOption('multi')
-                    compact: true
-                    Layout.fillWidth: true
-                }
-                EhHistoryPanel {
-                    glass: true
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    Layout.bottomMargin: 8
                 }
             }
         }

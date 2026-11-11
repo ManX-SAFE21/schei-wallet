@@ -61,9 +61,9 @@ Item {
         Image {
             // a QR code and a bitcoin address: what you need to send
             anchors.horizontalCenter: parent.horizontalCenter
-            source: Qt.resolvedUrl('../../../icons/eh_send_qr.svg')
-            sourceSize.width: 44
-            sourceSize.height: 44
+            source: Qt.resolvedUrl('../../../icons/eh_send_qr2.svg')   // T19: bigger, drawn better
+            sourceSize.width: 60
+            sourceSize.height: 60
         }
         Label {
             anchors.horizontalCenter: parent.horizontalCenter
@@ -102,9 +102,9 @@ Item {
         Image {
             // the wallet with the green arrow going in
             anchors.horizontalCenter: parent.horizontalCenter
-            source: Qt.resolvedUrl('../../../icons/eh_rx_olive.svg')
-            sourceSize.width: 44
-            sourceSize.height: 44
+            source: Qt.resolvedUrl('../../../icons/eh_rx_wallet.svg')   // T19: bigger, drawn better
+            sourceSize.width: 60
+            sourceSize.height: 60
         }
     }
 

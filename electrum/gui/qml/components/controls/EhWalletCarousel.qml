@@ -10,6 +10,7 @@ ColumnLayout {
     spacing: 6
     readonly property int maxWallets: 7
     property bool compact: false   // home: narrow column next to the slide
+    property bool strapLeft: false // T19: home with the slide on the right
     readonly property int count: list.count - 1   // wallets (the last card is "Add wallet")
 
     // copy of the wallet list + the "Add wallet" card at the end
@@ -44,10 +45,10 @@ ColumnLayout {
         orientation: ListView.Horizontal
         snapMode: ListView.SnapOneItem
         highlightRangeMode: ListView.StrictlyEnforceRange
-        preferredHighlightBegin: root.compact ? 0 : 34
-        preferredHighlightEnd: root.compact ? width - 30 : width - 34
+        preferredHighlightBegin: root.strapLeft ? 8 : (root.compact ? 0 : 34)
+        preferredHighlightEnd: root.strapLeft ? width - 22 : (root.compact ? width - 30 : width - 34)
         spacing: 10
-        clip: false
+        clip: root.strapLeft   // T19: the next card peeks a little, but never under the slide
         model: root.cards
         currentIndex: 0
 
@@ -59,7 +60,7 @@ ColumnLayout {
             readonly property var model: modelData
             readonly property color wc: isAdd ? "#5e1a33" : app.ehWalletColorFor(modelData.name || "")
             readonly property bool isCurrent: !isAdd && Daemon.currentWallet && Daemon.currentWallet.name === modelData.name
-            width: list.width - (root.compact ? 30 : 68)
+            width: list.width - (root.strapLeft ? 30 : (root.compact ? 30 : 68))
             height: list.height
             // the cards next to the open one: smaller and more transparent,
             // so it is clear that there are more wallets
@@ -72,6 +73,7 @@ ColumnLayout {
                 visible: d.isCurrent
                 showGear: true
                 compact: root.compact
+                strapLeft: root.strapLeft
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
