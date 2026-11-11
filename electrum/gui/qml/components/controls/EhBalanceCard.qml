@@ -133,8 +133,10 @@ Rectangle {
         x: root.strapLeft ? -7 : root.width - width + 7
         // mirrored: rounded end towards the middle, fold on the left edge
         transform: Scale { origin.x: strap.width / 2; xScale: root.strapLeft ? -1 : 1 }
-        anchors.bottom: parent.bottom
-        anchors.bottomMargin: 12
+        // home (strap on the left): half way up the side, like a real wallet (owner 2026-11-11);
+        // long as before: more realistic (owner 2026-11-11)
+        width: 92
+        y: root.strapLeft ? Math.round((root.height - height) / 2) : root.height - height - 12
         leather: root.baseColor
         light: root.watch
         stitch: root.watch ? root.tint(root.baseColor, 0.55) : Qt.rgba(1, 0.91, 0.77, 0.6)
@@ -147,7 +149,7 @@ Rectangle {
         anchors.right: parent.right
         anchors.top: parent.top
         anchors.margins: 16
-        anchors.leftMargin: 18
+        anchors.leftMargin: root.strapLeft && root.showGear ? 92 : 18   // room for the strap on the left
         spacing: 2
 
         RowLayout {
@@ -294,7 +296,6 @@ Rectangle {
             visible: root.frozenSats > 0 && !root.watch
             Layout.fillWidth: true
             Layout.rightMargin: root.showGear && !root.strapLeft ? 70 : 0
-            Layout.leftMargin: root.showGear && root.strapLeft ? 64 : 0
             Layout.topMargin: 4
             spacing: 6
             Rectangle {
@@ -326,7 +327,7 @@ Rectangle {
         }
         // no banknotes button: keep room for the strap under the balance
         Item {
-            visible: root.showGear && !root.showCash
+            visible: root.showGear && !root.showCash && !root.strapLeft   // strap half way up: no room needed below
             Layout.preferredHeight: 50
             Layout.fillWidth: true
         }
