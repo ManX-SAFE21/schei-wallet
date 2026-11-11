@@ -148,7 +148,7 @@ Item {
                             elide: Text.ElideRight
                         }
                         Label {
-                            text: row.model.timestamp ? new Date(row.model.timestamp * 1000).toLocaleString(app.ehLocale(), 'd MMM, HH:mm') : ''
+                            text: app.ehWhen(row.model.timestamp, true)
                             font.pixelSize: 13
                             color: '#6b5d55'
                         }

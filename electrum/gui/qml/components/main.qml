@@ -681,7 +681,7 @@ ApplicationWindow
         function onHistoryUpdated() { app.ehFxRev++ }
     }
     // T39: when a movement happened, in words: "oggi 16:55", "ieri 14:51", "9 nov", "9 nov 2025"
-    function ehWhen(timestamp) {
+    function ehWhen(timestamp, withTime) {
         if (!timestamp) return ''
         var d = new Date(timestamp * 1000)
         var now = new Date()
@@ -692,6 +692,7 @@ ApplicationWindow
         if (t >= day - 86400000) return qsTr('yesterday %1').arg(hm)
         var s = d.toLocaleDateString(ehLocale(), 'd MMM')
         if (d.getFullYear() !== now.getFullYear()) s += ' ' + d.getFullYear()
+        if (withTime) s += ', ' + hm
         return s
     }
     // amount of a history item: historic euro value if known, else today's, else BTC
@@ -872,6 +873,21 @@ ApplicationWindow
         return false
     }
     function ehWalletKey() { return Daemon.currentWallet ? Daemon.currentWallet.name : '' }
+    // the last balance seen of each wallet (only wallets open one at a time): shown on the
+    // cards of the other wallets in the carousel
+    function ehRememberBalance() {
+        if (Daemon.currentWallet) Config.ehSet('bal_' + ehWalletKey(), Daemon.currentWallet.ehTotal.satsInt)
+    }
+    function ehLastBalanceFor(n) {
+        ehOptRev
+        var s = Config.ehGet('bal_' + n)
+        if (s === undefined || s === null || s === '') return ''
+        return ehMoney(Config.unitsToSats((Number(s) / 100000000).toFixed(8)))
+    }
+    Connections {
+        target: Daemon.currentWallet
+        function onBalanceChanged() { app.ehRememberBalance() }
+    }
     function ehWalletName() { return ehWalletNameFor(ehWalletKey()) }
     function ehWalletColor() { return ehWalletColorFor(ehWalletKey()) }
     function ehWalletNameFor(n) {
@@ -1163,6 +1179,7 @@ ApplicationWindow
             dialog.open()
         }
         function onWalletLoaded() {
+            Qt.callLater(app.ehRememberBalance)
             app._loadingWalletContext = null  // either biometric auth or manual auth was successful
             // Easy Heirs: free the addresses kept busy by old empty "Receive" requests
             if (Daemon.currentWallet) Daemon.currentWallet.ehCleanRequests()

@@ -51,7 +51,7 @@ ColumnLayout {
         snapMode: ListView.SnapOneItem
         highlightRangeMode: ListView.StrictlyEnforceRange
         preferredHighlightBegin: root.strapLeft ? 8 : (root.compact ? 0 : 34)
-        preferredHighlightEnd: root.strapLeft ? width - 22 : (root.compact ? width - 30 : width - 34)
+        preferredHighlightEnd: root.strapLeft ? width - 48 : (root.compact ? width - 30 : width - 34)
         spacing: 10
         // T38: the wallet is now under the slide, as wide as the page: no clip, so the inside of
         // the wallet can rise above it and the next wallet peeks at the edge
@@ -67,7 +67,7 @@ ColumnLayout {
             readonly property var model: modelData
             readonly property color wc: isAdd ? "#5e1a33" : app.ehWalletColorFor(modelData.name || "")
             readonly property bool isCurrent: !isAdd && Daemon.currentWallet && Daemon.currentWallet.name === modelData.name
-            width: list.width - (root.strapLeft ? 30 : (root.compact ? 30 : 68))
+            width: list.width - (root.strapLeft ? 56 : (root.compact ? 30 : 68))
             height: list.height
             // the cards next to the open one: smaller and more transparent,
             // so it is clear that there are more wallets
@@ -112,6 +112,15 @@ ColumnLayout {
                     anchors.fill: parent
                     anchors.margins: 18
                     Label { text: app.ehWalletNameFor(d.model.name || ""); color: '#ffffff'; font.pixelSize: 17; font.bold: true }
+                    // the balance seen the last time this wallet was open
+                    Label {
+                        visible: text !== ''
+                        text: app.ehLastBalanceFor(d.model.name || "")
+                        color: '#ffffff'
+                        font.family: TitleFont ? TitleFont : font.family
+                        font.weight: Font.Black
+                        font.pixelSize: 28
+                    }
                     Item { Layout.fillHeight: true }
                     Label { text: qsTr('tap to open it'); color: '#ffffff'; opacity: 0.8; font.pixelSize: 14 }
                 }

@@ -173,6 +173,7 @@ Item {
         y: (root.height - height) / 2 + offset
         z: 5
         property real offset: 0
+        transformOrigin: Item.Center
         source: Qt.resolvedUrl('../../../icons/eh_bitcoin_logo.svg')
         sourceSize.width: 192
         sourceSize.height: 192
@@ -199,7 +200,10 @@ Item {
                         root.sendRequested()
                     } else if (coin.offset >= Math.max(limit, root.travelDown * 0.8)) {
                         AppController.haptic()
+                        // T37: the coin goes into the wallet (smaller, fading), then comes back
+                        goIn.restart()
                         root.receiveRequested()
+                        return
                     }
                     coin.offset = 0
                 }
@@ -214,6 +218,21 @@ Item {
         }
         TapHandler {
             onTapped: { hint.visible = true; hintTimer.restart() }
+        }
+    }
+
+    SequentialAnimation {
+        id: goIn
+        ParallelAnimation {
+            NumberAnimation { target: coin; property: 'offset'; to: root.travelDown + root.coinSize * 0.4; duration: 260; easing.type: Easing.InQuad }
+            NumberAnimation { target: coin; property: 'scale'; to: 0.5; duration: 260 }
+            NumberAnimation { target: coin; property: 'opacity'; to: 0; duration: 260 }
+        }
+        PropertyAction { target: coin; property: 'offset'; value: 0 }
+        PauseAnimation { duration: 250 }
+        ParallelAnimation {
+            NumberAnimation { target: coin; property: 'scale'; to: 1; duration: 220 }
+            NumberAnimation { target: coin; property: 'opacity'; to: 1; duration: 220 }
         }
     }
 
