@@ -40,8 +40,12 @@ ColumnLayout {
     ListView {
         id: list
         Layout.fillWidth: true
-        Layout.preferredHeight: root.compact ? (app.ehOption('coins') && !app.ehBtcOnly() ? 214 : 184)
-                                             : (app.ehOption('coins') && !app.ehBtcOnly() ? 188 : 140)
+        // the open wallet's card is taller with the pills "spendable / blocked" and "arriving":
+        // room from the data, NOT from the card's own height (that made an endless layout loop)
+        Layout.preferredHeight: (root.compact ? (app.ehOption('coins') && !app.ehBtcOnly() ? 214 : 184)
+                                              : (app.ehOption('coins') && !app.ehBtcOnly() ? 188 : 140))
+                                + (Daemon.currentWallet && Daemon.currentWallet.frozenBalance.satsInt > 0 ? 12 : 0)
+                                + (Daemon.currentWallet && Daemon.currentWallet.ehArriving.satsInt > 0 ? 30 : 0)
         orientation: ListView.Horizontal
         snapMode: ListView.SnapOneItem
         highlightRangeMode: ListView.StrictlyEnforceRange
@@ -70,6 +74,7 @@ ColumnLayout {
             Behavior on opacity { NumberAnimation { duration: 180 } }
 
             EhBalanceCard {
+                id: card
                 visible: d.isCurrent
                 showGear: true
                 compact: root.compact
@@ -150,6 +155,10 @@ ColumnLayout {
     Connections {
         target: Daemon
         function onWalletLoaded() { Qt.callLater(list.positionOnCurrent) }
+    }
+    Connections {
+        target: app
+        function onEhWalletPickCancelled() { Qt.callLater(list.positionOnCurrent) }
     }
 
     Row {

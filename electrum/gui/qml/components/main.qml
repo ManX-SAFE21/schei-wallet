@@ -788,7 +788,7 @@ ApplicationWindow
         if (ehBtcOnly() || !Daemon.fx.enabled) {
             // only bitcoin: double confirmation from 20% of what is in the wallet
             var w = Daemon.currentWallet
-            var total = w ? Math.max(0, w.totalBalance.satsInt - w.frozenBalance.satsInt) : 0
+            var total = w ? Math.max(0, w.ehTotal.satsInt - w.frozenBalance.satsInt) : 0
             return amount.satsInt >= Math.ceil(total * 0.2)
         }
         var e = Number(Daemon.fx.fiatValue(amount, true))
@@ -903,6 +903,9 @@ ApplicationWindow
             if (app._ehWantSeed) { app._ehWantSeed = false; mainStackView.push(Qt.resolvedUrl('EhSeedPage.qml')) }
         }
     }
+    property alias ehForgotPinDialog: _ehForgotPinDialog
+    Component { id: _ehForgotPinDialog; EhForgotPinDialog { onClosed: destroy() } }
+    function ehOpenForgotPin() { ehForgotPinDialog.createObject(app).open() }
     property alias ehChangePinDialog: _ehChangePinDialog
     Component { id: _ehChangePinDialog; EhChangePinDialog { onClosed: destroy() } }
     function ehChangePin() { ehChangePinDialog.createObject(app).open() }
@@ -986,9 +989,41 @@ ApplicationWindow
     // second review (W2): the safe of this phone cannot open the wallet any more: no endless
     // "Wrong PIN", but a page that says so and leads to the 12 words
     property var _ehKeyLost: null
+    signal ehWalletPickCancelled()
+
+    // third review: Advanced settings and the 12 words do not stay open for hours. When the
+    // app comes back after more than a minute away, the protected pages close (back home).
+    property real _ehAwaySince: 0
+    Connections {
+        target: Qt.application
+        function onStateChanged() {
+            if (Qt.application.state !== Qt.ApplicationActive) {
+                if (app._ehAwaySince === 0) app._ehAwaySince = Date.now()
+                return
+            }
+            var away = app._ehAwaySince > 0 ? Date.now() - app._ehAwaySince : 0
+            app._ehAwaySince = 0
+            if (away < 60 * 1000) return
+            var prot = false
+            for (var i = 0; i < mainStackView.depth; i++) {
+                var it = mainStackView.get(i, StackView.DontLoad)
+                if (it && it.ehProtected === true) { prot = true; break }
+            }
+            if (prot) {
+                app._ehPinOkUntil = 0
+                var dl = app.activeDialogs.slice()
+                for (var k = dl.length - 1; k >= 0; k--)
+                    if (dl[k] && dl[k].allowClose) dl[k].doClose()
+                mainStackView.pop(null)
+            }
+        }
+    }
     function ehShowKeyLost(name, path) {
         if (_ehKeyLost) return
         if (_opendialog) { var od = _opendialog; _opendialog = null; od.close() }
+        // only when the safe really lost its key do unopenable wallet files go aside after the
+        // restore (not when the key-lost page came from 3 PINs on an old wallet with another PIN)
+        var vaultWasBroken = Daemon.ehVaultBroken()
         var kl = ehKeyLostDialog.createObject(app, { name: name, path: path })
         _ehKeyLost = kl
         kl.restoreChosen.connect(function() {
@@ -997,6 +1032,8 @@ ApplicationWindow
             var created = false
             w.walletCreated.connect(function() {
                 created = true
+                // third review: the old files this phone cannot open any more go aside
+                if (vaultWasBroken) Daemon.ehMoveAsideUnopenable()
                 Daemon.availableWallets.reload()
                 Daemon.loadWallet(w.path, w.wizard_data['password'])
             })
@@ -1018,7 +1055,9 @@ ApplicationWindow
             ehShowKeyLost(name, path)
             return
         }
-        var secret = Daemon.ehVaultReady() ? Daemon.ehVaultSecret() : ''
+        // third review: try the safe's secret whenever there is one (also if the PIN check is
+        // missing, e.g. the app died while old wallets were moved to the safe)
+        var secret = Daemon.ehVaultSecret()
         if (secret !== '' && !_ehVaultTried[path]) {
             _ehVaultTried[path] = true
             Daemon.loadWallet(path, secret)
@@ -1035,6 +1074,7 @@ ApplicationWindow
                 _opendialog = null
                 app._loadingWalletContext = null  // dialog closed, we can allow trying biometric auth again
                 _opendialog_startup = false
+                if (Daemon.currentWallet) app.ehWalletPickCancelled()   // third review: carousel back
             })
             _opendialog.open()
         }

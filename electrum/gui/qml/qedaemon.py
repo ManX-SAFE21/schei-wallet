@@ -73,7 +73,8 @@ class QEWalletListModel(QAbstractListModel):
         wallet_folder = os.path.dirname(self.daemon.config.get_wallet_path())
         with os.scandir(wallet_folder) as it:
             for i in it:
-                if i.is_file():
+                # Easy Heirs (third review): half-written save files are not wallets
+                if i.is_file() and '.tmp.' not in i.name:
                     available.append(i.path)
         for path in sorted(available):
             wallet = self.daemon.get_wallet(path)
@@ -465,6 +466,41 @@ class QEDaemon(AuthMixin, QObject):
         """True when the wallets use the secret kept by the phone's safe."""
         return bool(qeehvault.get_secret(self.daemon.config)) and qeehvault.pin_is_set(self.daemon.config)
 
+    @pyqtSlot(result=int)
+    def ehMoveAsideUnopenable(self):
+        """After the key-lost restore: the wallet files that the phone's new secret cannot
+        open go into the folder 'lost' (kept, not deleted), so they are not shown any more."""
+        secret = qeehvault.get_secret(self.daemon.config)
+        if not secret:
+            return 0
+        wallet_dir = os.path.dirname(self.daemon.config.get_wallet_path())
+        _, _, can_unlock = self.daemon.check_password_for_directory(
+            old_password=secret, new_password=None, wallet_dir=wallet_dir)
+        ok = set(os.path.realpath(str(p)) for p in (can_unlock or []))
+        lost = os.path.join(wallet_dir, 'lost')
+        moved = 0
+        for name in os.listdir(wallet_dir):
+            p = os.path.join(wallet_dir, name)
+            if not os.path.isfile(p) or os.path.realpath(p) in ok:
+                continue
+            if self.daemon.get_wallet(p) is not None:
+                continue   # open now: it works
+            try:
+                os.makedirs(lost, exist_ok=True)
+                dest = os.path.join(lost, name)
+                n = 1
+                while os.path.exists(dest):
+                    n += 1
+                    dest = os.path.join(lost, '%s_%d' % (name, n))
+                os.replace(p, dest)
+                moved += 1
+            except Exception as e:
+                self._logger.error(f'eh: cannot move {name} aside: {e!r}')
+        if moved:
+            self._logger.info(f'eh: {moved} wallet file(s) that no longer open moved to {lost}')
+            self.availableWallets.reload()
+        return moved
+
     @pyqtSlot(result=bool)
     def ehVaultBroken(self):
         return qeehvault.vault_broken(self.daemon.config)
@@ -501,6 +537,10 @@ class QEDaemon(AuthMixin, QObject):
         secret = self.ehVaultSecretOrCreate()
         if not secret:
             return False
+        # third review: the PIN check first (the PIN was just proven by opening the wallet).
+        # If the app dies while the passwords change, the safe + PIN are already complete.
+        if not qeehvault.pin_is_set(self.daemon.config):
+            qeehvault.set_pin(self.daemon.config, pin)
         if self._use_single_password and self._password:
             # all wallets share the PIN: move the whole folder at once
             if self._password != secret:
@@ -517,10 +557,6 @@ class QEDaemon(AuthMixin, QObject):
         if self.daemon.config.WALLET_SHOULD_USE_SINGLE_PASSWORD:
             self._password = secret
             self.singlePasswordChanged.emit()
-        # one PIN for all wallets: an old wallet opened later with a different
-        # PIN does not replace the PIN already in use
-        if not qeehvault.pin_is_set(self.daemon.config):
-            qeehvault.set_pin(self.daemon.config, pin)
         self._logger.info('eh vault: wallets moved to the phone safe')
         return True
 

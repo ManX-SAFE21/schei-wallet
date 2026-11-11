@@ -18,6 +18,7 @@ Item {
     Rectangle { anchors.fill: parent; color: '#faf7ef' }
     EhGlow { tone: 'wine'; x: -page.width * 0.3; y: 40; width: page.width * 1.6; height: 380; opacity: 0.7 }
 
+    property bool ehProtected: true   // closes after a minute in the background (main.qml)
     // the PIN was typed to come in: no new PIN for the 12 words while here
     Component.onCompleted: app._ehPinOkUntil = Date.now() + 10 * 60 * 1000
     Component.onDestruction: app._ehPinOkUntil = 0

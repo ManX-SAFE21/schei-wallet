@@ -15,6 +15,7 @@ Rectangle {
     readonly property bool showCash: app.ehOption('coins') && !app.ehBtcOnly() && root.euroText !== '' && root.hasMoney
     property bool hasMoney: false
     property real frozenSats: 0         // coins blocked in "Le tue monete d'oro"
+    property real arrivingSats: 0       // received, not confirmed yet (gold pill)
     property real totalSats: 0
     function satsAmount(s) { return Config.unitsToSats((s / 100000000).toFixed(8)) }
     property bool showGear: false      // home: the settings button lives in the card
@@ -81,7 +82,8 @@ Rectangle {
     function refresh() {
         if (!Daemon.currentWallet)
             return
-        var total = Daemon.currentWallet.totalBalance
+        var total = Daemon.currentWallet.ehTotal      // third review: with the money arriving
+        root.arrivingSats = Daemon.currentWallet.ehArriving.satsInt
         root.euroText = app.ehEuro(total)
         root.btcText = app.ehBtc(total)
         root.hasMoney = total.satsInt > 0
@@ -300,6 +302,17 @@ Rectangle {
                 TapHandler { id: cashTap; margin: 6; gesturePolicy: TapHandler.WithinBounds; onTapped: app.stack.push(Qt.resolvedUrl('../EhCashPage.qml')) }
             }
             Item { Layout.fillWidth: true }
+        }
+        // third review: money received but not confirmed yet; goes away at the first confirmation
+        Rectangle {
+            visible: root.arrivingSats > 0 && !root.covered
+            Layout.topMargin: 4
+            Layout.preferredWidth: arL.implicitWidth + 20
+            Layout.preferredHeight: 24
+            radius: 12
+            color: '#d9b25a'
+            Label { id: arL; anchors.centerIn: parent; font.pixelSize: 12; font.bold: true; color: '#3f0f21'
+                    text: '⏳ ' + qsTr('arriving %1').arg(app.ehMoney(root.satsAmount(root.arrivingSats))) }
         }
         // some coins blocked: how much can be spent and how much is blocked;
         // tapping "blocked" opens the gold coins (no PIN)

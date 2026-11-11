@@ -17,7 +17,10 @@ WizardComponent {
     property bool hideWizardButtons: true
 
     // other wallets exist and Electrum wants one password for all: ask that PIN
+    // third review: after "this phone no longer recognises the key" the old PIN protects
+    // nothing: a new one is chosen
     property bool enforceExistingPassword: Config.walletShouldUseSinglePassword && Daemon.availableWallets.rowCount() > 0
+                                           && !Daemon.ehVaultBroken()
     property string phase: enforceExistingPassword ? 'existing' : 'choose'   // choose | repeat | existing
     property string firstPin: ''
     property string password: ''

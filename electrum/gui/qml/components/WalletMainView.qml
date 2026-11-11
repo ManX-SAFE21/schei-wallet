@@ -517,6 +517,14 @@ Item {
         }
         onValidationSuccess: {
             closeSendDialog()
+            if (Daemon.currentWallet && Daemon.currentWallet.isWatchOnly) {
+                // third review: a wallet "only to look at" has no keys, it cannot pay
+                app.ehInfoDialog.createObject(app, {
+                    pageTitle: qsTr('This wallet can only look'),
+                    bodyText: qsTr('It shows the balance, but it does not have the keys to pay. Open a wallet with its 12 words to pay.')
+                }).open()
+                return
+            }
             if (invoiceParser.invoiceType == Invoice.OnchainInvoice) {
                 // Easy Heirs: our amount / check / slide-to-send screens
                 var ehdialog = ehInvoiceDialog.createObject(app, { invoice: invoiceParser })
@@ -606,12 +614,7 @@ Item {
             dialog.open()
         }
         function onBroadcastFailed(txid, code, message) {
-            var dialog = app.messageDialog.createObject(app, {
-                title: qsTr('Error'),
-                iconSource: Qt.resolvedUrl('../../icons/warning.png'),
-                text: message
-            })
-            dialog.open()
+            // Easy Heirs (third review): the payment page says it, with words for people
         }
         function onPaymentFailed(invoice_id, message) {
             var dialog = app.messageDialog.createObject(app, {

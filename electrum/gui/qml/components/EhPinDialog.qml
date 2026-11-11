@@ -33,8 +33,10 @@ ElDialog {
     topPadding: 0
     header: null
     needsSystemBarPadding: false
-    allowClose: mode === 'verify'
-    closePolicy: mode === 'verify' ? Popup.CloseOnEscape : Popup.NoAutoClose
+    // third review: opening ANOTHER wallet (carousel) can be cancelled; at start it cannot
+    readonly property bool canCancel: mode === 'verify' || Daemon.currentWallet !== null
+    allowClose: canCancel
+    closePolicy: canCancel ? Popup.CloseOnEscape : Popup.NoAutoClose
 
     background: Rectangle { color: '#faf7ef' }
 
@@ -114,6 +116,25 @@ ElDialog {
             Layout.fillHeight: true
             onCompleted: (pin) => root.onPin(pin)
             onPinChanged: if (pin.length > 0 && messageBad) { message = ''; messageBad = false }
+        }
+
+        // third review: a forgotten PIN can be replaced with the 12 words of this wallet
+        Label {
+            visible: root.mode === 'verify' && Daemon.currentWallet !== null
+                     && Daemon.currentWallet.hasSeed && !Daemon.currentWallet.isWatchOnly
+            Layout.fillWidth: true
+            horizontalAlignment: Text.AlignHCenter
+            text: qsTr('I forgot the PIN')
+            color: '#5e1a33'
+            font.pixelSize: 16
+            font.bold: true
+            font.underline: true
+            TapHandler {
+                margin: 8
+                // the words page opens ABOVE this pad: with the new PIN chosen, the person comes
+                // back here, types the new PIN and goes on with what they were doing
+                onTapped: app.ehOpenForgotPin()
+            }
         }
 
         Label {

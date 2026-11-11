@@ -9,6 +9,7 @@ import "controls"
 Item {
     id: page
     property bool ehHideHeader: true
+    property bool ehProtected: true   // closes after a minute in the background (main.qml)
     property var words: Daemon.currentWallet.seed ? Daemon.currentWallet.seed.split(' ') : []
     Material.theme: Material.Light
     Material.foreground: '#2a2220'

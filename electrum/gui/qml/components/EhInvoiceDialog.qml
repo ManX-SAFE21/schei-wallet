@@ -52,13 +52,18 @@ ElDialog {
 
     // ---------- helpers ----------
     // blocked gold coins cannot be spent: "you have" is what can be spent
-    function balanceSats() { return Math.max(0, Daemon.currentWallet.totalBalance.satsInt - Daemon.currentWallet.frozenBalance.satsInt) }
+    function balanceSats() { return Math.max(0, Daemon.currentWallet.ehTotal.satsInt - Daemon.currentWallet.frozenBalance.satsInt) }
+    // third review (#7): the euro price can arrive after the page opened: count it again then
+    property int fxRev: 0
+    Connections { target: Daemon.fx; function onQuotesUpdated() { dialog.fxRev++ } }
+    readonly property bool noRate: { dialog.fxRev; return !btcMode && Daemon.fx.satoshiValue('1', true) === '' }
     function euroPlain() { return (euroInput === '' ? '0' : euroInput).replace(',', '.') }
     function inputSats() {
         if (btcMode) {
             var b = Number(euroPlain())
             return isNaN(b) ? 0 : Math.round(b * 100000000)
         }
+        dialog.fxRev
         var s = Daemon.fx.satoshiValue(euroPlain(), true)
         var n = parseInt(s)
         return isNaN(n) ? 0 : n
@@ -286,7 +291,7 @@ ElDialog {
                                     dialog.euroInput = (sats / 100000000).toFixed(8).replace(/0+$/, '').replace(/\.$/, '').replace('.', ',')
                                 } else {
                                     var e = Daemon.fx.fiatValue(dialog.satsToAmount(sats), true)
-                                    dialog.euroInput = Number(e).toFixed(2).replace('.', ',')
+                                    dialog.euroInput = isNaN(Number(e)) || e === '' ? '' : Number(e).toFixed(2).replace('.', ',')
                                 }
                             }
                         }
@@ -364,7 +369,7 @@ ElDialog {
                 color: dialog.inputSats() > dialog.balanceSats() ? '#3f0f21' : '#4a4038'
                 text: dialog.inputSats() > dialog.balanceSats()
                       ? qsTr('You do not have enough schei')
-                      : qsTr('You have %1').arg(app.ehMoney(Daemon.currentWallet.totalBalance))
+                      : qsTr('You have %1').arg(app.ehMoney(Daemon.currentWallet.ehTotal))
             }
         }
         Rectangle {
@@ -420,6 +425,38 @@ ElDialog {
                         color: '#2a2220'
                     }
                     TapHandler { id: kt; onTapped: dialog.press(key.modelData) }
+                }
+            }
+        }
+        // third review (#7): no euro price yet: say it, and offer to write in bitcoin
+        Rectangle {
+            visible: dialog.phase === 'amount' && dialog.noRate
+            Layout.fillWidth: true
+            Layout.preferredHeight: nrCol.implicitHeight + 22
+            radius: 16
+            color: '#fbf0d8'
+            border.width: 2
+            border.color: '#d9b25a'
+            ColumnLayout {
+                id: nrCol
+                x: 12; y: 11
+                width: parent.width - 24
+                spacing: 8
+                Label {
+                    Layout.fillWidth: true
+                    wrapMode: Text.WordWrap
+                    textFormat: Text.StyledText
+                    font.pixelSize: 14
+                    text: '<b>' + qsTr('I do not know the euro price right now.') + '</b> '
+                          + qsTr('Wait a few seconds, or write the amount in bitcoin.')
+                }
+                EhPillButton {
+                    text: qsTr('Write in bitcoin')
+                    fontSize: 16
+                    color: '#ffffff'
+                    textColor: '#5e1a33'
+                    onClicked: { dialog.euroInput = ''; dialog.btcMode = true }
+                    Label { anchors.centerIn: parent; text: '₿'; font.pixelSize: 20; font.bold: true; color: '#5e1a33' }
                 }
             }
         }
@@ -946,8 +983,17 @@ ElDialog {
         }
         function onBroadcastFailed(txid, code, reason) {
             dialog.resetBars()
-            var d = app.messageDialog.createObject(app, { title: qsTr('The payment did not leave'), text: reason })
-            d.open()
+            // third review: say only what we know. A rejection: it did not leave. A broken
+            // connection: maybe it left, look at the movements before paying again.
+            var info = code === 'rejected'
+                ? { pageTitle: qsTr('The payment did not leave'),
+                    bodyText: qsTr('The bitcoin network refused this payment. Your money is still in the wallet.'),
+                    tipText: '<small>' + reason + '</small>' }
+                : { pageTitle: qsTr('I am not sure the payment left'),
+                    bodyText: qsTr('The connection broke while the payment was leaving.')
+                              + '<br><br>' + qsTr('<b>Before paying again</b>, wait a few minutes and look at the movements: if the payment is there, it left.'),
+                    tipText: '' }
+            app.ehInfoDialog.createObject(app, info).open()
         }
     }
 

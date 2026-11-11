@@ -29,7 +29,7 @@ Item {
     function grp(n) { return app.ehGroup('' + n) }
     function refresh() {
         if (demoEuro < 0 && (!Daemon.currentWallet || !Daemon.fx.enabled)) { cents = 0; groups = []; return }
-        var v = demoEuro >= 0 ? demoEuro : Number(Daemon.fx.fiatValue(Daemon.currentWallet.totalBalance, true))
+        var v = demoEuro >= 0 ? demoEuro : Number(Daemon.fx.fiatValue(Daemon.currentWallet.ehTotal, true))
         cents = isNaN(v) ? 0 : Math.max(0, Math.round(v * 100))
         var rest = cents, out = []
         if (Math.floor(rest / 10000) > 20) {
@@ -96,7 +96,7 @@ Item {
             Label {
                 height: 40
                 verticalAlignment: Text.AlignBottom
-                text: Daemon.currentWallet ? qsTr('about %1').arg(app.ehBtc(Daemon.currentWallet.totalBalance)) : ''
+                text: Daemon.currentWallet ? qsTr('about %1').arg(app.ehBtc(Daemon.currentWallet.ehTotal)) : ''
                 color: '#6b5d55'
                 font.pixelSize: 14
             }

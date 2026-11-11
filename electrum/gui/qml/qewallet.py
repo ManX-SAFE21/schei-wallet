@@ -12,6 +12,7 @@ from electrum.i18n import _
 from electrum.invoices import InvoiceError, PR_PAID, PR_BROADCASTING, PR_BROADCAST
 from electrum.logging import get_logger
 from electrum.network import TxBroadcastError, BestEffortRequestFailed
+from electrum.interface import TxBroadcastServerReturnedError
 from electrum.transaction import PartialTransaction, Transaction
 from electrum.util import (
     InvalidPassword, event_listener, AddTransactionException, get_asyncio_loop, NotEnoughFunds, NoDynamicFeeEstimates,
@@ -542,7 +543,9 @@ class QEWallet(AuthMixin, QObject, QtEventListener):
     @pyqtProperty(QEAmount, notify=balanceChanged)
     def frozenBalance(self):
         c, u, x = self.wallet.get_frozen_balance()
-        self._frozenbalance.satsInt = c+x
+        # Easy Heirs (third review): the balance shown counts money arriving, so blocked money
+        # arriving is blocked too
+        self._frozenbalance.satsInt = c + max(0, u) + x
         return self._frozenbalance
 
     @pyqtProperty(QEAmount, notify=balanceChanged)
@@ -573,6 +576,22 @@ class QEWallet(AuthMixin, QObject, QtEventListener):
         total = self.confirmedBalance.satsInt + self.lightningBalance.satsInt
         self._totalbalance.satsInt = total
         return self._totalbalance
+
+    # Easy Heirs (third review): money received but not confirmed yet. It is counted in the
+    # balance (Electrum can already spend it, e.g. "All the balance"), and shown as "arriving".
+    @pyqtProperty(QEAmount, notify=balanceChanged)
+    def ehArriving(self):
+        if not hasattr(self, '_eh_arriving'):
+            self._eh_arriving = QEAmount()
+        self._eh_arriving.satsInt = max(0, self.wallet.get_balance()[1])
+        return self._eh_arriving
+
+    @pyqtProperty(QEAmount, notify=balanceChanged)
+    def ehTotal(self):
+        if not hasattr(self, '_eh_total'):
+            self._eh_total = QEAmount()
+        self._eh_total.satsInt = self.totalBalance.satsInt + max(0, self.wallet.get_balance()[1])
+        return self._eh_total
 
     @pyqtProperty(QEAmount, notify=balanceChanged)
     def lightningCanSend(self):
@@ -647,7 +666,7 @@ class QEWallet(AuthMixin, QObject, QtEventListener):
         if tx is None:
             self._logger.info('did not sign')
             if on_failure:
-                on_failure()
+                on_failure('')   # Easy Heirs: signError is a str signal, None would raise
             return
 
         if sign_hook:
@@ -705,14 +724,25 @@ class QEWallet(AuthMixin, QObject, QtEventListener):
                 await self.wallet.network.broadcast_transaction(tx)
             except TxBroadcastError as e:
                 self._logger.error(repr(e))
-                self.broadcastFailed.emit(tx.txid(), '', e.get_message_for_gui())
+                # Easy Heirs (third review): after a timeout Electrum sends again to another
+                # server, which may answer "already known": the payment DID leave
+                if any(s in str(e) for s in ('txn-already-in-mempool', 'txn-already-known',
+                                             'already in block chain', 'outputs already in utxo set')):
+                    self._logger.info('broadcast: already known by the server, counted as sent')
+                    self.broadcastSucceeded.emit(tx.txid())
+                    self.historyModel.requestRefresh.emit()  # via qt thread
+                    return
+                # only a real refusal of the server is sure; an unknown error or a different txid is not
+                code = 'rejected' if isinstance(e, TxBroadcastServerReturnedError) else 'unsure'
+                self.broadcastFailed.emit(tx.txid(), code, e.get_message_for_gui())
             except BestEffortRequestFailed as e:
                 self._logger.error(repr(e))
-                self.broadcastFailed.emit(tx.txid(), '', repr(e))
+                # the connection failed: we do not know if a server got it
+                self.broadcastFailed.emit(tx.txid(), 'unsure', repr(e))
             except Exception as e:
                 self._logger.exception("failed to broadcast tx")
                 # Easy Heirs (second review F3): always tell the page, or it stays on "Sending..."
-                self.broadcastFailed.emit(tx.txid(), '', repr(e))
+                self.broadcastFailed.emit(tx.txid(), 'unsure', repr(e))
             else:
                 self._logger.info('broadcast success')
                 self.broadcastSucceeded.emit(tx.txid())
@@ -986,7 +1016,9 @@ class QEWallet(AuthMixin, QObject, QtEventListener):
             return
         keep = None
         drop = []
-        for req in w.get_unpaid_requests():
+        # third review: newest first, so the address shown last is the one that stays
+        reqs = sorted(w.get_unpaid_requests(), key=lambda r: r.get_time() or 0, reverse=True)
+        for req in reqs:
             if not self._eh_is_plain_request(req):
                 continue
             addr = req.get_address()
@@ -1009,11 +1041,21 @@ class QEWallet(AuthMixin, QObject, QtEventListener):
         # second review (RN-2): before the wallet is up to date we do not know if money arrived
         # on the open address while the app was closed: do not reuse it, take a new one
         reuse_ok = w.is_up_to_date()
-        for req in (w.get_unpaid_requests() if reuse_ok else []):
+        if not reuse_ok:
+            # third review: while not up to date, reuse the address made in THIS session
+            # (one new address, not one per pull, each shown to a different person)
+            key = getattr(self, '_eh_offline_req', None)
+            req = w.get_request(key) if key else None
+            if req is not None and not w.adb.is_used(req.get_address()):
+                self.requestCreateSuccess.emit(key)
+                return
+        reqs = sorted(w.get_unpaid_requests(), key=lambda r: r.get_time() or 0, reverse=True)
+        for req in (reqs if reuse_ok else []):
             addr = req.get_address()
             if self._eh_is_plain_request(req) and addr and not w.adb.is_used(addr):
                 self.requestCreateSuccess.emit(req.get_id())
                 return
+        self._eh_offline_wanted = not reuse_ok
         self.createRequest(QEAmount(amount_sat=0), '', 0, False, True)
 
     @pyqtSlot(QEAmount, str, int)
@@ -1046,6 +1088,9 @@ class QEWallet(AuthMixin, QObject, QtEventListener):
             return
 
         assert key is not None
+        if getattr(self, '_eh_offline_wanted', False):   # Easy Heirs: the offline Receive address
+            self._eh_offline_wanted = False
+            self._eh_offline_req = key
         self._logger.debug(f'created request with key {key} addr {addr}')
         self.addressCoinModel.setDirty()
         self.requestModel.add_invoice(self.wallet.get_request(key))
@@ -1099,6 +1144,22 @@ class QEWallet(AuthMixin, QObject, QtEventListener):
     @property
     def password(self):
         return self.wallet.get_unlocked_password()
+
+    @pyqtSlot(str, result=bool)
+    def ehSeedMatches(self, words):
+        """Easy Heirs (third review, forgot PIN): are these the words of this wallet?"""
+        try:
+            if not self.wallet.has_seed():
+                return False
+            seed = self.wallet.get_seed(self.password)
+        except Exception as e:
+            self._logger.error(f'ehSeedMatches: {e!r}')
+            return False
+        from electrum.mnemonic import normalize_text
+        import hmac
+        a = ' '.join(normalize_text(seed or '').split())
+        b = ' '.join(normalize_text(words or '').split())
+        return bool(a) and hmac.compare_digest(a.encode('utf-8'), b.encode('utf-8'))
 
     @pyqtSlot(str)
     def importAddresses(self, addresslist):

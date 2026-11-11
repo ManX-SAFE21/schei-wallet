@@ -134,6 +134,7 @@ ElDialog {
             clip:true
 
             function prev() {
+                if (_tooSoon()) return
                 currentItem.prev()
                 currentIndex = currentIndex - 1
                 _setWizardData(pages.contentChildren[currentIndex].wizard_data)
@@ -142,7 +143,18 @@ ElDialog {
 
             }
 
+            // third review: buttons live on the pages; a double tap reached the NEXT page
+            // (skipping "Let's check" or freezing the wizard). Ignore taps during the slide.
+            property real _lastNav: 0
+            function _tooSoon() {
+                var now = Date.now()
+                if (now - _lastNav < 700) return true
+                _lastNav = now
+                return false
+            }
+
             function next() {
+                if (_tooSoon()) return
                 currentItem.accept()
                 _setWizardData(pages.contentChildren[currentIndex].wizard_data)
                 currentItem.next()
@@ -150,6 +162,7 @@ ElDialog {
             }
 
             function finish() {
+                if (_tooSoon()) return
                 currentItem.accept()
                 _setWizardData(pages.contentChildren[currentIndex].wizard_data)
                 currentItem.finish()
