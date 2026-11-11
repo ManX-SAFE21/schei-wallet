@@ -22,6 +22,17 @@ Item {
     readonly property bool on: app.ehOption('privacy')
     // the category being written: null = none, id '' = a new one
     property var edit: null
+    // T26: show the editor where it can be seen, with the cursor in the name
+    function showEditor() {
+        var y = editCard.mapToItem(pfl.contentItem, 0, 0).y
+        // the whole card in view, its bottom just above the screen edge
+        var want = y + editCard.height + 16 - pfl.height
+        if (want > pfl.contentY) pfl.contentY = Math.min(want, Math.max(0, pfl.contentHeight - pfl.height))
+        nameIn.forceActiveFocus()
+    }
+    // wait for the card to be laid out before measuring where it is
+    Timer { id: editTimer; interval: 120; onTriggered: page.showEditor() }
+    onEditChanged: if (page.edit !== null) editTimer.restart()
     function startEdit(c) { page.edit = c ? { 'id': c.id, 'name': c.name, 'color': c.color } : { 'id': '', 'name': '', 'color': app.ehCatColors[app.ehCats().length % app.ehCatColors.length] } }
     function saveEdit(name) {
         name = name.trim()
@@ -51,6 +62,7 @@ Item {
     }
 
     Flickable {
+        id: pfl
         anchors.fill: parent
         anchors.bottomMargin: app.navigationBarHeight
         contentHeight: col.implicitHeight + 24
@@ -218,52 +230,9 @@ Item {
                     }
                 }
             }
-            // the two warnings (on by default)
-            Label {
-                visible: page.on
-                Layout.topMargin: 6
-                Layout.leftMargin: 4
-                text: qsTr('WARNINGS')
-                font.pixelSize: 13; font.bold: true; font.letterSpacing: 0.6; color: '#45541f'
-            }
-            Card {
-                visible: page.on
-                Layout.preferredHeight: wCol.implicitHeight
-                clip: true
-                ColumnLayout {
-                    id: wCol
-                    width: parent.width
-                    spacing: 0
-                    Repeater {
-                        model: [ { 'k': 'warn_mix', 't': qsTr('When I mix origins'), 'h': qsTr('before sending') },
-                                 { 'k': 'warn_dust', 't': qsTr('Suspicious little coins'), 'h': qsTr('very small, from strangers') } ]
-                        Rectangle {
-                            id: wr
-                            required property var modelData
-                            Layout.fillWidth: true
-                            Layout.preferredHeight: Math.max(60, wRow.implicitHeight + 16)
-                            color: 'transparent'
-                            Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: '#efe7da' }
-                            RowLayout {
-                                id: wRow
-                                anchors.fill: parent
-                                anchors.leftMargin: 14
-                                anchors.rightMargin: 8
-                                ColumnLayout {
-                                    Layout.fillWidth: true
-                                    spacing: 0
-                                    Label { Layout.fillWidth: true; text: wr.modelData.t; font.pixelSize: 16; font.bold: true; wrapMode: Text.WordWrap }
-                                    Label { Layout.fillWidth: true; text: wr.modelData.h; font.pixelSize: 13; color: '#6b5d55'; wrapMode: Text.WordWrap }
-                                }
-                                Switch { checked: app.ehPrivWarn(wr.modelData.k); onToggled: app.ehSetPrivWarn(wr.modelData.k, checked) }
-                            }
-                        }
-                    }
-                }
-            }
-
             // write one category: name, colour, save / delete
             Card {
+                id: editCard
                 visible: page.on && page.edit !== null
                 Layout.preferredHeight: edCol.implicitHeight + 24
                 border.width: 2
@@ -346,6 +315,51 @@ Item {
                     }
                 }
             }
+
+            // the two warnings (on by default)
+            Label {
+                visible: page.on
+                Layout.topMargin: 6
+                Layout.leftMargin: 4
+                text: qsTr('WARNINGS')
+                font.pixelSize: 13; font.bold: true; font.letterSpacing: 0.6; color: '#45541f'
+            }
+            Card {
+                visible: page.on
+                Layout.preferredHeight: wCol.implicitHeight
+                clip: true
+                ColumnLayout {
+                    id: wCol
+                    width: parent.width
+                    spacing: 0
+                    Repeater {
+                        model: [ { 'k': 'warn_mix', 't': qsTr('When I mix origins'), 'h': qsTr('before sending') },
+                                 { 'k': 'warn_dust', 't': qsTr('Suspicious little coins'), 'h': qsTr('very small, from strangers') } ]
+                        Rectangle {
+                            id: wr
+                            required property var modelData
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: Math.max(60, wRow.implicitHeight + 16)
+                            color: 'transparent'
+                            Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: '#efe7da' }
+                            RowLayout {
+                                id: wRow
+                                anchors.fill: parent
+                                anchors.leftMargin: 14
+                                anchors.rightMargin: 8
+                                ColumnLayout {
+                                    Layout.fillWidth: true
+                                    spacing: 0
+                                    Label { Layout.fillWidth: true; text: wr.modelData.t; font.pixelSize: 16; font.bold: true; wrapMode: Text.WordWrap }
+                                    Label { Layout.fillWidth: true; text: wr.modelData.h; font.pixelSize: 13; color: '#6b5d55'; wrapMode: Text.WordWrap }
+                                }
+                                Switch { checked: app.ehPrivWarn(wr.modelData.k); onToggled: app.ehSetPrivWarn(wr.modelData.k, checked) }
+                            }
+                        }
+                    }
+                }
+            }
+
         }
     }
 }

@@ -35,6 +35,11 @@ ElDialog {
     // pasted address: shown big first, so a wrong paste is seen before going on
     property string pasted: ''
     property bool pasteError: false
+    property bool pasteSame: false   // T23: pasted again the address already shown
+    function clearPasted() {
+        root.pasted = ''; root.pasteError = false; root.pasteSame = false
+        if (camLoader.item) camLoader.item.start()
+    }
     function addrOf(s) { return s.replace(/^bitcoin:/i, '').split('?')[0] }
 
     function dispatch(data) {
@@ -195,6 +200,27 @@ ElDialog {
 
         Item { visible: root.pasted !== ''; Layout.fillHeight: true }
 
+        // T23: the same address as before (still in the clipboard)
+        Rectangle {
+            visible: root.pasteSame && root.pasted !== ''
+            Layout.fillWidth: true
+            Layout.preferredHeight: sameL.implicitHeight + 20
+            radius: 14
+            color: '#fdf1d4'
+            border.width: 2
+            border.color: '#e0a21a'
+            Label {
+                id: sameL
+                x: 12; y: 10
+                width: parent.width - 24
+                wrapMode: Text.WordWrap
+                textFormat: Text.StyledText
+                font.pixelSize: 15
+                color: '#3f0f21'
+                text: qsTr('<b>It is the same address as before.</b> In the phone memory there is still that one: copy the new address and paste again.')
+            }
+        }
+
         Label {
             visible: root.pasteError
             Layout.fillWidth: true
@@ -211,6 +237,26 @@ ElDialog {
             Layout.fillWidth: true
             text: qsTr('Yes, it is right: next')
             onClicked: root.dispatch(root.pasted)
+        }
+
+        // T23: a wrong paste can be thrown away
+        Rectangle {
+            visible: root.pasted !== ''
+            Layout.alignment: Qt.AlignHCenter
+            Layout.preferredHeight: 44
+            Layout.preferredWidth: clRow.implicitWidth + 36
+            radius: 22
+            color: clMa.pressed ? '#f7e3e8' : '#ffffff'
+            border.width: 2
+            border.color: '#e6b9b3'
+            RowLayout {
+                id: clRow
+                anchors.centerIn: parent
+                spacing: 8
+                Image { source: Qt.resolvedUrl('../../icons/eh_cross.svg'); sourceSize.width: 18; sourceSize.height: 18 }
+                Label { text: qsTr('Clear this address'); color: '#b3261e'; font.pixelSize: 16; font.bold: true }
+            }
+            MouseArea { id: clMa; anchors.fill: parent; onClicked: root.clearPasted() }
         }
 
         EhPillButton {
@@ -233,9 +279,13 @@ ElDialog {
                 if (!bitcoin.isAddress(root.addrOf(cliptext))) {
                     root.pasted = ''
                     root.pasteError = true
+                    root.pasteSame = false
                     return
                 }
                 root.pasteError = false
+                // T23: same address again: say it, so it does not look like nothing happened
+                root.pasteSame = root.pasted !== '' && root.addrOf(cliptext) === root.addrOf(root.pasted)
+                if (root.pasteSame) AppController.haptic()
                 root.pasted = cliptext
             }
             Image {

@@ -5,6 +5,8 @@
 
 STRINGS = {
     'it_IT': {
+        '<b>It is the same address as before.</b> In the phone memory there is still that one: copy the new address and paste again.': "<b>È lo stesso indirizzo di prima.</b> Nella memoria del telefono c'è ancora quello: copia l'indirizzo nuovo e incolla di nuovo.",
+        'Clear this address': 'Cancella questo indirizzo',
         '1 movement': '1 movimento',
         '%1 movements': '%1 movimenti',
         'You are mixing coins': 'Stai mescolando monete',
@@ -539,6 +541,8 @@ STRINGS = {
         '<b>Schèi chooses a "normal" tip by itself</b>: the payment usually arrives in about ten minutes. The whole tip goes to the miners: Schèi takes nothing.': '<b>Schèi sceglie da solo una mancia "normale"</b>: il pagamento arriva di solito in una decina di minuti. La mancia va tutta ai minatori: Schèi non prende niente.',
     },
     'vec_IT': {
+        '<b>It is the same address as before.</b> In the phone memory there is still that one: copy the new address and paste again.': "<b>El xe el stesso indirisso de prima.</b> Ne la memoria del telefonin ghe xe ancora quelo: copia l'indirisso novo e incola da novo.",
+        'Clear this address': 'Scancela sto indirisso',
         '1 movement': '1 movimento',
         '%1 movements': '%1 movimenti',
         'You are mixing coins': 'Te stà missiando monede',
