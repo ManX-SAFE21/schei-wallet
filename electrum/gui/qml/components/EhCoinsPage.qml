@@ -126,19 +126,28 @@ Item {
             clip: true
             spacing: 0
             model: page.filterModel
-            section.property: page.showAddresses ? 'type' : ''
+            // T22: section.property must NOT change while the list is alive (Qt crashed
+            // switching to the Addresses tab): always 'type', headers hidden for coins
+            section.property: 'type'
             section.criteria: ViewSection.FullString
-            section.delegate: Label {
+            // the ListView drives the visibility of section items itself: wrap the label
+            section.delegate: Item {
                 required property string section
                 width: ListView.view.width
-                topPadding: 10
-                bottomPadding: 4
-                leftPadding: 4
-                text: section === 'receive' ? qsTr('TO RECEIVE') : (section === 'change' ? qsTr('CHANGE') : section.toUpperCase())
-                font.pixelSize: 12
-                font.bold: true
-                font.letterSpacing: 0.6
-                color: '#6b5d55'
+                height: page.showAddresses ? 34 : 0
+                clip: true
+                Label {
+                    visible: page.showAddresses
+                    anchors.fill: parent
+                    topPadding: 10
+                    bottomPadding: 4
+                    leftPadding: 4
+                    text: parent.section === 'receive' ? qsTr('TO RECEIVE') : (parent.section === 'change' ? qsTr('CHANGE') : parent.section.toUpperCase())
+                    font.pixelSize: 12
+                    font.bold: true
+                    font.letterSpacing: 0.6
+                    color: '#6b5d55'
+                }
             }
             delegate: Loader {
                 id: ld
@@ -274,7 +283,7 @@ Item {
                                 Label {
                                     font.pixelSize: 12
                                     color: '#6b5d55'
-                                    text: (ld.model.numtx > 0 ? qsTr('%n movement(s)', '', ld.model.numtx) : qsTr('no movements'))
+                                    text: (ld.model.numtx > 0 ? (ld.model.numtx === 1 ? qsTr('1 movement') : qsTr('%1 movements').arg(ld.model.numtx)) : qsTr('no movements'))
                                           + (ld.model.balance && ld.model.balance.satsInt > 0 ? ' · ' + app.ehMoney(ld.model.balance) : '')
                                 }
                             }

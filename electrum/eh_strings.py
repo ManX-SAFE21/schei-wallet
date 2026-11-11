@@ -5,6 +5,8 @@
 
 STRINGS = {
     'it_IT': {
+        '1 movement': '1 movimento',
+        '%1 movements': '%1 movimenti',
         'You are mixing coins': 'Stai mescolando monete',
         'This payment uses coins of <b>different origins</b>. Who receives can understand that they are all yours.': 'Questo pagamento usa monete di <b>provenienze diverse</b>. Chi riceve può capire che sono tutte tue.',
         'I choose the coins': 'Scelgo io le monete',
@@ -537,6 +539,8 @@ STRINGS = {
         '<b>Schèi chooses a "normal" tip by itself</b>: the payment usually arrives in about ten minutes. The whole tip goes to the miners: Schèi takes nothing.': '<b>Schèi sceglie da solo una mancia "normale"</b>: il pagamento arriva di solito in una decina di minuti. La mancia va tutta ai minatori: Schèi non prende niente.',
     },
     'vec_IT': {
+        '1 movement': '1 movimento',
+        '%1 movements': '%1 movimenti',
         'You are mixing coins': 'Te stà missiando monede',
         'This payment uses coins of <b>different origins</b>. Who receives can understand that they are all yours.': 'Sto pagamento el dopara monede che vien da <b>posti difarenti</b>. Chi che riceve el pol capir che le xe tute tue.',
         'I choose the coins': 'Sielzo mi le monede',
