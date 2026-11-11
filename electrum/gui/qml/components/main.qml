@@ -673,8 +673,30 @@ ApplicationWindow
         if (Config.language !== 'en_UK') s = s.replace(/,/g, ' ').replace('.', ',')
         return s + ' BTC'
     }
+    // third review (2.1): the euro of the movements are drawn again when the rates arrive
+    property int ehFxRev: 0
+    Connections {
+        target: Daemon.fx
+        function onQuotesUpdated() { app.ehFxRev++ }
+        function onHistoryUpdated() { app.ehFxRev++ }
+    }
+    // T39: when a movement happened, in words: "oggi 16:55", "ieri 14:51", "9 nov", "9 nov 2025"
+    function ehWhen(timestamp) {
+        if (!timestamp) return ''
+        var d = new Date(timestamp * 1000)
+        var now = new Date()
+        var day = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
+        var t = d.getTime()
+        var hm = Qt.formatTime(d, 'hh:mm')
+        if (t >= day) return qsTr('today %1').arg(hm)
+        if (t >= day - 86400000) return qsTr('yesterday %1').arg(hm)
+        var s = d.toLocaleDateString(ehLocale(), 'd MMM')
+        if (d.getFullYear() !== now.getFullYear()) s += ' ' + d.getFullYear()
+        return s
+    }
     // amount of a history item: historic euro value if known, else today's, else BTC
     function ehTxAmount(amount, timestamp, signed) {
+        app.ehFxRev   // re-evaluated when the rates arrive
         var e = ''
         if (Daemon.fx.enabled) {
             if (Daemon.fx.historicRates && timestamp)

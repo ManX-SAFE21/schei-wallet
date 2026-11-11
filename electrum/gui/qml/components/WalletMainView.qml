@@ -386,52 +386,88 @@ Item {
             }
         }
 
-        // T19 (owner 2026-11-11): the slide on the RIGHT, from the top to the bottom of the page;
-        // on the left the movements on top and the wallet card at the bottom, next to RICEVI:
-        // pulling the coin down sends it towards the wallet.
-        RowLayout {
+        // T37/T38 (owner 2026-11-11, preview portafoglio-si-apre.html): on top the movements on the
+        // left and the coin's rail on the right (SEND at the top); at the bottom the wallet, as wide
+        // as the page. "pull down RECEIVE" is right above the wallet: pulling the coin down OPENS
+        // the wallet (the card leans forward and the inside rises), and the coin goes in.
+        ColumnLayout {
             visible: !app.ehOption('buttons')
             Layout.fillWidth: true
             Layout.fillHeight: true
-            Layout.leftMargin: 19    // room for the strap, now on the left edge of the card
-            Layout.rightMargin: 6
-            spacing: 4
+            spacing: 0
 
-            ColumnLayout {
+            RowLayout {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                spacing: 8
+                Layout.leftMargin: 14
+                Layout.rightMargin: 6
+                spacing: 4
                 EhHistoryPanel {
                     glass: true
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                 }
-                EhBalanceCard {
-                    visible: !app.ehOption('multi')
-                    showGear: true
-                    compact: true
-                    strapLeft: true
-                    Layout.fillWidth: true
-                    Layout.bottomMargin: 6
-                }
-                EhWalletCarousel {
-                    visible: app.ehOption('multi')
-                    compact: true
-                    strapLeft: true
-                    Layout.fillWidth: true
-                    Layout.bottomMargin: 6
+                EhSlideBar {
+                    id: slideBar
+                    Layout.preferredWidth: 88
+                    Layout.fillHeight: true
+                    sendEnabled: Daemon.currentWallet && !Daemon.currentWallet.isWatchOnly
+                    onSendRequested: openSendDialog()
+                    onReceiveRequested: {
+                        // same address until money arrives on it (see qewallet.ehReceive)
+                        Daemon.currentWallet.ehReceive()
+                    }
                 }
             }
 
-            EhSlideBar {
-                Layout.preferredWidth: 88
-                Layout.fillHeight: true
-                sendEnabled: Daemon.currentWallet && !Daemon.currentWallet.isWatchOnly
-                onSendRequested: openSendDialog()
-                onReceiveRequested: {
-                    // same address until money arrives on it (see qewallet.ehReceive)
-                    Daemon.currentWallet.ehReceive()
+            // more wallets: which one receives
+            Label {
+                visible: app.ehOption('multi') && Daemon.currentWallet !== null
+                Layout.leftMargin: 22
+                Layout.topMargin: 2
+                textFormat: Text.StyledText
+                font.pixelSize: 13
+                color: '#45541f'
+                text: qsTr('receive in:') + ' <b>' + (Daemon.currentWallet ? app.ehWalletName() : '') + '</b>'
+            }
+
+            // one wallet: the card with its inside behind it
+            Item {
+                visible: !app.ehOption('multi')
+                Layout.fillWidth: true
+                Layout.leftMargin: 19    // room for the strap on the left edge of the card
+                Layout.rightMargin: 14
+                Layout.topMargin: 4
+                Layout.bottomMargin: 8
+                Layout.preferredHeight: homeCard.implicitHeight
+                EhWalletInside {
+                    anchors.fill: parent
+                    baseColor: homeCard.baseColor
+                    openK: slideBar.receiveProgress
                 }
+                EhBalanceCard {
+                    id: homeCard
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    showGear: true
+                    compact: true
+                    strapLeft: true
+                    // T37: the front comes down from the top (opening), the inside appears above it
+                    transform: Scale {
+                        origin.y: homeCard.height
+                        yScale: 1 - 0.22 * slideBar.receiveProgress
+                    }
+                }
+            }
+            EhWalletCarousel {
+                visible: app.ehOption('multi')
+                compact: true
+                strapLeft: true
+                openK: slideBar.receiveProgress
+                Layout.fillWidth: true
+                Layout.leftMargin: 19
+                Layout.rightMargin: 6
+                Layout.bottomMargin: 6
             }
         }
     }

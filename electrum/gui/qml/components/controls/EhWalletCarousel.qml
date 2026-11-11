@@ -11,6 +11,7 @@ ColumnLayout {
     readonly property int maxWallets: 7
     property bool compact: false   // home: narrow column next to the slide
     property bool strapLeft: false // T19: home with the slide on the right
+    property real openK: 0         // T37: the open wallet opens as the coin comes down
     readonly property int count: list.count - 1   // wallets (the last card is "Add wallet")
 
     // copy of the wallet list + the "Add wallet" card at the end
@@ -52,7 +53,9 @@ ColumnLayout {
         preferredHighlightBegin: root.strapLeft ? 8 : (root.compact ? 0 : 34)
         preferredHighlightEnd: root.strapLeft ? width - 22 : (root.compact ? width - 30 : width - 34)
         spacing: 10
-        clip: root.strapLeft   // T19: the next card peeks a little, but never under the slide
+        // T38: the wallet is now under the slide, as wide as the page: no clip, so the inside of
+        // the wallet can rise above it and the next wallet peeks at the edge
+        clip: false
         model: root.cards
         currentIndex: 0
 
@@ -73,6 +76,12 @@ ColumnLayout {
             Behavior on scale { NumberAnimation { duration: 180 } }
             Behavior on opacity { NumberAnimation { duration: 180 } }
 
+            EhWalletInside {
+                visible: d.isCurrent && openK > 0.01
+                anchors.fill: card
+                baseColor: card.baseColor
+                openK: root.openK
+            }
             EhBalanceCard {
                 id: card
                 visible: d.isCurrent
@@ -82,6 +91,11 @@ ColumnLayout {
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
+                // T37: the front comes down from the top (opening), the inside appears above it
+                transform: Scale {
+                    origin.y: card.height
+                    yScale: 1 - 0.22 * root.openK
+                }
             }
             // other wallets: name and colour, swipe here to open
             Rectangle {

@@ -26,6 +26,13 @@ Item {
         d.open()
     }
     readonly property real travel: Math.max(0, height / 2 - coinSize / 2 - 108)
+    // T37: going up the coin can reach and cover the QR code of SEND
+    readonly property real travelUp: Math.max(travel, height / 2 - 34)
+    // going down, the coin reaches the wallet under the bar (T37)
+    readonly property real travelDown: Math.max(travel, height / 2 - coinSize / 2 + coinSize * 0.35)
+    // T37: how open the wallet under the bar is: it opens as the coin comes down
+    readonly property real receiveProgress: coin.offset > 0 && travelDown > 0
+                                            ? Math.pow(Math.min(1, coin.offset / travelDown), 1.4) : 0
 
     implicitWidth: 95
 
@@ -39,7 +46,7 @@ Item {
         anchors.top: parent.top
         anchors.bottom: parent.bottom
         anchors.topMargin: 104
-        anchors.bottomMargin: 104
+        anchors.bottomMargin: 50
         width: 3
         radius: 2
         gradient: Gradient {
@@ -67,7 +74,7 @@ Item {
         }
         Label {
             anchors.horizontalCenter: parent.horizontalCenter
-            text: qsTr('SEND')
+            text: qsTr('SEND') + ' ↑'
             font.pixelSize: 19
             font.bold: true
             color: root.sendEnabled ? '#5e1a33' : '#9a8f80'
@@ -80,12 +87,13 @@ Item {
         }
     }
 
-    // bottom end: RICEVI
+    // bottom end: RICEVI, right above the wallet (T37: the wallet itself is the target)
     Column {
         anchors.bottom: parent.bottom
-        anchors.bottomMargin: 4
+        anchors.bottomMargin: 2
         anchors.horizontalCenter: parent.horizontalCenter
         spacing: 0
+        opacity: 1 - root.receiveProgress * 0.6
         Label {
             anchors.horizontalCenter: parent.horizontalCenter
             text: qsTr('pull down')
@@ -94,17 +102,10 @@ Item {
         }
         Label {
             anchors.horizontalCenter: parent.horizontalCenter
-            text: qsTr('RECEIVE')
+            text: qsTr('RECEIVE') + ' ↓'
             font.pixelSize: 19
             font.bold: true
             color: '#45541f'
-        }
-        Image {
-            // the wallet with the green arrow going in
-            anchors.horizontalCenter: parent.horizontalCenter
-            source: Qt.resolvedUrl('../../../icons/eh_rx_wallet.svg')   // T19: bigger, drawn better
-            sourceSize.width: 60
-            sourceSize.height: 60
         }
     }
 
@@ -147,6 +148,8 @@ Item {
 
     Chevrons {
         visible: root.sendEnabled
+        // while the coin travels the arrows step aside (they would go over the hills / the wallet)
+        opacity: Math.max(0, 1 - Math.abs(coin.offset) / 40)
         up: true
         tint: '#5e1a33'
         anchors.horizontalCenter: parent.horizontalCenter
@@ -154,6 +157,7 @@ Item {
         anchors.bottomMargin: 6
     }
     Chevrons {
+        opacity: Math.max(0, 1 - Math.abs(coin.offset) / 40)
         up: false
         tint: '#45541f'
         anchors.horizontalCenter: parent.horizontalCenter
@@ -167,6 +171,7 @@ Item {
         height: root.coinSize
         x: (root.width - width) / 2
         y: (root.height - height) / 2 + offset
+        z: 5
         property real offset: 0
         source: Qt.resolvedUrl('../../../icons/eh_bitcoin_logo.svg')
         sourceSize.width: 192
@@ -192,7 +197,7 @@ Item {
                     if (coin.offset <= -limit && root.sendEnabled) {
                         AppController.haptic()
                         root.sendRequested()
-                    } else if (coin.offset >= limit) {
+                    } else if (coin.offset >= Math.max(limit, root.travelDown * 0.8)) {
                         AppController.haptic()
                         root.receiveRequested()
                     }
@@ -203,8 +208,8 @@ Item {
                 // pushing up a watch-only wallet: tell why it cannot send
                 if (!root.sendEnabled && translation.y < -30) root.explainWatchOnly()
                 var v = startOffset + translation.y
-                var minV = root.sendEnabled ? -root.travel : 0
-                coin.offset = Math.max(minV, Math.min(root.travel, v))
+                var minV = root.sendEnabled ? -root.travelUp : 0
+                coin.offset = Math.max(minV, Math.min(root.travelDown, v))
             }
         }
         TapHandler {

@@ -64,6 +64,13 @@ ColumnLayout {
                 width: ListView.view.width
                 height: 58
                 readonly property bool incoming: model.value.satsInt >= 0
+                // only bitcoin: always 8 decimals, sign in front ("+0,00300000 BTC")
+                function btc8() {
+                    var s = Math.abs(model.value.satsInt)
+                    var t = (s / 100000000).toFixed(8)
+                    if (Config.language !== 'en_UK') t = t.replace('.', ',')
+                    return (incoming ? '+' : '−') + t + ' BTC'
+                }
                 // hairline that fades at both ends
                 Rectangle {
                     anchors.bottom: parent.bottom
@@ -92,28 +99,40 @@ ColumnLayout {
                             sourceSize.height: 24
                         }
                     }
+                    // T39 (preview movimenti-righe.html): two lines that say more.
+                    // Line 1: the amount, and when (or "unconfirmed").
+                    // Line 2: the note (pencil) or "received / sent", and the amount in the other unit.
+                    // Only bitcoin: 8 decimals in a fixed-width font, the date goes to line 2.
                     ColumnLayout {
+                        id: rc
                         Layout.fillWidth: true
                         spacing: 1
-                        Label {
-                            Layout.fillWidth: true
-                            text: app.ehTxAmount(row.model.value, row.model.timestamp, true)
-                            font.pixelSize: 16
-                            font.bold: true
-                            color: row.incoming ? '#45541f' : '#5e1a33'
-                            elide: Text.ElideRight
-                        }
+                        readonly property bool btcOnly: app.ehBtcOnly()
+                        readonly property string main: btcOnly ? row.btc8() : app.ehTxAmount(row.model.value, row.model.timestamp, true)
+                        readonly property bool euroShown: !btcOnly && main.indexOf('€') >= 0
+                        readonly property bool waiting: row.model.confirmations < 1
+                        readonly property string when: app.ehWhen(row.model.timestamp)
+                        readonly property string note: row.model.label ? row.model.label : ''
                         RowLayout {
                             Layout.fillWidth: true
-                            spacing: 5
+                            spacing: 6
                             Label {
-                                visible: row.model.confirmations > 0
-                                text: row.model.date ? row.model.date : ''
+                                Layout.fillWidth: true
+                                text: rc.main
+                                font.pixelSize: rc.btcOnly ? 15 : 16
+                                font.bold: true
+                                font.family: rc.btcOnly ? 'monospace' : font.family
+                                color: row.incoming ? '#45541f' : '#5e1a33'
+                                elide: Text.ElideRight
+                            }
+                            Label {
+                                visible: !rc.btcOnly && !rc.waiting && rc.when !== ''
+                                text: rc.when
                                 font.pixelSize: 12
                                 color: '#6b5d55'
                             }
                             Rectangle {
-                                visible: row.model.confirmations < 1
+                                visible: !rc.btcOnly && rc.waiting
                                 Layout.preferredHeight: 16
                                 Layout.preferredWidth: waitL.implicitWidth + 10
                                 radius: 5
@@ -127,13 +146,46 @@ ColumnLayout {
                                     color: '#7a4a12'
                                 }
                             }
+                        }
+                        RowLayout {
+                            Layout.fillWidth: true
+                            spacing: 6
                             Label {
-                                visible: row.model.confirmations < 1 && text !== ''
                                 Layout.fillWidth: true
                                 elide: Text.ElideRight
-                                text: app.ehFeeRate(row.model.date)
+                                font.pixelSize: 13
+                                font.italic: rc.note !== ''
+                                color: rc.note !== '' ? '#5e1a33' : '#4a4038'
+                                text: rc.note !== '' ? '✎ ' + rc.note : (row.incoming ? qsTr('money received') : qsTr('money sent'))
+                            }
+                            // euro shown: the bitcoin amount, small, on the right
+                            Label {
+                                visible: rc.euroShown
+                                text: app.ehBtc(row.model.value).replace('-', '')
                                 font.pixelSize: 12
                                 color: '#6b5d55'
+                            }
+                            // only bitcoin: the date (or "unconf.") moves here
+                            Label {
+                                visible: rc.btcOnly && !rc.waiting && rc.when !== ''
+                                text: rc.when
+                                font.pixelSize: 12
+                                color: '#6b5d55'
+                            }
+                            Rectangle {
+                                visible: rc.btcOnly && rc.waiting
+                                Layout.preferredHeight: 16
+                                Layout.preferredWidth: waitL2.implicitWidth + 10
+                                radius: 5
+                                color: '#fbf0d6'
+                                Label {
+                                    id: waitL2
+                                    anchors.centerIn: parent
+                                    text: qsTr('unconf.')
+                                    font.pixelSize: 10
+                                    font.bold: true
+                                    color: '#7a4a12'
+                                }
                             }
                         }
                     }

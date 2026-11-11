@@ -5,6 +5,12 @@
 
 STRINGS = {
     'it_IT': {
+        'today %1': 'oggi %1',
+        'yesterday %1': 'ieri %1',
+        'money received': 'ricevuti',
+        'money sent': 'mandati',
+        'unconf.': 'non conf.',
+        'receive in:': 'ricevi in:',
         'arriving %1': 'in arrivo %1',
         'I do not know the euro price right now.': "Non conosco il prezzo dell'euro in questo momento.",
         'Wait a few seconds, or write the amount in bitcoin.': "Aspetta qualche secondo, oppure scrivi l'importo in bitcoin.",
@@ -619,6 +625,12 @@ STRINGS = {
         '<b>Schèi chooses a "normal" tip by itself</b>: the payment usually arrives in about ten minutes. The whole tip goes to the miners: Schèi takes nothing.': '<b>Schèi sceglie da solo una mancia "normale"</b>: il pagamento arriva di solito in una decina di minuti. La mancia va tutta ai minatori: Schèi non prende niente.',
     },
     'vec_IT': {
+        'today %1': 'ancuo %1',
+        'yesterday %1': 'ieri %1',
+        'money received': 'ricevùi',
+        'money sent': 'mandài',
+        'unconf.': 'no conf.',
+        'receive in:': 'ricevi in:',
         'arriving %1': 'in rivo %1',
         'I do not know the euro price right now.': "No so el prezo de l'euro in sto momento.",
         'Wait a few seconds, or write the amount in bitcoin.': "Speta qualche secondo, o scrivi l'importo in bitcoin.",
