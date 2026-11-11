@@ -5,6 +5,8 @@
 
 STRINGS = {
     'it_IT': {
+        'Are you sure?': 'Sei sicuro?',
+        'All the settings will go back to the standard settings of the wallet.': 'Tutte le impostazioni verranno riportate alle impostazioni standard del wallet.',
         'YOUR WALLET': 'IL TUO PORTAFOGLIO',
         'HOW YOU PAY': 'COME PAGHI',
         'security, amounts, coins, wallets · the PIN is needed': 'sicurezza, importi, monete, portafogli · serve il PIN',
@@ -556,6 +558,8 @@ STRINGS = {
         '<b>Schèi chooses a "normal" tip by itself</b>: the payment usually arrives in about ten minutes. The whole tip goes to the miners: Schèi takes nothing.': '<b>Schèi sceglie da solo una mancia "normale"</b>: il pagamento arriva di solito in una decina di minuti. La mancia va tutta ai minatori: Schèi non prende niente.',
     },
     'vec_IT': {
+        'Are you sure?': 'Sito sicuro?',
+        'All the settings will go back to the standard settings of the wallet.': 'Tute le impostasion le tornarà a quele standard del portafojo.',
         'YOUR WALLET': 'EL TO PORTAFOJO',
         'HOW YOU PAY': 'COME CHE TE PAGHI',
         'security, amounts, coins, wallets · the PIN is needed': 'sicuressa, cifre, monede, portafoji · ghe vol el PIN',

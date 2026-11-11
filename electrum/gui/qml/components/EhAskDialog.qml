@@ -8,6 +8,7 @@ import QtQuick.Controls.Material
 Popup {
     id: root
     property string text
+    property string detail: ''   // smaller explanation under the question
 
     signal accepted
     signal rejected
@@ -42,6 +43,17 @@ Popup {
             font.family: TitleFont ? TitleFont : font.family
             font.weight: Font.Black
             font.pixelSize: 23
+        }
+        Label {
+            visible: root.detail !== ''
+            Layout.fillWidth: true
+            Layout.topMargin: -8
+            horizontalAlignment: Text.AlignHCenter
+            wrapMode: Text.WordWrap
+            text: root.detail
+            color: '#4a4038'
+            font.pixelSize: 16
+            lineHeight: 1.15
         }
         RowLayout {
             Layout.fillWidth: true

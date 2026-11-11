@@ -296,11 +296,13 @@ Item {
                 TapHandler {
                     id: resetTap
                     onTapped: {
-                        var d = app.messageDialog.createObject(app, {
-                            title: qsTr('Back to the initial settings?'),
-                            text: qsTr('Your choices (expert mode, colours) will go back to how they were at the start.') + '\n\n'
-                                  + qsTr('Your money, the 12 words and the PIN do not change.'),
-                            yesno: true
+                        // T27: our own yes / no window (Electrum's one was see-through on the phone)
+                        var d = Qt.createComponent(Qt.resolvedUrl('EhAskDialog.qml')).createObject(app, {
+                            text: qsTr('Are you sure?'),
+                            detail: qsTr('All the settings will go back to the standard settings of the wallet.') + '
+
+'
+                                    + qsTr('Your money, the 12 words and the PIN do not change.')
                         })
                         d.accepted.connect(function() { app.ehResetSettings() })
                         d.open()
