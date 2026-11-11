@@ -107,7 +107,7 @@ ElDialog {
         return out
     }
     property bool busy: false
-    function setBusy(b) { busy = b; bar1.busy = b; dbl1.busy = b; dbl2.busy = b }
+    function setBusy(b) { busy = b }
     // steps bar: back to a step already done, keeping what was typed
     function goToStep(n) {
         if (n === 2 && dialog.phase === 'review' && dialog.invoice.amount.isEmpty) {
@@ -119,8 +119,29 @@ ElDialog {
             Qt.callLater(function() { app.ehBackToStep1(draft) })
         }
     }
-    function resetBars() { setBusy(false); bar1.reset(); dbl1.reset(); dbl2.reset() }
-    function checkDouble() { if (dbl1.locked && dbl2.locked) doSend() }
+    function resetBars() { setBusy(false); stopCountdown(); sl1.reset(); sl2.reset() }
+    // T24: both slides at the end (together, or one after the other while the first waits)
+    function checkSlides() {
+        if (!(sl1.locked && sl2.locked)) return
+        sl1.hold = true; sl2.hold = true
+        dialog.confirmSend()
+    }
+    // T25: 5 4 3 2 1 0, then the payment really leaves; "Annulla" stops everything
+    property int countdown: -1          // -1 = not running
+    function startCountdown() { dialog.countdown = 5; AppController.haptic(); cdTimer.restart() }
+    function stopCountdown() { cdTimer.stop(); dialog.countdown = -1 }
+    function cancelCountdown() { stopCountdown(); dialog.resetBars() }
+    Timer {
+        id: cdTimer
+        interval: 1000
+        repeat: true
+        onTriggered: {
+            if (dialog.countdown > 0) { dialog.countdown--; AppController.haptic(); return }
+            cdTimer.stop()
+            dialog.countdown = -1
+            dialog.doSend()
+        }
+    }
     // T20 step 4: the coins of this payment come from different places?
     property bool mixOk: false          // "Va bene lo stesso" for this payment
     readonly property alias ehFinalizer: finalizer   // for the PC tests
@@ -148,12 +169,12 @@ ElDialog {
         d.open()
     }
     function confirmSend() {
-        if (!dialog.needsPin) { doSend(); return }
+        if (!dialog.needsPin) { startCountdown(); return }
         var d = app.ehPinDialog.createObject(app, {
             mode: 'verify',
             prompt: qsTr('Type the PIN to send %1').arg(app.ehMoney(dialog.reviewAmount))
         })
-        d.verified.connect(function() { dialog.doSend() })
+        d.verified.connect(function() { dialog.startCountdown() })
         d.rejected.connect(function() { dialog.resetBars() })
         d.open()
     }
@@ -482,19 +503,18 @@ ElDialog {
 
         // single confirmation: one push-up bar on the left, text on the right.
         // double confirmation (big amounts): text on the left, two long bars on the right.
-        RowLayout {
+        ColumnLayout {
             visible: dialog.phase === 'review'
             Layout.fillWidth: true
             Layout.fillHeight: true
-            spacing: 10
+            spacing: 8
 
-            EhPushUpBar {
-                id: bar1
-                visible: !dialog.needsDouble
-                Layout.preferredWidth: 92
-                Layout.fillHeight: true
-                enabled: finalizer.valid
-                onConfirmed: dialog.confirmSend()
+            // T24: first slide, above the text
+            EhSlideH {
+                id: sl1
+                Layout.fillWidth: true
+                enabled: finalizer.valid && dialog.countdown < 0
+                onReached: dialog.checkSlides()
             }
 
             Flickable {
@@ -820,42 +840,26 @@ ElDialog {
                         text: '<b>' + qsTr('It is a big amount.') + '</b> ' + qsTr('Push up <b>both coins together</b>, with two fingers.')
                     }
                 }
-                Label {
-                    visible: dialog.needsDouble
-                    Layout.fillWidth: true
-                    wrapMode: Text.WordWrap
-                    font.pixelSize: 15
-                    font.bold: true
-                    color: '#45541f'
-                    text: dbl1.locked && dbl2.locked ? qsTr('Good! Both up: sending.')
-                          : (dbl1.locked || dbl2.locked ? qsTr('Now the other one, quickly!') : '')
-                }
 
             }
             }
 
-            // double confirmation: two long bars side by side on the right
-            EhPushUpBar {
-                id: dbl1
-                visible: dialog.needsDouble
-                label: '1'
-                numberInRing: true
-                lockSeconds: 2
-                Layout.preferredWidth: 84
-                Layout.fillHeight: true
-                enabled: finalizer.valid
-                onConfirmed: dialog.checkDouble()
+            Label {
+                Layout.fillWidth: true
+                horizontalAlignment: Text.AlignHCenter
+                wrapMode: Text.WordWrap
+                font.pixelSize: 14
+                font.bold: true
+                color: sl1.locked !== sl2.locked ? '#45541f' : '#6b5d55'
+                text: sl1.locked !== sl2.locked ? qsTr('Now the other one, quickly!')
+                                                : qsTr('Push both coins to the right: together with two fingers, or one after the other.')
             }
-            EhPushUpBar {
-                id: dbl2
-                visible: dialog.needsDouble
-                label: '2'
-                numberInRing: true
-                lockSeconds: 2
-                Layout.preferredWidth: 84
-                Layout.fillHeight: true
-                enabled: finalizer.valid
-                onConfirmed: dialog.checkDouble()
+            // T24: second slide, at the bottom
+            EhSlideH {
+                id: sl2
+                Layout.fillWidth: true
+                enabled: finalizer.valid && dialog.countdown < 0
+                onReached: dialog.checkSlides()
             }
         }
 
@@ -956,4 +960,112 @@ ElDialog {
             euroInput = d.euroInput
         }
     }
+
+    // ===== T25: countdown before the payment leaves =====
+    Rectangle {
+        id: cdPane
+        visible: dialog.countdown >= 0
+        anchors.fill: parent
+        z: 100
+        color: '#faf7ef'
+        MouseArea { anchors.fill: parent }    // nothing behind can be touched
+        Rectangle {
+            anchors.centerIn: parent
+            anchors.verticalCenterOffset: -80
+            width: 380; height: 380; radius: 190
+            gradient: Gradient {
+                GradientStop { position: 0; color: Qt.rgba(0.97, 0.58, 0.10, 0.18) }
+                GradientStop { position: 1; color: Qt.rgba(0.97, 0.58, 0.10, 0) }
+            }
+        }
+        ColumnLayout {
+            anchors.centerIn: parent
+            width: parent.width - 48
+            spacing: 12
+            Label {
+                Layout.fillWidth: true
+                horizontalAlignment: Text.AlignHCenter
+                wrapMode: Text.WordWrap
+                text: qsTr('Sending the bitcoin…')
+                color: '#3f0f21'
+                font.family: TitleFont ? TitleFont : font.family
+                font.weight: Font.Black
+                font.pixelSize: 26
+            }
+            Label {
+                Layout.alignment: Qt.AlignHCenter
+                text: finalizer.valid ? app.ehMoney(dialog.satsToAmount(finalizer.effectiveAmount.satsInt + finalizer.fee.satsInt)) : ''
+                color: '#5e1a33'
+                font.family: TitleFont ? TitleFont : font.family
+                font.weight: Font.Black
+                font.pixelSize: 30
+            }
+            Label {
+                Layout.alignment: Qt.AlignHCenter
+                readonly property var parts: app.ehAddressParts(dialog.invoice ? dialog.invoice.address : '')
+                text: qsTr('to %1').arg((parts.prefix !== '' ? parts.prefix + ' ' : '') + parts.first + ' … ' + parts.last)
+                font.family: FixedFont
+                font.pixelSize: 15
+                font.bold: true
+            }
+            // the ring empties second after second, the big number in the middle
+            Item {
+                Layout.alignment: Qt.AlignHCenter
+                Layout.preferredWidth: 190
+                Layout.preferredHeight: 190
+                Canvas {
+                    id: ring
+                    anchors.fill: parent
+                    property real part: Math.max(0, dialog.countdown) / 5
+                    Behavior on part { NumberAnimation { duration: 900 } }
+                    onPartChanged: requestPaint()
+                    onPaint: {
+                        var c = getContext('2d')
+                        c.reset()
+                        c.lineWidth = 12
+                        c.lineCap = 'round'
+                        c.strokeStyle = '#efe3c8'
+                        c.beginPath(); c.arc(95, 95, 84, 0, 2 * Math.PI); c.stroke()
+                        if (part > 0) {
+                            c.strokeStyle = '#f7931a'
+                            c.beginPath(); c.arc(95, 95, 84, -Math.PI / 2, -Math.PI / 2 + 2 * Math.PI * part); c.stroke()
+                        }
+                    }
+                }
+                Label {
+                    anchors.centerIn: parent
+                    text: Math.max(0, dialog.countdown)
+                    color: '#f7931a'
+                    font.family: TitleFont ? TitleFont : font.family
+                    font.weight: Font.Black
+                    font.pixelSize: 96
+                }
+            }
+            Label {
+                Layout.fillWidth: true
+                horizontalAlignment: Text.AlignHCenter
+                wrapMode: Text.WordWrap
+                text: qsTr('Until zero you can still stop it.')
+                color: '#6b5d55'
+                font.pixelSize: 15
+            }
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.topMargin: 12
+                Layout.preferredHeight: 68
+                radius: 26
+                color: cdMa.pressed ? '#fbeef2' : '#ffffff'
+                border.width: 3
+                border.color: '#5e1a33'
+                RowLayout {
+                    anchors.centerIn: parent
+                    spacing: 10
+                    Image { source: Qt.resolvedUrl('../../icons/eh_cross.svg'); sourceSize.width: 22; sourceSize.height: 22 }
+                    Label { text: qsTr('Cancel'); color: '#5e1a33'; font.pixelSize: 22; font.bold: true }
+                }
+                MouseArea { id: cdMa; anchors.fill: parent; onClicked: dialog.cancelCountdown() }
+            }
+        }
+    }
+
 }

@@ -5,6 +5,11 @@
 
 STRINGS = {
     'it_IT': {
+        'push to the right': 'spingi a destra',
+        'Push both coins to the right: together with two fingers, or one after the other.': "Spingi a destra le due monete: insieme con due dita, oppure una dopo l'altra.",
+        'Sending the bitcoin…': 'Sto mandando i bitcoin…',
+        'to %1': 'a %1',
+        'Until zero you can still stop it.': 'Fino a zero puoi ancora fermarlo.',
         'Are you sure?': 'Sei sicuro?',
         'All the settings will go back to the standard settings of the wallet.': 'Tutte le impostazioni verranno riportate alle impostazioni standard del wallet.',
         'YOUR WALLET': 'IL TUO PORTAFOGLIO',
@@ -558,6 +563,11 @@ STRINGS = {
         '<b>Schèi chooses a "normal" tip by itself</b>: the payment usually arrives in about ten minutes. The whole tip goes to the miners: Schèi takes nothing.': '<b>Schèi sceglie da solo una mancia "normale"</b>: il pagamento arriva di solito in una decina di minuti. La mancia va tutta ai minatori: Schèi non prende niente.',
     },
     'vec_IT': {
+        'push to the right': 'spenzi a destra',
+        'Push both coins to the right: together with two fingers, or one after the other.': "Spenzi a destra le do monede: insieme co do dei, opure una dopo l'altra.",
+        'Sending the bitcoin…': 'Drio mandar i bitcoin…',
+        'to %1': 'a %1',
+        'Until zero you can still stop it.': 'Fin a zero te pol ancora fermarlo.',
         'Are you sure?': 'Sito sicuro?',
         'All the settings will go back to the standard settings of the wallet.': 'Tute le impostasion le tornarà a quele standard del portafojo.',
         'YOUR WALLET': 'EL TO PORTAFOJO',
