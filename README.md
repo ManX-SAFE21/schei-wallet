@@ -1,3 +1,32 @@
+# Schèi Wallet
+
+> ⚠️ **Versione di prova.** Il codice è ancora in sviluppo e in prova sui telefoni.
+> Non usarla con cifre importanti: tieni sempre al sicuro le tue 12 parole.
+>
+> ⚠️ **Test version.** Still in development and being tested on phones.
+> Do not use it with significant amounts; always keep your 12 words safe.
+
+Schèi Wallet è un portafoglio bitcoin per Android, semplice, pensato per chi non è esperto
+(anche persone anziane): importi in euro, una moneta da spingere su per inviare e da tirare giù
+per ricevere, PIN solo per le cose importanti, italiano, veneto e inglese.
+
+È un **riadattamento grafico di Electrum** (app Android, interfaccia QML).
+La crittografia, le 12 parole, le firme e la gestione delle chiavi sono quelle originali di
+Electrum; Schèi aggiunge l'interfaccia, il PIN e la custodia della password nella cassaforte
+del telefono (Android Keystore).
+
+Schèi Wallet is a simple Android bitcoin wallet for non-experts. It is a **graphical
+adaptation of Electrum** (Android QML GUI): cryptography, seed, signatures and keys are
+Electrum's own; Schèi adds the interface, the PIN and the Android Keystore for the wallet password.
+
+- Prove / test APK: see the *Releases* of this repository (pre-release, debug build).
+- Problemi / issues: GitHub *Issues*, or schei@safe21.io
+- Licenza / licence: MIT (Schèi Wallet) — Electrum is MIT licensed, see `LICENCE`.
+
+---
+
+*Below: the original Electrum README.*
+
 # Electrum - Lightweight Bitcoin client
 
 ```
