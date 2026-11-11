@@ -39,7 +39,9 @@ WizardComponent {
     function finishWith(pin) {
         chosenPin = pin
         var secret = ''
-        if (phase !== 'existing' || Daemon.ehVaultReady())
+        // the safe cannot read its secret any more (key lost): a new one replaces it, or the
+        // restored wallet would be locked with PIN+"00" and the key-lost page would come back
+        if (phase !== 'existing' || Daemon.ehVaultReady() || Daemon.ehVaultBroken())
             secret = Daemon.ehVaultSecretOrCreate()
         if (secret !== '') {
             password = secret

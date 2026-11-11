@@ -709,8 +709,10 @@ class QEWallet(AuthMixin, QObject, QtEventListener):
             except BestEffortRequestFailed as e:
                 self._logger.error(repr(e))
                 self.broadcastFailed.emit(tx.txid(), '', repr(e))
-            except Exception:
+            except Exception as e:
                 self._logger.exception("failed to broadcast tx")
+                # Easy Heirs (second review F3): always tell the page, or it stays on "Sending..."
+                self.broadcastFailed.emit(tx.txid(), '', repr(e))
             else:
                 self._logger.info('broadcast success')
                 self.broadcastSucceeded.emit(tx.txid())
@@ -978,6 +980,10 @@ class QEWallet(AuthMixin, QObject, QtEventListener):
         amount and text (on an address that got no money yet)."""
         self.deleteExpiredRequests()
         w = self.wallet
+        if not w.is_up_to_date():
+            # before the sync we do not know which addresses got money: drop nothing, or an
+            # address already shown could be handed out again as "new"
+            return
         keep = None
         drop = []
         for req in w.get_unpaid_requests():
@@ -1000,7 +1006,10 @@ class QEWallet(AuthMixin, QObject, QtEventListener):
         """The address for "Receive": the open one if it got no money yet, else a new one."""
         self.ehCleanRequests()
         w = self.wallet
-        for req in w.get_unpaid_requests():
+        # second review (RN-2): before the wallet is up to date we do not know if money arrived
+        # on the open address while the app was closed: do not reuse it, take a new one
+        reuse_ok = w.is_up_to_date()
+        for req in (w.get_unpaid_requests() if reuse_ok else []):
             addr = req.get_address()
             if self._eh_is_plain_request(req) and addr and not w.adb.is_used(addr):
                 self.requestCreateSuccess.emit(req.get_id())

@@ -51,6 +51,9 @@ Item {
         property string key
         property bool soon: false
         property bool invert: false     // the option stores the opposite (e.g. no_anim)
+        property bool locked: false     // second review (S3): stays on, cannot be turned off
+        property string lockedHint
+        Component.onCompleted: if (locked && !app.ehOption(key)) app.ehSetOption(key, true)
         Layout.fillWidth: true
         Layout.preferredHeight: Math.max(60, swRow.implicitHeight + 16)
         color: 'transparent'
@@ -65,10 +68,10 @@ Item {
                 Layout.fillWidth: true
                 spacing: 0
                 Label { Layout.fillWidth: true; text: s.text; font.pixelSize: 16; font.bold: true; wrapMode: Text.WordWrap }
-                Label { Layout.fillWidth: true; text: s.soon ? qsTr('coming soon') : s.hint; font.pixelSize: 13; color: '#6b5d55'; wrapMode: Text.WordWrap }
+                Label { Layout.fillWidth: true; text: s.soon ? qsTr('coming soon') : (s.locked ? s.lockedHint : s.hint); font.pixelSize: 13; color: '#6b5d55'; wrapMode: Text.WordWrap }
             }
             Switch {
-                enabled: !s.soon
+                enabled: !s.soon && !s.locked
                 checked: s.invert ? !app.ehOption(s.key) : app.ehOption(s.key)
                 onToggled: app.ehSetOption(s.key, s.invert ? !checked : checked)
             }
@@ -260,7 +263,9 @@ Item {
             Rectangle {
                 Layout.fillWidth: true; Layout.preferredHeight: g2.implicitHeight; radius: 18; color: '#ffffff'; clip: true
                 ColumnLayout { id: g2; width: parent.width; spacing: 0
-                    Sw { text: qsTr('More wallets'); hint: qsTr('up to 7, each with its own colour'); key: 'multi' }
+                    Sw { text: qsTr('More wallets'); hint: qsTr('up to 7, each with its own colour'); key: 'multi'
+                         locked: Daemon.availableWallets.rowCount() > 1
+                         lockedHint: qsTr('you have %1 wallets: it stays on, so you see them all').arg(Daemon.availableWallets.rowCount()) }
                     Sw { text: qsTr('Watch only'); hint: qsTr('see the balance without being able to spend'); key: 'watch' }
                     Sw { text: qsTr('Sign elsewhere'); hint: qsTr('sign the payment on another device'); key: 'sign_elsewhere'; soon: true }
                 }

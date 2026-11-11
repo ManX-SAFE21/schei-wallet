@@ -455,9 +455,15 @@ class SimpleConfig(Logger):
         path = os.path.join(self.path, "config")
         s = json.dumps(self.user_config, indent=4, sort_keys=True)
         try:
-            with open(path, "w", encoding='utf-8') as f:
-                os_chmod(path, stat.S_IREAD | stat.S_IWRITE)  # set restrictive perms *before* we write data
+            # Easy Heirs (review 2026-11-11): all or nothing, as for the wallet files (storage.py):
+            # a phone that dies while saving keeps the old config instead of an empty one.
+            temp_path = "%s.tmp.%s" % (path, os.getpid())
+            with open(temp_path, "w", encoding='utf-8') as f:
+                os_chmod(temp_path, stat.S_IREAD | stat.S_IWRITE)  # set restrictive perms *before* we write data
                 f.write(s)
+                f.flush()
+                os.fsync(f.fileno())
+            os.replace(temp_path, path)
         except OSError:
             # datadir probably deleted while running... e.g. portable exe running on ejected USB drive
             # (in which case it is typically either FileNotFoundError or PermissionError,

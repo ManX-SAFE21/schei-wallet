@@ -130,8 +130,8 @@ Item {
                     }
                     Repeater {
                         model: [
-                            { 'icon': 'eh_mail.svg', 'title': qsTr('Write an e-mail'), 'sub': 'info@safe21.io',
-                              'url': 'mailto:info@safe21.io?subject=' + encodeURIComponent('Schèi Wallet ' + BUILD.electrum_version) },
+                            { 'icon': 'eh_mail.svg', 'title': qsTr('Write an e-mail'), 'sub': 'schei@safe21.io',
+                              'url': 'mailto:schei@safe21.io?subject=' + encodeURIComponent('Schèi Wallet ' + BUILD.electrum_version) },
                             { 'icon': 'eh_github.svg', 'title': qsTr('Report a problem on GitHub'), 'sub': 'github.com/ManX-SAFE21/schei-wallet',
                               'url': 'https://github.com/ManX-SAFE21/schei-wallet/issues' }
                         ]

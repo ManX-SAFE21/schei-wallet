@@ -312,6 +312,36 @@ class QEAppController(BaseCrashReporter, QObject):
         it = jIntent.createChooser(sendIntent, cast('java.lang.CharSequence', jString(title)))
         jpythonActivity.startActivity(it)
 
+    @pyqtSlot(str, str, str)
+    def ehShareFile(self, filename, data, title):
+        """Easy Heirs (second review S1): save a text file in Download/Schei and share it as an
+        attachment (e-mail, WhatsApp...), not as message text. If that fails: share the text."""
+        if not self.isAndroid():
+            self.logger.info(f'ehShareFile (PC): {filename}, {len(data)} characters')
+            return
+        try:
+            jValues = autoclass('android.content.ContentValues')
+            jDownloads = autoclass('android.provider.MediaStore$Downloads')
+            values = jValues()
+            values.put('_display_name', jString(filename))
+            values.put('mime_type', jString('text/csv'))
+            values.put('relative_path', jString('Download/Schei'))
+            resolver = jpythonActivity.getContentResolver()
+            uri = resolver.insert(jDownloads.EXTERNAL_CONTENT_URI, values)
+            out = resolver.openOutputStream(uri)
+            out.write(data.encode('utf-8'))
+            out.close()
+            sendIntent = jIntent()
+            sendIntent.setAction(jIntent.ACTION_SEND)
+            sendIntent.setType('text/csv')
+            sendIntent.putExtra(jIntent.EXTRA_STREAM, cast('android.os.Parcelable', uri))
+            sendIntent.addFlags(jIntent.FLAG_GRANT_READ_URI_PERMISSION)
+            it = jIntent.createChooser(sendIntent, cast('java.lang.CharSequence', jString(title)))
+            jpythonActivity.startActivity(it)
+        except Exception as e:
+            self.logger.error(f'ehShareFile: {e!r}, sharing as text')
+            self.doShare(data, title)
+
     @pyqtSlot(result=bool)
     def isMaxBrightnessOnQrDisplayEnabled(self):
         return self.config.GUI_QML_SET_MAX_BRIGHTNESS_ON_QR_DISPLAY

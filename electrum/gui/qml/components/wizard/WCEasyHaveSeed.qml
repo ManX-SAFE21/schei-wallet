@@ -26,6 +26,7 @@ WizardComponent {
     property string _seedType
     property bool _canPassphrase
     property bool checked: false            // validation ran on the current text
+    property string hint: ''                // the words are right, but for the other choice
 
     readonly property var tokens: seedText === '' ? [] : seedText.replace(/ +$/, '').split(' ')
     readonly property bool typing: seedText !== '' && seedText.slice(-1) !== ' '
@@ -43,7 +44,8 @@ WizardComponent {
         wizard_data['seed'] = seedText.trim()
         wizard_data['seed_variant'] = variant
         wizard_data['seed_type'] = _seedType
-        wizard_data['seed_extend'] = _canPassphrase
+        // review 2026-11-11 (W4): Schèi never adds "extra words" to the 12 words: no stock page about it
+        wizard_data['seed_extend'] = false
     }
 
     function setText(t) {
@@ -70,10 +72,27 @@ WizardComponent {
         return bitcoin.mnemonicsFor(w).indexOf(w) >= 0
     }
     function checkValid() {
-        var r = wiz.verifySeed(seedText.trim(), variant, wizard_data['wallet_type'])
+        var s = seedText.trim()
+        var r = wiz.verifySeed(s, variant, wizard_data['wallet_type'])
         _seedType = r.type
         _canPassphrase = r.can_passphrase
-        valid = r.valid
+        var ok = r.valid
+        // review 2026-11-11 (W1): Electrum accepts ANY text as "another wallet" (BIP39) words and
+        // opens an empty wallet. Schèi accepts them only if they are a real list: right number of
+        // words, all from the list, and the last one matching the others (checksum).
+        var n = s === '' ? 0 : s.split(/ +/).length
+        if (variant === 'bip39')
+            ok = ok && r.message === '' && [12, 15, 18, 21, 24].indexOf(n) >= 0
+        hint = ''
+        if (!ok && n >= 12) {
+            var other = variant === 'bip39' ? 'electrum' : 'bip39'
+            var r2 = wiz.verifySeed(s, other, wizard_data['wallet_type'])
+            if (r2.valid && (other === 'electrum' || (r2.message === '' && [12, 15, 18, 21, 24].indexOf(n) >= 0)))
+                hint = other === 'electrum'
+                       ? qsTr('These words were made with Schèi or Electrum: choose "Made with Schèi or Electrum" above.')
+                       : qsTr('These words were made with another wallet: choose "Made with another wallet" above.')
+        }
+        valid = ok
         checked = true
     }
     function goOn() {
@@ -205,7 +224,7 @@ WizardComponent {
             visible: root.checked && root.doneWords >= 12 && !root.valid && !root.typing
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
-            text: qsTr('These words are not right. Check them one by one.')
+            text: root.hint !== '' ? root.hint : qsTr('These words are not right. Check them one by one.')
             color: '#8a1f1c'
             font.pixelSize: 15
             font.bold: true

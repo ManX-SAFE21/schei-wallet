@@ -465,6 +465,10 @@ class QEDaemon(AuthMixin, QObject):
         """True when the wallets use the secret kept by the phone's safe."""
         return bool(qeehvault.get_secret(self.daemon.config)) and qeehvault.pin_is_set(self.daemon.config)
 
+    @pyqtSlot(result=bool)
+    def ehVaultBroken(self):
+        return qeehvault.vault_broken(self.daemon.config)
+
     @pyqtSlot(result=str)
     def ehVaultSecret(self):
         return qeehvault.get_secret(self.daemon.config)

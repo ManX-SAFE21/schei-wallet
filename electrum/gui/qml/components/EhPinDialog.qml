@@ -25,6 +25,7 @@ ElDialog {
     property string prompt: ''
 
     signal verified
+    property int keyMatches: 0     // tries with the right app PIN that still did not open the wallet
 
     width: parent.width
     height: parent.height
@@ -55,6 +56,14 @@ ElDialog {
     }
 
     function wrong() {
+        // second review (W2): right PIN, wallet still closed: the problem is the key, not the PIN
+        if (root.mode === 'open' && app._ehPendingPin !== '' && Daemon.ehPinIsSet() && Daemon.ehPinCheck(app._ehPendingPin)
+                && (Daemon.ehVaultBroken() || ++root.keyMatches >= 3)) {
+            app._ehPendingPin = ''
+            pad.busy = false
+            app.ehShowKeyLost(root.name, root.path)
+            return
+        }
         app._ehPendingPin = ''
         pad.busy = false
         pad.clear()

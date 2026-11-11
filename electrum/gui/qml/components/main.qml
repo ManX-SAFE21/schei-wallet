@@ -576,15 +576,26 @@ ApplicationWindow
             if (Daemon.availableWallets.rowCount() > 0) {
                 Daemon.loadWallet()
             } else {
-                var newww = app.newWalletWizard.createObject(app)
-                newww.walletCreated.connect(function() {
-                    app._ehShowReady = true  // Easy Heirs
-                    Daemon.availableWallets.reload()
-                    // and load the new wallet
-                    Daemon.loadWallet(newww.path, newww.wizard_data['password'])
-                })
-                newww.open()
+                ehFirstWizard()
             }
+        }
+        // second review (W5): at first start the wizard cannot just go away (Back on Welcome):
+        // without a wallet the home has nothing to show, so it comes back on the first page
+        function ehFirstWizard() {
+            var newww = app.newWalletWizard.createObject(app)
+            var created = false
+            newww.walletCreated.connect(function() {
+                created = true
+                app._ehShowReady = true  // Easy Heirs
+                Daemon.availableWallets.reload()
+                // and load the new wallet
+                Daemon.loadWallet(newww.path, newww.wizard_data['password'])
+            })
+            newww.closed.connect(function() {
+                if (!created && !AppController.wantClose && Daemon.availableWallets.rowCount() === 0)
+                    Qt.callLater(ehFirstWizard)
+            })
+            newww.open()
         }
 
         // Easy Heirs: at first start, choose the language before anything else
@@ -875,6 +886,8 @@ ApplicationWindow
     function ehResetSettings() {
         var keys = ['euro_btc', 'max', 'request_amount', 'multi', 'watch', 'sign_elsewhere', 'buttons', 'coins', 'no_anim', 'privacy']
         for (var i = 0; i < keys.length; i++) Config.ehSet('opt_' + keys[i], ehOptDefaultOn.indexOf(keys[i]) >= 0)
+        // second review (S3): with 2 or more wallets "More wallets" stays on, or the others disappear
+        if (Daemon.availableWallets.rowCount() > 1) Config.ehSet('opt_multi', true)
         Config.ehSet('opt_double', true)
         Config.ehSet('pin_eur', 100)
         ehSetBtcOnly(false)
@@ -970,7 +983,41 @@ ApplicationWindow
     // once; right after, they are moved to the safe (see onWalletLoaded).
     property var _ehVaultTried: ({})
     property string _ehPendingPin: ''
+    // second review (W2): the safe of this phone cannot open the wallet any more: no endless
+    // "Wrong PIN", but a page that says so and leads to the 12 words
+    property var _ehKeyLost: null
+    function ehShowKeyLost(name, path) {
+        if (_ehKeyLost) return
+        if (_opendialog) { var od = _opendialog; _opendialog = null; od.close() }
+        var kl = ehKeyLostDialog.createObject(app, { name: name, path: path })
+        _ehKeyLost = kl
+        kl.restoreChosen.connect(function() {
+            _ehKeyLost = null
+            var w = app.newWalletWizard.createObject(app)
+            var created = false
+            w.walletCreated.connect(function() {
+                created = true
+                Daemon.availableWallets.reload()
+                Daemon.loadWallet(w.path, w.wizard_data['password'])
+            })
+            w.closed.connect(function() { if (!created && !Daemon.currentWallet) Qt.callLater(function() { ehShowKeyLost(name, path) }) })
+            w.open()
+        })
+        kl.retryChosen.connect(function() {
+            _ehKeyLost = null
+            _ehVaultTried[path] = false
+            Qt.callLater(function() { showOpenWalletDialog(name, path) })
+        })
+        kl.closed.connect(function() { if (_ehKeyLost === kl) _ehKeyLost = null })
+        kl.open()
+    }
+    Component { id: ehKeyLostDialog; EhKeyLostDialog { onClosed: destroy() } }
+
     function showOpenWalletDialog(name, path) {
+        if (Daemon.ehVaultBroken()) {
+            ehShowKeyLost(name, path)
+            return
+        }
         var secret = Daemon.ehVaultReady() ? Daemon.ehVaultSecret() : ''
         if (secret !== '' && !_ehVaultTried[path]) {
             _ehVaultTried[path] = true

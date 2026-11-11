@@ -33,9 +33,24 @@ Item {
         }
         current = n
         state_ = 'searching'
+        searchStart = Date.now()
         doneTimer.restart()
     }
-    Timer { id: doneTimer; interval: 4000; onTriggered: page.state_ = 'done' }
+    // second review (RN-3): "Done" only when the wallet is connected and has really finished
+    // looking (at least 4 seconds, so the person sees that something happened)
+    property real searchStart: 0
+    Timer {
+        id: doneTimer
+        interval: 1000
+        repeat: true
+        onTriggered: {
+            var w = Daemon.currentWallet
+            if (Date.now() - page.searchStart >= 4000 && Network.isConnected && w && !w.synchronizing) {
+                stop()
+                page.state_ = 'done'
+            }
+        }
+    }
 
     Rectangle { anchors.fill: parent; color: '#faf7ef' }
     EhGlow { tone: 'green'; x: -page.width * 0.3; y: 40; width: page.width * 1.6; height: 380; opacity: 0.6 }
@@ -193,7 +208,8 @@ Item {
                         textFormat: Text.StyledText
                         color: '#ffffff'; opacity: 0.9; font.pixelSize: 13
                         text: page.state_ === 'searching'
-                              ? qsTr('I look at %1 addresses instead of 20').arg(page.current)
+                              ? (Network.isConnected ? qsTr('I look at %1 addresses instead of 20').arg(page.current)
+                                                     : qsTr('Not connected to the internet: I start as soon as you are connected.'))
                               : qsTr('Balance updated: <b>%1</b> (before %2)').arg(app.ehMoney(Daemon.currentWallet.totalBalance)).arg(page.balanceBefore ? app.ehMoney(page.balanceBefore) : '')
                     }
                 }

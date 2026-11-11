@@ -137,10 +137,12 @@ ColumnLayout {
                 Daemon.loadWallet(item.model.path)
         }
         Component.onCompleted: Qt.callLater(positionOnCurrent)
+        // second review (S2): look in the data, not in the cards on screen: cards far from the
+        // view are not created, so the 4th wallet and after were never found
         function positionOnCurrent() {
-            for (var i = 0; i < count; i++) {
-                var it = itemAtIndex(i)
-                if (it && it.isCurrent) { currentIndex = i; return }
+            if (!Daemon.currentWallet) return
+            for (var i = 0; i < root.cards.length; i++) {
+                if (!root.cards[i].add && root.cards[i].name === Daemon.currentWallet.name) { currentIndex = i; return }
             }
         }
     }

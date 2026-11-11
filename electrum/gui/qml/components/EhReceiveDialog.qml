@@ -260,6 +260,23 @@ ElDialog {
             }
         }
 
+        // second review (RN-1): expert option "Ask for an amount": the page "How much are you
+        // asking for?" makes a new request with the amount; this page closes, the new one opens
+        EhPillButton {
+            visible: !dialog.arrived && app.ehOption('request_amount') && request.amount.isEmpty
+            Layout.topMargin: 4
+            text: qsTr('Ask for an amount')
+            fontSize: 18
+            color: '#ffffff'
+            textColor: '#45541f'
+            onClicked: {
+                var d = app.ehAskAmountDialog.createObject(app)
+                d.accepted.connect(function() { dialog.close() })
+                d.open()
+            }
+                Image { anchors.centerIn: parent; source: Qt.resolvedUrl('../../icons/eh_euro.svg'); sourceSize.width: 28; sourceSize.height: 28 }
+        }
+
         // T8: the addresses, only for who taps here (choose, copy, block an address)
         Rectangle {
             visible: !dialog.arrived

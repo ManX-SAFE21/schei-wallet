@@ -48,12 +48,15 @@ ElDialog {
         // Schèi does not use these codes: say it, instead of doing nothing.
         if (bitcoin.isRawTx(data) || Daemon.currentWallet.isValidChannelBackup(data)) {
             if (camLoader.item) camLoader.item.stop()
-            app.ehInfoDialog.createObject(app, {
+            var info = app.ehInfoDialog.createObject(app, {
                 pageTitle: qsTr('This code is not an address'),
                 bodyText: qsTr('This QR code holds a whole transaction or a backup, not a bitcoin address to pay. Schèi cannot use it.')
                           + '<br><br>' + qsTr('Ask the person you pay for their bitcoin address.')
-            }).open()
-            if (camLoader.item) camLoader.item.start()
+            })
+            // second review (F1): the camera starts again only when the page is closed, and with
+            // restart(): start() alone kept the old code and never read another one
+            info.closed.connect(root.restart)
+            info.open()
         } else {
             piResolver.recipient = data
         }

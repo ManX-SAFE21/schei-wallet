@@ -116,7 +116,9 @@ Item {
             tileColor: '#e6e9cf'
             outlined: false
             fontSize: 20
-            onClicked: AppController.doShare(page.csv, qsTr('Schèi movements (CSV)'))
+            onClicked: AppController.ehShareFile('schei-' + (Daemon.currentWallet ? Daemon.currentWallet.name : 'wallet').replace(/[^A-Za-z0-9_-]/g, '_')
+                                                 + '-' + Qt.formatDateTime(new Date(), 'yyyyMMdd-hhmm') + '.csv',
+                                                 page.csv, qsTr('Schèi movements (CSV)'))
             Image { anchors.centerIn: parent; source: Qt.resolvedUrl('../../icons/eh_share.svg'); sourceSize.width: 28; sourceSize.height: 28 }
         }
     }
