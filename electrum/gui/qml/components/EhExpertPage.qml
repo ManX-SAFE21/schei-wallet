@@ -125,7 +125,7 @@ Item {
                 Label { id: nl; anchors.fill: parent; anchors.margins: 7; anchors.leftMargin: 12; wrapMode: Text.WordWrap; font.pixelSize: 15; text: qsTr('Here are the things about money and safety. By default everything is off, except the PIN for big payments.') }
             }
 
-            Group { text: qsTr('SECURITY') }
+            Group { text: '1 · ' + qsTr('SECURITY') }
             Rectangle {
                 Layout.fillWidth: true; Layout.preferredHeight: g0.implicitHeight; radius: 18; color: Qt.rgba(1, 1, 1, 0.7); border.width: 1; border.color: Qt.rgba(1, 1, 1, 0.9); clip: true
                 ColumnLayout { id: g0; width: parent.width; spacing: 0
@@ -216,16 +216,10 @@ Item {
                             }
                         }
                     }
-                    // look further than the usual 20 empty addresses (gap limit)
-                    Nav {
-                        icon: 'eh_zoom.svg'
-                        text: qsTr('Look at more addresses') + ' · ' + qsTr('now: %1').arg(Daemon.currentWallet ? Daemon.currentWallet.ehGapLimit() : 20)
-                        onClicked: app.stack.push(Qt.resolvedUrl('EhGapLimitPage.qml'))
-                    }
                 }
             }
 
-            Group { text: qsTr('MONEY') }
+            Group { text: '2 · ' + qsTr('AMOUNTS') }
             Rectangle {
                 Layout.fillWidth: true; Layout.preferredHeight: g1.implicitHeight; radius: 18; color: '#ffffff'; clip: true
                 ColumnLayout { id: g1; width: parent.width; spacing: 0
@@ -252,24 +246,36 @@ Item {
                     Sw { text: qsTr('Ask for an amount'); hint: qsTr('in Receive, a QR with the amount'); key: 'request_amount' }
                 }
             }
-            Group { text: qsTr('COINS AND CONNECTION') }
+            Group { text: '3 · ' + qsTr('COINS AND PRIVACY') }
             Rectangle {
                 Layout.fillWidth: true; Layout.preferredHeight: gN.implicitHeight; radius: 18; color: Qt.rgba(1, 1, 1, 0.7); border.width: 1; border.color: Qt.rgba(1, 1, 1, 0.9); clip: true
                 ColumnLayout { id: gN; width: parent.width; spacing: 0
                     Nav { icon: 'eh_goldcoin.svg'; text: qsTr('Your gold coins and addresses'); onClicked: app.stack.push(Qt.resolvedUrl('EhCoinsPage.qml')) }
-                    Nav { icon: 'eh_onion.svg'; text: qsTr('Connection: your node and Tor'); onClicked: app.stack.push(Qt.resolvedUrl('EhConnectionPage.qml')) }
                     // T20: pockets, origin of the coins, warnings (for advanced users, off by default)
                     Nav { icon: 'eh_privacy.svg'; text: qsTr('Advanced privacy') + ' · ' + (app.ehOption('privacy') ? qsTr('on (f)') : qsTr('off (f)')); onClicked: app.stack.push(Qt.resolvedUrl('EhPrivacyPage.qml')) }
                 }
             }
 
-            Group { text: qsTr('WALLETS') }
+            Group { text: '4 · ' + qsTr('WALLETS') }
             Rectangle {
                 Layout.fillWidth: true; Layout.preferredHeight: g2.implicitHeight; radius: 18; color: '#ffffff'; clip: true
                 ColumnLayout { id: g2; width: parent.width; spacing: 0
                     Sw { text: qsTr('More wallets'); hint: qsTr('up to 7, each with its own colour'); key: 'multi' }
                     Sw { text: qsTr('Watch only'); hint: qsTr('see the balance without being able to spend'); key: 'watch' }
                     Sw { text: qsTr('Sign elsewhere'); hint: qsTr('sign the payment on another device'); key: 'sign_elsewhere'; soon: true }
+                }
+            }
+            Group { text: '5 · ' + qsTr('NETWORK AND RECOVERY') + '  ' + qsTr('(for experts)') }
+            Rectangle {
+                Layout.fillWidth: true; Layout.preferredHeight: g5.implicitHeight; radius: 18; color: Qt.rgba(1, 1, 1, 0.7); border.width: 1; border.color: Qt.rgba(1, 1, 1, 0.9); clip: true
+                ColumnLayout { id: g5; width: parent.width; spacing: 0
+                    Nav { icon: 'eh_onion.svg'; text: qsTr('Connection: your node and Tor'); onClicked: app.stack.push(Qt.resolvedUrl('EhConnectionPage.qml')) }
+                    // look further than the usual 20 empty addresses (gap limit)
+                    Nav {
+                        icon: 'eh_zoom.svg'
+                        text: qsTr('Look at more addresses') + ' · ' + qsTr('now: %1').arg(Daemon.currentWallet ? Daemon.currentWallet.ehGapLimit() : 20)
+                        onClicked: app.stack.push(Qt.resolvedUrl('EhGapLimitPage.qml'))
+                    }
                 }
             }
             // back to the initial settings (also the PIN threshold, so it lives here)

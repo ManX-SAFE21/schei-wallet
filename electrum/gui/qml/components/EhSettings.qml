@@ -144,6 +144,11 @@ Item {
                 }
             }
 
+            Group { text: qsTr('YOUR WALLET') }
+            Card {
+                Row1 { icon: 'eh_palette.svg'; text: qsTr('Name and colour'); onClicked: app.stack.push(Qt.resolvedUrl('EhNamePage.qml')) }
+            }
+
             Group { text: qsTr('HOW YOU SEE THE APP') }
             Card {
                 Row1 {
@@ -158,15 +163,13 @@ Item {
                         m.open()
                     }
                 }
-                Row1 { icon: 'eh_palette.svg'; text: qsTr('Name and colour'); onClicked: app.stack.push(Qt.resolvedUrl('EhNamePage.qml')) }
-                RowSw { visible: !app.ehBtcOnly(); icon: 'eh_euro.svg'; text: qsTr('Banknotes and coins'); hint: qsTr('as when you use cash'); key: 'coins' }
+                RowSw { icon: 'eh_anim.svg'; text: qsTr('Animations'); hint: qsTr('turn them off if the phone is slow'); key: 'no_anim'; invert: true }
             }
 
-            Group { text: qsTr('COMFORT') }
+            Group { text: qsTr('HOW YOU PAY') }
             Card {
+                RowSw { visible: !app.ehBtcOnly(); icon: 'eh_euro.svg'; text: qsTr('Banknotes and coins'); hint: qsTr('as when you use cash'); key: 'coins' }
                 RowSw { icon: 'eh_list.svg'; text: qsTr('Buttons instead of the bar'); hint: qsTr('for those who find it hard to drag'); key: 'buttons' }
-                RowSw { icon: 'eh_anim.svg'; text: qsTr('Animations'); hint: qsTr('turn them off if the phone is slow'); key: 'no_anim'; invert: true }
-                Row1 { icon: 'eh_info.svg'; text: qsTr('Information'); onClicked: app.stack.push(Qt.resolvedUrl('EhAboutPage.qml')) }
             }
 
             // ---- the way into the advanced settings: stitched like the wallet, golden lock ----
@@ -193,7 +196,7 @@ Item {
                         Layout.fillWidth: true
                         spacing: 1
                         Label { Layout.fillWidth: true; text: qsTr('Advanced settings'); color: '#ffffff'; font.pixelSize: 18; font.bold: true; wrapMode: Text.WordWrap }
-                        Label { Layout.fillWidth: true; text: qsTr('12 words, PIN, money and wallets · the PIN is needed'); color: '#ffffff'; opacity: 0.85; font.pixelSize: 13; wrapMode: Text.WordWrap }
+                        Label { Layout.fillWidth: true; text: qsTr('security, amounts, coins, wallets · the PIN is needed'); color: '#ffffff'; opacity: 0.85; font.pixelSize: 13; wrapMode: Text.WordWrap }
                     }
                     Label { text: '›'; color: '#ffffff'; font.pixelSize: 26 }
                 }
@@ -202,6 +205,12 @@ Item {
                     onTapped: app.ehAskPin(qsTr('Type the PIN to open the advanced settings'),
                                            function() { app.stack.push(Qt.resolvedUrl('EhExpertPage.qml')) })
                 }
+            }
+
+            // information (support, licence, Electrum) at the bottom, on its own
+            Card {
+                Layout.topMargin: 6
+                Row1 { icon: 'eh_info.svg'; text: qsTr('Information'); onClicked: app.stack.push(Qt.resolvedUrl('EhAboutPage.qml')) }
             }
         }
     }

@@ -703,7 +703,14 @@ ApplicationWindow
 
     // Easy Heirs: options (expert mode etc.), stored with Config.ehSet
     property int ehOptRev: 0
-    function ehOption(key) { ehOptRev; return Config.ehGet('opt_' + key) === true }
+    // options never touched take their default: off, except "Banconote e monete" (owner 2026-11-11)
+    readonly property var ehOptDefaultOn: ['coins']
+    function ehOption(key) {
+        ehOptRev
+        var v = Config.ehGet('opt_' + key)
+        if (v === null || v === undefined) return ehOptDefaultOn.indexOf(key) >= 0
+        return v === true
+    }
     function ehSetOption(key, value) { Config.ehSet('opt_' + key, value); ehOptRev++ }
     // T20 step 3: "where the coins come from" (advanced privacy). The list is kept
     // as JSON text in the config; the coins keep only the id of their category.
@@ -864,7 +871,7 @@ ApplicationWindow
     }
     function ehResetSettings() {
         var keys = ['euro_btc', 'max', 'request_amount', 'multi', 'watch', 'sign_elsewhere', 'buttons', 'coins', 'no_anim', 'privacy']
-        for (var i = 0; i < keys.length; i++) Config.ehSet('opt_' + keys[i], false)
+        for (var i = 0; i < keys.length; i++) Config.ehSet('opt_' + keys[i], ehOptDefaultOn.indexOf(keys[i]) >= 0)
         Config.ehSet('opt_double', true)
         Config.ehSet('pin_eur', 100)
         ehSetBtcOnly(false)
