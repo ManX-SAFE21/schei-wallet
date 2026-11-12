@@ -23,6 +23,7 @@ ElDialog {
     // owner 12/11: the tip written by hand (Settings for experts > "Tip written by hand")
     readonly property bool manualOn: app.ehOption('manual_fee')
     property string manualText: ''                     // what is typed, with the decimal comma
+    property bool padOpen: false                       // owner 12/11: the keypad opens only when the field is tapped
     readonly property bool manual: manualOn && manualText !== ''
     readonly property real manualRate: Number(manualText.replace(',', '.'))
     readonly property real slowRate: Config.ehFeeRateForBlocks(25)   // about 4 hours
@@ -163,6 +164,7 @@ ElDialog {
             opacity: root.manual ? 0.4 : 1
             // moving the slider goes back from the hand-written tip to the slider (Electrum's ETA)
             onMoved: if (root.finalizer) {
+                         root.padOpen = false
                          if (root.manual) { root.manualText = ''; root.finalizer.ehBackToSlider(Math.round(value)) }
                          else root.finalizer.sliderPos = Math.round(value)
                      }
@@ -213,9 +215,10 @@ ElDialog {
             Layout.fillWidth: true
             Layout.preferredHeight: 56
             radius: 14
-            color: '#ffffff'
+            color: fieldTap.pressed ? '#f3ecdd' : '#ffffff'
             border.width: 2
-            border.color: '#5e1a33'
+            border.color: root.padOpen ? '#5e1a33' : '#d9b25a'
+            TapHandler { id: fieldTap; onTapped: root.padOpen = !root.padOpen }
             RowLayout {
                 anchors.fill: parent
                 anchors.leftMargin: 12
@@ -225,9 +228,9 @@ ElDialog {
                 Label {
                     Layout.fillWidth: true
                     horizontalAlignment: Text.AlignHCenter
-                    text: root.manualText === '' ? '–' : root.manualText
-                    font.family: 'monospace'
-                    font.pixelSize: 24
+                    text: root.manualText !== '' ? root.manualText : (root.padOpen ? '–' : qsTr('tap to write'))
+                    font.family: root.manualText !== '' ? 'monospace' : font.family
+                    font.pixelSize: root.manualText !== '' || root.padOpen ? 24 : 15
                     font.bold: true
                     color: '#3f0f21'
                 }
@@ -260,7 +263,7 @@ ElDialog {
             }
         }
         GridLayout {
-            visible: root.manualOn
+            visible: root.manualOn && root.padOpen
             Layout.fillWidth: true
             columns: 3; rowSpacing: 6; columnSpacing: 6
             Repeater {
@@ -297,7 +300,7 @@ ElDialog {
             textColor: '#2a2220'
             tileColor: '#efe6d3'
             fontSize: 18
-            onClicked: if (root.finalizer) { root.manualText = ''; root.finalizer.ehBackToSlider(root.normalPos) }
+            onClicked: if (root.finalizer) { root.padOpen = false; root.manualText = ''; root.finalizer.ehBackToSlider(root.normalPos) }
             Image { anchors.centerIn: parent; source: Qt.resolvedUrl('../../icons/eh_undo.svg'); sourceSize.width: 26; sourceSize.height: 26 }
         }
     }

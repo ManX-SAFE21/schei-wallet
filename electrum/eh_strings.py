@@ -5,6 +5,7 @@
 
 STRINGS = {
     'it_IT': {
+        'tap to write': 'tocca per scrivere',
         'The connected server accepts at least %1 sat/vB.': 'Il server collegato accetta almeno %1 sat/vB.',
         'Less than 1 sat/vB: the payment can wait a long time, and some nodes may not pass it on.': 'Meno di 1 sat/vB: il pagamento può aspettare a lungo, e qualche nodo potrebbe non farlo passare.',
         'value of the day': 'valore del giorno',
@@ -683,6 +684,7 @@ STRINGS = {
         '<b>Schèi chooses a "normal" tip by itself</b>: the payment usually arrives in about ten minutes. The whole tip goes to the miners: Schèi takes nothing.': '<b>Schèi sceglie da solo una mancia "normale"</b>: il pagamento arriva di solito in una decina di minuti. La mancia va tutta ai minatori: Schèi non prende niente.',
     },
     'vec_IT': {
+        'tap to write': 'tocca par scrivar',
         'The connected server accepts at least %1 sat/vB.': 'El server tacà el ciapa almanco %1 sat/vB.',
         'Less than 1 sat/vB: the payment can wait a long time, and some nodes may not pass it on.': 'Manco de 1 sat/vB: el pagamento el pol spetar tanto, e qualche nodo el podarìa no farlo passar.',
         'value of the day': 'valor del giorno',
