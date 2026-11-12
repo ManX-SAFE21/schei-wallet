@@ -809,6 +809,133 @@ ApplicationWindow
         return v === true
     }
     function ehSetOption(key, value) { Config.ehSet('opt_' + key, value); ehOptRev++ }
+    // T50 (owner 12/11): levels BASE / MEDIO / ESPERTO. A level shows its rows and, when it is
+    // chosen, turns on its preset; then every switch can still be changed by hand. Leaving
+    // MEDIO or ESPERTO its switches are remembered and given back when coming back to it;
+    // BASE is always the same (a relative can say "tap BASE" on the phone).
+    readonly property var ehLevels: ['base', 'medio', 'esperto']
+    readonly property var ehLevelKeys: ['euro_btc', 'request_amount', 'multi', 'watch', 'utxo', 'privacy',
+                                        'max', 'manual_fee', 'buttons', 'no_anim', 'btc_only']
+    readonly property var ehLevelPresetOn: ({
+        'base': [],
+        'medio': ['euro_btc', 'request_amount', 'multi', 'watch', 'utxo'],
+        'esperto': ['euro_btc', 'request_amount', 'multi', 'watch', 'utxo', 'privacy', 'max', 'manual_fee'] })
+    function ehLevel() {
+        ehOptRev
+        var v = Config.ehGet('eh_level')
+        if (ehLevels.indexOf(v) >= 0) return v
+        // first start with the levels: the level that matches the switches already on (none is changed)
+        var on = function(k) { return Config.ehGet('opt_' + k) === true }
+        if (on('manual_fee') || on('privacy')) v = 'esperto'
+        else if (on('show_adv') || on('utxo') || on('multi') || on('watch') || on('euro_btc') || on('request_amount')
+                 || on('max') || on('btc_only') || on('buttons') || on('no_anim')) v = 'medio'
+        else v = 'base'
+        Config.ehSet('eh_level', v)
+        return v
+    }
+    function ehLevelNum() { return ehLevels.indexOf(ehLevel()) }
+    function ehLevelValue(k) { return k === 'btc_only' ? ehBtcOnly() : ehOption(k) }
+    function ehLevelValues() {
+        var o = {}
+        for (var i = 0; i < ehLevelKeys.length; i++) {
+            var k = ehLevelKeys[i]
+            o[k] = k === 'btc_only' ? ehBtcOnly() : ehOption(k)
+        }
+        return o
+    }
+    // the level choice in Settings: what changes, then (ESPERTO) the PIN, then the checks going
+    // down. Here on the main window, so a window still open after the page is closed works.
+    function ehLevelName(to) { return to === 'base' ? qsTr('BASE') : (to === 'medio' ? qsTr('MEDIUM') : qsTr('EXPERT')) }
+    function ehLevelLines(to) {
+        if (ehLevelRemembered(to))
+            return qsTr('You find the switches of this level as you left them.')
+        if (to === 'base')
+            return '• ' + qsTr('The standard settings come back: the extra options turn off, the PIN for big payments is on.')
+                 + '\n• ' + qsTr('The rows for more choices are hidden.')
+                 + '\n• ' + qsTr('Your money, the 12 words and the PIN do not change.')
+        if (to === 'medio')
+            return '• ' + qsTr('You write the amounts in %1 or in bitcoin').arg(ehCcyName())
+                 + '\n• ' + qsTr('In Receive you can ask a precise amount')
+                 + '\n• ' + qsTr('More wallets, view-only wallets and gold coins turn on')
+                 + '\n• ' + qsTr('Other choices appear, off: privacy, send all, node and Tor')
+        return '• ' + qsTr('Everything of MEDIUM, and also:')
+             + '\n• ' + qsTr('Tip written by hand, advanced privacy and "Send all the balance" turn on')
+             + '\n• ' + qsTr('The rows for experts appear: PIN threshold, more addresses, back to the initial settings')
+    }
+    function ehAsk(text, detail, onYes, onNo, yesText, noText) {
+        var props = { text: text, detail: detail }
+        if (yesText) props.yesText = yesText
+        if (noText) props.noText = noText
+        var d = Qt.createComponent(Qt.resolvedUrl('EhAskDialog.qml')).createObject(app, props)
+        if (onYes) d.accepted.connect(onYes)
+        if (onNo) d.rejected.connect(onNo)
+        d.open()
+    }
+    function ehChooseLevel(to) {
+        if (to === ehLevel()) return
+        ehAsk(qsTr('Switch to %1?').arg(ehLevelName(to)),
+              ehLevelLines(to) + '\n\n' + qsTr('You can change level whenever you want.'),
+              function() {
+                  if (to === 'esperto')
+                      ehAskPin(qsTr('Type the PIN to switch to EXPERT.') + '\n' + qsTr('Nobody should ask you to do this by phone.'),
+                               function() { ehApplyLevel(to) })
+                  else ehApplyLevel(to)
+              }, null, qsTr('That is fine'), qsTr('Cancel'))
+    }
+    function ehApplyLevel(to) {
+        var wasNode = Network.oneServer && !Network.autoConnect
+        var wasTor = Network.proxy && Network.proxy.enabled === true
+        ehSetLevel(to)
+        // going down nothing stays on out of sight: blocked coins, own node, Tor
+        var w = Daemon.currentWallet
+        var blocked = (!ehOption('utxo') && w) ? w.ehFrozenCount() : 0
+        var askNode = function() {
+            if (to !== 'base' || !(wasNode || wasTor)) return
+            ehAsk(qsTr('Back to the automatic connection?'),
+                  qsTr('You were using your own node or Tor. In BASE their row is hidden: with "Yes" Schèi connects by itself to the public servers, as at the start.'),
+                  function() {
+                      if (wasTor) Network.proxy = { 'enabled': false, 'mode': 'socks5', 'host': '', 'port': '', 'user': '', 'password': '' }
+                      if (wasNode) Network.setServerParameters('', true, false)
+                  })
+        }
+        if (blocked > 0)
+            ehAsk(qsTr('Unblock the coins?'),
+                  qsTr('You have %1 blocked coins: the app does not use them to pay. Without gold coins you do not see them any more. Unblock them all?').arg(blocked),
+                  function() { w.ehUnfreezeAll(); askNode() }, askNode)
+        else askNode()
+    }
+    // true when going back to a level left before: its switches come back as they were
+    function ehLevelRemembered(to) { return to !== 'base' && !!Config.ehGet('lvl_snap_' + to) }
+    function ehSetLevel(to) {
+        var from = ehLevel()
+        if (to === from || ehLevels.indexOf(to) < 0) return
+        if (from !== 'base') Config.ehSet('lvl_snap_' + from, JSON.stringify(ehLevelValues()))
+        var vals = null
+        if (to !== 'base') { try { vals = JSON.parse(Config.ehGet('lvl_snap_' + to) || 'null') } catch (e) { vals = null } }
+        if (!vals) {
+            var up = ehLevels.indexOf(to) > ehLevels.indexOf(from)
+            vals = {}
+            for (var i = 0; i < ehLevelKeys.length; i++) {
+                var key = ehLevelKeys[i]
+                var inPreset = ehLevelPresetOn[to].indexOf(key) >= 0
+                if (to === 'base') vals[key] = false                          // BASE: always the same
+                else if (up) vals[key] = inPreset || ehLevelValue(key)        // up: keep the user's choices, turn on the preset
+                else vals[key] = key === 'manual_fee' ? false : ehLevelValue(key)  // down to MEDIO: only the expert one goes off
+            }
+        }
+        for (var j = 0; j < ehLevelKeys.length; j++) {
+            var k = ehLevelKeys[j]
+            if (k !== 'btc_only') Config.ehSet('opt_' + k, vals[k] === true)
+        }
+        if (ehBtcOnly() !== (vals['btc_only'] === true)) ehSetBtcOnly(vals['btc_only'] === true)
+        // with 2 or more wallets "More wallets" stays on, or the others disappear
+        if (Daemon.availableWallets.rowCount() > 1) Config.ehSet('opt_multi', true)
+        // out of ESPERTO the PIN for big payments cannot be seen: it is on again
+        if (to !== 'esperto') Config.ehSet('opt_double', true)
+        Config.ehSet('opt_show_adv', to !== 'base')
+        Config.ehSet('eh_level', to)
+        ehOptRev++
+    }
     // T20 step 3: "where the coins come from" (advanced privacy). The list is kept
     // as JSON text in the config; the coins keep only the id of their category.
     readonly property var ehCatColors: ['#1f6fb2', '#b4690e', '#6a4c93', '#2c7a4b', '#c0392b', '#0e8a8a', '#b03a8c', '#5a5a5a']
@@ -869,8 +996,9 @@ ApplicationWindow
     }
     function ehBigLimitText() { return ehBtcOnly() || !Daemon.fx.enabled ? qsTr('20% of the balance') : ehSym() + ' ' + ehGroup('' + ehDoubleEur()) }
     function ehNeedsDouble(amount) {
-        if (!ehDoubleOn() || !amount) return false
-        if (amount.isMax) return true
+        if (!amount) return false
+        if (amount.isMax) return true      // T50: "Send all the balance" always asks the PIN
+        if (!ehDoubleOn()) return false
         if (ehBtcOnly() || !Daemon.fx.enabled) {
             // only bitcoin: double confirmation from 20% of what is in the wallet
             var w = Daemon.currentWallet
@@ -1005,6 +1133,10 @@ ApplicationWindow
         if (Daemon.availableWallets.rowCount() > 1) Config.ehSet('opt_multi', true)
         Config.ehSet('opt_double', true)
         Config.ehSet('pin_eur', 100)
+        // T50: back to BASE, nothing remembered for MEDIO / ESPERTO
+        Config.ehSet('eh_level', 'base')
+        Config.ehSet('lvl_snap_medio', null)
+        Config.ehSet('lvl_snap_esperto', null)
         ehSetBtcOnly(false)
         Config.ehSet('color_' + ehWalletKey(), null)
         ehOptRev++

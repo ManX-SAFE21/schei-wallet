@@ -35,7 +35,7 @@ ElDialog {
     // big payment: one coin as always, then the PIN (like a contactless card).
     // The old double-coin screen is kept in the file but never shown.
     readonly property var reviewAmount: finalizer.valid ? finalizer.effectiveAmount : (chosen ? chosen : finalizer.amount)
-    readonly property bool needsPin: phase === 'review' && app.ehNeedsDouble(reviewAmount)
+    readonly property bool needsPin: phase === 'review' && (useMax || app.ehNeedsDouble(reviewAmount))
     readonly property bool needsDouble: false
 
     width: parent.width

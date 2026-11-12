@@ -1,6 +1,5 @@
-// Easy Heirs (schèi): ADVANCED SETTINGS, opened with the PIN (EhSettings).
-// Security (12 words, PIN, PIN for big payments), money, wallets, and the
-// "back to the initial settings" button. Inside, the PIN is not asked again.
+// Easy Heirs (schèi): PIN for big payments: on / off and the threshold. Opened with the
+// PIN from Settings (level ESPERTO, T50); the other expert rows are in Settings.
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
@@ -114,22 +113,13 @@ Item {
                 Label {
                     Layout.fillWidth: true
                     wrapMode: Text.WordWrap
-                    text: qsTr('Settings for experts')
+                    text: qsTr('PIN for big payments')
                     color: '#3f0f21'
                     font.family: TitleFont ? TitleFont : font.family
                     font.weight: Font.Black
                     font.pixelSize: 28
                 }
             }
-            Rectangle {
-                Layout.fillWidth: true
-                Layout.preferredHeight: nl.implicitHeight + 14
-                radius: 14
-                color: '#fbf0d6'
-                Label { id: nl; anchors.fill: parent; anchors.margins: 7; anchors.leftMargin: 12; wrapMode: Text.WordWrap; font.pixelSize: 15; text: qsTr('Money, security and network. By default everything is off, except the PIN for big payments.') }
-            }
-
-            Group { text: '1 · ' + qsTr('MONEY') }
             Rectangle {
                 Layout.fillWidth: true; Layout.preferredHeight: g0.implicitHeight; radius: 18; color: Qt.rgba(1, 1, 1, 0.7); border.width: 1; border.color: Qt.rgba(1, 1, 1, 0.9); clip: true
                 ColumnLayout { id: g0; width: parent.width; spacing: 0
@@ -221,72 +211,6 @@ Item {
                 }
             }
 
-            Rectangle {
-                Layout.fillWidth: true; Layout.preferredHeight: gF.implicitHeight; radius: 18; color: Qt.rgba(1, 1, 1, 0.7); border.width: 1; border.color: Qt.rgba(1, 1, 1, 0.9); clip: true
-                ColumnLayout { id: gF; width: parent.width; spacing: 0
-                    // owner 12/11: the tip written by hand, in sat/vB (preview mancia-a-mano.html)
-                    Sw { text: qsTr('Tip written by hand'); hint: qsTr('in the sending cost, you write the sat/vB (for those who know)'); key: 'manual_fee' }
-                }
-            }
-            Group { text: '2 · ' + qsTr('COINS AND PRIVACY') }
-            Rectangle {
-                Layout.fillWidth: true; Layout.preferredHeight: gN.implicitHeight; radius: 18; color: Qt.rgba(1, 1, 1, 0.7); border.width: 1; border.color: Qt.rgba(1, 1, 1, 0.9); clip: true
-                ColumnLayout { id: gN; width: parent.width; spacing: 0
-                    // owner 12/11: here only the switch; coins and addresses are used IN the wallet
-                    // (payment "Coins used", "blocked ›" on the card), the crucible is the "i" there
-                    Sw { text: qsTr('Gold coins (UTXO)'); key: 'utxo'
-                         hint: app.ehOption('utxo') ? qsTr('you find them in the payment ("Coins used") and in "blocked ›" on the wallet card')
-                                                    : qsTr('choose which coins to spend, block coins and addresses') }
-                    // T20: pockets, origin of the coins, warnings (for advanced users, off by default)
-                    Nav { visible: app.ehOption('utxo'); icon: 'eh_privacy.svg'; text: qsTr('Advanced privacy') + ' · ' + (app.ehOption('privacy') ? qsTr('on (f)') : qsTr('off (f)')); onClicked: app.stack.push(Qt.resolvedUrl('EhPrivacyPage.qml')) }
-                }
-            }
-
-            Group { text: '3 · ' + qsTr('NETWORK AND RECOVERY') }
-            Rectangle {
-                Layout.fillWidth: true; Layout.preferredHeight: g5.implicitHeight; radius: 18; color: Qt.rgba(1, 1, 1, 0.7); border.width: 1; border.color: Qt.rgba(1, 1, 1, 0.9); clip: true
-                ColumnLayout { id: g5; width: parent.width; spacing: 0
-                    Nav { icon: 'eh_onion.svg'; text: qsTr('Connection: your node and Tor'); onClicked: app.stack.push(Qt.resolvedUrl('EhConnectionPage.qml')) }
-                    // look further than the usual 20 empty addresses (gap limit)
-                    Nav {
-                        icon: 'eh_zoom.svg'
-                        text: qsTr('Search on more receiving addresses') + ' · ' + qsTr('now: %1').arg(Daemon.currentWallet ? Daemon.currentWallet.ehGapLimit() : 20)
-                        onClicked: app.stack.push(Qt.resolvedUrl('EhGapLimitPage.qml'))
-                    }
-                    Sw { text: qsTr('Sign on another device'); hint: qsTr('sign the payment on another device'); key: 'sign_elsewhere'; soon: true }
-                }
-            }
-            // back to the initial settings (also the PIN threshold, so it lives here)
-            Rectangle {
-                Layout.fillWidth: true
-                Layout.topMargin: 10
-                Layout.preferredHeight: 52
-                radius: 26
-                color: resetTap.pressed ? '#fbeef2' : Qt.rgba(1, 1, 1, 0.7)
-                border.width: 2
-                border.color: '#e9cdd6'
-                RowLayout {
-                    anchors.centerIn: parent
-                    spacing: 8
-                    Image { source: Qt.resolvedUrl('../../icons/eh_undo.svg'); sourceSize.width: 22; sourceSize.height: 22 }
-                    Label { text: qsTr('Back to the initial settings'); color: '#5e1a33'; font.pixelSize: 16; font.bold: true }
-                }
-                TapHandler {
-                    id: resetTap
-                    onTapped: {
-                        // T27: our own yes / no window (Electrum's one was see-through on the phone)
-                        var d = Qt.createComponent(Qt.resolvedUrl('EhAskDialog.qml')).createObject(app, {
-                            text: qsTr('Are you sure?'),
-                            detail: qsTr('All the settings will go back to the standard settings of the wallet.') + '
-
-'
-                                    + qsTr('Your money, the 12 words and the PIN do not change.')
-                        })
-                        d.accepted.connect(function() { app.ehResetSettings() })
-                        d.open()
-                    }
-                }
-            }
         }
     }
 }

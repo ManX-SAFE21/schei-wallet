@@ -928,6 +928,31 @@ class QEWallet(AuthMixin, QObject, QtEventListener):
         self.addressCoinModel.setDirty()
         self.balanceChanged.emit()
 
+    @pyqtSlot(result=int)
+    def ehFrozenCount(self) -> int:
+        """T50: how many coins are blocked (one by one or with their address)."""
+        w = self.wallet
+        n = sum(1 for c in w.get_utxos()
+                if w._frozen_coins.get(c.prevout.to_str()) is True or w.is_frozen_address(c.address))
+        # a blocked address with no coins now: money arriving there later could not be spent
+        if n == 0 and w._frozen_addresses:
+            n = len(w._frozen_addresses)
+        return n
+
+    @pyqtSlot()
+    def ehUnfreezeAll(self):
+        """T50: going down to a level without gold coins, the user may unblock them all."""
+        w = self.wallet
+        addrs = [a for a in w.get_addresses() if w.is_frozen_address(a)]
+        if addrs:
+            w.set_frozen_state_of_addresses(addrs, False)
+        # only the coins the user blocked; Electrum's own protection (tiny or unconfirmed coins) stays
+        coins = [c.prevout.to_str() for c in w.get_utxos() if w._frozen_coins.get(c.prevout.to_str()) is True]
+        if coins:
+            w.set_frozen_state_of_coins(coins, False)
+        self.addressCoinModel.setDirty()
+        self.balanceChanged.emit()
+
     @pyqtSlot(str, bool)
     def ehSetAddressFrozen(self, address: str, freeze: bool):
         """Block / unblock a whole address: none of its coins is used to pay,

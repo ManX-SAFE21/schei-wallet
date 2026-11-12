@@ -99,6 +99,7 @@ ColumnLayout {
             }
             // other wallets: name and colour, swipe here to open
             Rectangle {
+                id: otherCard
                 visible: !d.isCurrent && !d.isAdd
                 anchors.fill: parent
                 anchors.topMargin: 6
@@ -107,8 +108,8 @@ ColumnLayout {
                 // T45: a watch-only wallet is light: a wine border so it stands out from the page
                 readonly property bool light: d.model.name ? app.ehWalletIsWatchFor(d.model.name) : false
                 gradient: Gradient {
-                    GradientStop { position: 0.0; color: parent.light ? '#fffdf8' : Qt.rgba(Qt.lighter(d.wc, 1.3).r, Qt.lighter(d.wc, 1.3).g, Qt.lighter(d.wc, 1.3).b, 0.92) }
-                    GradientStop { position: 1.0; color: parent.light ? '#fbf3ee' : Qt.rgba(Qt.darker(d.wc, 1.35).r, Qt.darker(d.wc, 1.35).g, Qt.darker(d.wc, 1.35).b, 0.88) }
+                    GradientStop { position: 0.0; color: otherCard.light ? '#fffdf8' : Qt.rgba(Qt.lighter(d.wc, 1.3).r, Qt.lighter(d.wc, 1.3).g, Qt.lighter(d.wc, 1.3).b, 0.92) }
+                    GradientStop { position: 1.0; color: otherCard.light ? '#fbf3ee' : Qt.rgba(Qt.darker(d.wc, 1.35).r, Qt.darker(d.wc, 1.35).g, Qt.darker(d.wc, 1.35).b, 0.88) }
                 }
                 border.width: light ? 2.5 : 0
                 border.color: '#b98a9a'

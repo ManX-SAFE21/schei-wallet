@@ -10,6 +10,8 @@ Popup {
     id: root
     property string text
     property string detail: ''   // smaller explanation under the question
+    property string yesText: qsTr('Yes')
+    property string noText: qsTr('No')
 
     signal accepted
     signal rejected
@@ -70,7 +72,7 @@ Popup {
                     color: modelData ? (bt.pressed ? '#e2d7c1' : '#efe6d3') : (bt.pressed ? '#3f0f21' : '#5e1a33')
                     Label {
                         anchors.centerIn: parent
-                        text: b.modelData ? qsTr('Yes') : qsTr('No')
+                        text: b.modelData ? root.yesText : root.noText
                         color: b.modelData ? '#2a2220' : '#ffffff'
                         font.pixelSize: 19
                         font.bold: true
