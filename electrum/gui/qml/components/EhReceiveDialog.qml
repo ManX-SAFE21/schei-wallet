@@ -278,8 +278,9 @@ ElDialog {
         }
 
         // T8: the addresses, only for who taps here (choose, copy, block an address)
+        // owner 12/11: not in BASE, only in MEDIO and ESPERTO
         Rectangle {
-            visible: !dialog.arrived
+            visible: !dialog.arrived && app.ehLevelNum() > 0
             Layout.fillWidth: true
             Layout.topMargin: 4
             Layout.preferredHeight: adRow.implicitHeight + 22

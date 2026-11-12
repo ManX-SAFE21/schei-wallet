@@ -47,11 +47,32 @@ Item {
         txid: page.txid
     }
 
-    ColumnLayout {
+    // the note is saved with the Save button, with Enter, and when the page is left
+    function saveNote() {
+        var t = noteField.text.trim()
+        if (t !== tx.label) {
+            tx.setLabel(t)
+            Daemon.currentWallet.historyModel.updateTxLabel(page.txid, t)
+            savedTimer.restart()
+        }
+    }
+    StackView.onDeactivating: saveNote()
+    Timer { id: savedTimer; interval: 3000 }
+
+    // owner 12/11: the page scrolls, so "More information" is never under the phone keys
+    Flickable {
+        id: flick
         anchors.fill: parent
-        anchors.leftMargin: 16
-        anchors.rightMargin: 16
-        anchors.bottomMargin: 16 + app.navigationBarHeight
+        anchors.bottomMargin: app.navigationBarHeight
+        contentHeight: col.height + 16
+        boundsBehavior: Flickable.StopAtBounds
+        clip: true
+
+    ColumnLayout {
+        id: col
+        x: 16
+        width: flick.width - 32
+        height: Math.max(implicitHeight, flick.height - 16)
         spacing: 10
 
         EhPageTop { title: ''; Layout.leftMargin: 6; Layout.rightMargin: 6 }
@@ -93,36 +114,65 @@ Item {
             color: '#6b5d55'
         }
 
-        // personal note
+        // personal note (owner 12/11: taller, the grey hint stays inside, Save button while writing)
         Rectangle {
             Layout.fillWidth: true
-            Layout.preferredHeight: 48
+            Layout.preferredHeight: 56
             radius: 16
             color: '#ffffff'
             border.width: 2
-            border.color: '#e2d7c1'
+            border.color: noteField.activeFocus ? '#5e1a33' : '#e2d7c1'
             RowLayout {
                 anchors.fill: parent
                 anchors.leftMargin: 12
-                anchors.rightMargin: 12
+                anchors.rightMargin: 8
                 spacing: 10
                 Image { source: Qt.resolvedUrl('../../icons/eh_pen_wine.svg'); sourceSize.width: 22; sourceSize.height: 22 }
                 TextField {
                     id: noteField
                     Layout.fillWidth: true
+                    Layout.fillHeight: true
                     text: tx.label
-                    placeholderText: qsTr('Add a note…')
-                    font.pixelSize: 16
+                    placeholderText: ''          // no Material floating label: our own hint below
+                    topPadding: 0
+                    bottomPadding: 0
+                    leftPadding: 0
+                    rightPadding: 0
+                    verticalAlignment: TextInput.AlignVCenter
+                    font.pixelSize: 17
                     font.bold: text !== ''
+                    color: '#2a2220'
                     background: null
-                    onEditingFinished: {
-                        if (text !== tx.label) {
-                            tx.setLabel(text)
-                            Daemon.currentWallet.historyModel.updateTxLabel(page.txid, text)
-                        }
+                    inputMethodHints: Qt.ImhNoPredictiveText
+                    onAccepted: { page.saveNote(); noteField.focus = false; Qt.inputMethod.hide() }
+                    onEditingFinished: page.saveNote()
+                    Label {
+                        visible: noteField.text === '' && !noteField.inputMethodComposing
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: qsTr('Add a note…')
+                        font.pixelSize: 17
+                        color: '#9a8c82'
                     }
                 }
+                Rectangle {
+                    visible: noteField.activeFocus
+                    Layout.preferredHeight: 38
+                    Layout.preferredWidth: saveL.implicitWidth + 28
+                    radius: 12
+                    color: saveTap.pressed ? '#35411a' : '#45541f'
+                    Label { id: saveL; anchors.centerIn: parent; text: qsTr('Save'); color: '#ffffff'; font.pixelSize: 15; font.bold: true }
+                    TapHandler { id: saveTap; margin: 6; onTapped: { page.saveNote(); noteField.focus = false; Qt.inputMethod.hide() } }
+                }
             }
+        }
+        Label {
+            visible: savedTimer.running
+            Layout.topMargin: -6
+            Layout.leftMargin: 6
+            text: '✓ ' + qsTr('Note saved')
+            font.pixelSize: 14
+            font.bold: true
+            color: '#45541f'
         }
 
         Rectangle {
@@ -321,6 +371,7 @@ Item {
             Layout.fillWidth: true
             onClicked: app.ehShowConfirmationsInfo()
         }
+    }
     }
 
     Toaster { id: hToast }
