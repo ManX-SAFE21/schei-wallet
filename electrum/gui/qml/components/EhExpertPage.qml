@@ -114,7 +114,7 @@ Item {
                 Label {
                     Layout.fillWidth: true
                     wrapMode: Text.WordWrap
-                    text: qsTr('Advanced settings')
+                    text: qsTr('Settings for experts')
                     color: '#3f0f21'
                     font.family: TitleFont ? TitleFont : font.family
                     font.weight: Font.Black
@@ -126,15 +126,13 @@ Item {
                 Layout.preferredHeight: nl.implicitHeight + 14
                 radius: 14
                 color: '#fbf0d6'
-                Label { id: nl; anchors.fill: parent; anchors.margins: 7; anchors.leftMargin: 12; wrapMode: Text.WordWrap; font.pixelSize: 15; text: qsTr('Here are the things about money and safety. By default everything is off, except the PIN for big payments.') }
+                Label { id: nl; anchors.fill: parent; anchors.margins: 7; anchors.leftMargin: 12; wrapMode: Text.WordWrap; font.pixelSize: 15; text: qsTr('Money, security and network. By default everything is off, except the PIN for big payments.') }
             }
 
-            Group { text: '1 · ' + qsTr('SECURITY') }
+            Group { text: '1 · ' + qsTr('MONEY') }
             Rectangle {
                 Layout.fillWidth: true; Layout.preferredHeight: g0.implicitHeight; radius: 18; color: Qt.rgba(1, 1, 1, 0.7); border.width: 1; border.color: Qt.rgba(1, 1, 1, 0.9); clip: true
                 ColumnLayout { id: g0; width: parent.width; spacing: 0
-                    Nav { icon: 'eh_key_wine.svg'; text: qsTr('See the 12 words again'); onClicked: app.ehShowSeed() }
-                    Nav { icon: 'eh_dots.svg'; text: qsTr('Change PIN'); onClicked: app.ehChangePin() }
                     Rectangle {
                         Layout.fillWidth: true
                         Layout.preferredHeight: 60
@@ -223,34 +221,14 @@ Item {
                 }
             }
 
-            Group { text: '2 · ' + qsTr('AMOUNTS') }
             Rectangle {
-                Layout.fillWidth: true; Layout.preferredHeight: g1.implicitHeight; radius: 18; color: '#ffffff'; clip: true
-                ColumnLayout { id: g1; width: parent.width; spacing: 0
-                    Rectangle {
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: 60
-                        color: 'transparent'
-                        Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 2; color: '#f1ebdf' }
-                        RowLayout {
-                            anchors.fill: parent
-                            anchors.leftMargin: 12
-                            anchors.rightMargin: 8
-                            ColumnLayout {
-                                Layout.fillWidth: true
-                                spacing: 0
-                                Label { Layout.fillWidth: true; text: qsTr('Only bitcoin (no euro)'); font.pixelSize: 16; font.bold: true; wrapMode: Text.WordWrap }
-                                Label { Layout.fillWidth: true; text: qsTr('all amounts in BTC, no exchange rate is asked'); font.pixelSize: 13; color: '#6b5d55'; wrapMode: Text.WordWrap }
-                            }
-                            Switch { checked: app.ehBtcOnly(); onToggled: app.ehSetBtcOnly(checked) }
-                        }
-                    }
-                    Sw { visible: !app.ehBtcOnly(); text: qsTr('Euro or Bitcoin'); hint: qsTr('write the amount in € or in BTC'); key: 'euro_btc' }
-                    Sw { text: qsTr('"All the balance" button'); hint: qsTr('to empty the wallet'); key: 'max' }
-                    Sw { text: qsTr('Ask for an amount'); hint: qsTr('in Receive, a QR with the amount'); key: 'request_amount' }
+                Layout.fillWidth: true; Layout.preferredHeight: gF.implicitHeight; radius: 18; color: Qt.rgba(1, 1, 1, 0.7); border.width: 1; border.color: Qt.rgba(1, 1, 1, 0.9); clip: true
+                ColumnLayout { id: gF; width: parent.width; spacing: 0
+                    // owner 12/11: the tip written by hand, in sat/vB (preview mancia-a-mano.html)
+                    Sw { text: qsTr('Tip written by hand'); hint: qsTr('in the sending cost, you write the sat/vB (for those who know)'); key: 'manual_fee' }
                 }
             }
-            Group { text: '3 · ' + qsTr('COINS AND PRIVACY') }
+            Group { text: '2 · ' + qsTr('COINS AND PRIVACY') }
             Rectangle {
                 Layout.fillWidth: true; Layout.preferredHeight: gN.implicitHeight; radius: 18; color: Qt.rgba(1, 1, 1, 0.7); border.width: 1; border.color: Qt.rgba(1, 1, 1, 0.9); clip: true
                 ColumnLayout { id: gN; width: parent.width; spacing: 0
@@ -264,30 +242,18 @@ Item {
                 }
             }
 
-            Group { text: '4 · ' + qsTr('WALLETS') }
-            Rectangle {
-                Layout.fillWidth: true; Layout.preferredHeight: g2.implicitHeight; radius: 18; color: '#ffffff'; clip: true
-                ColumnLayout { id: g2; width: parent.width; spacing: 0
-                    Sw { text: qsTr('More wallets'); hint: qsTr('up to 7, each with its own colour'); key: 'multi'
-                         locked: Daemon.availableWallets.rowCount() > 1
-                         lockedHint: qsTr('you have %1 wallets: it stays on, so you see them all').arg(Daemon.availableWallets.rowCount()) }
-                    Sw { text: qsTr('Watch only'); hint: qsTr('see the balance without being able to spend'); key: 'watch' }
-                    Sw { text: qsTr('Sign elsewhere'); hint: qsTr('sign the payment on another device'); key: 'sign_elsewhere'; soon: true }
-                }
-            }
-            Group { text: '5 · ' + qsTr('NETWORK AND RECOVERY') + '  ' + qsTr('(for experts)') }
+            Group { text: '3 · ' + qsTr('NETWORK AND RECOVERY') }
             Rectangle {
                 Layout.fillWidth: true; Layout.preferredHeight: g5.implicitHeight; radius: 18; color: Qt.rgba(1, 1, 1, 0.7); border.width: 1; border.color: Qt.rgba(1, 1, 1, 0.9); clip: true
                 ColumnLayout { id: g5; width: parent.width; spacing: 0
                     Nav { icon: 'eh_onion.svg'; text: qsTr('Connection: your node and Tor'); onClicked: app.stack.push(Qt.resolvedUrl('EhConnectionPage.qml')) }
-                    // T32: the site for "Vedi sulla blockchain"
-                    Nav { icon: 'eh_blocks_wine.svg'; text: qsTr('Where to see the movements') + ' · ' + (Config.ehExplorer.name ? Config.ehExplorer.name : qsTr('My node')); onClicked: app.stack.push(Qt.resolvedUrl('EhExplorerPage.qml')) }
                     // look further than the usual 20 empty addresses (gap limit)
                     Nav {
                         icon: 'eh_zoom.svg'
-                        text: qsTr('Look at more addresses') + ' · ' + qsTr('now: %1').arg(Daemon.currentWallet ? Daemon.currentWallet.ehGapLimit() : 20)
+                        text: qsTr('Search on more receiving addresses') + ' · ' + qsTr('now: %1').arg(Daemon.currentWallet ? Daemon.currentWallet.ehGapLimit() : 20)
                         onClicked: app.stack.push(Qt.resolvedUrl('EhGapLimitPage.qml'))
                     }
+                    Sw { text: qsTr('Sign on another device'); hint: qsTr('sign the payment on another device'); key: 'sign_elsewhere'; soon: true }
                 }
             }
             // back to the initial settings (also the PIN threshold, so it lives here)

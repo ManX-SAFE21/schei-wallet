@@ -75,6 +75,17 @@ class QEConfig(AuthMixin, QObject):
     def ehSet(self, key, value):
         self.config.set_key('eh_' + key, value)
 
+    @pyqtSlot(int, result=float)
+    def ehFeeRateForBlocks(self, blocks: int) -> float:
+        """sat/vB that Electrum estimates to be mined within `blocks` blocks; 0 if unknown."""
+        try:
+            from electrum.network import Network
+            net = Network.get_instance()
+            fee_kb = net.fee_estimates.eta_target_to_fee(blocks) if net else None
+            return float(fee_kb) / 1000.0 if fee_kb else 0.0
+        except Exception:
+            return 0.0
+
     @pyqtSlot(result=float)
     def ehMonoMs(self) -> float:
         """Milliseconds since the phone was switched on (Android SystemClock.elapsedRealtime,

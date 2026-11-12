@@ -153,6 +153,33 @@ class FeeSlider(QObject):
     def update(self):
         raise NotImplementedError()
 
+    # Easy Heirs (owner 12/11): the tip written by hand, in sat/vB, and the way back to the slider
+    @pyqtSlot(str)
+    def ehSetManualFeerate(self, satvb: str):
+        try:
+            rate = Decimal(satvb)
+        except InvalidOperation:
+            return
+        if rate <= 0:
+            return
+        self._userFeerate = satvb
+        self._fee_policy = FeePolicy(f'feerate:{int(rate * 1000)}')
+        self.userFeerateChanged.emit()
+        self.isUserFeerateLast = True
+        self.update()
+
+    @pyqtSlot(int)
+    def ehBackToSlider(self, pos: int):
+        self._userFeerate = ''
+        self.userFeerateChanged.emit()
+        self.isUserFeerateLast = False
+        self._fee_method = self.FSMethod.ETA
+        self._fee_policy = FeePolicy('eta:2')
+        self._fee_policy.set_value_from_slider_pos(int(pos))
+        self.update_slider()
+        self.methodChanged.emit()
+        self.update()
+
 
 class TxFeeSlider(FeeSlider):
     def __init__(self, parent=None):

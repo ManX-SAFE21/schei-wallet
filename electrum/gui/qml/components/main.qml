@@ -763,7 +763,7 @@ ApplicationWindow
             bodyText: qsTr('Bitcoin payments are written on the <b>blockchain</b>, the big public register, by computers called <b>"miners"</b>.')
                 + '<br><br>' + qsTr('To do it they ask for a small <b>tip</b>: whoever offers more goes first, like in a queue.')
                 + '<br><br>' + qsTr('The cost <b>does not depend on how much you send</b>: sending 10 € or 1,000 € costs the same. It only changes a little with the network traffic.'),
-            tipText: qsTr('<b>Schèi chooses a "normal" tip by itself</b>: the payment usually arrives in about ten minutes. The whole tip goes to the miners: Schèi takes nothing.')
+            tipText: qsTr('<b>Schèi chooses a "normal" tip by itself</b>: the payment usually arrives in about an hour. If you are in a hurry, move the slider to the right. The whole tip goes to the miners: Schèi takes nothing.')
         }).open()
     }
 
@@ -968,7 +968,7 @@ ApplicationWindow
         ehOptRev++
     }
     function ehResetSettings() {
-        var keys = ['euro_btc', 'max', 'request_amount', 'multi', 'watch', 'sign_elsewhere', 'buttons', 'coins', 'no_anim', 'privacy', 'utxo']
+        var keys = ['euro_btc', 'max', 'request_amount', 'multi', 'watch', 'sign_elsewhere', 'buttons', 'coins', 'no_anim', 'privacy', 'utxo', 'show_adv', 'manual_fee']
         for (var i = 0; i < keys.length; i++) Config.ehSet('opt_' + keys[i], ehOptDefaultOn.indexOf(keys[i]) >= 0)
         // second review (S3): with 2 or more wallets "More wallets" stays on, or the others disappear
         if (Daemon.availableWallets.rowCount() > 1) Config.ehSet('opt_multi', true)

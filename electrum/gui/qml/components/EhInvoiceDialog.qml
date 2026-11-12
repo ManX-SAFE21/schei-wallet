@@ -966,8 +966,8 @@ ElDialog {
         id: finalizer
         wallet: Daemon.currentWallet
         canRbf: true
-        // every payment starts from the normal cost (Electrum's eta:2)
-        Component.onCompleted: { method = 1; sliderPos = 5 }
+        // owner 12/11: every payment starts from the middle of the slider, "in about 1 hour" (eta:5)
+        Component.onCompleted: { method = 1; sliderPos = 4 }
         onFinished: (signed, saved, complete) => {
             if (!complete) {
                 dialog.resetBars()
