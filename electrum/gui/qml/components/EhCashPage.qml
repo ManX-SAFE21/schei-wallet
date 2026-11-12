@@ -7,6 +7,7 @@ import QtQuick.Layouts
 import QtQuick.Controls
 import QtQuick.Controls.Material
 
+import "controls/EhMoney.js" as Money
 import "controls"
 
 Item {
@@ -17,8 +18,10 @@ Item {
 
     property int cents: 0
     property real demoEuro: -1      // previews only
-    readonly property var noteMm: ({ 10000: [147, 77], 5000: [140, 77], 2000: [133, 72], 1000: [127, 67], 500: [120, 62] })
-    readonly property var coinMm: ({ 200: 25.75, 100: 23.25, 50: 24.25, 20: 22.25, 10: 19.75, 5: 21.25, 2: 18.75, 1: 16.25 })
+    // T48: the notes and coins of the currency (euro or US dollar)
+    readonly property string ccy: app.ehCcy()
+    readonly property var noteMm: Money.table(ccy).noteMm
+    readonly property var coinMm: Money.table(ccy).coinMm
     readonly property real tableW: table.width - 20
     readonly property real k: tableW * 0.36 / 147      // pixels per mm, notes
     readonly property real ck: tableW / 200             // pixels per mm, coins
@@ -37,12 +40,12 @@ Item {
             out.push({ kind: 'bundle', value: 100000, count: b })
             rest -= b * 100000
         }
-        var notes = [10000, 5000, 2000, 1000, 500]
+        var notes = Money.table(page.ccy).notes
         for (var i = 0; i < notes.length; i++) {
             var n = Math.floor(rest / notes[i])
             if (n > 0) { out.push({ kind: 'note', value: notes[i], count: n }); rest -= n * notes[i] }
         }
-        var coins = [], coinTot = 0, cv = [200, 100, 50, 20, 10, 5, 2, 1]
+        var coins = [], coinTot = 0, cv = Money.table(page.ccy).coins
         for (var j = 0; j < cv.length; j++) {
             var m = Math.floor(rest / cv[j])
             for (var q = 0; q < m; q++) coins.push(cv[j])
@@ -53,7 +56,7 @@ Item {
         groups = out
     }
     function euroText(c) {
-        return '€ ' + grp(Math.floor(c / 100)) + app.ehLocale().decimalPoint + ('0' + (c % 100)).slice(-2)
+        return app.ehSym() + ' ' + grp(Math.floor(c / 100)) + app.ehLocale().decimalPoint + ('0' + (c % 100)).slice(-2)
     }
 
     Rectangle {
@@ -134,10 +137,10 @@ Item {
                                 font.pixelSize: 15
                                 font.bold: true
                                 text: gd.modelData.kind === 'bundle'
-                                      ? qsTr('%1 × bundle of %2').arg(gd.modelData.count).arg('1.000 €') + ' <font color="#6b5d55">' + qsTr('(10 notes of 100)') + '</font>'
+                                      ? qsTr('%1 × bundle of %2').arg(gd.modelData.count).arg('1.000 ' + app.ehSym()) + ' <font color="#6b5d55">' + qsTr('(10 notes of 100)') + '</font>'
                                       : gd.modelData.kind === 'note'
-                                        ? gd.modelData.count + ' × ' + (gd.modelData.value / 100) + ' € <font color="#6b5d55">= ' + page.grp(gd.modelData.count * gd.modelData.value / 100) + ' €</font>'
-                                        : qsTr('Coins') + ' <font color="#6b5d55">= ' + page.euroText(gd.modelData.value).replace('€ ', '') + ' €</font>'
+                                        ? gd.modelData.count + ' × ' + (gd.modelData.value / 100) + ' ' + app.ehSym() + ' <font color="#6b5d55">= ' + page.grp(gd.modelData.count * gd.modelData.value / 100) + ' ' + app.ehSym() + '</font>'
+                                        : qsTr('Coins') + ' <font color="#6b5d55">= ' + page.euroText(gd.modelData.value).replace(app.ehSym() + ' ', '') + ' ' + app.ehSym() + '</font>'
                             }
                             // bundles of 1,000 euro
                             Flow {
@@ -165,7 +168,7 @@ Item {
                                             Label {
                                                 anchors.centerIn: parent
                                                 rotation: -90
-                                                text: '1.000 €'
+                                                text: '1.000 ' + app.ehSym()
                                                 color: '#3f0f21'
                                                 font.family: TitleFont ? TitleFont : font.family
                                                 font.weight: Font.Black
@@ -230,7 +233,7 @@ Item {
         Label {
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
-            text: qsTr('The euro value changes with the bitcoin price.')
+            text: qsTr('The value in %1 changes with the bitcoin price.').arg(app.ehCcyName())
             color: '#4a4038'
             font.pixelSize: 14
         }

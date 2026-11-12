@@ -12,7 +12,7 @@ Rectangle {
     property string previewColor: ''
     readonly property color baseColor: previewColor !== '' ? previewColor : app.ehWalletColor()
     property string btcText: ''
-    readonly property bool showCash: app.ehOption('coins') && !app.ehBtcOnly() && root.euroText !== '' && root.hasMoney
+    readonly property bool showCash: app.ehOption('coins') && !app.ehBtcOnly() && app.ehHasCash() && root.euroText !== '' && root.hasMoney
     property bool hasMoney: false
     property real frozenSats: 0         // coins blocked in "Le tue monete d'oro"
     property real arrivingSats: 0       // received, not confirmed yet (gold pill)

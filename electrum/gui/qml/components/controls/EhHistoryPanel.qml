@@ -109,7 +109,7 @@ ColumnLayout {
                         spacing: 1
                         readonly property bool btcOnly: app.ehBtcOnly()
                         readonly property string main: btcOnly ? row.btc8() : app.ehTxAmount(row.model.value, row.model.timestamp, true)
-                        readonly property bool euroShown: !btcOnly && main.indexOf('€') >= 0
+                        readonly property bool euroShown: !btcOnly && main.indexOf(app.ehSym()) >= 0
                         readonly property bool waiting: row.model.confirmations < 1
                         readonly property string when: app.ehWhen(row.model.timestamp)
                         readonly property string note: row.model.label ? row.model.label : ''

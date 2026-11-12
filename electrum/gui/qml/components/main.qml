@@ -563,7 +563,6 @@ ApplicationWindow
         if (Config.baseUnit !== 'BTC') Config.baseUnit = 'BTC'
         // 'Solo bitcoin' (expert): no exchange rates at all
         Daemon.fx.enabled = !ehBtcOnly()
-        if (Daemon.fx.fiatCurrency !== 'EUR') Daemon.fx.fiatCurrency = 'EUR'
         if (!Daemon.fx.historicRates) Daemon.fx.historicRates = true
 
         // Easy Heirs: no terms of use and no server choice. After the language
@@ -655,15 +654,46 @@ ApplicationWindow
         var sep = Config.language === 'en_UK' ? ',' : '.'
         return intStr.replace(/\B(?=(\d{3})+(?!\d))/g, sep)
     }
+    // T48 (owner 12/11): the reference currency (Electrum's fiat currency), its symbol and name
+    function ehCcy() { ehFxRev; return Daemon.fx.fiatCurrency || 'EUR' }
+    readonly property var ehCcySymbols: ({ EUR: '€', USD: '$', GBP: '£', JPY: '¥', CNY: '¥', INR: '₹', KRW: '₩',
+        TRY: '₺', RUB: '₽', UAH: '₴', ILS: '₪', NGN: '₦', PHP: '₱', VND: '₫', BRL: 'R$', AUD: 'A$', CAD: 'C$',
+        NZD: 'NZ$', MXN: 'MX$', HKD: 'HK$', SGD: 'S$', CHF: 'CHF', PLN: 'zł', ZAR: 'R' })
+    function ehSym() { var c = ehCcy(); return ehCcySymbols[c] || c }
+    // name of the currency in the sentences ("amounts in euro / dollars / pounds"): by language
+    function ehCcyName() {
+        var c = ehCcy()
+        var it = { EUR: 'euro', USD: 'dollari', GBP: 'sterline', CHF: 'franchi', JPY: 'yen', CAD: 'dollari canadesi', AUD: 'dollari australiani' }
+        var vec = { EUR: 'euro', USD: 'dolari', GBP: 'sterline', CHF: 'franchi', JPY: 'yen', CAD: 'dolari canadesi', AUD: 'dolari australiani' }
+        var en = { EUR: 'euro', USD: 'dollars', GBP: 'pounds', CHF: 'francs', JPY: 'yen', CAD: 'Canadian dollars', AUD: 'Australian dollars' }
+        var m = Config.language === 'en_UK' ? en : (Config.language === 'vec_IT' ? vec : it)
+        return m[c] || c
+    }
+    function ehHasCash() { return ['EUR', 'USD'].indexOf(ehCcy()) >= 0 }
+    // about how many units of the currency make one euro, rounded to 1 / 10 / 100 / 1000:
+    // scales the PIN threshold, its chips and the length of the amounts that can be typed
+    readonly property var ehCcyScale: ({ CNY: 10, HKD: 10, SEK: 10, NOK: 10, DKK: 10, ZAR: 10, MXN: 10, CZK: 10,
+        TRY: 10, THB: 10, TWD: 10, MAD: 10, UAH: 10, BRL: 10, MYR: 10,
+        INR: 100, RUB: 100, PHP: 100, PKR: 100, HUF: 100, KES: 100, RSD: 100, EGP: 100,
+        NGN: 1000, ARS: 1000, COP: 1000, IDR: 10000 })
+    function ehCcyMult(c) { return ehCcyScale[c || ehCcy()] || 1 }
+    function ehSetCurrency(code) {
+        var oldM = ehCcyMult(ehCcy()), newM = ehCcyMult(code)
+        Daemon.fx.ehSetCurrency(code)
+        if (oldM !== newM) Config.ehSet('pin_eur', Math.round(ehDoubleEur() / oldM * newM))
+        ehOptRev++
+    }
+    function ehCcyTitle() { var n = ehCcyName(); return n.charAt(0).toUpperCase() + n.slice(1) }
     function ehEuroNumber(plain) {
         var n = Number(plain)
         if (plain === '' || isNaN(n)) return ''
         var neg = n < 0
         var parts = Math.abs(n).toFixed(2).split('.')
         var dec = Config.language === 'en_UK' ? '.' : ','
-        return (neg ? '-' : '') + '€ ' + ehGroup(parts[0]) + dec + parts[1]
+        return (neg ? '-' : '') + ehSym() + ' ' + ehGroup(parts[0]) + dec + parts[1]
     }
     function ehEuro(amount) {
+        ehFxRev   // redrawn when the rates or the currency change
         if (!Daemon.fx.enabled) return ''
         return ehEuroNumber(Daemon.fx.fiatValue(amount, true))
     }
@@ -678,6 +708,7 @@ ApplicationWindow
     Connections {
         target: Daemon.fx
         function onQuotesUpdated() { app.ehFxRev++ }
+        function onFiatCurrencyChanged() { app.ehFxRev++ }
         function onHistoryUpdated() { app.ehFxRev++ }
     }
     // T39: when a movement happened, in words: "oggi 16:55", "ieri 14:51", "9 nov", "9 nov 2025"
@@ -807,7 +838,7 @@ ApplicationWindow
     // double confirmation: on by default, from 500 euro
     function ehDoubleOn() { ehOptRev; var v = Config.ehGet('opt_double'); return (v === null || v === undefined) ? true : v === true }
     // big payment threshold (PIN above it, like a contactless card)
-    function ehDoubleEur() { ehOptRev; var v = Config.ehGet('pin_eur'); return v ? v : 100 }
+    function ehDoubleEur() { ehOptRev; var v = Config.ehGet('pin_eur'); return v ? v : 100 * ehCcyMult() }
     function ehSetDoubleEur(v) { Config.ehSet('pin_eur', v); ehOptRev++ }
     // time for Electrum's ETA fee targets [1008, 144, 25, 10, 5, 2, 1] blocks (~10 min each)
     function ehFeeEta(pos) {
@@ -836,7 +867,7 @@ ApplicationWindow
         mv.openSendDialog()
         if (mv._sendDialog) mv._sendDialog.pasted = draft.address
     }
-    function ehBigLimitText() { return ehBtcOnly() || !Daemon.fx.enabled ? qsTr('20% of the balance') : '€ ' + ehGroup('' + ehDoubleEur()) }
+    function ehBigLimitText() { return ehBtcOnly() || !Daemon.fx.enabled ? qsTr('20% of the balance') : ehSym() + ' ' + ehGroup('' + ehDoubleEur()) }
     function ehNeedsDouble(amount) {
         if (!ehDoubleOn() || !amount) return false
         if (amount.isMax) return true
@@ -892,7 +923,6 @@ ApplicationWindow
         ehSetOption('btc_only', on)
         Daemon.fx.enabled = !on
         if (!on) {
-            if (Daemon.fx.fiatCurrency !== 'EUR') Daemon.fx.fiatCurrency = 'EUR'
             if (!Daemon.fx.historicRates) Daemon.fx.historicRates = true
         }
     }
@@ -970,6 +1000,7 @@ ApplicationWindow
     function ehResetSettings() {
         var keys = ['euro_btc', 'max', 'request_amount', 'multi', 'watch', 'sign_elsewhere', 'buttons', 'coins', 'no_anim', 'privacy', 'utxo', 'show_adv', 'manual_fee']
         for (var i = 0; i < keys.length; i++) Config.ehSet('opt_' + keys[i], ehOptDefaultOn.indexOf(keys[i]) >= 0)
+        ehSetCurrency('EUR')
         // second review (S3): with 2 or more wallets "More wallets" stays on, or the others disappear
         if (Daemon.availableWallets.rowCount() > 1) Config.ehSet('opt_multi', true)
         Config.ehSet('opt_double', true)

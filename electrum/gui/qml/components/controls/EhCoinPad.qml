@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): amount with euro banknotes and coins (expert option).
+// Easy Heirs (schèi): amount with banknotes and coins (euro or US dollar, owner 12/11).
 // Tapping a note or a coin makes it fly onto the heap in the purse
 // ("gruzzoletto"); the total and how many of each kind are shown beside it.
 // Notes and coins keep the real euro proportions (the 50 is the biggest note,
@@ -9,6 +9,8 @@ import QtQuick.Layouts
 import QtQuick.Controls
 import QtQuick.Controls.Material
 
+import "EhMoney.js" as Money
+
 Item {
     id: pad
 
@@ -17,34 +19,35 @@ Item {
     property var counts: ({})
     readonly property bool animate: !app.ehOption('no_anim')
 
-    // values in cents; real sizes in millimetres
-    readonly property var noteValues: [10000, 5000, 2000, 1000, 500]
-    readonly property var coinValues: [200, 100, 50, 20, 10, 5, 2, 1]
-    readonly property var noteMm: ({ 10000: [147, 82], 5000: [140, 77], 2000: [133, 72], 1000: [127, 67], 500: [120, 62] })
-    readonly property var coinMm: ({ 200: 25.75, 100: 23.25, 50: 24.25, 20: 22.25, 10: 19.75, 5: 21.25, 2: 18.75, 1: 16.25 })
+    // owner 12/11: the notes and coins of the chosen currency (euro or US dollar), EhMoney.js
+    readonly property string ccy: app.ehCcy()
+    readonly property var noteValues: Money.table(ccy).notes
+    readonly property var coinValues: Money.table(ccy).coins
+    readonly property var noteMm: Money.table(ccy).noteMm
+    readonly property var coinMm: Money.table(ccy).coinMm
+    readonly property real maxW: Money.maxNoteW(ccy)
+    readonly property real maxH: Money.maxNoteH(ccy)
+    readonly property real maxC: Money.maxCoinMm(ccy)
 
     // ---------- sizes (shrink everything together on short screens) ----------
     // roomy: notes 2 x 2, coins 4 x 2.  Short screen: notes 4 in a row, coins 8 in a row.
     readonly property real gap: 8
     // short screen (e.g. "Bigger text"): notes in one row and a lower purse
     readonly property real roomFull: height - 176 - 4 * gap
-    readonly property bool compact: roomFull < 0.95 * (2 * noteH(3) + coinKFor(8) * 25.75)
+    readonly property bool compact: roomFull < 0.95 * (2 * noteH(3) + coinKFor(8) * maxC)
     readonly property real purseH: compact ? 150 : 176
     readonly property real room: height - purseH - 4 * gap
-    function noteH(cols) { return ((width - (cols - 1) * gap) / cols) * 77 / 140 }
-    function coinKFor(cols) { return Math.min(2.45, ((width - (cols - 1) * gap) / cols) / 26.5) }
-    readonly property int noteCols: compact ? 5 : 3
-    readonly property int coinCols: 8
+    function noteH(cols) { return ((width - (cols - 1) * gap) / cols) * pad.maxH / pad.maxW }
+    function coinKFor(cols) { return Math.min(2.45, ((width - (cols - 1) * gap) / cols) / (pad.maxC + 1)) }
+    readonly property int noteCols: compact ? noteValues.length : 3
+    readonly property int coinCols: Math.max(4, coinValues.length)
     readonly property real natNoteH: noteH(noteCols)
     readonly property real natCoinK: coinKFor(coinCols)
-    readonly property real fit: Math.max(0.6, Math.min(1, room / ((compact ? 1 : 2) * natNoteH + natCoinK * 25.75)))
-    readonly property real noteK: (natNoteH * fit) / 77      // pixels per mm, notes
+    readonly property real fit: Math.max(0.6, Math.min(1, room / ((compact ? 1 : 2) * natNoteH + natCoinK * maxC)))
+    readonly property real noteK: (natNoteH * fit) / pad.maxH  // pixels per mm, notes
     readonly property real coinK: natCoinK * fit             // pixels per mm, coins
 
-    function isNote(c) { return c >= 500 }
-    function noteColor(c) { return ({ 10000: '#5e9f5a', 5000: '#e08a35', 2000: '#4a78bd', 1000: '#cf5653', 500: '#87929b' })[c] }
-    function noteColor2(c) { return ({ 10000: '#3d7a3a', 5000: '#c4661b', 2000: '#2f5b9a', 1000: '#ad3837', 500: '#666f78' })[c] }
-    function coinText(c) { return c >= 100 ? (c / 100) + '<small>€</small>' : c + '<small>c</small>' }
+    function isNote(c) { return noteValues.indexOf(c) >= 0 }
 
     function update() {
         var e = Math.floor(cents / 100), r = cents % 100
@@ -53,7 +56,7 @@ Item {
     function heapSpot(c) {
         var n = heapModel.count
         if (isNote(c)) {
-            var w = Math.round(96 * noteMm[c][0] / 140), h = Math.round(96 * noteMm[c][1] / 140)
+            var w = Math.round(96 * noteMm[c][0] / pad.maxW), h = Math.round(96 * noteMm[c][1] / pad.maxW)
             return { x: 10 + (96 - w) / 2 + (n % 3) * 3, y: 54 - Math.min(n, 10) * 3, w: w, h: h, rot: (n % 2 ? -1 : 1) * (4 + n % 5) }
         }
         var k = 0
@@ -68,20 +71,31 @@ Item {
         var s = heapSpot(c)
         var p = src.mapToItem(heap, 0, 0)
         heapModel.append({ c: c, tx: s.x, ty: s.y, tw: s.w, th: s.h, trot: s.rot,
-                           fx: p.x, fy: p.y, fw: src.width, fh: src.height, fly: animate })
+                           fx: p.x, fy: p.y, fw: src.width, fh: src.height, fly: animate, going: false })
         update()
     }
+    // T28 (owner): taking a note or coin back is animated too: it flies back to its place
     function removeOne(c) {
+        var found = -1
         for (var i = heapModel.count - 1; i >= 0; i--) {
-            if (heapModel.get(i).c === c) { heapModel.remove(i); break }
+            var e = heapModel.get(i)
+            if (e.c === c && !e.going) { found = i; break }
         }
+        if (found < 0) return
         var cc = Object.assign({}, counts); cc[c] = Math.max(0, (cc[c] || 0) - 1); counts = cc
         cents = Math.max(0, cents - c)
         update()
+        var item = heapRep.itemAt(found)
+        if (animate && item) {
+            heapModel.setProperty(found, 'going', true)
+            item.flyBack()
+        } else {
+            heapModel.remove(found)
+        }
     }
     function removeLast() {
-        if (heapModel.count === 0) return
-        removeOne(heapModel.get(heapModel.count - 1).c)
+        for (var i = heapModel.count - 1; i >= 0; i--)
+            if (!heapModel.get(i).going) { removeOne(heapModel.get(i).c); return }
     }
     function clear() {
         heapModel.clear()
@@ -140,6 +154,7 @@ Item {
                     font.pixelSize: 12
                 }
                 Repeater {
+                    id: heapRep
                     model: heapModel
                     delegate: Item {
                         id: hi
@@ -160,8 +175,8 @@ Item {
                             anchors.fill: parent
                             sourceComponent: pad.isNote(hi.c) ? noteC : coinC
                         }
-                        Component { id: noteC; EhNote { c: hi.c } }
-                        Component { id: coinC; EhCoin { c: hi.c } }
+                        Component { id: noteC; EhNote { c: hi.c; ccy: pad.ccy } }
+                        Component { id: coinC; EhCoin { c: hi.c; ccy: pad.ccy } }
                         ParallelAnimation {
                             id: flyAnim
                             NumberAnimation { target: hi; property: 'x'; to: hi.tx; duration: 460; easing.type: Easing.OutCubic }
@@ -169,6 +184,20 @@ Item {
                             NumberAnimation { target: hi; property: 'width'; to: hi.tw; duration: 460; easing.type: Easing.OutCubic }
                             NumberAnimation { target: hi; property: 'height'; to: hi.th; duration: 460; easing.type: Easing.OutCubic }
                             NumberAnimation { target: hi; property: 'rotation'; to: hi.trot; duration: 460 }
+                        }
+                        // T28: back to where it came from, then it leaves the heap
+                        function flyBack() { flyAnim.stop(); backAnim.start() }
+                        SequentialAnimation {
+                            id: backAnim
+                            ParallelAnimation {
+                                NumberAnimation { target: hi; property: 'x'; to: hi.fx; duration: 380; easing.type: Easing.InOutCubic }
+                                NumberAnimation { target: hi; property: 'y'; to: hi.fy; duration: 380; easing.type: Easing.InOutCubic }
+                                NumberAnimation { target: hi; property: 'width'; to: hi.fw; duration: 380 }
+                                NumberAnimation { target: hi; property: 'height'; to: hi.fh; duration: 380 }
+                                NumberAnimation { target: hi; property: 'rotation'; to: 0; duration: 380 }
+                            }
+                            NumberAnimation { target: hi; property: 'opacity'; to: 0; duration: 120 }
+                            ScriptAction { script: heapModel.remove(hi.index) }
                         }
                         Component.onCompleted: {
                             if (fly) {
@@ -189,7 +218,7 @@ Item {
                 spacing: 2
                 Label {
                     Layout.fillWidth: true
-                    text: '€ ' + app.ehGroup('' + Math.floor(pad.cents / 100)) + app.ehLocale().decimalPoint + ('0' + (pad.cents % 100)).slice(-2)
+                    text: app.ehSym() + ' ' + app.ehGroup('' + Math.floor(pad.cents / 100)) + app.ehLocale().decimalPoint + ('0' + (pad.cents % 100)).slice(-2)
                     color: '#ffffff'
                     font.family: TitleFont ? TitleFont : font.family
                     font.weight: Font.Black
@@ -233,8 +262,8 @@ Item {
                                         width: pad.isNote(chip.modelData) ? 26 : 18
                                         height: pad.isNote(chip.modelData) ? 15 : 18
                                         sourceComponent: pad.isNote(chip.modelData) ? miniNote : miniCoin
-                                        Component { id: miniNote; EhNote { c: chip.modelData } }
-                                        Component { id: miniCoin; EhCoin { c: chip.modelData } }
+                                        Component { id: miniNote; EhNote { c: chip.modelData; ccy: pad.ccy } }
+                                        Component { id: miniCoin; EhCoin { c: chip.modelData; ccy: pad.ccy } }
                                     }
                                     Label { anchors.verticalCenter: parent.verticalCenter; text: '×' + (pad.counts[chip.modelData] || 0); color: '#ffffff'; font.pixelSize: 13; font.bold: true }
                                     Label { anchors.verticalCenter: parent.verticalCenter; text: '−'; color: Qt.rgba(1, 1, 1, 0.7); font.pixelSize: 15; font.bold: true }
@@ -280,7 +309,7 @@ Item {
                     id: nCell
                     required property int modelData
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 77 * pad.noteK
+                    Layout.preferredHeight: pad.maxH * pad.noteK
                     EhNote {
                         id: nItem
                         c: nCell.modelData
@@ -306,7 +335,7 @@ Item {
                     id: cCell
                     required property int modelData
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 25.75 * pad.coinK
+                    Layout.preferredHeight: pad.maxC * pad.coinK
                     EhCoin {
                         id: cItem
                         c: cCell.modelData

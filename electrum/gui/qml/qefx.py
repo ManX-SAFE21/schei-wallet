@@ -45,6 +45,27 @@ class QEFX(QObject, QtEventListener):
     def currencies(self):
         return self.fx.get_currencies(self.historicRates)
 
+    # Easy Heirs (T48): change the currency and, if the rate source does not have it, take one that has
+    @pyqtSlot(str)
+    def ehSetCurrency(self, ccy: str):
+        self.fiatCurrency = ccy
+        try:
+            exs = self.fx.get_exchanges_by_ccy(ccy, self.historicRates) or self.fx.get_exchanges_by_ccy(ccy, False)
+            if exs and self.fx.config_exchange() not in exs:
+                pick = 'CoinGecko' if 'CoinGecko' in exs else exs[0]
+                self.fx.set_exchange(pick)
+                self.rateSourceChanged.emit()
+        except Exception as e:
+            self._logger.error(f'ehSetCurrency: {e!r}')
+        self.quotesUpdated.emit()
+
+    @pyqtSlot(result='QVariantList')
+    def ehCurrencies(self):
+        try:
+            return list(self.fx.get_currencies(False))
+        except Exception:
+            return []
+
     rateSourcesChanged = pyqtSignal()
     @pyqtProperty('QVariantList', notify=rateSourcesChanged)
     def rateSources(self):
@@ -196,7 +217,9 @@ class QEFX(QObject, QtEventListener):
 
         out = io.StringIO()
         w = csv.writer(out, delimiter=';' if comma else ',', lineterminator='\n')
-        w.writerow([_('Date'), _('Type'), 'BTC', _('Euro (value of the day)'), _('Sending cost €'), _('Note'), _('Confirmations'), _('Transaction code')])
+        ccy = self.fx.get_currency() or 'EUR'
+        w.writerow([_('Date'), _('Type'), 'BTC', ccy + ' (' + _('value of the day') + ')', _('Sending cost') + ' ' + ccy,
+                    _('Note'), _('Confirmations'), _('Transaction code')])
         for r in rows:
             date = r.get('timestamp', '')
             if year and not str(date).startswith(str(year)):

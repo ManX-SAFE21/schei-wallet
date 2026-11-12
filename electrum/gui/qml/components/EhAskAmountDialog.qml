@@ -24,7 +24,7 @@ ElDialog {
     }
 
     readonly property bool btc: app.ehBtcOnly()
-    property bool coinsMode: app.ehOption('coins') && !btc
+    property bool coinsMode: app.ehOption('coins') && !btc && app.ehHasCash()
     function sats() {
         var plain = (euroInput === '' ? '0' : euroInput).replace(',', '.')
         if (btc) { var b = Number(plain); return isNaN(b) ? 0 : Math.round(b * 100000000) }
@@ -34,9 +34,9 @@ ElDialog {
     function amount() { return Config.unitsToSats((sats() / 100000000).toFixed(8)) }
     function display() {
         if (btc) return (euroInput === '' ? '0' : euroInput.replace(',', app.ehLocale().decimalPoint)) + ' BTC'
-        if (euroInput === '') return '€ 0'
+        if (euroInput === '') return app.ehSym() + ' 0'
         var p = euroInput.split(',')
-        return '€ ' + Number(p[0] || '0').toLocaleString(app.ehLocale(), 'f', 0) + (p.length > 1 ? app.ehLocale().decimalPoint + p[1] : '')
+        return app.ehSym() + ' ' + Number(p[0] || '0').toLocaleString(app.ehLocale(), 'f', 0) + (p.length > 1 ? app.ehLocale().decimalPoint + p[1] : '')
     }
     function press(k) {
         if (k === 'del') { euroInput = euroInput.slice(0, -1); return }
@@ -44,7 +44,7 @@ ElDialog {
         var d = euroInput.indexOf(',')
         if (d >= 0 && euroInput.length - d > (btc ? 8 : 2)) return
         if (euroInput === '0') euroInput = ''
-        if (euroInput.replace(',', '').length >= (btc ? 10 : 7)) return
+        if (euroInput.replace(',', '').length >= (btc ? 10 : 7 + Math.round(Math.log(app.ehCcyMult()) / Math.LN10))) return
         euroInput += k
     }
 

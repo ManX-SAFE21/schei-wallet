@@ -186,6 +186,12 @@ Item {
                     value: Config.language === 'vec_IT' ? 'Veneto' : (Config.language === 'en_UK' ? 'English' : 'Italiano')
                     onClicked: app.ehChangeLanguage()
                 }
+                // T48: the reference currency (euro, dollar, ...)
+                Row1 {
+                    icon: 'eh_euro.svg'; text: qsTr('Currency')
+                    value: app.ehSym() + ' · ' + app.ehCcy()
+                    onClicked: app.stack.push(Qt.resolvedUrl('EhCurrencyPage.qml'))
+                }
                 RowSw {
                     icon: 'eh_textsize.svg'; text: qsTr('Bigger text'); hint: qsTr('to read better'); key: 'bigtext'
                     onToggled: {
@@ -203,7 +209,7 @@ Item {
             Group { visible: col.adv; text: qsTr('HOW YOU PAY AND RECEIVE') }
             Card {
                 visible: col.adv
-                RowSw { visible: !app.ehBtcOnly(); icon: 'eh_euro.svg'; text: qsTr('Banknotes and coins'); hint: qsTr('as when you use cash'); key: 'coins' }
+                RowSw { visible: !app.ehBtcOnly() && app.ehHasCash(); icon: 'eh_euro.svg'; text: qsTr('Banknotes and coins'); hint: qsTr('as when you use cash'); key: 'coins' }
                 RowSw { icon: 'eh_list.svg'; text: qsTr('Buttons instead of the bar'); hint: qsTr('for those who find it hard to drag'); key: 'buttons' }
                 // only bitcoin: its own switch (it also turns off the exchange rates)
                 Rectangle {
@@ -225,13 +231,13 @@ Item {
                         ColumnLayout {
                             Layout.fillWidth: true
                             spacing: 0
-                            Label { Layout.fillWidth: true; text: qsTr('Amounts only in bitcoin (no euro)'); font.pixelSize: 17; font.bold: true; wrapMode: Text.WordWrap }
+                            Label { Layout.fillWidth: true; text: qsTr('Amounts only in bitcoin (no %1)').arg(app.ehCcyName()); font.pixelSize: 17; font.bold: true; wrapMode: Text.WordWrap }
                             Label { Layout.fillWidth: true; text: qsTr('all amounts in BTC, no exchange rate is asked'); font.pixelSize: 13; color: '#6b5d55'; wrapMode: Text.WordWrap }
                         }
                         Switch { checked: app.ehBtcOnly(); onToggled: app.ehSetBtcOnly(checked) }
                     }
                 }
-                RowSw { visible: !app.ehBtcOnly(); icon: 'eh_euro.svg'; text: qsTr('Amounts in euro and bitcoin'); hint: qsTr('write the amount in € or in BTC'); key: 'euro_btc' }
+                RowSw { visible: !app.ehBtcOnly(); icon: 'eh_euro.svg'; text: qsTr('Amounts in %1 and bitcoin').arg(app.ehCcyName()); hint: qsTr('write the amount in %1 or in BTC').arg(app.ehSym()); key: 'euro_btc' }
                 RowSw { icon: 'eh_send_qr.svg'; text: qsTr('Button: Send all the balance'); hint: qsTr('to empty the wallet'); key: 'max' }
                 RowSw { icon: 'eh_rx_olive.svg'; text: qsTr('Ask a precise amount'); hint: qsTr('in Receive, a QR with the amount'); key: 'request_amount' }
             }

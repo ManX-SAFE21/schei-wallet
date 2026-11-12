@@ -28,7 +28,7 @@ ElDialog {
     property bool useMax: false      // expert: all the balance
     property alias pad: coinPad
     // expert: banknotes and coins instead of the keypad (euro only)
-    property bool coinsMode: app.ehOption('coins') && !app.ehBtcOnly()
+    property bool coinsMode: app.ehOption('coins') && !app.ehBtcOnly() && app.ehHasCash()
     readonly property bool useCoins: coinsMode && !btcMode
     onBtcModeChanged: if (!btcMode && coinsMode) coinPad.clear()
     // big amounts need two coins pushed up (expert option, on by default at 500 euro)
@@ -70,12 +70,12 @@ ElDialog {
     }
     function satsToAmount(sats) { return Config.unitsToSats((sats / 100000000).toFixed(8)) }
     function euroDisplay() {
-        var sym = btcMode ? '' : '€ '
+        var sym = btcMode ? '' : app.ehSym() + ' '
         if (euroInput === '') return btcMode ? '0 BTC' : sym + '0'
         if (btcMode) return euroInput.replace(',', app.ehLocale().decimalPoint) + ' BTC'
         var parts = euroInput.split(',')
         var intPart = Number(parts[0] || '0').toLocaleString(app.ehLocale(), 'f', 0)
-        return '€ ' + intPart + (parts.length > 1 ? app.ehLocale().decimalPoint + parts[1] : '')
+        return app.ehSym() + ' ' + intPart + (parts.length > 1 ? app.ehLocale().decimalPoint + parts[1] : '')
     }
     function press(k) {
         if (k === 'del') { euroInput = euroInput.slice(0, -1); return }
@@ -87,7 +87,7 @@ ElDialog {
         var dec = euroInput.indexOf(',')
         if (dec >= 0 && euroInput.length - dec > (btcMode ? 8 : 2)) return
         if (euroInput === '0') euroInput = ''
-        if (euroInput.replace(',', '').length >= (btcMode ? 10 : 7)) return
+        if (euroInput.replace(',', '').length >= (btcMode ? 10 : 7 + Math.round(Math.log(app.ehCcyMult()) / Math.LN10))) return
         euroInput += k
     }
     function goReview(amount) {
@@ -272,7 +272,7 @@ ElDialog {
                 anchors.margins: 4
                 spacing: 4
                 Repeater {
-                    model: [ { b: false, t: '€  Euro' }, { b: true, t: 'Bitcoin (BTC)' } ]
+                    model: [ { b: false, t: (app.ehSym() !== app.ehCcy() ? app.ehSym() + '  ' : '') + app.ehCcyTitle() }, { b: true, t: 'Bitcoin (BTC)' } ]
                     delegate: Rectangle {
                         required property var modelData
                         Layout.fillWidth: true
@@ -447,7 +447,7 @@ ElDialog {
                     wrapMode: Text.WordWrap
                     textFormat: Text.StyledText
                     font.pixelSize: 14
-                    text: '<b>' + qsTr('I do not know the euro price right now.') + '</b> '
+                    text: '<b>' + qsTr('I do not know the price in %1 right now.').arg(app.ehCcyName()) + '</b> '
                           + qsTr('Wait a few seconds, or write the amount in bitcoin.')
                 }
                 EhPillButton {

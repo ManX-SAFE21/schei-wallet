@@ -163,14 +163,14 @@ Item {
                             wrapMode: Text.WordWrap
                             textFormat: Text.StyledText
                             font.pixelSize: 15
-                            text: qsTr('<b>20%</b> of the balance (with "Only bitcoin" there is no euro value).')
+                            text: qsTr('<b>20%</b> of the balance (with "Only bitcoin" there is no value in %1).').arg(app.ehCcyName())
                         }
                         Flow {
                             visible: !app.ehBtcOnly()
                             Layout.fillWidth: true
                             spacing: 8
                             Repeater {
-                                model: [50, 100, 200, 500]
+                                model: [50, 100, 200, 500].map(function(x) { return x * app.ehCcyMult() })
                                 delegate: Rectangle {
                                     required property int modelData
                                     width: amtL.implicitWidth + 28
@@ -180,7 +180,7 @@ Item {
                                     Label {
                                         id: amtL
                                         anchors.centerIn: parent
-                                        text: app.ehGroup('' + modelData) + ' €'
+                                        text: app.ehGroup('' + modelData) + ' ' + app.ehSym()
                                         font.pixelSize: 15
                                         font.bold: true
                                         color: app.ehDoubleEur() === modelData ? '#ffffff' : '#6b5d55'
@@ -192,18 +192,18 @@ Item {
                                 width: 138      // fixed: the empty field has no width of its own
                                 height: 38
                                 radius: 19
-                                color: [50, 100, 200, 500].indexOf(app.ehDoubleEur()) < 0 ? '#5e1a33' : '#efe6d3'
+                                color: [50, 100, 200, 500].map(function(x) { return x * app.ehCcyMult() }).indexOf(app.ehDoubleEur()) < 0 ? '#5e1a33' : '#efe6d3'
                                 TextInput {
                                     id: otherF
                                     anchors.centerIn: parent
                                     width: 110
                                     horizontalAlignment: TextInput.AlignHCenter
-                                    text: [50, 100, 200, 500].indexOf(app.ehDoubleEur()) < 0 ? '' + app.ehDoubleEur() : ''
+                                    text: [50, 100, 200, 500].map(function(x) { return x * app.ehCcyMult() }).indexOf(app.ehDoubleEur()) < 0 ? '' + app.ehDoubleEur() : ''
                                     inputMethodHints: Qt.ImhDigitsOnly
                                     validator: IntValidator { bottom: 1; top: 1000000 }
                                     font.pixelSize: 15
                                     font.bold: true
-                                    color: [50, 100, 200, 500].indexOf(app.ehDoubleEur()) < 0 ? '#ffffff' : '#2a2220'
+                                    color: [50, 100, 200, 500].map(function(x) { return x * app.ehCcyMult() }).indexOf(app.ehDoubleEur()) < 0 ? '#ffffff' : '#2a2220'
                                     onEditingFinished: if (text !== '') app.ehSetDoubleEur(parseInt(text))
                                     Label {
                                         // our own hint: it stays in place and goes away while typing

@@ -352,7 +352,11 @@ class QEWallet(AuthMixin, QObject, QtEventListener):
                         v = fx.fiat_value(sats, rate)
                         s = f'{v:,.2f}'.replace(',', ' ').replace('.', ',').replace(' ', '.')
                         ccy = fx.get_currency()
-                        return ('€ ' + s) if ccy == 'EUR' else (s + ' ' + ccy)
+                        sym = {'EUR': '€', 'USD': '$', 'GBP': '£', 'JPY': '¥', 'CNY': '¥', 'INR': '₹', 'KRW': '₩',
+                               'TRY': '₺', 'RUB': '₽', 'UAH': '₴', 'ILS': '₪', 'NGN': '₦', 'PHP': '₱', 'VND': '₫',
+                               'BRL': 'R$', 'AUD': 'A$', 'CAD': 'C$', 'NZD': 'NZ$', 'MXN': 'MX$', 'HKD': 'HK$',
+                               'SGD': 'S$', 'CHF': 'CHF', 'PLN': 'zł', 'ZAR': 'R'}.get(ccy, ccy)
+                        return sym + ' ' + s
             except Exception as e:
                 self._logger.info(f'eh notify: no fiat value ({e!r})')
             return cfg.format_amount_and_units(sats)

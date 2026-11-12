@@ -104,7 +104,7 @@ Item {
             textFormat: Text.StyledText
             font.pixelSize: 13
             color: '#6b5d55'
-            text: qsTr('The euro are the value <b>of the day</b> of each movement. Payments still arriving are not in the file.')
+            text: qsTr('The amounts in %1 are the value <b>of the day</b> of each movement. Payments still arriving are not in the file.').arg(app.ehCcyName())
         }
 
         Item { Layout.fillHeight: true }
