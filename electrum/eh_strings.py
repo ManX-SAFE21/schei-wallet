@@ -5,6 +5,7 @@
 
 STRINGS = {
     'it_IT': {
+        'OK (go ahead)': 'Va bene',
         'Warning: Some data (prev txs / "full utxos") was left out of the QR code as it would not fit.': 'Attenzione: alcuni dati (transazioni precedenti / "full utxos") sono rimasti fuori dal QR perché non ci stavano.',
         'This might cause issues if signing offline.': 'Questo può dare problemi se firmi fuori linea.',
         'As a workaround, copy to clipboard or use the Share option instead.': 'In alternativa copia il testo o usa Condividi.',
@@ -744,6 +745,7 @@ STRINGS = {
         '<b>Schèi chooses a "normal" tip by itself</b>: the payment usually arrives in about ten minutes. The whole tip goes to the miners: Schèi takes nothing.': '<b>Schèi sceglie da solo una mancia "normale"</b>: il pagamento arriva di solito in una decina di minuti. La mancia va tutta ai minatori: Schèi non prende niente.',
     },
     'vec_IT': {
+        'OK (go ahead)': 'Va ben',
         'It is the small tip to the "miners" who write your payment on the blockchain.': 'Xe la picola mancia ai "minatori" che i scrive el to pagamento su la blockchain.',
         'The standard settings come back: the extra options turn off, the PIN for big payments is on.': 'Le torna le impostasion de serie: le opzion in più le se studa, el PIN par i invii grandi el xe impissà.',
         'off (m)': 'studà',

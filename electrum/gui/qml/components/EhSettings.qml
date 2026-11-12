@@ -219,7 +219,7 @@ Item {
                                     RowLayout {
                                         Layout.alignment: Qt.AlignHCenter
                                         spacing: 3
-                                        Image { visible: lvB.index === 2; source: Qt.resolvedUrl('../../icons/eh_lock.svg'); sourceSize.width: 11; sourceSize.height: 11 }
+                                        Image { visible: lvB.index === 2; source: Qt.resolvedUrl('../../icons/' + (lvB.sel ? 'eh_lock_white.svg' : 'eh_lock.svg')); sourceSize.width: 11; sourceSize.height: 11 }
                                         Label { text: lvB.modelData.s; font.pixelSize: 11; color: lvB.sel ? '#f3dde5' : '#6b5d55' }
                                     }
                                 }

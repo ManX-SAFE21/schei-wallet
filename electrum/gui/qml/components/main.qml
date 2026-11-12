@@ -880,7 +880,7 @@ ApplicationWindow
                       ehAskPin(qsTr('Type the PIN to switch to EXPERT.') + '\n' + qsTr('Nobody should ask you to do this by phone.'),
                                function() { ehApplyLevel(to) })
                   else ehApplyLevel(to)
-              }, null, qsTr('That is fine'), qsTr('Cancel'))
+              }, null, qsTr('OK (go ahead)'), qsTr('Cancel'))
     }
     function ehApplyLevel(to) {
         var wasNode = Network.oneServer && !Network.autoConnect

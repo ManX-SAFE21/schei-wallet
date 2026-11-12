@@ -147,9 +147,26 @@ ColumnLayout {
                 anchors.topMargin: 6
                 anchors.bottomMargin: 6
                 radius: 24
-                color: addTap.pressed ? Qt.rgba(1, 1, 1, 0.75) : Qt.rgba(1, 1, 1, 0.55)
-                border.width: 1.5
-                border.color: Qt.rgba(1, 1, 1, 0.9)
+                // T49 (owner 12/11): it was white on the cream page, almost invisible. Now a pale
+                // wine wallet with a wine border and stitching, and a "+" already on the edge
+                // that peeks out next to the open wallet
+                gradient: Gradient {
+                    GradientStop { position: 0.0; color: addTap.pressed ? '#ecd3dc' : '#f6e6ec' }
+                    GradientStop { position: 1.0; color: addTap.pressed ? '#dcb5c3' : '#e9ccd7' }
+                }
+                border.width: 3
+                border.color: '#5e1a33'
+                EhDashedBorder { anchors.fill: parent; inset: 8; radius: 16; lineWidth: 1.8; color: '#8a3d5a' }
+                Label {
+                    // the "+" on the left edge: the part that is seen next to the open wallet
+                    visible: list.currentIndex !== d.index
+                    x: 5
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: '+'
+                    color: '#5e1a33'
+                    font.pixelSize: 30
+                    font.bold: true
+                }
                 ColumnLayout {
                     anchors.centerIn: parent
                     spacing: 4
