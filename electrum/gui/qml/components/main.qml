@@ -680,7 +680,7 @@ ApplicationWindow
     function ehSetCurrency(code) {
         var oldM = ehCcyMult(ehCcy()), newM = ehCcyMult(code)
         Daemon.fx.ehSetCurrency(code)
-        if (oldM !== newM) Config.ehSet('pin_eur', Math.round(ehDoubleEur() / oldM * newM))
+        if (oldM !== newM) Config.ehSet('pin_eur', Math.round(ehDoubleEurSaved() / oldM * newM))
         ehOptRev++
     }
     function ehCcyTitle() { var n = ehCcyName(); return n.charAt(0).toUpperCase() + n.slice(1) }
@@ -886,6 +886,16 @@ ApplicationWindow
         var wasNode = Network.oneServer && !Network.autoConnect
         var wasTor = Network.proxy && Network.proxy.enabled === true
         ehSetLevel(to)
+        ehLevelDownChecks(to, wasNode, wasTor)
+    }
+    // "Back to the initial settings": level BASE, then the same checks as going down
+    function ehResetAndCheck() {
+        var wasNode = Network.oneServer && !Network.autoConnect
+        var wasTor = Network.proxy && Network.proxy.enabled === true
+        ehResetSettings()
+        ehLevelDownChecks('base', wasNode, wasTor)
+    }
+    function ehLevelDownChecks(to, wasNode, wasTor) {
         // going down nothing stays on out of sight: blocked coins, own node, Tor
         var w = Daemon.currentWallet
         var blocked = (!ehOption('utxo') && w) ? w.ehFrozenCount() : 0
@@ -963,9 +973,16 @@ ApplicationWindow
         return { 'id': '', 'name': qsTr('I do not know'), 'color': '#8a7d70' }
     }
     // double confirmation: on by default, from 500 euro
-    function ehDoubleOn() { ehOptRev; var v = Config.ehGet('opt_double'); return (v === null || v === undefined) ? true : v === true }
+    // T50: outside ESPERTO its row cannot be seen, so the PIN for big payments is always on
+    // at the standard threshold (also for users who turned it off before the levels)
+    function ehDoubleOn() {
+        ehOptRev
+        if (ehLevel() !== 'esperto') return true
+        var v = Config.ehGet('opt_double'); return (v === null || v === undefined) ? true : v === true
+    }
     // big payment threshold (PIN above it, like a contactless card)
-    function ehDoubleEur() { ehOptRev; var v = Config.ehGet('pin_eur'); return v ? v : 100 * ehCcyMult() }
+    function ehDoubleEurSaved() { ehOptRev; var v = Config.ehGet('pin_eur'); return v ? v : 100 * ehCcyMult() }
+    function ehDoubleEur() { return ehLevel() === 'esperto' ? ehDoubleEurSaved() : 100 * ehCcyMult() }
     function ehSetDoubleEur(v) { Config.ehSet('pin_eur', v); ehOptRev++ }
     // time for Electrum's ETA fee targets [1008, 144, 25, 10, 5, 2, 1] blocks (~10 min each)
     function ehFeeEta(pos) {

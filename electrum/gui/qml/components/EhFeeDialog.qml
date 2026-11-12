@@ -229,7 +229,7 @@ ElDialog {
                     Layout.fillWidth: true
                     horizontalAlignment: Text.AlignHCenter
                     text: root.manualText !== '' ? root.manualText : (root.padOpen ? '–' : qsTr('tap to write'))
-                    font.family: root.manualText !== '' ? 'monospace' : font.family
+                    font.family: root.manualText !== '' ? 'monospace' : Qt.application.font.family
                     font.pixelSize: root.manualText !== '' || root.padOpen ? 24 : 15
                     font.bold: true
                     color: '#3f0f21'
@@ -238,7 +238,7 @@ ElDialog {
             }
         }
         Rectangle {
-            visible: root.manual && (root.manualRate < 1 || (root.slowRate > 0 && root.manualRate < root.slowRate))
+            visible: root.manual && (root.manualRate < root.minRate || root.manualRate < 1 || (root.slowRate > 0 && root.manualRate < root.slowRate))
             Layout.fillWidth: true
             Layout.preferredHeight: lowL.implicitHeight + 18
             radius: 12

@@ -949,7 +949,7 @@ class QEWallet(AuthMixin, QObject, QtEventListener):
         # only the coins the user blocked; Electrum's own protection (tiny or unconfirmed coins) stays
         coins = [c.prevout.to_str() for c in w.get_utxos() if w._frozen_coins.get(c.prevout.to_str()) is True]
         if coins:
-            w.set_frozen_state_of_coins(coins, False)
+            w.set_frozen_state_of_coins(coins, None)   # None = automatic again, not "never block"
         self.addressCoinModel.setDirty()
         self.balanceChanged.emit()
 

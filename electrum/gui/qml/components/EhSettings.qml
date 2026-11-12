@@ -353,7 +353,7 @@ Item {
                                detail: qsTr('All the settings go back to the standard ones and the level goes back to BASE.') + '\n\n'
                                        + qsTr('Your money, the wallets, the 12 words, the PIN, the name and the language do not change.')
                            })
-                           d.accepted.connect(function() { app.ehResetSettings() })
+                           d.accepted.connect(function() { app.ehResetAndCheck() })
                            d.open()
                        }) }
             }

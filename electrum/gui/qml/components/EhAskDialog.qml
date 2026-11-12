@@ -29,7 +29,9 @@ Popup {
     Overlay.modal: Rectangle { color: Qt.rgba(0.16, 0.13, 0.12, 0.45) }
     background: Rectangle { radius: 26; color: '#ffffff' }
 
+    property bool _answered: false
     function answer(yes) {
+        _answered = true
         close()
         if (yes) accepted()
         else rejected()
@@ -82,5 +84,5 @@ Popup {
             }
         }
     }
-    onClosed: destroy()
+    onClosed: { if (!_answered) { _answered = true; rejected() } destroy() }
 }
