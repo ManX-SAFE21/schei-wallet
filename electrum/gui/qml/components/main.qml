@@ -918,6 +918,12 @@ ApplicationWindow
         if (Config.ehGet('bal_' + k) !== v) Config.ehSet('bal_' + k, v)
         ehBalRev++
     }
+    function ehRememberWatch() {
+        if (!Daemon.currentWallet) return
+        var k = ehWalletKey(), w = Daemon.currentWallet.isWatchOnly === true
+        if (Config.ehGet('watch_' + k) !== w) { Config.ehSet('watch_' + k, w); ehBalRev++ }
+    }
+    function ehWalletIsWatchFor(n) { ehBalRev; return Config.ehGet('watch_' + n) === true }
     function ehLastBalanceFor(n) {
         ehOptRev; ehBalRev; ehFxRev
         var s = Config.ehGet('bal_' + n)
@@ -1220,6 +1226,7 @@ ApplicationWindow
         }
         function onWalletLoaded() {
             Qt.callLater(app.ehRememberBalance)
+            Qt.callLater(app.ehRememberWatch)
             app._loadingWalletContext = null  // either biometric auth or manual auth was successful
             // Easy Heirs: free the addresses kept busy by old empty "Receive" requests
             if (Daemon.currentWallet) Daemon.currentWallet.ehCleanRequests()

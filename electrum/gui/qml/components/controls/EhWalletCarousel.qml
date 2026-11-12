@@ -72,7 +72,7 @@ ColumnLayout {
             // the cards next to the open one: smaller and more transparent,
             // so it is clear that there are more wallets
             scale: isCurrent || (isAdd && list.currentIndex === index) ? 1 : 0.9
-            opacity: isCurrent || (isAdd && list.currentIndex === index) ? 1 : 0.55
+            opacity: isCurrent || (isAdd && list.currentIndex === index) ? 1 : 0.9   // T45: clearly visible
             Behavior on scale { NumberAnimation { duration: 180 } }
             Behavior on opacity { NumberAnimation { duration: 180 } }
 
@@ -104,9 +104,21 @@ ColumnLayout {
                 anchors.topMargin: 6
                 anchors.bottomMargin: 6
                 radius: 24
+                // T45: a watch-only wallet is light: a wine border so it stands out from the page
+                readonly property bool light: d.model.name ? app.ehWalletIsWatchFor(d.model.name) : false
                 gradient: Gradient {
-                    GradientStop { position: 0.0; color: Qt.rgba(Qt.lighter(d.wc, 1.3).r, Qt.lighter(d.wc, 1.3).g, Qt.lighter(d.wc, 1.3).b, 0.8) }
-                    GradientStop { position: 1.0; color: Qt.rgba(Qt.darker(d.wc, 1.35).r, Qt.darker(d.wc, 1.35).g, Qt.darker(d.wc, 1.35).b, 0.68) }
+                    GradientStop { position: 0.0; color: parent.light ? '#fffdf8' : Qt.rgba(Qt.lighter(d.wc, 1.3).r, Qt.lighter(d.wc, 1.3).g, Qt.lighter(d.wc, 1.3).b, 0.92) }
+                    GradientStop { position: 1.0; color: parent.light ? '#fbf3ee' : Qt.rgba(Qt.darker(d.wc, 1.35).r, Qt.darker(d.wc, 1.35).g, Qt.darker(d.wc, 1.35).b, 0.88) }
+                }
+                border.width: light ? 2.5 : 0
+                border.color: '#b98a9a'
+                // T45: the stitching, as on the open wallet
+                EhDashedBorder {
+                    anchors.fill: parent
+                    inset: 7
+                    radius: 17
+                    lineWidth: 1.6
+                    color: parent.light ? '#b98a9a' : Qt.rgba(1, 0.91, 0.77, 0.75)
                 }
                 ColumnLayout {
                     anchors.fill: parent

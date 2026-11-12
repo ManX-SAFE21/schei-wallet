@@ -606,10 +606,22 @@ ElDialog {
                                 anchors.rightMargin: 8
                                 ColumnLayout {
                                     spacing: 0
-                                    Label { text: qsTr('Sending cost'); font.pixelSize: 16 }
+                                    Label { textFormat: Text.StyledText; text: qsTr('Sending cost') + ' <font color="#6b5d55">' + qsTr('(tip to the miners)') + '</font>'; font.pixelSize: 16 }
                                     Label { text: app.ehFeeEta(finalizer.sliderPos); font.pixelSize: 13; color: '#6b5d55' }
                                     // T6: the invitation is inside the button, not below it
                                     Label { text: qsTr('tap to change it'); font.pixelSize: 13; font.bold: true; color: '#5e1a33' }
+                                    // T46 (owner 12/11): what the tip is, here next to the cost (not under the coins)
+                                    Label {
+                                        Layout.fillWidth: true
+                                        Layout.topMargin: 3
+                                        wrapMode: Text.WordWrap
+                                        textFormat: Text.StyledText
+                                        font.pixelSize: 13
+                                        color: '#6b5d55'
+                                        text: qsTr('It is the small tip to the "miners" who write your payment on the blockchain.')
+                                              + ' <u><font color="#5e1a33"><b>' + qsTr('More information') + '</b></font></u>'
+                                        TapHandler { onTapped: app.ehShowFeeInfo() }
+                                    }
                                 }
                                 Item { Layout.fillWidth: true }
                                 Label { text: finalizer.valid ? app.ehMoney(finalizer.fee) : '…'; font.pixelSize: 16; font.bold: true }
@@ -701,15 +713,6 @@ ElDialog {
                                     }
                                 }
                             }
-                        }
-                        Label {
-                            Layout.fillWidth: true
-                            wrapMode: Text.WordWrap
-                            textFormat: Text.StyledText
-                            font.pixelSize: 14
-                            color: '#6b5d55'
-                            text: qsTr('It is the small tip to the "miners".') + ' <u><font color="#5e1a33"><b>' + qsTr('More information') + '</b></font></u>'
-                            TapHandler { onTapped: app.ehShowFeeInfo() }
                         }
                         Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 2; color: '#ece4d2' }
                         RowLayout {

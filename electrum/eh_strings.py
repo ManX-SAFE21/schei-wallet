@@ -5,6 +5,16 @@
 
 STRINGS = {
     'it_IT': {
+        'Who leaves a <b>higher tip</b> to the miners goes first. With the lowest tip it can take <b>a few hours</b>.': 'Chi lascia una <b>mancia più alta</b> ai minatori passa prima. Con la mancia più bassa può volerci <b>qualche ora</b>.',
+        '4 hours': '4 ore',
+        '(tip to the miners)': '(mancia ai minatori)',
+        'Who leaves a <b>higher tip</b> to the miners goes first. With the lowest tip it can take <b>up to a day</b>.': 'Chi lascia una <b>mancia più alta</b> ai minatori passa prima. Con la mancia più bassa può volerci <b>fino a un giorno</b>.',
+        '1 day': '1 giorno',
+        'hours': 'ore',
+        '2 hours': '2 ore',
+        '1 hour': '1 ora',
+        '20 min': '20 min',
+        '10 min': '10 min',
         'Gold coins (UTXO)': "Monete d'oro (UTXO)",
         'you find them in the payment ("Coins used") and in "blocked ›" on the wallet card': 'le trovi nel pagamento ("Monete usate") e in "bloccati ›" sulla scheda del portafoglio',
         'choose which coins to spend, block coins and addresses': 'scegli tu quali monete spendere, blocca monete e indirizzi',
@@ -629,6 +639,16 @@ STRINGS = {
         '<b>Schèi chooses a "normal" tip by itself</b>: the payment usually arrives in about ten minutes. The whole tip goes to the miners: Schèi takes nothing.': '<b>Schèi sceglie da solo una mancia "normale"</b>: il pagamento arriva di solito in una decina di minuti. La mancia va tutta ai minatori: Schèi non prende niente.',
     },
     'vec_IT': {
+        'Who leaves a <b>higher tip</b> to the miners goes first. With the lowest tip it can take <b>a few hours</b>.': 'Chi che lassa na <b>mancia più alta</b> ai minadori el passa prima. Co la mancia più bassa ghe pol voler <b>qualche ora</b>.',
+        '4 hours': '4 ore',
+        '(tip to the miners)': '(mancia ai minadori)',
+        'Who leaves a <b>higher tip</b> to the miners goes first. With the lowest tip it can take <b>up to a day</b>.': 'Chi che lassa na <b>mancia più alta</b> ai minadori el passa prima. Co la mancia più bassa ghe pol voler <b>fin a un giorno</b>.',
+        '1 day': '1 giorno',
+        'hours': 'ore',
+        '2 hours': '2 ore',
+        '1 hour': '1 ora',
+        '20 min': '20 min',
+        '10 min': '10 min',
         'Gold coins (UTXO)': "Monede d'oro (UTXO)",
         'you find them in the payment ("Coins used") and in "blocked ›" on the wallet card': 'te le cati nel pagamento ("Monede doparà") e in "blocà ›" su la scheda del portafojo',
         'choose which coins to spend, block coins and addresses': 'sielgi ti che monede spendar, bloca monede e indirissi',

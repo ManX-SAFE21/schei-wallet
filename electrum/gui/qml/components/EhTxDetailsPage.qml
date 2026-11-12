@@ -156,7 +156,7 @@ Item {
                 // one row only: the cost, and while unconfirmed the speed paid under it
                 KV {
                     visible: !page.incoming && !tx.fee.isEmpty
-                    k: qsTr('Sending cost')
+                    k: qsTr('Sending cost') + ' ' + qsTr('(tip to the miners)')
                     v: app.ehEuro(tx.fee) !== '' ? app.ehEuro(tx.fee) : app.ehBtc(tx.fee)
                     sub: tx.confirmations < 1 ? app.ehFeeRate(tx.feeRateStr) : ''
                 }

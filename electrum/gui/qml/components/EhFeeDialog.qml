@@ -17,6 +17,9 @@ ElDialog {
     property var finalizer
     readonly property int normalPos: 5          // eta:2, Electrum's default
     readonly property int pos: finalizer ? finalizer.sliderPos : normalPos
+    // T44 (owner 12/11): no "within a week" and no "within a day": the slowest is "a few hours"
+    readonly property int minPos: 2
+    Component.onCompleted: if (finalizer && finalizer.sliderPos < minPos) finalizer.sliderPos = minPos
 
     width: parent.width
     height: parent.height
@@ -68,7 +71,7 @@ ElDialog {
                 wrapMode: Text.WordWrap
                 textFormat: Text.StyledText
                 font.pixelSize: 16
-                text: qsTr('Who pays more goes first. <b>The money arrives anyway</b>: only the time it takes changes.')
+                text: qsTr('Who leaves a <b>higher tip</b> to the miners goes first. With the lowest tip it can take <b>a few hours</b>.')
             }
         }
         Rectangle {
@@ -81,7 +84,8 @@ ElDialog {
                 anchors.left: parent.left; anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
                 spacing: 2
-                Label { Layout.alignment: Qt.AlignHCenter; text: qsTr('SENDING COST'); color: '#6b5d55'; font.pixelSize: 13; font.bold: true }
+                Label { Layout.alignment: Qt.AlignHCenter; textFormat: Text.StyledText
+                        text: '<b>' + qsTr('SENDING COST') + '</b> ' + qsTr('(tip to the miners)'); color: '#6b5d55'; font.pixelSize: 13 }
                 Label {
                     Layout.alignment: Qt.AlignHCenter
                     text: root.finalizer && root.finalizer.valid ? app.ehMoney(root.finalizer.fee) : '…'
@@ -119,7 +123,7 @@ ElDialog {
         Slider {
             id: slider
             Layout.fillWidth: true
-            from: 0
+            from: root.minPos
             to: root.finalizer ? root.finalizer.sliderSteps : 6
             stepSize: 1
             snapMode: Slider.SnapAlways
@@ -151,19 +155,23 @@ ElDialog {
                 border.color: '#5e1a33'
             }
         }
-        Rectangle {
-            visible: root.pos <= 1
+        // T44: the times under the slider, from "1 day" to "10 min"
+        Item {
             Layout.fillWidth: true
-            Layout.preferredHeight: slowL.implicitHeight + 20
-            radius: 14
-            color: '#f7e3e8'
-            Label {
-                id: slowL
-                anchors.fill: parent; anchors.margins: 10
-                wrapMode: Text.WordWrap
-                font.pixelSize: 15
-                color: '#3f0f21'
-                text: qsTr('With the lowest cost, when there are many payments it can take even more than a day.')
+            Layout.topMargin: -14
+            Layout.preferredHeight: 16
+            Repeater {
+                model: [qsTr('4 hours'), qsTr('2 hours'), qsTr('1 hour'), qsTr('20 min'), qsTr('10 min')]
+                Label {
+                    required property string modelData
+                    required property int index
+                    readonly property real k: index / 4
+                    x: slider.leftPadding + 23 + k * (slider.availableWidth - 46) - implicitWidth / 2
+                    text: modelData
+                    font.pixelSize: 11
+                    color: root.pos === index + root.minPos ? '#3f0f21' : '#6b5d55'
+                    font.bold: root.pos === index + root.minPos
+                }
             }
         }
         Item { Layout.fillHeight: true }
