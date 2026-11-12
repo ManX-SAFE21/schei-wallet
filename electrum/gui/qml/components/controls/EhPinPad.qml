@@ -16,45 +16,72 @@ ColumnLayout {
 
     spacing: 10
 
-    function clear() { pin = '' }
+    // owner 13/11: the 4 dots are all lit and green for a moment before the check starts
+    // (the check can block the screen: without this the 4th dot was never drawn)
+    property bool checking: false
+    function clear() { pin = ''; checking = false; doneTimer.stop() }
 
     function press(d) {
-        if (busy || pin.length >= length)
+        if (busy || checking || pin.length >= length)
             return
         pin = pin + d
-        if (pin.length === length)
-            Qt.callLater(function() { root.completed(root.pin) })
+        AppController.haptic()
+        if (pin.length === length) {
+            checking = true
+            doneTimer.restart()
+        }
     }
 
     function back() {
-        if (!busy && pin.length > 0)
+        if (!busy && !checking && pin.length > 0)
             pin = pin.substring(0, pin.length - 1)
     }
 
+    Timer {
+        id: doneTimer
+        interval: 220
+        onTriggered: root.completed(root.pin)
+    }
+    // the check went on (dialog busy) or the PIN was wrong (cleared): back to normal
+    onPinChanged: if (pin.length < length) checking = false
+    // wrong PIN: the dots shake
+    onMessageBadChanged: if (messageBad) shake.restart()
+
     Row {
+        id: dots
         Layout.alignment: Qt.AlignHCenter
         Layout.topMargin: 6
         spacing: 20
+        transform: Translate { id: dotsShift; x: 0 }
         Repeater {
             model: root.length
             Rectangle {
                 required property int index
                 width: 26; height: 26; radius: 13
-                color: index < root.pin.length ? '#5e1a33' : 'transparent'
+                readonly property color ink: root.checking ? '#45541f' : '#5e1a33'
+                color: index < root.pin.length ? ink : 'transparent'
                 border.width: 3
-                border.color: '#5e1a33'
+                border.color: ink
             }
         }
+    }
+    SequentialAnimation {
+        id: shake
+        NumberAnimation { target: dotsShift; property: 'x'; to: -14; duration: 50 }
+        NumberAnimation { target: dotsShift; property: 'x'; to: 14; duration: 80 }
+        NumberAnimation { target: dotsShift; property: 'x'; to: -10; duration: 70 }
+        NumberAnimation { target: dotsShift; property: 'x'; to: 8; duration: 60 }
+        NumberAnimation { target: dotsShift; property: 'x'; to: 0; duration: 50 }
     }
 
     Label {
         Layout.fillWidth: true
         Layout.preferredHeight: 26
         horizontalAlignment: Text.AlignHCenter
-        text: root.message
-        color: root.messageBad ? '#5e1a33' : '#6b5d55'
+        text: root.checking ? qsTr('Checking…') : root.message
+        color: root.checking ? '#45541f' : (root.messageBad ? '#5e1a33' : '#6b5d55')
         font.pixelSize: 17
-        font.bold: root.messageBad
+        font.bold: root.messageBad || root.checking
         wrapMode: Text.WordWrap
     }
 
@@ -87,10 +114,13 @@ ColumnLayout {
                     font.bold: true
                     color: '#2a2220'
                 }
+                // owner 13/11: the digit counts when the key is TOUCHED, so fast typing loses nothing
+                // (on release, a finger already on the next key or slipping a little lost the tap)
                 TapHandler {
                     id: tapk
                     enabled: key.modelData !== ''
-                    onTapped: key.modelData === 'del' ? root.back() : root.press(key.modelData)
+                    gesturePolicy: TapHandler.DragThreshold
+                    onPressedChanged: if (pressed) { key.modelData === 'del' ? root.back() : root.press(key.modelData) }
                 }
             }
         }
