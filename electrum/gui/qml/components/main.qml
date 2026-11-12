@@ -860,7 +860,7 @@ ApplicationWindow
                  + '\n• ' + qsTr('Other choices appear, off: privacy, send all, node and Tor')
         return '• ' + qsTr('Everything of MEDIUM, and also:')
              + '\n• ' + qsTr('Tip written by hand, advanced privacy and "Send all the balance" turn on')
-             + '\n• ' + qsTr('The rows for experts appear: PIN threshold, more addresses, back to the initial settings')
+             + '\n• ' + qsTr('The rows for experts appear: PIN threshold, more addresses')
     }
     function ehAsk(text, detail, onYes, onNo, yesText, noText) {
         var props = { text: text, detail: detail }

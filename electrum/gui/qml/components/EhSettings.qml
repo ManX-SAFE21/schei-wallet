@@ -345,6 +345,11 @@ Item {
                        onClicked: app.ehAskPin(qsTr('Type the PIN to search on more addresses'),
                                                function() { app.stack.push(Qt.resolvedUrl('EhGapLimitPage.qml')) }) }
                 Row1 { tag: 2; icon: 'eh_phone.svg'; text: qsTr('Sign on another device'); value: qsTr('coming soon'); opacity: 0.5 }
+            }
+
+            // owner 12/11: "back to the initial settings" in every level, at the bottom, with the PIN
+            Card {
+                Layout.topMargin: 6
                 Row1 { icon: 'eh_undo.svg'; text: qsTr('Back to the initial settings'); lock: true
                        onClicked: app.ehAskPin(qsTr('Type the PIN to go back to the initial settings'), function() {
                            // T27: our own yes / no window (Electrum's one was see-through on the phone)
