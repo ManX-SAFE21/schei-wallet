@@ -38,7 +38,7 @@ WizardComponent {
     topPadding: 0
     leftPadding: 16
     rightPadding: 16
-    bottomPadding: 14 + app.navigationBarHeight
+    bottomPadding: 14   // the wizard (ElDialog) already leaves room for the Android keys
 
     function apply() {
         wizard_data['seed'] = seedText.trim()
@@ -111,8 +111,21 @@ WizardComponent {
     }
     Bitcoin { id: bitcoin }
 
-    ColumnLayout {
+    // owner 12/11: the page scrolls when the phone is short (buttons never under the keys)
+    Flickable {
+        id: ehFlick
         anchors.fill: parent
+        // over the side margins too, so the hills on top are not cut
+        anchors.leftMargin: -16
+        anchors.rightMargin: -16
+        contentHeight: ehCol.height
+        boundsBehavior: Flickable.StopAtBounds
+        clip: true
+    ColumnLayout {
+        id: ehCol
+        x: 16
+        width: ehFlick.width - 32
+        height: Math.max(implicitHeight, ehFlick.height)
         spacing: 8
 
         EhPageTop {
@@ -335,5 +348,6 @@ WizardComponent {
                 sourceSize.height: 30
             }
         }
+    }
     }
 }

@@ -52,15 +52,23 @@ WizardComponent {
             height: Math.round(parent.height * 0.33)
         }
 
-        ColumnLayout {
+        // owner 12/11: the page scrolls when the phone is short (buttons never under the keys)
+        Flickable {
+            id: ehFlick
             anchors.top: hills.bottom
             anchors.bottom: parent.bottom
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.topMargin: 2
-            anchors.leftMargin: 22
-            anchors.rightMargin: 22
-            anchors.bottomMargin: 26 + app.navigationBarHeight
+            anchors.bottomMargin: 26   // the wizard (ElDialog) already leaves room for the Android keys
+            contentHeight: ehCol.height
+            boundsBehavior: Flickable.StopAtBounds
+            clip: true
+        ColumnLayout {
+            id: ehCol
+            x: 22
+            width: ehFlick.width - 44
+            height: Math.max(implicitHeight, ehFlick.height)
             spacing: 8
 
             Label {
@@ -129,6 +137,7 @@ WizardComponent {
                     sourceSize.height: 34
                 }
             }
+        }
         }
     }
 }

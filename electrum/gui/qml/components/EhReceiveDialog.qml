@@ -73,11 +73,20 @@ ElDialog {
         return out
     }
 
-    ColumnLayout {
+    // owner 12/11: the page scrolls, so the last row is never under the phone keys
+    Flickable {
+        id: flick
         anchors.fill: parent
-        anchors.leftMargin: 18
-        anchors.rightMargin: 18
-        anchors.bottomMargin: 18 + app.navigationBarHeight
+        anchors.bottomMargin: app.navigationBarHeight
+        contentHeight: col.height + 18
+        boundsBehavior: Flickable.StopAtBounds
+        clip: true
+
+    ColumnLayout {
+        id: col
+        x: 18
+        width: flick.width - 36
+        height: Math.max(implicitHeight, flick.height - 18)
         spacing: 10
 
         EhPageTop { title: '' ; Layout.bottomMargin: -14 }
@@ -389,6 +398,7 @@ ElDialog {
                 sourceSize.height: 28
             }
         }
+    }
     }
 
     RequestDetails {

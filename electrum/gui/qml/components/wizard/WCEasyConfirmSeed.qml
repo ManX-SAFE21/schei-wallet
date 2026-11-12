@@ -30,7 +30,7 @@ WizardComponent {
     topPadding: 0
     leftPadding: 22
     rightPadding: 22
-    bottomPadding: 22 + app.navigationBarHeight
+    bottomPadding: 22   // the wizard (ElDialog) already leaves room for the Android keys
 
     function shuffle() {
         var list = seedWords.map(function(w) { return { word: w, used: false } })
@@ -70,8 +70,21 @@ WizardComponent {
             wizard.pages.next()
     }
 
-    ColumnLayout {
+    // owner 12/11: the page scrolls when the phone is short (buttons never under the keys)
+    Flickable {
+        id: ehFlick
         anchors.fill: parent
+        // over the side margins too, so the hills on top are not cut
+        anchors.leftMargin: -22
+        anchors.rightMargin: -22
+        contentHeight: ehCol.height
+        boundsBehavior: Flickable.StopAtBounds
+        clip: true
+    ColumnLayout {
+        id: ehCol
+        x: 22
+        width: ehFlick.width - 44
+        height: Math.max(implicitHeight, ehFlick.height)
         spacing: 10
 
         EhPageTop {
@@ -229,6 +242,7 @@ WizardComponent {
                 sourceSize.height: 30
             }
         }
+    }
     }
 
     Component.onCompleted: shuffle()
