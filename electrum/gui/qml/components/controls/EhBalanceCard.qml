@@ -17,6 +17,14 @@ Rectangle {
     // of the second line and of the cash button meanwhile, so it does not grow and jump up
     readonly property bool cashRoom: app.ehOption('coins') && !app.ehBtcOnly() && app.ehHasCash() && root.hasMoney
     readonly property bool fiatRoom: !app.ehBtcOnly() && Daemon.fx.enabled
+    // owner 12/11: the home card has ONE height in every case (rate or not, pills or not):
+    // the second line and the bottom row are always there; the pills sit next to the cash button
+    readonly property bool fixedRows: root.strapLeft
+    readonly property bool showFrozen: root.frozenSats > 0 && !root.watch
+    readonly property bool showArriving: root.arrivingSats > 0 && !root.covered
+    // the width the pills have: the card's text column minus the cash button (from the card, not
+    // from the pills' own column, so the layout cannot loop)
+    readonly property real pillsRoom: Math.max(60, col.width - (root.cashRoom ? 56 : 0))
     property bool hasMoney: false
     property real frozenSats: 0         // coins blocked in "Le tue monete d'oro"
     property real arrivingSats: 0       // received, not confirmed yet (gold pill)
@@ -75,6 +83,31 @@ Rectangle {
             sourceItem: pass1
             smooth: true
             textureSize: Qt.size(Math.max(1, Math.round(bzL.width * 2 / bz.k)), Math.max(1, Math.round(bzL.height * 2 / bz.k)))
+        }
+    }
+    component Pill: Rectangle {
+        id: pl
+        property string text
+        property color fill: Qt.rgba(1, 1, 1, 0.18)
+        property color ink: '#ffffff'
+        property bool edge: false
+        property bool lock: false
+        property real maxW: 9999
+        Layout.preferredHeight: 22
+        // natural text width (implicitWidth does not follow the width set below: no loop)
+        Layout.preferredWidth: Math.max(30, Math.min(plL.implicitWidth + (lock ? 16 : 0) + 16, maxW))
+        clip: true
+        radius: 11
+        color: fill
+        border.width: edge ? 1 : 0
+        border.color: Qt.rgba(1, 1, 1, 0.6)
+        Row {
+            id: plRow
+            anchors.centerIn: parent
+            spacing: 4
+            Image { visible: pl.lock; anchors.verticalCenter: parent.verticalCenter; source: Qt.resolvedUrl('../../../icons/eh_lock_white.svg'); sourceSize.width: 12; sourceSize.height: 12 }
+            Label { id: plL; anchors.verticalCenter: parent.verticalCenter; font.pixelSize: 11; font.bold: true; color: pl.ink; text: pl.text
+                    width: Math.max(0, Math.min(implicitWidth, pl.width - 16 - (pl.lock ? 16 : 0))); elide: Text.ElideRight }
         }
     }
     Timer { id: coverTimer; interval: 20000; onTriggered: root.revealed = false }
@@ -230,6 +263,8 @@ Rectangle {
 
         Label {
             visible: !root.watch && root.compact
+            Layout.preferredHeight: 22     // as the "watch only" tag (20 + 2): same card height
+            verticalAlignment: Text.AlignVCenter
             font.pixelSize: 12
             font.bold: true
             color: Network.isConnected ? '#cfe3a0' : '#ffd88a'
@@ -273,7 +308,7 @@ Rectangle {
             clip: true
         }
         Label {
-            visible: root.euroText !== '' || root.fiatRoom
+            visible: root.euroText !== '' || root.fiatRoom || root.fixedRows
             Layout.fillWidth: true
             text: root.euroText === '' ? ' ' : (root.covered ? qsTr('tap to see') : root.btcText)
             color: root.watch ? '#6b5d55' : '#ffffff'
@@ -285,6 +320,7 @@ Rectangle {
         RowLayout {
             Layout.fillWidth: true
             Layout.topMargin: 6
+            Layout.preferredHeight: root.fixedRows ? 50 : -1
             spacing: 8
             layoutDirection: root.strapLeft ? Qt.RightToLeft : Qt.LeftToRight
             // expert option "banknotes and coins": the balance as real money.
@@ -307,11 +343,52 @@ Rectangle {
                 }
                 TapHandler { id: cashTap; margin: 6; gesturePolicy: TapHandler.WithinBounds; onTapped: app.stack.push(Qt.resolvedUrl('../EhCashPage.qml')) }
             }
-            Item { Layout.fillWidth: true }
+            Item { visible: !root.fixedRows; Layout.fillWidth: true }
+            // home: the pills, at most two rows, next to the cash button
+            ColumnLayout {
+                id: pillsCol
+                visible: root.fixedRows
+                Layout.fillWidth: true
+                Layout.preferredWidth: 1      // takes the room left by the cash button, not its own text width
+                Layout.minimumWidth: 0
+                Layout.alignment: Qt.AlignBottom | (root.strapLeft ? Qt.AlignLeft : Qt.AlignLeft)
+                spacing: 3
+                // both "arriving" and "blocked": short texts so the three pills fit in two rows
+                readonly property bool both: root.showFrozen && root.showArriving
+                Pill {
+                    visible: root.showFrozen && !root.covered
+                    maxW: root.pillsRoom
+                    fill: Qt.rgba(1, 1, 1, 0.18)
+                    text: '● ' + qsTr('spendable %1').arg(app.ehMoney(root.satsAmount(Math.max(0, root.totalSats - root.frozenSats))))
+                }
+                RowLayout {
+                    visible: root.showFrozen || root.showArriving
+                    spacing: 4
+                    Pill {
+                        visible: root.showArriving
+                        maxW: parent.parent.both ? (root.pillsRoom - 4) / 2 : root.pillsRoom
+                        fill: '#d9b25a'
+                        ink: '#3f0f21'
+                        text: '⏳ ' + (parent.parent.both ? app.ehMoney(root.satsAmount(root.arrivingSats))
+                                                          : qsTr('arriving %1').arg(app.ehMoney(root.satsAmount(root.arrivingSats))))
+                    }
+                    Pill {
+                        visible: root.showFrozen
+                        maxW: parent.parent.both ? (root.pillsRoom - 4) / 2 : root.pillsRoom
+                        fill: blTap2.pressed ? Qt.rgba(0.75, 0.22, 0.17, 0.8) : Qt.rgba(0.75, 0.22, 0.17, 0.55)
+                        edge: true
+                        lock: true
+                        text: (root.covered ? qsTr('coins blocked')
+                               : (parent.parent.both ? app.ehMoney(root.satsAmount(root.frozenSats))
+                                                     : qsTr('blocked %1').arg(app.ehMoney(root.satsAmount(root.frozenSats))))) + ' ›'
+                        TapHandler { id: blTap2; margin: 4; gesturePolicy: TapHandler.WithinBounds; onTapped: app.ehOpenCoins() }
+                    }
+                }
+            }
         }
         // third review: money received but not confirmed yet; goes away at the first confirmation
         Rectangle {
-            visible: root.arrivingSats > 0 && !root.covered
+            visible: root.showArriving && !root.fixedRows
             Layout.topMargin: 4
             Layout.preferredWidth: arL.implicitWidth + 20
             Layout.preferredHeight: 24
@@ -323,7 +400,7 @@ Rectangle {
         // some coins blocked: how much can be spent and how much is blocked;
         // tapping "blocked" opens the gold coins (no PIN)
         Flow {
-            visible: root.frozenSats > 0 && !root.watch
+            visible: root.showFrozen && !root.fixedRows
             Layout.fillWidth: true
             Layout.rightMargin: root.showGear && !root.strapLeft ? 70 : 0
             Layout.topMargin: 4

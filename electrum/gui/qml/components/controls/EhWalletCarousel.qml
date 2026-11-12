@@ -43,10 +43,11 @@ ColumnLayout {
         Layout.fillWidth: true
         // the open wallet's card is taller with the pills "spendable / blocked" and "arriving":
         // room from the data, NOT from the card's own height (that made an endless layout loop)
-        Layout.preferredHeight: (root.compact ? (app.ehOption('coins') && !app.ehBtcOnly() && app.ehHasCash() ? 214 : 184)
-                                              : (app.ehOption('coins') && !app.ehBtcOnly() && app.ehHasCash() ? 188 : 140))
-                                + (Daemon.currentWallet && Daemon.currentWallet.frozenBalance.satsInt > 0 ? (app.ehOption('coins') && !app.ehBtcOnly() && app.ehHasCash() ? 44 : 12) : 0)
-                                + (Daemon.currentWallet && Daemon.currentWallet.ehArriving.satsInt > 0 ? 30 : 0)
+        // owner 12/11: the home card has one fixed height (pills next to the cash button)
+        Layout.preferredHeight: root.compact ? 214
+                                             : (app.ehOption('coins') && !app.ehBtcOnly() && app.ehHasCash() ? 188 : 140)
+                                               + (Daemon.currentWallet && Daemon.currentWallet.frozenBalance.satsInt > 0 ? 12 : 0)
+                                               + (Daemon.currentWallet && Daemon.currentWallet.ehArriving.satsInt > 0 ? 30 : 0)
         orientation: ListView.Horizontal
         snapMode: ListView.SnapOneItem
         highlightRangeMode: ListView.StrictlyEnforceRange
