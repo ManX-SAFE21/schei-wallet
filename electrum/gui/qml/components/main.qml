@@ -722,6 +722,30 @@ ApplicationWindow
     }
 
     // Easy Heirs: 'Maggiori informazioni' pages
+    // pages (coins, crucible…) opened above a dialog go into an EhPageDialog: push / pop go there
+    property var _ehStackOverride: null
+    property var _ehStackDialog: null
+    function ehPush(url, props) {
+        var s = _ehStackOverride ? _ehStackOverride : stack
+        return props ? s.push(url, props) : s.push(url)
+    }
+    function ehPop() {
+        if (_ehStackOverride) {
+            if (_ehStackOverride.depth > 1) _ehStackOverride.pop()
+            else if (_ehStackDialog) _ehStackDialog.doClose()
+            return
+        }
+        stack.pop()
+    }
+    Component { id: _ehPageDialog; EhPageDialog { onClosed: destroy() } }
+    function ehOpenPage(url, props) {
+        if (activeDialogs.length > 0) _ehPageDialog.createObject(app, { page: url, props: props || {} }).open()
+        else ehPush(url, props)
+    }
+    // the coins list: with "advanced privacy" the pockets, else the list of coins and addresses
+    function ehOpenCoins() {
+        ehOpenPage(Qt.resolvedUrl(ehOption('privacy') ? 'EhPocketsPage.qml' : 'EhCoinsPage.qml'))
+    }
     property alias ehInfoDialog: _ehInfoDialog
     Component { id: _ehInfoDialog; EhInfoDialog { onClosed: destroy() } }
     function ehShowConfirmationsInfo() {
@@ -938,7 +962,7 @@ ApplicationWindow
         ehOptRev++
     }
     function ehResetSettings() {
-        var keys = ['euro_btc', 'max', 'request_amount', 'multi', 'watch', 'sign_elsewhere', 'buttons', 'coins', 'no_anim', 'privacy']
+        var keys = ['euro_btc', 'max', 'request_amount', 'multi', 'watch', 'sign_elsewhere', 'buttons', 'coins', 'no_anim', 'privacy', 'utxo']
         for (var i = 0; i < keys.length; i++) Config.ehSet('opt_' + keys[i], ehOptDefaultOn.indexOf(keys[i]) >= 0)
         // second review (S3): with 2 or more wallets "More wallets" stays on, or the others disappear
         if (Daemon.availableWallets.rowCount() > 1) Config.ehSet('opt_multi', true)

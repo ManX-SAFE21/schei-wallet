@@ -77,14 +77,27 @@ ElDialog {
             color: '#5e1a33'; font.pixelSize: 17; font.bold: true
             TapHandler { margin: 10; onTapped: root.doReject() }
         }
-        Label {
+        RowLayout {
             Layout.fillWidth: true
-            wrapMode: Text.WordWrap
-            text: qsTr('Which coins to melt?')
-            color: '#3f0f21'
-            font.family: TitleFont ? TitleFont : font.family
-            font.weight: Font.Black
-            font.pixelSize: 24
+            spacing: 8
+            Label {
+                Layout.fillWidth: true
+                wrapMode: Text.WordWrap
+                text: qsTr('Which coins to melt?')
+                color: '#3f0f21'
+                font.family: TitleFont ? TitleFont : font.family
+                font.weight: Font.Black
+                font.pixelSize: 24
+            }
+            // owner 12/11: "how the gold coins work" (the crucible) opens from here
+            Rectangle {
+                Layout.preferredWidth: 34
+                Layout.preferredHeight: 34
+                radius: 17
+                color: howT.pressed ? '#2f3a12' : '#45541f'
+                Label { anchors.centerIn: parent; text: 'i'; color: '#ffffff'; font.pixelSize: 19; font.bold: true; font.family: 'serif' }
+                TapHandler { id: howT; margin: 8; onTapped: app.ehOpenPage(Qt.resolvedUrl('EhCoinsHowPage.qml')) }
+            }
         }
 
         // needed / chosen
@@ -199,6 +212,15 @@ ElDialog {
             font.pixelSize: 12
             color: '#6b5d55'
             text: qsTr('Blocked coins do not appear here.')
+        }
+        Label {
+            Layout.fillWidth: true
+            text: '🔒 ' + qsTr('Block coins and addresses') + ' ›'
+            color: '#5e1a33'
+            font.pixelSize: 15
+            font.bold: true
+            font.underline: true
+            TapHandler { margin: 8; onTapped: app.ehOpenCoins() }
         }
         EhNextButton {
             Layout.fillWidth: true

@@ -64,7 +64,7 @@ Item {
             Layout.topMargin: -14
             text: '‹ ' + qsTr('Back')
             color: '#5e1a33'; font.pixelSize: 17; font.bold: true
-            TapHandler { margin: 10; onTapped: app.stack.pop() }
+            TapHandler { margin: 10; onTapped: app.ehPop() }
         }
         Label {
             Layout.fillWidth: true
@@ -248,7 +248,7 @@ Item {
                             id: cTap
                             z: -1
                             anchors.fill: parent
-                            onClicked: app.stack.push(Qt.resolvedUrl('EhCoinDetailPage.qml'), {
+                            onClicked: app.ehPush(Qt.resolvedUrl('EhCoinDetailPage.qml'), {
                                 outpoint: ld.model.outpoint, txid: ld.model.txid, address: ld.model.address,
                                 amount: ld.model.amount, blockHeight: ld.model.height, held: ld.model.held, addrHeld: ld.model.addr_held === true,
                                 note: ld.model.label || ''
@@ -335,7 +335,7 @@ Item {
                                 text: qsTr('How do the gold coins of digital gold (bitcoin) work?') }
                         Label { text: '›'; font.pixelSize: 22; color: '#5e1a33' }
                     }
-                    TapHandler { id: howTap; onTapped: app.stack.push(Qt.resolvedUrl('EhCoinsHowPage.qml')) }
+                    TapHandler { id: howTap; onTapped: app.ehPush(Qt.resolvedUrl('EhCoinsHowPage.qml')) }
                 }
             }
             Label {

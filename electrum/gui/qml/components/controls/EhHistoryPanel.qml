@@ -150,13 +150,19 @@ ColumnLayout {
                         RowLayout {
                             Layout.fillWidth: true
                             spacing: 6
+                            Image {
+                                visible: rc.note !== ''
+                                source: Qt.resolvedUrl('../../../icons/eh_pen_wine.svg')
+                                sourceSize.width: 13
+                                sourceSize.height: 13
+                            }
                             Label {
                                 Layout.fillWidth: true
                                 elide: Text.ElideRight
                                 font.pixelSize: 13
                                 font.italic: rc.note !== ''
                                 color: rc.note !== '' ? '#5e1a33' : '#4a4038'
-                                text: rc.note !== '' ? '✎ ' + rc.note : (row.incoming ? qsTr('money received') : qsTr('money sent'))
+                                text: rc.note !== '' ? rc.note : (row.incoming ? qsTr('money received') : qsTr('money sent'))
                             }
                             // euro shown: the bitcoin amount, small, on the right
                             Label {

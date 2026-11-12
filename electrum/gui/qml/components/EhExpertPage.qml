@@ -254,9 +254,13 @@ Item {
             Rectangle {
                 Layout.fillWidth: true; Layout.preferredHeight: gN.implicitHeight; radius: 18; color: Qt.rgba(1, 1, 1, 0.7); border.width: 1; border.color: Qt.rgba(1, 1, 1, 0.9); clip: true
                 ColumnLayout { id: gN; width: parent.width; spacing: 0
-                    Nav { icon: 'eh_goldcoin.svg'; text: qsTr('Your gold coins and addresses'); onClicked: app.stack.push(Qt.resolvedUrl('EhCoinsPage.qml')) }
+                    // owner 12/11: here only the switch; coins and addresses are used IN the wallet
+                    // (payment "Coins used", "blocked ›" on the card), the crucible is the "i" there
+                    Sw { text: qsTr('Gold coins (UTXO)'); key: 'utxo'
+                         hint: app.ehOption('utxo') ? qsTr('you find them in the payment ("Coins used") and in "blocked ›" on the wallet card')
+                                                    : qsTr('choose which coins to spend, block coins and addresses') }
                     // T20: pockets, origin of the coins, warnings (for advanced users, off by default)
-                    Nav { icon: 'eh_privacy.svg'; text: qsTr('Advanced privacy') + ' · ' + (app.ehOption('privacy') ? qsTr('on (f)') : qsTr('off (f)')); onClicked: app.stack.push(Qt.resolvedUrl('EhPrivacyPage.qml')) }
+                    Nav { visible: app.ehOption('utxo'); icon: 'eh_privacy.svg'; text: qsTr('Advanced privacy') + ' · ' + (app.ehOption('privacy') ? qsTr('on (f)') : qsTr('off (f)')); onClicked: app.stack.push(Qt.resolvedUrl('EhPrivacyPage.qml')) }
                 }
             }
 

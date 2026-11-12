@@ -618,7 +618,9 @@ ElDialog {
                             TapHandler { id: costTap; onTapped: dialog.chooseFee() }
                         }
                         // which gold coins the payment melts: chosen by the app, or by hand
+                        // (owner 12/11: only with "Gold coins (UTXO)" on in Advanced)
                         Rectangle {
+                            visible: app.ehOption('utxo')
                             Layout.fillWidth: true
                             Layout.preferredHeight: coinsRow.implicitHeight + 14
                             radius: 12

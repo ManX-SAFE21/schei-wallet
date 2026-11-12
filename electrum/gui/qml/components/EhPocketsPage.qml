@@ -442,7 +442,7 @@ Item {
                 Layout.fillWidth: true
                 text: '‹ ' + qsTr('Advanced privacy')
                 color: '#5e1a33'; font.pixelSize: 17; font.bold: true
-                TapHandler { margin: 10; onTapped: app.stack.pop() }
+                TapHandler { margin: 10; onTapped: app.ehPop() }
             }
             Rectangle {
                 Layout.preferredWidth: 28; Layout.preferredHeight: 28; radius: 14
@@ -656,7 +656,7 @@ Item {
                     onClicked: {
                         var c = page.picked[0]
                         if (page.demo) return
-                        app.stack.push(Qt.resolvedUrl('EhCoinDetailPage.qml'), {
+                        app.ehPush(Qt.resolvedUrl('EhCoinDetailPage.qml'), {
                             outpoint: c.outpoint, txid: c.txid, address: c.address, amount: page.satsAmount(c.sats),
                             blockHeight: c.height, held: c.held, addrHeld: c.af, note: c.label })
                     }

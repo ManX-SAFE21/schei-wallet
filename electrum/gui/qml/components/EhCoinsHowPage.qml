@@ -46,9 +46,9 @@ Item {
             EhPageTop { title: ''; Layout.leftMargin: 6; Layout.rightMargin: 6 }
             Label {
                 Layout.topMargin: -14
-                text: '‹ ' + qsTr('Your gold coins')
+                text: '‹ ' + qsTr('Back')   // opened from the coin choice (owner 12/11)
                 color: '#5e1a33'; font.pixelSize: 17; font.bold: true
-                TapHandler { margin: 10; onTapped: app.stack.pop() }
+                TapHandler { margin: 10; onTapped: app.ehPop() }
             }
             Label {
                 Layout.fillWidth: true

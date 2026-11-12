@@ -346,7 +346,7 @@ Rectangle {
                     Label { anchors.verticalCenter: parent.verticalCenter; font.pixelSize: 12; font.bold: true; color: '#ffffff'
                             text: (root.covered ? qsTr('coins blocked') : qsTr('blocked %1').arg(app.ehMoney(root.satsAmount(root.frozenSats)))) + ' ›' }
                 }
-                TapHandler { id: blTap; margin: 4; gesturePolicy: TapHandler.WithinBounds; onTapped: app.stack.push(Qt.resolvedUrl(app.ehOption('privacy') ? '../EhPocketsPage.qml' : '../EhCoinsPage.qml')) }
+                TapHandler { id: blTap; margin: 4; gesturePolicy: TapHandler.WithinBounds; onTapped: app.ehOpenCoins() }
             }
         }
         // no banknotes button: keep room for the strap under the balance

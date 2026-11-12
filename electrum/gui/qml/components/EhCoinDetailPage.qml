@@ -51,7 +51,7 @@ Item {
                 Layout.topMargin: -14
                 text: '‹ ' + qsTr('Your gold coins')
                 color: '#5e1a33'; font.pixelSize: 17; font.bold: true
-                TapHandler { margin: 10; onTapped: app.stack.pop() }
+                TapHandler { margin: 10; onTapped: app.ehPop() }
             }
             Image {
                 Layout.alignment: Qt.AlignHCenter

@@ -5,6 +5,10 @@
 
 STRINGS = {
     'it_IT': {
+        'Gold coins (UTXO)': "Monete d'oro (UTXO)",
+        'you find them in the payment ("Coins used") and in "blocked ›" on the wallet card': 'le trovi nel pagamento ("Monete usate") e in "bloccati ›" sulla scheda del portafoglio',
+        'choose which coins to spend, block coins and addresses': 'scegli tu quali monete spendere, blocca monete e indirizzi',
+        'Block coins and addresses': 'Blocca monete e indirizzi',
         'today %1': 'oggi %1',
         'yesterday %1': 'ieri %1',
         'money received': 'ricevuti',
@@ -625,6 +629,10 @@ STRINGS = {
         '<b>Schèi chooses a "normal" tip by itself</b>: the payment usually arrives in about ten minutes. The whole tip goes to the miners: Schèi takes nothing.': '<b>Schèi sceglie da solo una mancia "normale"</b>: il pagamento arriva di solito in una decina di minuti. La mancia va tutta ai minatori: Schèi non prende niente.',
     },
     'vec_IT': {
+        'Gold coins (UTXO)': "Monede d'oro (UTXO)",
+        'you find them in the payment ("Coins used") and in "blocked ›" on the wallet card': 'te le cati nel pagamento ("Monede doparà") e in "blocà ›" su la scheda del portafojo',
+        'choose which coins to spend, block coins and addresses': 'sielgi ti che monede spendar, bloca monede e indirissi',
+        'Block coins and addresses': 'Bloca monede e indirissi',
         'today %1': 'ancuo %1',
         'yesterday %1': 'ieri %1',
         'money received': 'ricevùi',

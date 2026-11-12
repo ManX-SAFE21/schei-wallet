@@ -17,7 +17,7 @@ Item {
         x: 0
         y: -root.rise
         width: root.width
-        height: root.rise + root.frontTop + 2
+        height: root.rise + root.frontTop + 20   // T42: down behind the front's rounded corners
         clip: true
     Item {
         width: root.width
