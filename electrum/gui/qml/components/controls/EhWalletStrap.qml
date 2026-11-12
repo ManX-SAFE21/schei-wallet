@@ -8,6 +8,9 @@ Item {
     property color leather: '#5e1a33'
     property bool light: false          // watch-only wallet: light leather
     property color stitch: Qt.rgba(1, 0.91, 0.77, 0.6)
+    property bool bottega: false        // home "Bottega": darker leather, brass snap (same size)
+    onBottegaChanged: cv.requestPaint()
+    onLeatherChanged: cv.requestPaint()
     signal tapped
 
     width: 92
@@ -39,6 +42,8 @@ Item {
             var g = c.createLinearGradient(0, 0, 0, h)
             if (root.light) {
                 g.addColorStop(0, '#ffffff'); g.addColorStop(1, '#efe8dc')
+            } else if (root.bottega) {
+                g.addColorStop(0, Qt.darker(root.leather, 1.05)); g.addColorStop(1, Qt.darker(root.leather, 1.8))
             } else {
                 g.addColorStop(0, Qt.lighter(root.leather, 1.3)); g.addColorStop(1, Qt.darker(root.leather, 1.45))
             }
@@ -73,7 +78,7 @@ Item {
         anchors.verticalCenter: parent.verticalCenter
         width: 38
         height: 38
-        source: Qt.resolvedUrl('../../../icons/eh_snap.svg')
+        source: Qt.resolvedUrl(root.bottega ? '../../../icons/eh_snap_brass.svg' : '../../../icons/eh_snap.svg')
         sourceSize.width: 76
         sourceSize.height: 76
         scale: tap.pressed ? 0.92 : 1

@@ -30,6 +30,15 @@ Item {
             GradientStop { position: 1.0; color: '#2a0b18' }
         }
     }
+    // home "Bottega": gold stitching round the inside too
+    EhDashedBorder {
+        anchors.fill: parent
+        inset: 6
+        radius: 14
+        lineWidth: 1.6
+        color: '#e3c57e'
+        opacity: 0.8
+    }
     // the lining
     Rectangle {
         id: lining
@@ -41,14 +50,13 @@ Item {
             GradientStop { position: 0.0; color: '#1a0610' }
             GradientStop { position: 0.7; color: '#33101f' }
         }
-        // stitching
-        Rectangle {
+        // stitching (gold, as on the front)
+        EhDashedBorder {
             anchors.fill: parent
-            anchors.margins: 5
+            inset: 5
             radius: 10
-            color: 'transparent'
-            border.width: 1.3
-            border.color: Qt.rgba(1, 0.91, 0.77, 0.3)
+            lineWidth: 1.3
+            color: Qt.rgba(0.89, 0.77, 0.49, 0.55)
         }
         // card slots
         Repeater {
@@ -59,7 +67,7 @@ Item {
                 width: 88; height: 12
                 radius: 3
                 color: Qt.rgba(0, 0, 0, 0.25)
-                Rectangle { width: parent.width; height: 2; color: Qt.rgba(1, 0.91, 0.77, 0.35) }
+                Rectangle { width: parent.width; height: 2; color: Qt.rgba(0.85, 0.70, 0.35, 0.6) }
             }
         }
         // two banknotes sticking out

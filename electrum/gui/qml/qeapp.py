@@ -620,6 +620,23 @@ class ElectrumQmlApplication(QGuiApplication):
         if font_id >= 0:
             families = QFontDatabase.applicationFontFamilies(font_id)
             self.titleFont = families[0] if families else ''
+        # Easy Heirs: home "Bottega" (OFL, see fonts/Fraunces.LICENSE and fonts/Lexend.LICENSE).
+        # Empty string when loading fails: QML falls back to the app font.
+        def _family(fname):
+            fid = get_font_id(fname)
+            if fid >= 0:
+                fams = QFontDatabase.applicationFontFamilies(fid)
+                if fams:
+                    return fams[0]
+            return ''
+        # every weight is loaded; the first file gives the family name
+        self.serifFont = _family('Fraunces-ExtraBold.ttf')
+        _family('Fraunces-SemiBold.ttf')
+        self.bodyFont = _family('Lexend-Regular.ttf')
+        _family('Lexend-SemiBold.ttf')
+        _family('Lexend-Bold.ttf')
+        if not self.serifFont or not self.bodyFont:
+            self.logger.warning('Could not load font Fraunces / Lexend')
 
         self.context = self.engine.rootContext()
         self.plugins = plugins
@@ -636,6 +653,8 @@ class ElectrumQmlApplication(QGuiApplication):
         self.context.setContextProperty('FixedFont', self.fixedFont)
         self.context.setContextProperty('AppFont', self.appFont)
         self.context.setContextProperty('TitleFont', self.titleFont)
+        self.context.setContextProperty('SerifFont', self.serifFont)
+        self.context.setContextProperty('BodyFont', self.bodyFont)
         self.context.setContextProperty('MAX', self.maxAmount)
         self.context.setContextProperty('QRIP', self.qr_ip_h)
         self.context.setContextProperty('Biometrics', self.biometrics)

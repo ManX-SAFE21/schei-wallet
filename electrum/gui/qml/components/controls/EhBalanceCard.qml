@@ -24,7 +24,7 @@ Rectangle {
     readonly property bool showArriving: root.arrivingSats > 0 && !root.covered
     // the width the pills have: the card's text column minus the cash button (from the card, not
     // from the pills' own column, so the layout cannot loop)
-    readonly property real pillsRoom: Math.max(60, col.width - (root.cashRoom ? 56 : 0))
+    readonly property real pillsRoom: Math.max(60, col.width - (root.cashRoom ? (root.bottega ? 60 : 56) : 0))
     property bool hasMoney: false
     property real frozenSats: 0         // coins blocked in "Le tue monete d'oro"
     property real arrivingSats: 0       // received, not confirmed yet (gold pill)
@@ -92,22 +92,34 @@ Rectangle {
         property color ink: '#ffffff'
         property bool edge: false
         property bool lock: false
+        property bool wait: false        // Bottega: hourglass drawn in front (no emoji)
         property real maxW: 9999
-        Layout.preferredHeight: 22
+        // Bottega: 30 high with 15 px text; 24 / 13 px when the pills need two rows (fixed card height)
+        readonly property bool big: root.bottega && !pillsCol.twoRows
+        // Bottega: the text gets a little smaller when the pill is narrow (from the text and the
+        // room given by the card, not from the layout: no loop)
+        readonly property real fs0: root.bottega ? (big ? 15 : 13) : 11
+        TextMetrics { id: plTm; font.pixelSize: pl.fs0; font.bold: true; text: pl.text }
+        readonly property real fs: root.bottega ? Math.max(10, Math.min(fs0, fs0 * (maxW - ic - 19) / Math.max(1, plTm.advanceWidth)))
+                                                : fs0
+        readonly property real ic: (lock || wait) ? (root.bottega ? (big ? 21 : 18) : 16) : 0
+        Layout.preferredHeight: root.bottega ? (big ? 30 : 24) : 22
         // natural text width (implicitWidth does not follow the width set below: no loop)
-        Layout.preferredWidth: Math.max(30, Math.min(plL.implicitWidth + (lock ? 16 : 0) + 16, maxW))
+        Layout.preferredWidth: Math.max(30, Math.min(plL.implicitWidth + ic + (root.bottega ? 19 : 16), maxW))
         clip: true
-        radius: 11
+        radius: height / 2
         color: fill
-        border.width: edge ? 1 : 0
-        border.color: Qt.rgba(1, 1, 1, 0.6)
+        border.width: edge ? (root.bottega ? 1.5 : 1) : 0
+        border.color: root.bottega ? '#3f0f21' : Qt.rgba(1, 1, 1, 0.6)
         Row {
             id: plRow
             anchors.centerIn: parent
             spacing: 4
-            Image { visible: pl.lock; anchors.verticalCenter: parent.verticalCenter; source: Qt.resolvedUrl('../../../icons/eh_lock_white.svg'); sourceSize.width: 12; sourceSize.height: 12 }
-            Label { id: plL; anchors.verticalCenter: parent.verticalCenter; font.pixelSize: 11; font.bold: true; color: pl.ink; text: pl.text
-                    width: Math.max(0, Math.min(implicitWidth, pl.width - 16 - (pl.lock ? 16 : 0))); elide: Text.ElideRight }
+            Image { visible: pl.lock || pl.wait; anchors.verticalCenter: parent.verticalCenter
+                    source: Qt.resolvedUrl(pl.wait ? '../../../icons/eh_wait_wine.svg' : (root.bottega ? '../../../icons/eh_lock.svg' : '../../../icons/eh_lock_white.svg'))
+                    sourceSize.width: pl.ic - 4; sourceSize.height: pl.ic - 4 }
+            Label { id: plL; anchors.verticalCenter: parent.verticalCenter; font.pixelSize: pl.fs; font.bold: true; color: pl.ink; text: pl.text
+                    width: Math.max(0, Math.min(implicitWidth, pl.width - (root.bottega ? 19 : 16) - pl.ic)); elide: Text.ElideRight }
         }
     }
     Timer { id: coverTimer; interval: 20000; onTriggered: root.revealed = false }
@@ -130,6 +142,11 @@ Rectangle {
 
     implicitHeight: col.implicitHeight + 30
     readonly property bool watch: Daemon.currentWallet ? Daemon.currentWallet.isWatchOnly : false
+    // home "Bottega" (owner 13/11, preview home-nuova-grafica.html, proposal B): darker leather of
+    // the wallet colour, gold stitching, a flap at the top, brass buttons, ivory amount.
+    // Only the home card (strap on the left); a watch-only wallet keeps its light look.
+    readonly property bool bottega: root.strapLeft && !root.watch
+    readonly property string serif: SerifFont ? SerifFont : app.font.family
     function tint(c, a) { return Qt.rgba(c.r, c.g, c.b, a) }
     readonly property color lightC: Qt.lighter(root.baseColor, 1.3)
     readonly property color darkC: Qt.darker(root.baseColor, 1.35)
@@ -138,12 +155,12 @@ Rectangle {
     radius: 18
     gradient: Gradient {
         orientation: Gradient.Vertical
-        GradientStop { position: 0.0; color: root.watch ? Qt.rgba(1, 1, 1, 0.66) : root.tint(root.lightC, 0.74) }
-        GradientStop { position: 0.5; color: root.watch ? Qt.rgba(1, 1, 1, 0.55) : root.tint(root.baseColor, 0.72) }
-        GradientStop { position: 1.0; color: root.watch ? root.tint(root.baseColor, 0.10) : root.tint(root.darkC, 0.68) }
+        GradientStop { position: 0.0; color: root.watch ? Qt.rgba(1, 1, 1, 0.66) : (root.bottega ? Qt.lighter(root.baseColor, 1.13) : root.tint(root.lightC, 0.74)) }
+        GradientStop { position: root.bottega ? 0.7 : 0.5; color: root.watch ? Qt.rgba(1, 1, 1, 0.55) : (root.bottega ? Qt.darker(root.baseColor, 1.28) : root.tint(root.baseColor, 0.72)) }
+        GradientStop { position: 1.0; color: root.watch ? root.tint(root.baseColor, 0.10) : (root.bottega ? Qt.darker(root.baseColor, 1.5) : root.tint(root.darkC, 0.68)) }
     }
     // thin light edge: keeps the see-through card apart from the hills behind
-    border.width: root.watch ? 0 : 1
+    border.width: root.watch || root.bottega ? 0 : 1
     border.color: Qt.rgba(1, 1, 1, 0.3)
     // soft coloured shadow under the card
     Rectangle {
@@ -154,15 +171,38 @@ Rectangle {
         anchors.leftMargin: 6
         anchors.rightMargin: 6
         radius: parent.radius
-        color: root.tint(root.baseColor, root.watch ? 0.10 : 0.18)
+        color: root.tint(root.bottega ? root.darkC : root.baseColor, root.watch ? 0.10 : (root.bottega ? 0.3 : 0.18))
+    }
+    // Bottega: the flap of the wallet, a darker curved shade across the top
+    Canvas {
+        visible: root.bottega
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: parent.top
+        height: 56
+        onWidthChanged: requestPaint()
+        onPaint: {
+            var c = getContext('2d')
+            c.reset()
+            var w = width, r = root.radius
+            if (w <= 0) return
+            c.beginPath()
+            c.moveTo(0, r); c.arcTo(0, 0, r, 0, r)
+            c.lineTo(w - r, 0); c.arcTo(w, 0, w, r, r)
+            c.lineTo(w, 34)
+            c.bezierCurveTo(w * 0.79, 60, w * 0.21, 60, 0, 34)
+            c.closePath()
+            c.fillStyle = Qt.rgba(0, 0, 0, 0.2)
+            c.fill()
+        }
     }
     // leather wallet: stitching all round, 7 px from the edge
     EhDashedBorder {
         anchors.fill: parent
         inset: 7
         radius: 12
-        lineWidth: 1.6
-        color: root.watch ? root.tint(root.baseColor, 0.55) : Qt.rgba(1, 0.91, 0.77, 0.6)
+        lineWidth: root.bottega ? 2 : 1.6
+        color: root.watch ? root.tint(root.baseColor, 0.55) : (root.bottega ? '#e3c57e' : Qt.rgba(1, 0.91, 0.77, 0.6))
     }
     // closing strap on the right; its golden button = settings
     EhWalletStrap {
@@ -178,7 +218,8 @@ Rectangle {
         y: root.strapLeft ? Math.round((root.height - height) / 2) : root.height - height - 12
         leather: root.baseColor
         light: root.watch
-        stitch: root.watch ? root.tint(root.baseColor, 0.55) : Qt.rgba(1, 0.91, 0.77, 0.6)
+        bottega: root.bottega
+        stitch: root.watch ? root.tint(root.baseColor, 0.55) : (root.bottega ? '#e3c57e' : Qt.rgba(1, 0.91, 0.77, 0.6))
         onTapped: app.stack.push(Qt.resolvedUrl('../EhSettings.qml'))
     }
 
@@ -265,9 +306,9 @@ Rectangle {
             visible: !root.watch && root.compact
             Layout.preferredHeight: 22     // as the "watch only" tag (20 + 2): same card height
             verticalAlignment: Text.AlignVCenter
-            font.pixelSize: 12
+            font.pixelSize: root.bottega ? 14 : 12
             font.bold: true
-            color: Network.isConnected ? '#cfe3a0' : '#ffd88a'
+            color: Network.isConnected ? (root.bottega ? '#d6eca0' : '#cfe3a0') : '#ffd88a'
             text: Network.isConnected ? '● ' + qsTr('Up to date') : '● ' + qsTr('Not connected')
         }
         // covered balance: "€ 1" sharp, the next digit a little blurred, the rest
@@ -298,10 +339,13 @@ Rectangle {
         Label {
             visible: !root.covered
             Layout.fillWidth: true
+            // home: the same height with any font, the card keeps its one height (214)
+            Layout.preferredHeight: root.fixedRows ? 56 : -1
+            verticalAlignment: Text.AlignVCenter
             text: root.euroText !== '' ? root.euroText : root.btcText
-            color: root.watch ? root.baseColor : '#ffffff'
-            font.family: TitleFont ? TitleFont : font.family
-            font.weight: Font.Black
+            color: root.watch ? root.baseColor : (root.bottega ? '#fbeccb' : '#ffffff')
+            font.family: root.bottega ? root.serif : (TitleFont ? TitleFont : font.family)
+            font.weight: root.bottega ? Font.ExtraBold : Font.Black
             font.pixelSize: 42
             fontSizeMode: Text.HorizontalFit
             minimumPixelSize: 14     // review 2026-11-11: 26 was too big for the narrow home card
@@ -310,10 +354,12 @@ Rectangle {
         Label {
             visible: root.euroText !== '' || root.fiatRoom || root.fixedRows
             Layout.fillWidth: true
+            Layout.preferredHeight: root.fixedRows ? 20 : -1
+            verticalAlignment: Text.AlignVCenter
             text: root.euroText === '' ? ' ' : (root.covered ? qsTr('tap to see') : root.btcText)
             color: root.watch ? '#6b5d55' : '#ffffff'
-            opacity: 0.85
-            font.pixelSize: 15
+            opacity: root.bottega ? 1 : 0.85
+            font.pixelSize: root.bottega ? 16 : 15
             font.bold: root.covered
             elide: Text.ElideRight
         }
@@ -326,20 +372,33 @@ Rectangle {
             // expert option "banknotes and coins": the balance as real money.
             // Only a round button with banknotes drawn on it, no text.
             Rectangle {
+                id: cashBtn
                 visible: root.cashRoom
                 opacity: root.showCash ? 1 : 0
                 enabled: root.showCash
-                Layout.preferredWidth: 48
-                Layout.preferredHeight: 48
-                radius: 24
+                Layout.preferredWidth: root.bottega ? 52 : 48
+                Layout.preferredHeight: root.bottega ? 52 : 48
+                radius: width / 2
                 color: cashTap.pressed ? Qt.rgba(1, 1, 1, 0.38) : Qt.rgba(1, 1, 1, 0.18)
-                border.width: 1.5
-                border.color: root.watch ? '#c8961e' : Qt.rgba(1, 1, 1, 0.45)
+                border.width: root.bottega ? 2 : 1.5
+                border.color: root.bottega ? '#8a6a1c' : (root.watch ? '#c8961e' : Qt.rgba(1, 1, 1, 0.45))
+                // Bottega: brass button
+                Rectangle {
+                    visible: root.bottega
+                    anchors.fill: parent
+                    anchors.margins: 2
+                    radius: width / 2
+                    gradient: Gradient {
+                        GradientStop { position: 0.0; color: cashTap.pressed ? '#e6cf8a' : '#f8e3a2' }
+                        GradientStop { position: 0.6; color: '#d9b25a' }
+                        GradientStop { position: 1.0; color: '#b58d32' }
+                    }
+                }
                 Image {
                     anchors.centerIn: parent
-                    source: Qt.resolvedUrl('../../../icons/eh_cash.svg')
-                    sourceSize.width: 34
-                    sourceSize.height: 34
+                    source: Qt.resolvedUrl(root.bottega ? '../../../icons/eh_cash_wine.svg' : '../../../icons/eh_cash.svg')
+                    sourceSize.width: root.bottega ? 30 : 34
+                    sourceSize.height: root.bottega ? 30 : 34
                 }
                 TapHandler { id: cashTap; margin: 6; gesturePolicy: TapHandler.WithinBounds; onTapped: app.stack.push(Qt.resolvedUrl('../EhCashPage.qml')) }
             }
@@ -352,30 +411,38 @@ Rectangle {
                 Layout.preferredWidth: 1      // takes the room left by the cash button, not its own text width
                 Layout.minimumWidth: 0
                 Layout.alignment: Qt.AlignBottom | (root.strapLeft ? Qt.AlignLeft : Qt.AlignLeft)
-                spacing: 3
+                spacing: root.bottega ? 2 : 3
                 // both "arriving" and "blocked": short texts so the three pills fit in two rows
                 readonly property bool both: root.showFrozen && root.showArriving
+                readonly property bool twoRows: root.showFrozen && !root.covered
                 Pill {
                     visible: root.showFrozen && !root.covered
                     maxW: root.pillsRoom
-                    fill: Qt.rgba(1, 1, 1, 0.18)
+                    fill: root.bottega ? '#fbeccb' : Qt.rgba(1, 1, 1, 0.18)
+                    ink: root.bottega ? '#3f0f21' : '#ffffff'
                     text: '● ' + qsTr('spendable %1').arg(app.ehMoney(root.satsAmount(Math.max(0, root.totalSats - root.frozenSats))))
                 }
                 RowLayout {
                     visible: root.showFrozen || root.showArriving
                     spacing: 4
                     Pill {
+                        id: arrPill
                         visible: root.showArriving
                         maxW: parent.parent.both ? (root.pillsRoom - 4) / 2 : root.pillsRoom
-                        fill: '#d9b25a'
+                        fill: root.bottega ? '#fbeccb' : '#d9b25a'
                         ink: '#3f0f21'
-                        text: '⏳ ' + (parent.parent.both ? app.ehMoney(root.satsAmount(root.arrivingSats))
+                        wait: root.bottega
+                        text: (root.bottega ? '' : '⏳ ') + (parent.parent.both ? app.ehMoney(root.satsAmount(root.arrivingSats))
                                                           : qsTr('arriving %1').arg(app.ehMoney(root.satsAmount(root.arrivingSats))))
                     }
                     Pill {
                         visible: root.showFrozen
-                        maxW: parent.parent.both ? (root.pillsRoom - 4) / 2 : root.pillsRoom
-                        fill: blTap2.pressed ? Qt.rgba(0.75, 0.22, 0.17, 0.8) : Qt.rgba(0.75, 0.22, 0.17, 0.55)
+                        // Bottega: the room the arriving pill leaves free (its width comes from its own text)
+                        maxW: parent.parent.both ? (root.bottega ? root.pillsRoom - 4 - arrPill.Layout.preferredWidth
+                                                                 : (root.pillsRoom - 4) / 2) : root.pillsRoom
+                        fill: root.bottega ? (blTap2.pressed ? '#ecd9a8' : '#fbeccb')
+                                           : (blTap2.pressed ? Qt.rgba(0.75, 0.22, 0.17, 0.8) : Qt.rgba(0.75, 0.22, 0.17, 0.55))
+                        ink: root.bottega ? '#3f0f21' : '#ffffff'
                         edge: true
                         lock: true
                         text: (root.covered ? qsTr('coins blocked')

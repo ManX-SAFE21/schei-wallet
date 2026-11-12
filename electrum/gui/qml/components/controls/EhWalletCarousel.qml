@@ -120,7 +120,7 @@ ColumnLayout {
                     inset: 7
                     radius: 17
                     lineWidth: 1.6
-                    color: parent.light ? '#b98a9a' : Qt.rgba(1, 0.91, 0.77, 0.75)
+                    color: parent.light ? '#b98a9a' : (root.strapLeft ? '#e3c57e' : Qt.rgba(1, 0.91, 0.77, 0.75))
                 }
                 ColumnLayout {
                     anchors.fill: parent
@@ -224,14 +224,19 @@ ColumnLayout {
                 required property var modelData
                 required property int index
                 readonly property bool on: index === list.currentIndex
-                width: modelData.add ? plusL.implicitWidth : (on ? 24 : 9)
-                height: 9
+                // home "Bottega": the other wallets are small gold diamonds, the open one a pill
+                readonly property bool diamond: root.strapLeft && !on
+                width: modelData.add ? plusL.implicitWidth : (on ? (root.strapLeft ? 26 : 24) : (diamond ? 11 : 9))
+                height: root.strapLeft ? 12 : 9
                 Rectangle {
                     visible: !modelData.add
-                    anchors.fill: parent
-                    radius: 5
-                    color: modelData.add ? 'transparent' : app.ehWalletColorFor(modelData.name || '')
-                    opacity: parent.on ? 1 : 0.35
+                    anchors.centerIn: parent
+                    width: parent.diamond ? 8 : parent.width
+                    height: parent.diamond ? 8 : (root.strapLeft ? 10 : parent.height)
+                    radius: parent.diamond ? 1.5 : 5
+                    rotation: parent.diamond ? 45 : 0
+                    color: parent.diamond ? '#c9b48a' : app.ehWalletColorFor(modelData.name || '')
+                    opacity: parent.on || parent.diamond ? 1 : 0.35
                 }
                 Label {
                     id: plusL

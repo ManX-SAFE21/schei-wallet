@@ -264,14 +264,19 @@ Item {
     Material.theme: Material.Light
     Material.foreground: '#2a2220'
 
+    // home "Bottega" (owner 13/11, preview home-nuova-grafica.html, proposal B): warmer paper
+    // colour, hills with a small campanile, two cypresses and gold rays round the sun
     Rectangle {
         anchors.fill: parent
-        color: '#faf7ef'
+        color: '#f4ecda'
     }
 
     // hills behind the top of the page: the wallet card sits on them
     EhHills {
         band: true
+        art: 'eh_hills_bottega.svg'
+        rays: true
+        fade: false
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: parent.top
@@ -305,10 +310,10 @@ Item {
                 anchors.bottom: ehLogo.bottom
                 anchors.bottomMargin: 2
                 text: app.ehTest ? 'testnet4' : 'Wallet'
-                color: app.ehTest ? '#1f6f8b' : '#3f0f21'
-                font.family: TitleFont ? TitleFont : font.family
-                font.weight: Font.Black
-                font.pixelSize: 18
+                color: app.ehTest ? '#1f6f8b' : '#45541f'
+                font.family: BodyFont ? BodyFont : font.family
+                font.weight: Font.DemiBold
+                font.pixelSize: 20
             }
         }
 
@@ -365,20 +370,33 @@ Item {
             Layout.leftMargin: 16
             Layout.rightMargin: 16
             spacing: 10
-            EhPillButton {
-                text: qsTr('RECEIVE')
-                fontSize: 26
-                color: '#45541f'; textColor: '#ffffff'; tileColor: '#e6e9cf'; outlined: false
-                onClicked: Daemon.currentWallet.ehReceive()
-                Image { anchors.centerIn: parent; source: Qt.resolvedUrl('../../icons/eh_rx_olive.svg'); sourceSize.width: 38; sourceSize.height: 38 }
+            // owner rule: stitched buttons; the stitching is drawn over the shared EhPillButton
+            Item {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 92
+                EhPillButton {
+                    anchors.fill: parent
+                    text: qsTr('RECEIVE')
+                    fontSize: 26
+                    color: '#45541f'; textColor: '#ffffff'; tileColor: '#e6e9cf'; outlined: false
+                    onClicked: Daemon.currentWallet.ehReceive()
+                    Image { anchors.centerIn: parent; source: Qt.resolvedUrl('../../icons/eh_rx_olive.svg'); sourceSize.width: 38; sourceSize.height: 38 }
+                }
+                EhDashedBorder { anchors.fill: parent; inset: 6; radius: 40; lineWidth: 1.6; color: '#e3c57e' }
             }
-            EhPillButton {
+            Item {
                 visible: Daemon.currentWallet && !Daemon.currentWallet.isWatchOnly
-                text: qsTr('SEND')
-                fontSize: 26
-                color: '#5e1a33'; textColor: '#ffffff'; tileColor: '#d9b25a'; outlined: false
-                onClicked: openSendDialog()
-                Image { anchors.centerIn: parent; source: Qt.resolvedUrl('../../icons/eh_tx_wine.svg'); sourceSize.width: 38; sourceSize.height: 38 }
+                Layout.fillWidth: true
+                Layout.preferredHeight: 92
+                EhPillButton {
+                    anchors.fill: parent
+                    text: qsTr('SEND')
+                    fontSize: 26
+                    color: '#5e1a33'; textColor: '#ffffff'; tileColor: '#d9b25a'; outlined: false
+                    onClicked: openSendDialog()
+                    Image { anchors.centerIn: parent; source: Qt.resolvedUrl('../../icons/eh_tx_wine.svg'); sourceSize.width: 38; sourceSize.height: 38 }
+                }
+                EhDashedBorder { anchors.fill: parent; inset: 6; radius: 40; lineWidth: 1.6; color: '#e3c57e' }
             }
             EhHistoryPanel {
                 Layout.fillWidth: true
@@ -434,9 +452,10 @@ Item {
                 Layout.leftMargin: 22
                 Layout.topMargin: 2
                 textFormat: Text.StyledText
-                font.pixelSize: 13
-                color: '#45541f'
-                text: qsTr('receive in:') + ' <b>' + (Daemon.currentWallet ? app.ehWalletName() : '') + '</b>'
+                font.family: BodyFont ? BodyFont : font.family
+                font.pixelSize: 16
+                color: '#5a4c44'
+                text: qsTr('receive in:') + ' <b><font color="#5e1a33">' + (Daemon.currentWallet ? app.ehWalletName() : '') + '</font></b>'
             }
 
             // one wallet: the card with its inside behind it

@@ -11,15 +11,32 @@ Item {
     property real sunTop: -1      // >=0: sun top edge
     property real sunRight: 16    // gap between the sun and the right edge, with sunSize
     property bool showSun: true   // pages with the steps bar: no sun behind the last step
+    property string art: ''       // other drawing (home "Bottega": eh_hills_bottega.svg)
+    property bool rays: false     // home "Bottega": gold rays behind the sun
+    property color fadeColor: '#faf7ef'
 
     Image {
         anchors.fill: parent
-        source: Qt.resolvedUrl(root.band ? '../../../icons/eh_band.svg' : '../../../icons/eh_hills.svg')
+        source: Qt.resolvedUrl(root.art !== '' ? '../../../icons/' + root.art
+                               : (root.band ? '../../../icons/eh_band.svg' : '../../../icons/eh_hills.svg'))
         sourceSize.width: 1080
         fillMode: Image.Stretch
     }
 
     Image {
+        // home "Bottega": thin gold rays round the sun
+        visible: root.showSun && root.rays
+        width: sunImg.d * 2.7
+        height: width
+        x: sunImg.cx - width / 2
+        y: sunImg.cy - height / 2
+        source: Qt.resolvedUrl('../../../icons/eh_sun_rays.svg')
+        sourceSize.width: 256
+        sourceSize.height: 256
+    }
+
+    Image {
+        id: sunImg
         // same place as the sun in the original drawings (viewBox 340x250 / 340x74)
         readonly property real d: root.sunSize > 0 ? root.sunSize : (root.band ? root.height * 0.62 : root.height * 0.5)
         readonly property real cx: root.sunSize > 0 ? root.width - root.sunRight - d / 2 : root.width * (root.band ? 290 : 250) / 340
@@ -42,8 +59,8 @@ Item {
         anchors.bottom: parent.bottom
         height: parent.height * (root.band ? 0.42 : 0.3)
         gradient: Gradient {
-            GradientStop { position: 0.0; color: Qt.rgba(0.980, 0.969, 0.937, 0) }
-            GradientStop { position: 1.0; color: Qt.rgba(0.980, 0.969, 0.937, 1) }
+            GradientStop { position: 0.0; color: Qt.rgba(root.fadeColor.r, root.fadeColor.g, root.fadeColor.b, 0) }
+            GradientStop { position: 1.0; color: root.fadeColor }
         }
     }
 }
