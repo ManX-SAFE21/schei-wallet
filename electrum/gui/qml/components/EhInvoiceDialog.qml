@@ -72,7 +72,7 @@ ElDialog {
     function euroDisplay() {
         var sym = btcMode ? '' : app.ehSym() + ' '
         if (euroInput === '') return btcMode ? '0 BTC' : sym + '0'
-        if (btcMode) return euroInput.replace(',', app.ehLocale().decimalPoint) + ' BTC'
+        if (btcMode) return euroInput.replace(',', app.ehLocale().decimalPoint) + ' ' + app.ehBtcUnit()
         var parts = euroInput.split(',')
         var intPart = Number(parts[0] || '0').toLocaleString(app.ehLocale(), 'f', 0)
         return app.ehSym() + ' ' + intPart + (parts.length > 1 ? app.ehLocale().decimalPoint + parts[1] : '')

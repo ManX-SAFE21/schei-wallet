@@ -69,7 +69,7 @@ ColumnLayout {
                     var s = Math.abs(model.value.satsInt)
                     var t = (s / 100000000).toFixed(8)
                     if (Config.language !== 'en_UK') t = t.replace('.', ',')
-                    return (incoming ? '+' : '−') + t + ' BTC'
+                    return (incoming ? '+' : '−') + t + ' ' + app.ehBtcUnit()
                 }
                 // hairline that fades at both ends
                 Rectangle {

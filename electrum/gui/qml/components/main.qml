@@ -18,7 +18,10 @@ ApplicationWindow
 
     visible: false // initial value
 
-    readonly property int statusBarHeight: AppController ? AppController.getStatusBarHeight() : 0
+    // Schèi testnet4: the striped band under the status bar takes its room on every page
+    readonly property bool ehTest: Network.isTestNet
+    readonly property int ehTestBand: ehTest ? 22 : 0
+    readonly property int statusBarHeight: (AppController ? AppController.getStatusBarHeight() : 0) + ehTestBand
     readonly property int navigationBarHeight: AppController ? AppController.getNavigationBarHeight() : 0
 
     // dimensions ignored on android
@@ -574,6 +577,13 @@ ApplicationWindow
             Daemon.startNetwork()
             if (Daemon.availableWallets.rowCount() > 0) {
                 Daemon.loadWallet()
+            } else if (app.ehTest) {
+                // Schèi testnet4: first start, what this app is, before the wallet is created
+                ehAsk(qsTr('This is the test app'),
+                      qsTr('It uses the Bitcoin test network (testnet4): the coins here are worth nothing and cannot be changed into euro. It is for learning and trying without fear.')
+                      + '\n\n' + qsTr('For real money use the Schèi Wallet app.')
+                      + '\n\n' + qsTr('Free test coins: search "testnet4 faucet" on the internet.'),
+                      ehFirstWizard, ehFirstWizard, qsTr("I understand, let's start"), '')
             } else {
                 ehFirstWizard()
             }
@@ -606,6 +616,33 @@ ApplicationWindow
             langDialog.open()
         } else {
             continueWithServerConnection()
+        }
+    }
+
+    // Schèi testnet4: striped blue band, always visible on top of every page
+    Rectangle {
+        parent: Overlay.overlay
+        visible: app.ehTest
+        z: 10000
+        x: 0
+        y: app.statusBarHeight - app.ehTestBand
+        width: parent ? parent.width : 0
+        height: app.ehTestBand
+        color: '#1f6f8b'
+        clip: true
+        Row {
+            x: -20
+            Repeater {
+                model: 40
+                Rectangle { width: 14; height: 60; y: -16; rotation: 45; color: index % 2 ? '#1f6f8b' : '#2a86a6' }
+            }
+        }
+        Label {
+            anchors.centerIn: parent
+            text: qsTr('TEST NETWORK (testnet4) · coins without value')
+            color: '#ffffff'
+            font.pixelSize: 12
+            font.bold: true
         }
     }
 
@@ -708,8 +745,9 @@ ApplicationWindow
         var s = Config.formatSats(amount).trim()
         if (s.indexOf('.') >= 0) s = s.replace(/0+$/, '').replace(/\.$/, '')
         if (Config.language !== 'en_UK') s = s.replace(/,/g, ' ').replace('.', ',')
-        return s + ' BTC'
+        return s + ' ' + ehBtcUnit()
     }
+    function ehBtcUnit() { return app.ehTest ? 'tBTC' : 'BTC' }
     // third review (2.1): the euro of the movements are drawn again when the rates arrive
     property int ehFxRev: 0
     Connections {
@@ -872,7 +910,7 @@ ApplicationWindow
     function ehAsk(text, detail, onYes, onNo, yesText, noText) {
         var props = { text: text, detail: detail }
         if (yesText) props.yesText = yesText
-        if (noText) props.noText = noText
+        if (noText !== undefined && noText !== null) props.noText = noText   // '' = one button only
         var d = Qt.createComponent(Qt.resolvedUrl('EhAskDialog.qml')).createObject(app, props)
         if (onYes) d.accepted.connect(onYes)
         if (onNo) d.rejected.connect(onNo)
@@ -1070,7 +1108,8 @@ ApplicationWindow
     Component { id: _ehAddressZoom; EhAddressZoom { onClosed: destroy() } }
     function ehZoomAddress(address, mine) { ehAddressZoom.createObject(app, { address: address, mine: mine }).open() }
 
-    function ehBtcOnly() { ehOptRev; return Config.ehGet('opt_btc_only') === true }
+    // Schèi testnet4: test coins have no price, always in bitcoin
+    function ehBtcOnly() { ehOptRev; return app.ehTest || Config.ehGet('opt_btc_only') === true }
     function ehSetBtcOnly(on) {
         ehSetOption('btc_only', on)
         Daemon.fx.enabled = !on

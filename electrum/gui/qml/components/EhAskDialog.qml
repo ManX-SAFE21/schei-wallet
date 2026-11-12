@@ -64,18 +64,19 @@ Popup {
             Layout.fillWidth: true
             spacing: 10
             Repeater {
-                model: [true, false]
+                model: root.noText === '' ? [true] : [true, false]
                 delegate: Rectangle {
                     id: b
                     required property bool modelData
                     Layout.fillWidth: true
                     Layout.preferredHeight: 52
                     radius: 26
-                    color: modelData ? (bt.pressed ? '#e2d7c1' : '#efe6d3') : (bt.pressed ? '#3f0f21' : '#5e1a33')
+                    readonly property bool wine: !modelData || root.noText === ''
+                    color: wine ? (bt.pressed ? '#3f0f21' : '#5e1a33') : (bt.pressed ? '#e2d7c1' : '#efe6d3')
                     Label {
                         anchors.centerIn: parent
                         text: b.modelData ? root.yesText : root.noText
-                        color: b.modelData ? '#2a2220' : '#ffffff'
+                        color: b.wine ? '#ffffff' : '#2a2220'
                         font.pixelSize: 19
                         font.bold: true
                     }

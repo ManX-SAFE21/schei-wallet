@@ -53,6 +53,18 @@ info "apk building phase starts."
 # Easy Heirs wallet: own package id, so it installs next to official Electrum
 export APP_PACKAGE_DOMAIN=io.safe21.easyheirs
 
+# Schèi testnet4 (owner 12/11): the separate app for the test network, next to the real one.
+# Same code; the package name makes the app start on testnet4 (simple_config).
+if [ "$SCHEI_TESTNET4" = "1" ] ; then
+    export APP_PACKAGE_DOMAIN=io.safe21.easyheirs.testnet4
+    export APP_TITLE="Schȅi testnet4"
+    ICONS=/home/user/wspace/electrum/electrum/gui/icons
+    export APP_ICON_FILENAME=$ICONS/eh_icon_test_legacy.png
+    export APP_ICON_ADAPTIVE_FOREGROUND_FILENAME=$ICONS/eh_icon_test_foreground.png
+    export APP_ICON_ADAPTIVE_BACKGROUND_FILENAME=$ICONS/eh_icon_test_background.png
+    info "building Schèi testnet4 ($APP_PACKAGE_DOMAIN)"
+fi
+
 if [ $CI ]; then
     # override log level specified in buildozer.spec to "debug":
     export BUILDOZER_LOG_LEVEL=2

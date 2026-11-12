@@ -100,6 +100,7 @@ docker run --rm \
     -v "$PROJECT_ROOT_OR_FRESHCLONE_ROOT":/home/user/wspace/electrum \
     -v "$PROJECT_ROOT_OR_FRESHCLONE_ROOT"/.buildozer/.gradle:/home/user/.gradle \
     $DOCKER_RUN_FLAGS \
+    -e SCHEI_TESTNET4 \
     --workdir /home/user/wspace/electrum \
     electrum-android-builder-img \
     ./contrib/android/make_apk.sh "$@"

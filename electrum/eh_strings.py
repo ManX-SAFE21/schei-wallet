@@ -5,6 +5,12 @@
 
 STRINGS = {
     'it_IT': {
+        'TEST NETWORK (testnet4) · coins without value': 'RETE DI PROVA (testnet4) · monete senza valore',
+        'This is the test app': "Questa è l'app di prova",
+        'It uses the Bitcoin test network (testnet4): the coins here are worth nothing and cannot be changed into euro. It is for learning and trying without fear.': 'Usa la rete di prova di Bitcoin (testnet4): le monete qui non valgono niente e non si possono cambiare in euro. Serve per imparare e provare senza paura.',
+        'For real money use the Schèi Wallet app.': "Per i soldi veri usa l'app Schèi Wallet.",
+        'Free test coins: search "testnet4 faucet" on the internet.': 'Monete di prova gratuite: cerca "testnet4 faucet" su internet.',
+        "I understand, let's start": 'Ho capito, cominciamo',
         'Note saved': 'Nota salvata',
         'The rows for experts appear: PIN threshold, more addresses': 'Compaiono le voci per esperti: soglia del PIN, più indirizzi',
         'OK (go ahead)': 'Va bene',
@@ -747,6 +753,12 @@ STRINGS = {
         '<b>Schèi chooses a "normal" tip by itself</b>: the payment usually arrives in about ten minutes. The whole tip goes to the miners: Schèi takes nothing.': '<b>Schèi sceglie da solo una mancia "normale"</b>: il pagamento arriva di solito in una decina di minuti. La mancia va tutta ai minatori: Schèi non prende niente.',
     },
     'vec_IT': {
+        'TEST NETWORK (testnet4) · coins without value': 'RETE DE PROVA (testnet4) · schèi che no val gnente',
+        'This is the test app': "Questa xe l'app de prova",
+        'It uses the Bitcoin test network (testnet4): the coins here are worth nothing and cannot be changed into euro. It is for learning and trying without fear.': 'La dòpara la rete de prova de Bitcoin (testnet4): i schèi qua no i val gnente e no se pol cambiarli in euro. La serve par imparar e provar sensa paura.',
+        'For real money use the Schèi Wallet app.': "Par i schèi veri dòpara l'app Schèi Wallet.",
+        'Free test coins: search "testnet4 faucet" on the internet.': 'Monede de prova gratis: serca "testnet4 faucet" su internet.',
+        "I understand, let's start": 'Go capìo, scominsiemo',
         'Note saved': 'Nota salvada',
         'The rows for experts appear: PIN threshold, more addresses': 'Vien fora le vosi par esperti: soja del PIN, più indirissi',
         'OK (go ahead)': 'Va ben',

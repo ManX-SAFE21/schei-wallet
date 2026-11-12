@@ -304,8 +304,8 @@ Item {
                 anchors.leftMargin: 6
                 anchors.bottom: ehLogo.bottom
                 anchors.bottomMargin: 2
-                text: 'Wallet'
-                color: '#3f0f21'
+                text: app.ehTest ? 'testnet4' : 'Wallet'
+                color: app.ehTest ? '#1f6f8b' : '#3f0f21'
                 font.family: TitleFont ? TitleFont : font.family
                 font.weight: Font.Black
                 font.pixelSize: 18

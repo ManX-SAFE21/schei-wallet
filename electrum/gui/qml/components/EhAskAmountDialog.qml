@@ -33,7 +33,7 @@ ElDialog {
     }
     function amount() { return Config.unitsToSats((sats() / 100000000).toFixed(8)) }
     function display() {
-        if (btc) return (euroInput === '' ? '0' : euroInput.replace(',', app.ehLocale().decimalPoint)) + ' BTC'
+        if (btc) return (euroInput === '' ? '0' : euroInput.replace(',', app.ehLocale().decimalPoint)) + ' ' + app.ehBtcUnit()
         if (euroInput === '') return app.ehSym() + ' 0'
         var p = euroInput.split(',')
         return app.ehSym() + ' ' + Number(p[0] || '0').toLocaleString(app.ehLocale(), 'f', 0) + (p.length > 1 ? app.ehLocale().decimalPoint + p[1] : '')
