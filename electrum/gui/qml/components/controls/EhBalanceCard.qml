@@ -12,7 +12,11 @@ Rectangle {
     property string previewColor: ''
     readonly property color baseColor: previewColor !== '' ? previewColor : app.ehWalletColor()
     property string btcText: ''
-    readonly property bool showCash: app.ehOption('coins') && !app.ehBtcOnly() && app.ehHasCash() && root.euroText !== '' && root.hasMoney
+    readonly property bool showCash: cashRoom && root.euroText !== ''
+    // owner 12/11: at startup the exchange rate comes a few seconds later; the card keeps the room
+    // of the second line and of the cash button meanwhile, so it does not grow and jump up
+    readonly property bool cashRoom: app.ehOption('coins') && !app.ehBtcOnly() && app.ehHasCash() && root.hasMoney
+    readonly property bool fiatRoom: !app.ehBtcOnly() && Daemon.fx.enabled
     property bool hasMoney: false
     property real frozenSats: 0         // coins blocked in "Le tue monete d'oro"
     property real arrivingSats: 0       // received, not confirmed yet (gold pill)
@@ -269,9 +273,9 @@ Rectangle {
             clip: true
         }
         Label {
-            visible: root.euroText !== ''
+            visible: root.euroText !== '' || root.fiatRoom
             Layout.fillWidth: true
-            text: root.covered ? qsTr('tap to see') : root.btcText
+            text: root.euroText === '' ? ' ' : (root.covered ? qsTr('tap to see') : root.btcText)
             color: root.watch ? '#6b5d55' : '#ffffff'
             opacity: 0.85
             font.pixelSize: 15
@@ -286,7 +290,9 @@ Rectangle {
             // expert option "banknotes and coins": the balance as real money.
             // Only a round button with banknotes drawn on it, no text.
             Rectangle {
-                visible: root.showCash
+                visible: root.cashRoom
+                opacity: root.showCash ? 1 : 0
+                enabled: root.showCash
                 Layout.preferredWidth: 48
                 Layout.preferredHeight: 48
                 radius: 24
