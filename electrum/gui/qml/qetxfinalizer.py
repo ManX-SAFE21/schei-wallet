@@ -168,6 +168,13 @@ class FeeSlider(QObject):
         self.isUserFeerateLast = True
         self.update()
 
+    @pyqtSlot(result=float)
+    def ehMinFeerate(self) -> float:
+        # the lowest tip the connected server passes on, in sat/vB (Electrum keeps it between 0.1 and 50)
+        if not self._wallet:
+            return 1.0
+        return self._wallet.wallet.relayfee() / 1000
+
     @pyqtSlot(int)
     def ehBackToSlider(self, pos: int):
         self._userFeerate = ''

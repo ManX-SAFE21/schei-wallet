@@ -26,6 +26,8 @@ ElDialog {
     readonly property bool manual: manualOn && manualText !== ''
     readonly property real manualRate: Number(manualText.replace(',', '.'))
     readonly property real slowRate: Config.ehFeeRateForBlocks(25)   // about 4 hours
+    // owner 12/11: the lowest hand-written tip is what the server accepts (it can be 0.1 sat/vB)
+    readonly property real minRate: finalizer ? finalizer.ehMinFeerate() : 1
     function setManual(txt) {
         manualText = txt
         if (!finalizer) return
@@ -246,8 +248,12 @@ ElDialog {
                 wrapMode: Text.WordWrap
                 textFormat: Text.StyledText
                 font.pixelSize: 14
-                text: root.manualRate < 1
-                      ? '<b>' + qsTr('Too low.') + '</b> ' + qsTr('The minimum is 1 sat/vB.')
+                text: root.manualRate < root.minRate
+                      ? '<b>' + qsTr('Too low.') + '</b> '
+                        + qsTr('The connected server accepts at least %1 sat/vB.').arg(app.ehFeeRate(root.minRate.toFixed(1) + ' sat/vB').replace(' sat/vB', ''))
+                      : root.manualRate < 1
+                      ? '<b>' + qsTr('Very low tip.') + '</b> '
+                        + qsTr('Less than 1 sat/vB: the payment can wait a long time, and some nodes may not pass it on.')
                       : '<b>' + qsTr('Very low tip.') + '</b> '
                         + qsTr('It is less than what is needed to arrive within 4 hours (now about %1 sat/vB): the payment can wait a long time, or the miners may never take it.')
                           .arg(app.ehFeeRate(root.slowRate.toFixed(1) + ' sat/vB').replace(' sat/vB', ''))
@@ -281,7 +287,7 @@ ElDialog {
         }
         EhNextButton {
             Layout.fillWidth: true
-            enabled: !root.manual || root.manualRate >= 1
+            enabled: !root.manual || root.manualRate >= root.minRate
             text: qsTr('That is fine')
             onClicked: root.doAccept()
         }
