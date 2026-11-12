@@ -609,11 +609,18 @@ ApplicationWindow
         }
     }
 
+    property var _ehAsks: []          // the open yes / no questions (EhAskDialog)
     onClosing: (close) => {
         if (AppController.wantClose) {
             // destroy most GUI components so that we don't dump so many null reference warnings on exit
             app.header.visible = false
             mainStackView.clear()
+            return
+        }
+        // a yes / no question is open (EhAskDialog): Back = "No", nothing else
+        if (_ehAsks.length > 0) {
+            _ehAsks[_ehAsks.length - 1].answer(false)
+            close.accepted = false
             return
         }
         if (activeDialogs.length > 0) {

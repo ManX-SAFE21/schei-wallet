@@ -84,5 +84,13 @@ Popup {
             }
         }
     }
-    onClosed: { if (!_answered) { _answered = true; rejected() } destroy() }
+    // owner 12/11: the Android Back key answers "No" to the open question (main.qml onClosing),
+    // so pressing Back again and again does not stack more questions
+    onOpened: app._ehAsks.push(root)
+    onClosed: {
+        var i = app._ehAsks.indexOf(root)
+        if (i >= 0) app._ehAsks.splice(i, 1)
+        if (!_answered) { _answered = true; rejected() }
+        destroy()
+    }
 }
