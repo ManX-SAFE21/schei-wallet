@@ -1,13 +1,17 @@
 // Easy Heirs (schèi): first screen, choose the language (Italiano, Veneto, English).
 // Shown only at first start. The choice is applied at once, so every
 // following screen is already in the chosen language, without a restart.
-// Style "Colline del vino": hills on top, logo, pill buttons.
+// Style "Bottega" (owner 13/11, preview pulsanti-grandi-rimasti.html): the B landscape on top as
+// on the Welcome page, the logo, the three-language subtitle, three paper stitched buttons with
+// the flag on the left; the phone's language has a gold outline. The flags are drawn (SVG): the
+// Venetian lion emoji showed as an empty box on the phone.
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 import QtQuick.Controls.Material
 
 import "controls"
+import "controls/EhStyle.js" as S
 
 ElDialog {
     id: root
@@ -24,121 +28,138 @@ ElDialog {
     closePolicy: Popup.NoAutoClose
     needsSystemBarPadding: false
 
-    readonly property color cBg: '#faf7ef'
-    readonly property color cMuted: '#6b5d55'
-    readonly property color cGold: '#c8961e'
-
-    background: Rectangle { color: root.cBg }
+    background: Rectangle { color: S.parch }
 
     function choose(code) {
         Config.language = code
         root.doAccept()
     }
 
-    EhHills {
-        id: hills
-        anchors.top: parent.top
-        anchors.left: parent.left
-        anchors.right: parent.right
-        height: Math.round(root.height * 0.27)
+    function flagFor(code) {
+        return code === 'it_IT' ? 'eh_flag_it.svg' : code === 'vec_IT' ? 'eh_flag_vec.svg' : 'flag_en.svg'
     }
 
-    ColumnLayout {
-        anchors.top: hills.bottom
-        anchors.bottom: parent.bottom
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.topMargin: -6
-        anchors.leftMargin: 22
-        anchors.rightMargin: 22
-        anchors.bottomMargin: 26 + app.navigationBarHeight
-        spacing: 14
+    Item {
+        anchors.fill: parent
 
-        Image {
-            Layout.alignment: Qt.AlignHCenter
-            Layout.preferredWidth: 190
-            Layout.preferredHeight: 190 * 345 / 756
-            source: Qt.resolvedUrl('../../icons/eh_logo_wine.png')
-            fillMode: Image.PreserveAspectFit
-            mipmap: true
+        // sky, then the B landscape at its own proportions at the bottom of it (as WCEasyWelcome)
+        Rectangle {
+            id: hills
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.right: parent.right
+            height: Math.max(Math.round(parent.height * 0.27), app.statusBarHeight + land.height + 40)
+            color: '#f8eed6'
+            EhHills {
+                id: land
+                art: 'eh_hills_bottega.svg'
+                band: true
+                fade: false
+                rays: true
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.bottom: parent.bottom
+                height: Math.round(width * 136 / 393)
+                sunSize: 56
+                sunTop: 8
+                sunRight: 40
+            }
         }
 
-        Label {
-            Layout.fillWidth: true
-            horizontalAlignment: Text.AlignHCenter
-            wrapMode: Text.WordWrap
-            color: root.cMuted
-            font.pixelSize: 20
-            lineHeight: 1.3
-            // each line in its own language, never translated
-            text: 'Scegli la lingua\nSielzi la lengua\nChoose your language'
-        }
+        // the page scrolls when the phone is short (buttons never under the keys)
+        Flickable {
+            id: flick
+            anchors.top: hills.bottom
+            anchors.bottom: parent.bottom
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottomMargin: 16 + app.navigationBarHeight
+            contentHeight: col.height
+            boundsBehavior: Flickable.StopAtBounds
+            clip: true
 
-        Item { Layout.fillHeight: true }
+            ColumnLayout {
+                id: col
+                x: 22
+                width: flick.width - 44
+                height: Math.max(implicitHeight, flick.height)
+                spacing: 14
 
-        Repeater {
-            model: Config.languagesAvailable
-            delegate: Item {
-                id: entry
-                required property var modelData
-                readonly property bool isPhone: modelData.value === Config.phoneLanguage
-                Layout.fillWidth: true
-                Layout.preferredHeight: 92
-
-                // gold ring around the phone language
-                Rectangle {
-                    visible: entry.isPhone
-                    anchors.fill: parent
-                    anchors.margins: -6
-                    radius: height / 2
-                    color: 'transparent'
-                    border.width: 4
-                    border.color: root.cGold
+                Image {
+                    Layout.alignment: Qt.AlignHCenter
+                    Layout.topMargin: 4
+                    Layout.preferredWidth: 170
+                    Layout.preferredHeight: 170 * 345 / 756
+                    source: Qt.resolvedUrl('../../icons/eh_logo_wine.png')
+                    fillMode: Image.PreserveAspectFit
+                    mipmap: true
                 }
 
-                EhPillButton {
-                    anchors.fill: parent
-                    text: entry.modelData.text
-                    fontSize: 28
-                    onClicked: root.choose(entry.modelData.value)
+                Label {
+                    Layout.fillWidth: true
+                    horizontalAlignment: Text.AlignHCenter
+                    wrapMode: Text.WordWrap
+                    color: S.muted
+                    font.family: BodyFont ? BodyFont : font.family
+                    font.pixelSize: 18
+                    lineHeight: 1.3
+                    // each line in its own language, never translated
+                    text: 'Scegli la lingua\nSielzi la lengua\nChoose your language'
+                }
 
-                    // flag inside the round tile
-                    Rectangle {
-                        anchors.centerIn: parent
-                        width: 42; height: 30
-                        radius: 6
-                        color: '#2a2220'
-                        Item {
+                Item { Layout.fillHeight: true; Layout.minimumHeight: 12 }
+
+                Repeater {
+                    model: Config.languagesAvailable
+                    delegate: Item {
+                        id: entry
+                        required property var modelData
+                        readonly property bool isPhone: modelData.value === Config.phoneLanguage
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: S.buttonH
+                        Layout.topMargin: 4
+                        Layout.leftMargin: 4
+                        Layout.rightMargin: 4
+
+                        // gold outline round the phone's language
+                        Rectangle {
+                            visible: entry.isPhone
                             anchors.fill: parent
-                            anchors.margins: 1.5
-                            clip: true
-                            Row {  // Italia
-                                visible: entry.modelData.value === 'it_IT'
-                                anchors.fill: parent
-                                Rectangle { width: parent.width / 3; height: parent.height; color: '#009246' }
-                                Rectangle { width: parent.width / 3; height: parent.height; color: '#ffffff' }
-                                Rectangle { width: parent.width / 3; height: parent.height; color: '#ce2b37' }
-                            }
-                            Rectangle {  // Veneto
-                                visible: entry.modelData.value === 'vec_IT'
-                                anchors.fill: parent
-                                color: '#8a1f2b'
-                                Label {
-                                    anchors.centerIn: parent
-                                    text: '\u{1F981}'  // lion
-                                    font.pixelSize: 18
+                            anchors.margins: -5
+                            anchors.bottomMargin: -7    // round the paper shadow too
+                            radius: 25
+                            color: 'transparent'
+                            border.width: 3
+                            border.color: S.gold
+                        }
+
+                        EhStitchButton {
+                            anchors.fill: parent
+                            kind: 'paper'
+                            text: entry.modelData.text
+                            iconSize: 34
+                            onClicked: root.choose(entry.modelData.value)
+
+                            // the flag, drawn, with a thin frame
+                            Rectangle {
+                                anchors.centerIn: parent
+                                width: 34; height: 24
+                                radius: 3
+                                color: '#2a2220'
+                                Image {
+                                    anchors.fill: parent
+                                    anchors.margins: 1
+                                    source: Qt.resolvedUrl('../../icons/' + root.flagFor(entry.modelData.value))
+                                    sourceSize.width: 96
+                                    sourceSize.height: 64
+                                    smooth: true
                                 }
-                            }
-                            Image {  // English
-                                visible: entry.modelData.value === 'en_UK'
-                                anchors.fill: parent
-                                source: Qt.resolvedUrl('../../icons/flag_en.svg')
-                                sourceSize.width: 84
-                                sourceSize.height: 60
                             }
                         }
                     }
                 }
+                // room for the gold outline under the last button (the Flickable clips)
+                Item { Layout.preferredHeight: 4 }
             }
         }
     }

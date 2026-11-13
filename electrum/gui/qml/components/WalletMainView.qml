@@ -271,33 +271,58 @@ Item {
         color: '#f4ecda'
     }
 
-    // hills behind the top of the page: the wallet card sits on them
-    EhHills {
-        band: true
-        art: 'eh_hills_bottega.svg'
-        rays: true
-        fade: false
+    // owner 13/11 (home-ritocchi.html): the hills and the logo take 86 px under the status bar,
+    // as in the approved preview, so more movements fit. The drawing keeps its proportions: its
+    // hills (rows 64..126 of 136) fill the bottom of the header, its flat sky goes up behind the bar.
+    // more wallets: which one receives (under the movements)
+    component ReceiveIn: Label {
+        visible: app.ehOption('multi') && Daemon.currentWallet !== null
+        Layout.fillWidth: true
+        Layout.leftMargin: 6
+        elide: Text.ElideRight
+        textFormat: Text.StyledText
+        font.family: BodyFont ? BodyFont : font.family
+        font.pixelSize: 16
+        color: '#5a4c44'
+        text: qsTr('receive in:') + ' <b><font color="#5e1a33">' + (Daemon.currentWallet ? app.ehWalletName() : '') + '</font></b>'
+    }
+
+    readonly property real ehHeadH: 86
+    Item {
+        id: ehHead
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: parent.top
-        height: mainView.ehTop + 104   // T19: hills only behind the logo, the movements start below
-        sunSize: 40
-        sunTop: mainView.ehTop + 6
+        height: mainView.ehTop + mainView.ehHeadH
+        clip: true
+        Rectangle { anchors.fill: parent; color: '#f8eed6' }
+        EhHills {
+            id: ehHillsArt
+            band: true
+            art: 'eh_hills_bottega.svg'
+            rays: true
+            fade: false
+            width: parent.width
+            height: Math.round(width * 136 / 393)
+            y: parent.height - Math.round(height * 126 / 136)
+            sunSize: 40
+            sunTop: mainView.ehTop + 6 - y
+        }
     }
 
     ColumnLayout {
         anchors.fill: parent
-        anchors.bottomMargin: 16 + app.navigationBarHeight
-        spacing: 6
+        anchors.bottomMargin: 14 + app.navigationBarHeight
+        spacing: 8
 
         // logo "schèi Wallet" at the top, in the sky
         Item {
             Layout.fillWidth: true
-            Layout.preferredHeight: mainView.ehTop + 96   // T19: the movements start under the hills (title fully visible)
+            Layout.preferredHeight: mainView.ehTop + mainView.ehHeadH
             Image {
                 id: ehLogo
                 x: 16
-                y: mainView.ehTop + 6
+                y: mainView.ehTop + 7
                 width: 92
                 height: 92 * 345 / 756
                 source: Qt.resolvedUrl('../../icons/eh_logo_wine.png')
@@ -349,153 +374,115 @@ Item {
             }
         }
 
-        // expert option "two buttons": the card stays wide, above the buttons
-        EhBalanceCard {
-            visible: app.ehOption('buttons') && !app.ehOption('multi')
-            showGear: true
-            Layout.fillWidth: true
-            Layout.leftMargin: 16
-            Layout.rightMargin: 16
-        }
-        EhWalletCarousel {
-            visible: app.ehOption('buttons') && app.ehOption('multi')
-            Layout.fillWidth: true
-        }
-
-        // expert option: two big buttons instead of the slide bar
+        // expert option "two buttons instead of the coin" (owner 13/11): as the classic home, with
+        // SEND and RECEIVE (stitched, 60 high) under the movements and the same wallet card below
         ColumnLayout {
             visible: app.ehOption('buttons')
             Layout.fillWidth: true
             Layout.fillHeight: true
-            Layout.leftMargin: 16
-            Layout.rightMargin: 16
+            Layout.leftMargin: 14
+            Layout.rightMargin: 14
             spacing: 10
-            // owner rule: stitched buttons; the stitching is drawn over the shared EhPillButton
-            Item {
-                Layout.fillWidth: true
-                Layout.preferredHeight: 92
-                EhPillButton {
-                    anchors.fill: parent
-                    text: qsTr('RECEIVE')
-                    fontSize: 26
-                    color: '#45541f'; textColor: '#ffffff'; tileColor: '#e6e9cf'; outlined: false
-                    onClicked: Daemon.currentWallet.ehReceive()
-                    Image { anchors.centerIn: parent; source: Qt.resolvedUrl('../../icons/eh_rx_olive.svg'); sourceSize.width: 38; sourceSize.height: 38 }
-                }
-                EhDashedBorder { anchors.fill: parent; inset: 6; radius: 40; lineWidth: 1.6; color: '#e3c57e' }
-            }
-            Item {
-                visible: Daemon.currentWallet && !Daemon.currentWallet.isWatchOnly
-                Layout.fillWidth: true
-                Layout.preferredHeight: 92
-                EhPillButton {
-                    anchors.fill: parent
-                    text: qsTr('SEND')
-                    fontSize: 26
-                    color: '#5e1a33'; textColor: '#ffffff'; tileColor: '#d9b25a'; outlined: false
-                    onClicked: openSendDialog()
-                    Image { anchors.centerIn: parent; source: Qt.resolvedUrl('../../icons/eh_tx_wine.svg'); sourceSize.width: 38; sourceSize.height: 38 }
-                }
-                EhDashedBorder { anchors.fill: parent; inset: 6; radius: 40; lineWidth: 1.6; color: '#e3c57e' }
-            }
             EhHistoryPanel {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
             }
+            EhStitchButton {
+                visible: Daemon.currentWallet && !Daemon.currentWallet.isWatchOnly
+                kind: 'wine'
+                text: qsTr('SEND')
+                icon: 'eh_tx_gold.svg'
+                iconSize: 28
+                onClicked: openSendDialog()
+            }
+            EhStitchButton {
+                kind: 'olive'
+                text: qsTr('RECEIVE')
+                icon: 'eh_rx_white.svg'
+                iconSize: 28
+                onClicked: Daemon.currentWallet.ehReceive()
+            }
+            ReceiveIn { Layout.topMargin: -2 }
         }
 
         // T37/T38 (owner 2026-11-11, preview portafoglio-si-apre.html): on top the movements on the
         // left and the coin's rail on the right (SEND at the top); at the bottom the wallet, as wide
         // as the page. "pull down RECEIVE" is right above the wallet: pulling the coin down OPENS
         // the wallet (the card leans forward and the inside rises), and the coin goes in.
-        ColumnLayout {
+        // Owner 13/11: with more wallets too the rail comes down to the wallet; "receive in" goes
+        // under the movements, left of the rail.
+        RowLayout {
             visible: !app.ehOption('buttons')
+            z: 2     // review: the coin stays above the wallet that opens under it
             Layout.fillWidth: true
             Layout.fillHeight: true
-            spacing: 0
-
-            RowLayout {
-                z: 2     // review: the coin stays above the wallet that opens under it
+            Layout.leftMargin: 14
+            Layout.rightMargin: 6
+            spacing: 4
+            ColumnLayout {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                Layout.leftMargin: 14
-                Layout.rightMargin: 6
+                // the list makes room for the inside of the wallet that rises when it opens
+                Layout.bottomMargin: 74 * slideBar.receiveProgress
                 spacing: 4
                 EhHistoryPanel {
                     glass: true
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    // the list makes room for the inside of the wallet that rises when it opens
-                    Layout.bottomMargin: 74 * slideBar.receiveProgress
                 }
-                EhSlideBar {
-                    id: slideBar
-                    Layout.preferredWidth: 88
-                    Layout.fillHeight: true
-                    sendEnabled: Daemon.currentWallet && !Daemon.currentWallet.isWatchOnly
-                    onSendRequested: openSendDialog()
-                    onReceiveRequested: {
-                        // same address until money arrives on it (see qewallet.ehReceive)
-                        Daemon.currentWallet.ehReceive()
-                    }
+                ReceiveIn {
+                    opacity: Math.max(0, 1 - 3 * slideBar.receiveProgress)   // steps aside while the wallet opens
                 }
             }
+            EhSlideBar {
+                id: slideBar
+                Layout.preferredWidth: 88
+                Layout.fillHeight: true
+                sendEnabled: Daemon.currentWallet && !Daemon.currentWallet.isWatchOnly
+                onSendRequested: openSendDialog()
+                onReceiveRequested: {
+                    // same address until money arrives on it (see qewallet.ehReceive)
+                    Daemon.currentWallet.ehReceive()
+                }
+            }
+        }
 
-            // more wallets: which one receives
-            Label {
-                visible: app.ehOption('multi') && Daemon.currentWallet !== null
-                z: 3
-                opacity: Math.max(0, 1 - 3 * slideBar.receiveProgress)   // steps aside while the wallet opens
-                Layout.fillWidth: true
-                Layout.rightMargin: 100
-                elide: Text.ElideRight
-                Layout.leftMargin: 22
-                Layout.topMargin: 2
-                textFormat: Text.StyledText
-                font.family: BodyFont ? BodyFont : font.family
-                font.pixelSize: 16
-                color: '#5a4c44'
-                text: qsTr('receive in:') + ' <b><font color="#5e1a33">' + (Daemon.currentWallet ? app.ehWalletName() : '') + '</font></b>'
-            }
-
-            // one wallet: the card with its inside behind it
-            Item {
-                visible: !app.ehOption('multi')
-                Layout.fillWidth: true
-                Layout.leftMargin: 19    // room for the strap on the left edge of the card
-                Layout.rightMargin: 14
-                Layout.topMargin: 4
-                Layout.bottomMargin: 8
-                Layout.preferredHeight: homeCard.implicitHeight
-                EhWalletInside {
-                    anchors.fill: parent
-                    baseColor: homeCard.baseColor
-                    openK: slideBar.receiveProgress
-                }
-                EhBalanceCard {
-                    id: homeCard
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    showGear: true
-                    compact: true
-                    strapLeft: true
-                    // T37: the front comes down from the top (opening), the inside appears above it
-                    transform: Scale {
-                        origin.y: homeCard.height
-                        yScale: 1 - 0.22 * slideBar.receiveProgress
-                    }
-                }
-            }
-            EhWalletCarousel {
-                visible: app.ehOption('multi')
-                compact: true
-                strapLeft: true
+        // one wallet: the card with its inside behind it (same card with the two buttons)
+        Item {
+            visible: !app.ehOption('multi')
+            Layout.fillWidth: true
+            Layout.leftMargin: 19    // room for the strap on the left edge of the card
+            Layout.rightMargin: 12
+            Layout.topMargin: 3      // 14 px between the movements sheet and the wallet
+            Layout.preferredHeight: homeCard.implicitHeight
+            EhWalletInside {
+                anchors.fill: parent
+                baseColor: homeCard.baseColor
                 openK: slideBar.receiveProgress
-                Layout.fillWidth: true
-                Layout.leftMargin: 19
-                Layout.rightMargin: 6
-                Layout.bottomMargin: 6
             }
+            EhBalanceCard {
+                id: homeCard
+                anchors.left: parent.left
+                anchors.right: parent.right
+                showGear: true
+                strapLeft: true
+                // T37: the front comes down from the top (opening), the inside appears above it
+                transform: Scale {
+                    origin.y: homeCard.height
+                    yScale: 1 - 0.22 * slideBar.receiveProgress
+                }
+            }
+        }
+        EhWalletCarousel {
+            visible: app.ehOption('multi')
+            compact: true
+            strapLeft: true
+            openK: slideBar.receiveProgress
+            Layout.fillWidth: true
+            Layout.leftMargin: 19
+            Layout.rightMargin: 6
+            Layout.topMargin: 3
+            Layout.bottomMargin: -6
         }
     }
 

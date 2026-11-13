@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 40" width="60" height="40">
+  <!-- Venetian flag, simplified: the gold winged lion of Saint Mark on red (Schèi, owner 13/11) -->
+  <rect width="60" height="40" fill="#a3192c"/>
+  <g fill="#e8c35a">
+    <path d="M27 19C29 9 37 4 46 3C44 8 42 11 39 13C42 13 44 12 46 11C44 15 40 18 35 20Z"/>
+    <path d="M17 21C21 18 37 18 43 21C46 23 45 28 40 28L22 28C18 28 15 24 17 21Z"/>
+    <circle cx="16" cy="18" r="6.5"/>
+    <rect x="19" y="26" width="3.6" height="9" rx="1.2"/>
+    <rect x="25" y="26" width="3.6" height="9" rx="1.2"/>
+    <rect x="34" y="26" width="3.6" height="9" rx="1.2"/>
+    <rect x="39.5" y="25" width="3.6" height="10" rx="1.2"/>
+  </g>
+  <path d="M43 22C50 20 52 13 48 10" fill="none" stroke="#e8c35a" stroke-width="2.4" stroke-linecap="round"/>
+  <circle cx="16" cy="18" r="9" fill="none" stroke="#e8c35a" stroke-width="1.4"/>
+  <circle cx="13.5" cy="17" r="1.2" fill="#a3192c"/>
+</svg>

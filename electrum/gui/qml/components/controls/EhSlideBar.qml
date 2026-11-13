@@ -80,8 +80,8 @@ Item {
     // the dark slot where the coin and the arrows sit
     Rectangle {
         id: slot
-        readonly property real top0: topCol.y + topCol.height + 6
-        readonly property real bot0: botCol.y - 6
+        readonly property real top0: topCol.y + topCol.height + 6 + pushL.height + 3
+        readonly property real bot0: botCol.y - 6 - pullL.height - 3
         readonly property real h: Math.max(root.coinSize * 0.7, Math.min(182, bot0 - top0))
         anchors.horizontalCenter: parent.horizontalCenter
         y: Math.max(top0, Math.min(bot0 - h, root.height / 2 - h / 2))
@@ -127,28 +127,60 @@ Item {
             sourceSize.height: 38
         }
         Label {
+            // owner 13/11 (home-ritocchi.html): inside the stitching in every language
             anchors.horizontalCenter: parent.horizontalCenter
-            width: 74
+            width: root.wordW
+            height: 26
             horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
             text: qsTr('SEND')
             font.family: root.serif
             font.weight: Font.ExtraBold
             font.pixelSize: 20
-            font.letterSpacing: 0.5
             fontSizeMode: Text.HorizontalFit
-            minimumPixelSize: 13
+            minimumPixelSize: 12
             color: '#fbeccb'
         }
-        Label {
-            anchors.horizontalCenter: parent.horizontalCenter
-            width: 72
-            horizontalAlignment: Text.AlignHCenter
-            text: root.sendEnabled ? qsTr('push up') : qsTr('not available')
-            font.pixelSize: root.sendEnabled ? 16 : 13
-            fontSizeMode: Text.HorizontalFit
-            minimumPixelSize: 10
-            color: '#ffffff'
-        }
+    }
+    // the room inside the stitching for the words (leather 6 px + stitching + a small gap each side)
+    readonly property real wordW: Math.max(40, width - 26)
+    // owner 13/11: "push up" right above the coin's slot, "pull down" right under it
+    Label {
+        id: pushL
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.bottom: slot.top
+        anchors.bottomMargin: 3
+        width: root.wordW + (root.sendEnabled ? 0 : 10)
+        // watch-only: "not available" may take two short lines
+        height: root.sendEnabled ? 22 : 36
+        horizontalAlignment: Text.AlignHCenter
+        verticalAlignment: Text.AlignVCenter
+        opacity: root.sendEnabled ? Math.max(0, 1 - Math.abs(coin.offset) / 40) : 0.5
+        text: root.sendEnabled ? qsTr('push up') : qsTr('not available')
+        font.family: root.body
+        font.pixelSize: root.sendEnabled ? 16 : 14
+        wrapMode: root.sendEnabled ? Text.NoWrap : Text.WordWrap
+        lineHeight: 0.95
+        fontSizeMode: root.sendEnabled ? Text.HorizontalFit : Text.Fit
+        minimumPixelSize: 11
+        color: '#ffffff'
+    }
+    Label {
+        id: pullL
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.top: slot.bottom
+        anchors.topMargin: 3
+        width: root.wordW
+        height: 22
+        horizontalAlignment: Text.AlignHCenter
+        verticalAlignment: Text.AlignVCenter
+        opacity: Math.max(0, 1 - Math.abs(coin.offset) / 40)
+        text: qsTr('pull down')
+        font.family: root.body
+        font.pixelSize: 16
+        fontSizeMode: Text.HorizontalFit
+        minimumPixelSize: 11
+        color: '#ffffff'
     }
 
     // bottom end: RICEVI, right above the wallet (T37: the wallet itself is the target)
@@ -161,25 +193,16 @@ Item {
         opacity: Math.max(0, 1 - root.receiveProgress * 1.6)
         Label {
             anchors.horizontalCenter: parent.horizontalCenter
-            width: 72
+            width: root.wordW
+            height: 26
             horizontalAlignment: Text.AlignHCenter
-            text: qsTr('pull down')
-            font.pixelSize: 16
-            fontSizeMode: Text.HorizontalFit
-            minimumPixelSize: 10
-            color: '#ffffff'
-        }
-        Label {
-            anchors.horizontalCenter: parent.horizontalCenter
-            width: 74
-            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
             text: qsTr('RECEIVE')
             font.family: root.serif
             font.weight: Font.ExtraBold
             font.pixelSize: 20
-            font.letterSpacing: 0.5
             fontSizeMode: Text.HorizontalFit
-            minimumPixelSize: 13
+            minimumPixelSize: 12
             color: '#fbeccb'
         }
         Image {
@@ -228,8 +251,11 @@ Item {
         }
     }
 
+    // short column (small phone, more wallets): no room for the arrows round the coin, they
+    // would cover "push up" / "pull down"
+    readonly property bool roomyArrows: slot.h >= root.coinSize + 70
     Chevrons {
-        visible: root.sendEnabled
+        visible: root.sendEnabled && root.roomyArrows
         // while the coin travels the arrows step aside (they would go over the hills / the wallet)
         opacity: Math.max(0, 1 - Math.abs(coin.offset) / 40)
         up: true
@@ -239,6 +265,7 @@ Item {
         anchors.bottomMargin: 6
     }
     Chevrons {
+        visible: root.roomyArrows
         opacity: Math.max(0, 1 - Math.abs(coin.offset) / 40)
         up: false
         tint: '#e3c57e'

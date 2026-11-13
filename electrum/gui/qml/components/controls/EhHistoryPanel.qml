@@ -49,11 +49,15 @@ Item {
         Item {
             id: head
             x: 12
-            width: parent.width - 24
-            height: 52
+            width: parent.width - 28
+            height: 54
             Label {
                 anchors.left: parent.left
                 anchors.verticalCenter: parent.verticalCenter
+                // narrow sheet (small phone): smaller, never under "See all"
+                width: Math.min(implicitWidth, (seeAll.visible ? seeAll.x - 8 : parent.width))
+                fontSizeMode: Text.HorizontalFit
+                minimumPixelSize: 16
                 text: qsTr('Movements')
                 font.family: root.serif
                 font.weight: Font.ExtraBold
@@ -113,7 +117,7 @@ Item {
             anchors.fill: parent
             anchors.topMargin: head.height
             anchors.leftMargin: 12
-            anchors.rightMargin: 12
+            anchors.rightMargin: 16
             clip: true
             model: Daemon.currentWallet ? Daemon.currentWallet.historyModel : null
             interactive: contentHeight > height
@@ -122,7 +126,7 @@ Item {
                 required property var model
                 required property int index
                 width: ListView.view.width
-                height: 64
+                height: Math.max(64, leftCol.implicitHeight + 16)
                 readonly property bool incoming: model.value.satsInt >= 0
                 // only bitcoin: always 8 decimals, sign in front ("+0,00300000 BTC")
                 function btc8() {
@@ -200,6 +204,7 @@ Item {
                 }
                 // left: what (or the note) and when (or "unconfirmed")
                 Column {
+                    id: leftCol
                     anchors.left: parent.left
                     anchors.leftMargin: 48
                     anchors.right: row.btcOnly ? parent.right : amtCol.left
@@ -212,7 +217,7 @@ Item {
                         Image {
                             id: penI
                             visible: row.note !== ''
-                            anchors.verticalCenter: parent.verticalCenter
+                            y: 4
                             source: Qt.resolvedUrl('../../../icons/eh_pen_wine.svg')
                             sourceSize.width: 14
                             sourceSize.height: 14
@@ -222,10 +227,14 @@ Item {
                             x: penI.visible ? 19 : 0
                             // only bitcoin: the date stays on this line, the amount goes under it
                             width: parent.width - x - (row.btcOnly ? whenBox.width + 6 : 0)
+                            // owner 13/11: a long note goes on two lines (then "…")
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            maximumLineCount: 2
+                            lineHeight: 1.05
                             elide: Text.ElideRight
                             text: row.note !== '' ? row.note : row.what
                             font.family: root.body
-                            font.pixelSize: 17
+                            font.pixelSize: 16
                             font.bold: true
                             color: row.note !== '' ? '#5e1a33' : '#2a2220'
                         }
@@ -233,9 +242,9 @@ Item {
                             id: whenBox
                             visible: row.btcOnly
                             anchors.right: parent.right
-                            anchors.verticalCenter: parent.verticalCenter
+                            anchors.top: parent.top
                             width: visible ? (row.waiting ? pill1.width : when1.implicitWidth) : 0
-                            height: parent.height
+                            height: 22
                             Label {
                                 id: when1
                                 visible: !row.waiting

@@ -44,7 +44,8 @@ ColumnLayout {
         // the open wallet's card is taller with the pills "spendable / blocked" and "arriving":
         // room from the data, NOT from the card's own height (that made an endless layout loop)
         // owner 12/11: the home card has one fixed height (pills next to the cash button)
-        Layout.preferredHeight: root.compact ? 214
+        // owner 13/11 (home-ritocchi.html): the home card is 184 high, always
+        Layout.preferredHeight: root.compact || root.strapLeft ? 184
                                              : (app.ehOption('coins') && !app.ehBtcOnly() && app.ehHasCash() ? 188 : 140)
                                                + (Daemon.currentWallet && Daemon.currentWallet.frozenBalance.satsInt > 0 ? 12 : 0)
                                                + (Daemon.currentWallet && Daemon.currentWallet.ehArriving.satsInt > 0 ? 30 : 0)
