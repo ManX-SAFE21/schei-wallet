@@ -1,6 +1,8 @@
 // Easy Heirs (schèi): "Quali monete fondere?". Pick by hand the gold coins
 // (UTXOs) the payment will melt; blocked coins are not shown. Empty choice =
 // the app chooses by itself (Electrum's normal coin selection).
+// "Bottega" (WP5): parchment page, "Needed / You chose" on a paper sheet, the list is
+// one paper sheet (delegates draw its sides), stitched buttons.
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
@@ -9,12 +11,13 @@ import QtQuick.Controls.Material
 import org.electrum 1.0
 
 import "controls"
+import "controls/EhStyle.js" as S
 
 ElDialog {
     id: root
     Material.theme: Material.Light
-    Material.foreground: '#2a2220'
-    Material.accent: '#45541f'
+    Material.foreground: S.ink
+    Material.accent: S.olive
 
     property var finalizer
     property real needSats: 0          // amount + current sending cost (real: no 21 BTC limit)
@@ -27,7 +30,7 @@ ElDialog {
     topPadding: 0
     header: null
     needsSystemBarPadding: false
-    background: Rectangle { color: '#faf7ef' }
+    background: Rectangle { color: S.parch }
 
     function satsAmount(s) { return Config.unitsToSats((s / 100000000).toFixed(8)) }
     function toggle(outpoint, sats) {
@@ -62,92 +65,100 @@ ElDialog {
     }
     property var preset: []
 
-    EhGlow { tone: 'gold'; x: -root.width * 0.3; y: 40; width: root.width * 1.6; height: 380 }
+    component Money: Label {
+        color: S.wineDark
+        font.family: SerifFont ? SerifFont : font.family
+        font.weight: Font.ExtraBold
+        font.pixelSize: 22
+    }
+    component Key: Label {
+        Layout.fillWidth: true
+        color: S.muted
+        font.family: BodyFont ? BodyFont : font.family
+        font.pixelSize: 17
+        wrapMode: Text.WordWrap
+    }
 
     ColumnLayout {
         anchors.fill: parent
         anchors.leftMargin: 16
         anchors.rightMargin: 16
         anchors.bottomMargin: 14 + app.navigationBarHeight
-        spacing: 8
+        spacing: 10
 
-        EhPageTop { title: ''; Layout.leftMargin: 6; Layout.rightMargin: 6; Layout.bottomMargin: -14 }
-        Label {
-            text: '‹ ' + qsTr('Back')
-            color: '#5e1a33'; font.pixelSize: 17; font.bold: true
-            TapHandler { margin: 10; onTapped: root.doReject() }
-        }
+        EhPageTop { title: ''; Layout.leftMargin: 6; Layout.rightMargin: 6 }
+        // the back link and, on its right, the "i" (so the title keeps the whole width)
         RowLayout {
             Layout.fillWidth: true
-            spacing: 8
-            Label {
+            Layout.topMargin: -14
+            spacing: 10
+            EhBackLink {
+                Layout.topMargin: 0
                 Layout.fillWidth: true
-                wrapMode: Text.WordWrap
-                text: qsTr('Which coins to melt?')
-                color: '#3f0f21'
-                font.family: TitleFont ? TitleFont : font.family
-                font.weight: Font.Black
-                font.pixelSize: 24
+                onClicked: root.doReject()
             }
             // owner 12/11: "how the gold coins work" (the crucible) opens from here
             Rectangle {
-                Layout.preferredWidth: 34
-                Layout.preferredHeight: 34
-                radius: 17
-                color: howT.pressed ? '#2f3a12' : '#45541f'
-                Label { anchors.centerIn: parent; text: 'i'; color: '#ffffff'; font.pixelSize: 19; font.bold: true; font.family: 'serif' }
+                Layout.alignment: Qt.AlignVCenter
+                Layout.preferredWidth: 40
+                Layout.preferredHeight: 40
+                radius: 20
+                color: howT.pressed ? S.sand : 'transparent'
+                border.width: 2.5
+                border.color: S.olive
+                Label { anchors.centerIn: parent; text: 'i'; color: S.olive; font.pixelSize: 22; font.bold: true; font.family: 'serif' }
                 TapHandler { id: howT; margin: 8; onTapped: app.ehOpenPage(Qt.resolvedUrl('EhCoinsHowPage.qml')) }
             }
         }
+        EhTitle {
+            Layout.topMargin: -6
+            text: qsTr('Which coins to melt?')
+        }
 
         // needed / chosen
-        Rectangle {
-            Layout.fillWidth: true
-            Layout.preferredHeight: sumCol.implicitHeight + 22
-            radius: 16
-            color: Qt.rgba(1, 1, 1, 0.75)
-            border.width: 2
-            border.color: '#ecd49a'
-            ColumnLayout {
-                id: sumCol
-                x: 12; y: 11
-                width: parent.width - 24
-                spacing: 4
-                RowLayout {
-                    Layout.fillWidth: true
-                    Label { text: qsTr('Needed'); font.pixelSize: 14; color: '#6b5d55' }
-                    Item { Layout.fillWidth: true }
-                    Label { text: app.ehMoney(root.satsAmount(root.needSats)); font.pixelSize: 15; font.bold: true }
-                }
-                RowLayout {
-                    Layout.fillWidth: true
-                    Label { text: qsTr('You chose'); font.pixelSize: 14; color: '#6b5d55' }
-                    Item { Layout.fillWidth: true }
-                    Label { text: app.ehMoney(root.satsAmount(root.chosenSats)) + (root.enough ? ' ✓' : '')
-                            font.pixelSize: 15; font.bold: true; color: root.enough ? '#45541f' : '#2a2220' }
-                }
+        EhSheet {
+            topPadding: 10
+            bottomPadding: 12
+            spacing: 6
+            RowLayout {
+                Layout.fillWidth: true
+                Key { text: qsTr('Needed') }
+                Money { text: app.ehMoney(root.satsAmount(root.needSats)) }
+            }
+            RowLayout {
+                Layout.fillWidth: true
+                Key { text: qsTr('You chose') }
+                Money { text: app.ehMoney(root.satsAmount(root.chosenSats)) + (root.enough ? ' ✓' : '')
+                        color: root.enough ? S.oliveInk : S.wineDark }
+            }
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 12
+                Layout.topMargin: 2
+                radius: 6
+                color: S.sand
                 Rectangle {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 12
+                    height: parent.height
                     radius: 6
-                    color: '#ece4d2'
-                    Rectangle {
-                        height: parent.height
-                        radius: 6
-                        width: parent.width * Math.min(1, root.needSats > 0 ? root.chosenSats / root.needSats : 0)
-                        color: root.enough ? '#45541f' : '#d9b25a'
-                    }
+                    width: parent.width * Math.min(1, root.needSats > 0 ? root.chosenSats / root.needSats : 0)
+                    color: root.enough ? S.olive : S.gold
                 }
-                Label {
-                    Layout.fillWidth: true
-                    wrapMode: Text.WordWrap
-                    textFormat: Text.StyledText
-                    font.pixelSize: 13
-                    color: root.enough ? '#4a4038' : '#b3261e'
-                    text: root.enough
-                          ? qsTr('The change, <b>%1</b>, comes back to you as a new coin.').arg(app.ehMoney(root.satsAmount(root.chosenSats - root.needSats)))
-                          : qsTr('Still missing: <b>%1</b>').arg(app.ehMoney(root.satsAmount(root.needSats - root.chosenSats)))
-                }
+            }
+            Label {
+                visible: root.enough
+                Layout.fillWidth: true
+                wrapMode: Text.WordWrap
+                textFormat: Text.StyledText
+                font.family: BodyFont ? BodyFont : font.family
+                font.pixelSize: 16
+                color: S.ink
+                text: root.enough ? qsTr('The change, <b>%1</b>, comes back to you as a new coin.').arg(app.ehMoney(root.satsAmount(root.chosenSats - root.needSats))) : ''
+            }
+            EhInfoBox {
+                visible: !root.enough
+                Layout.topMargin: 2
+                kind: 'danger'
+                text: !root.enough ? qsTr('Still missing: <b>%1</b>').arg(app.ehMoney(root.satsAmount(root.needSats - root.chosenSats))) : ''
             }
         }
 
@@ -157,31 +168,69 @@ ElDialog {
             Layout.fillHeight: true
             clip: true
             model: Daemon.currentWallet.addressCoinModel.filterModel
+            // rounded top and bottom of the sheet
+            header: Item {
+                width: list.width
+                height: 14
+                clip: true
+                Rectangle { width: parent.width; height: 40; radius: 18; color: S.paper; border.width: 1.5; border.color: S.edge }
+            }
+            footer: Item {
+                width: list.width
+                height: 17
+                clip: true
+                Rectangle { y: -23; width: parent.width; height: 40; radius: 18; color: S.edgeShadow }
+                Rectangle { y: -26; width: parent.width; height: 40; radius: 18; color: S.paper; border.width: 1.5; border.color: S.edge }
+            }
             delegate: Item {
                 id: d
                 required property var model
+                required property int index
                 readonly property bool on: root.chosen[d.model.outpoint] !== undefined
                 width: ListView.view.width
                 // blocked coins are not offered
                 visible: d.model.outpoint !== undefined && d.model.outpoint !== '' && !d.model.held && !d.model.addr_held
-                height: visible ? Math.max(62, dRow.implicitHeight + 14) : 0
+                height: visible ? Math.max(70, dRow.implicitHeight + 20) : 0
+                // the sheet's paper and its two side edges
+                Rectangle { anchors.fill: parent; color: S.paper }
+                Rectangle { x: 0; width: 1.5; height: parent.height; color: S.edge }
+                Rectangle { x: parent.width - 1.5; width: 1.5; height: parent.height; color: S.edge }
+                // chosen: wine border round the row; pressed: sand
                 Rectangle {
                     anchors.fill: parent
-                    color: dTap.pressed ? Qt.rgba(1, 1, 1, 0.9) : Qt.rgba(1, 1, 1, 0.66)
-                    Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: Qt.rgba(0.16, 0.13, 0.13, 0.07) }
+                    anchors.leftMargin: 6; anchors.rightMargin: 6
+                    anchors.topMargin: 3; anchors.bottomMargin: 3
+                    radius: 12
+                    color: dTap.pressed ? Qt.rgba(0.902, 0.847, 0.714, 0.5) : 'transparent'
+                    border.width: d.on ? 2.5 : 0
+                    border.color: S.wine
+                }
+                EhDotLine {
+                    visible: !d.on && d.index < list.count - 1
+                    x: 12
+                    width: parent.width - 24
+                    anchors.bottom: parent.bottom
                 }
                 RowLayout {
                     id: dRow
-                    anchors.fill: parent
-                    anchors.leftMargin: 12
-                    anchors.rightMargin: 12
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.leftMargin: 16
+                    anchors.rightMargin: 16
                     spacing: 10
+                    // the tick: empty paper box, or brass with the tick when chosen
                     Rectangle {
-                        Layout.preferredWidth: 28; Layout.preferredHeight: 28; radius: 8
-                        color: d.on ? '#45541f' : 'transparent'
-                        border.width: 2.5
-                        border.color: d.on ? '#45541f' : '#b3a894'
-                        Label { anchors.centerIn: parent; visible: d.on; text: '✓'; color: '#ffffff'; font.pixelSize: 17; font.bold: true }
+                        Layout.preferredWidth: 32; Layout.preferredHeight: 32; radius: 9
+                        color: S.paper
+                        border.width: d.on ? 2 : 2.5
+                        border.color: d.on ? S.brassRing : S.switchOff
+                        gradient: Gradient {
+                            GradientStop { position: 0.0; color: d.on ? S.brassLight : S.paper }
+                            GradientStop { position: 0.55; color: d.on ? S.brass : S.paper }
+                            GradientStop { position: 1.0; color: d.on ? S.brassDark : S.paper }
+                        }
+                        Label { anchors.centerIn: parent; visible: d.on; text: '✓'; color: S.wineDark; font.pixelSize: 20; font.bold: true }
                     }
                     Image {
                         readonly property int sats: d.model.amount ? d.model.amount.satsInt : 0
@@ -191,14 +240,23 @@ ElDialog {
                     }
                     ColumnLayout {
                         Layout.fillWidth: true
-                        spacing: 0
-                        Label { text: d.model.amount ? app.ehMoney(d.model.amount) : ''; font.pixelSize: 16; font.bold: true }
+                        spacing: 1
+                        Label {
+                            Layout.fillWidth: true
+                            text: d.model.amount ? app.ehMoney(d.model.amount) : ''
+                            color: S.wineDark
+                            font.family: SerifFont ? SerifFont : font.family
+                            font.weight: Font.ExtraBold
+                            font.pixelSize: 21
+                            wrapMode: Text.WrapAnywhere
+                        }
                         Label {
                             Layout.fillWidth: true
                             elide: Text.ElideRight
-                            font.pixelSize: 13
+                            font.family: BodyFont ? BodyFont : font.family
+                            font.pixelSize: 16
                             font.italic: true
-                            color: d.model.label ? '#5e1a33' : '#6b5d55'
+                            color: d.model.label ? S.wine : S.muted
                             text: d.model.label ? d.model.label : qsTr('no note')
                         }
                     }
@@ -209,23 +267,40 @@ ElDialog {
         Label {
             Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter
-            font.pixelSize: 12
-            color: '#6b5d55'
+            wrapMode: Text.WordWrap
+            font.family: BodyFont ? BodyFont : font.family
+            font.pixelSize: 16
+            color: S.muted
             text: qsTr('Blocked coins do not appear here.')
         }
-        Label {
+        // text link (not a button): 17 bold wine, 2 px underline, 48 px to the finger
+        Item {
             Layout.fillWidth: true
-            text: '🔒 ' + qsTr('Block coins and addresses') + ' ›'
-            color: '#5e1a33'
-            font.pixelSize: 15
-            font.bold: true
-            font.underline: true
-            TapHandler { margin: 8; onTapped: app.ehOpenCoins() }
+            Layout.preferredHeight: 48
+            Layout.topMargin: -8
+            Layout.bottomMargin: -4
+            RowLayout {
+                id: blkL
+                anchors.verticalCenter: parent.verticalCenter
+                spacing: 6
+                opacity: blkT.pressed ? 0.6 : 1
+                Image { source: Qt.resolvedUrl('../../icons/eh_lock.svg'); sourceSize.width: 20; sourceSize.height: 20 }
+                Label {
+                    id: blkTxt
+                    text: qsTr('Block coins and addresses') + ' ›'
+                    color: S.wine
+                    font.family: BodyFont ? BodyFont : font.family
+                    font.pixelSize: 17
+                    font.bold: true
+                    Rectangle { y: parent.height + 1; width: parent.width; height: 2; color: S.wine }
+                }
+            }
+            TapHandler { id: blkT; onTapped: app.ehOpenCoins() }
         }
-        EhNextButton {
-            Layout.fillWidth: true
+        EhStitchButton {
+            kind: 'wine'
+            endIcon: 'next'
             enabled: root.enough
-            opacity: enabled ? 1 : 0.45
             text: qsTr('Use these coins')
             onClicked: {
                 var list = []
@@ -234,17 +309,14 @@ ElDialog {
                 root.doAccept()
             }
         }
-        EhPillButton {
+        EhStitchButton {
+            kind: 'paper'
+            icon: 'eh_undo.svg'
             text: qsTr('Choose by itself (normal)')
-            color: '#ffffff'
-            textColor: '#2a2220'
-            tileColor: '#efe6d3'
-            fontSize: 17
             onClicked: {
                 if (root.finalizer) root.finalizer.ehCoins = []
                 root.doAccept()
             }
-            Image { anchors.centerIn: parent; source: Qt.resolvedUrl('../../icons/eh_undo.svg'); sourceSize.width: 24; sourceSize.height: 24 }
         }
     }
 }

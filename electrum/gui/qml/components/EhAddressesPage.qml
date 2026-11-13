@@ -2,6 +2,7 @@
 // Every address is a "pocket" of the wallet and can hold more coins (UTXO).
 // The switch blocks the whole address (Electrum's "freeze address"): none of its
 // coins is used to pay, also the ones that will arrive later.
+// "Bottega" (WP5): parchment page, one paper sheet per group, dotted lines between rows.
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
@@ -10,12 +11,13 @@ import QtQuick.Controls.Material
 import org.electrum 1.0
 
 import "controls"
+import "controls/EhStyle.js" as S
 
 Item {
     id: page
     property bool ehHideHeader: true
     Material.theme: Material.Light
-    Material.foreground: '#2a2220'
+    Material.foreground: S.ink
 
     property var items: []
     function reload() { page.items = Daemon.currentWallet ? Daemon.currentWallet.ehAddresses() : [] }
@@ -29,9 +31,11 @@ Item {
         var txid = i > 0 ? outpoint.substring(0, i) : outpoint
         return txid.substring(0, 4) + '…' + txid.slice(-4) + (i > 0 ? outpoint.substring(i) : '')
     }
+    // short address: prefix, first 4 … last 4, the two groups of 4 highlighted
     function shortAddr(a) {
         var p = app.ehAddressParts(a)
-        return (p.prefix !== '' ? p.prefix + ' ' : '') + '<u>' + p.first + '</u> … <u>' + p.last + '</u>'
+        var hl = function (s) { return '<span style="background-color:' + S.highlight + '"><font color="' + S.wineDark + '">' + s + '</font></span>' }
+        return (p.prefix !== '' ? p.prefix + ' ' : '') + hl(p.first) + ' … ' + hl(p.last)
     }
     function showBlockInfo() {
         app.ehInfoDialog.createObject(app, {
@@ -43,8 +47,7 @@ Item {
         }).open()
     }
 
-    Rectangle { anchors.fill: parent; color: '#faf7ef' }
-    EhGlow { tone: 'gold'; x: -page.width * 0.3; y: 40; width: page.width * 1.6; height: 380 }
+    Rectangle { anchors.fill: parent; color: S.parch }
 
     Flickable {
         anchors.fill: parent
@@ -55,46 +58,36 @@ Item {
             id: col
             x: 16
             width: parent.width - 32
-            spacing: 8
+            spacing: 10
 
             EhPageTop { title: ''; Layout.leftMargin: 6; Layout.rightMargin: 6 }
-            Label {
-                Layout.topMargin: -14
-                text: '‹ ' + qsTr('Receive')
-                color: '#5e1a33'; font.pixelSize: 17; font.bold: true
-                TapHandler { margin: 10; onTapped: app.stack.pop() }
-            }
-            Label {
-                Layout.fillWidth: true
-                text: qsTr('Your addresses')
-                color: '#3f0f21'
-                font.family: TitleFont ? TitleFont : font.family
-                font.weight: Font.Black
-                font.pixelSize: 30
-                wrapMode: Text.WordWrap
-            }
-            Rectangle {
-                Layout.fillWidth: true
-                Layout.preferredHeight: tipRow.implicitHeight + 20
-                radius: 14
-                color: '#fbf0d6'
+            EhBackLink { text: '‹ ' + qsTr('Receive'); onClicked: app.stack.pop() }
+            EhTitle { Layout.topMargin: -6; text: qsTr('Your addresses') }
+
+            // what an address is: the "i" opens the long explanation
+            EhInfoBox {
+                kind: 'warn'
+                showIcon: false
                 RowLayout {
-                    id: tipRow
-                    x: 12; y: 10
-                    width: parent.width - 24
-                    spacing: 8
+                    Layout.fillWidth: true
+                    spacing: 10
                     Label {
                         Layout.fillWidth: true
                         wrapMode: Text.WordWrap
                         textFormat: Text.StyledText
-                        font.pixelSize: 14
+                        color: S.ink
+                        font.family: BodyFont ? BodyFont : font.family
+                        font.pixelSize: 16
+                        lineHeight: 1.15
                         text: qsTr('Every address is a "pocket" of the wallet and can hold <b>more coins</b>. If you block an address, the app uses none of its coins.')
                     }
                     Rectangle {
-                        Layout.preferredWidth: 26; Layout.preferredHeight: 26; radius: 13
+                        Layout.preferredWidth: 32; Layout.preferredHeight: 32; radius: 16
                         Layout.alignment: Qt.AlignTop
-                        color: '#45541f'
-                        Label { anchors.centerIn: parent; text: 'i'; color: '#ffffff'; font.pixelSize: 15; font.bold: true; font.family: 'serif' }
+                        color: 'transparent'
+                        border.width: 2.5
+                        border.color: S.brassRing
+                        Label { anchors.centerIn: parent; text: 'i'; color: S.brassRing; font.pixelSize: 20; font.bold: true; font.family: 'serif' }
                         MouseArea { anchors.fill: parent; anchors.margins: -8; onClicked: page.showBlockInfo() }
                     }
                 }
@@ -108,114 +101,160 @@ Item {
                     readonly property var rows: page.items.filter(function (it) { return it.kind === grp.modelData.kind })
                     visible: rows.length > 0
                     Layout.fillWidth: true
-                    spacing: 6
-                    Label {
-                        Layout.topMargin: 6
-                        Layout.leftMargin: 4
-                        text: grp.modelData.title
-                        font.pixelSize: 13; font.bold: true; font.letterSpacing: 0.6
-                        color: '#45541f'
-                    }
-                    Rectangle {
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: rowsCol.implicitHeight
-                        radius: 16
-                        color: '#ffffff'
-                        border.width: 1.5
-                        border.color: '#ece4d6'
-                        clip: true
-                        ColumnLayout {
-                            id: rowsCol
-                            width: parent.width
-                            spacing: 0
-                            Repeater {
-                                model: grp.rows
-                                ColumnLayout {
-                                    id: ad
-                                    required property var modelData
-                                    required property int index
+                    spacing: 0
+                    EhCaption { Layout.topMargin: 8; text: grp.modelData.title }
+                    EhSheet {
+                        bottomPadding: 4
+                        Repeater {
+                            model: grp.rows
+                            ColumnLayout {
+                                id: ad
+                                required property var modelData
+                                required property int index
+                                Layout.fillWidth: true
+                                spacing: 0
+                                EhDotLine { visible: ad.index > 0 }
+                                // the address
+                                Item {
                                     Layout.fillWidth: true
-                                    spacing: 0
-                                    Rectangle { visible: ad.index > 0; Layout.fillWidth: true; Layout.preferredHeight: 1; color: '#efe7da' }
-                                    // the address
+                                    Layout.preferredHeight: Math.max(64, aRow.implicitHeight + 18)
                                     Rectangle {
-                                        Layout.fillWidth: true
-                                        Layout.preferredHeight: Math.max(60, aRow.implicitHeight + 16)
-                                        color: aMa.pressed ? '#f6f1e6' : 'transparent'
-                                        MouseArea {
-                                            id: aMa
-                                            z: -1
-                                            anchors.fill: parent
-                                            onClicked: app.stack.push(Qt.resolvedUrl('EhAddressPage.qml'), { address: ad.modelData.address })
-                                        }
-                                        RowLayout {
-                                            id: aRow
-                                            anchors.fill: parent
-                                            anchors.leftMargin: 12
-                                            anchors.rightMargin: 10
-                                            spacing: 8
-                                            ColumnLayout {
+                                        anchors.fill: parent
+                                        anchors.leftMargin: -6; anchors.rightMargin: -6
+                                        anchors.topMargin: 2; anchors.bottomMargin: 2
+                                        radius: 10
+                                        color: S.sand
+                                        opacity: aMa.pressed ? 0.4 : 0
+                                    }
+                                    MouseArea {
+                                        id: aMa
+                                        z: -1
+                                        anchors.fill: parent
+                                        onClicked: app.stack.push(Qt.resolvedUrl('EhAddressPage.qml'), { address: ad.modelData.address })
+                                    }
+                                    RowLayout {
+                                        id: aRow
+                                        anchors.left: parent.left
+                                        anchors.right: parent.right
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        spacing: 8
+                                        ColumnLayout {
+                                            Layout.fillWidth: true
+                                            spacing: 2
+                                            Label {
                                                 Layout.fillWidth: true
-                                                spacing: 1
-                                                Label { textFormat: Text.StyledText; font.family: FixedFont; font.pixelSize: 14; font.bold: true; text: page.shortAddr(ad.modelData.address) }
-                                                Label {
-                                                    visible: ad.modelData.label !== ''
-                                                    Layout.fillWidth: true
-                                                    elide: Text.ElideRight
-                                                    text: ad.modelData.label
-                                                    font.pixelSize: 13; font.italic: true; color: '#5e1a33'
-                                                }
-                                                Label {
-                                                    font.pixelSize: 12
-                                                    color: '#6b5d55'
-                                                    text: ad.modelData['new'] ? qsTr('empty · new')
-                                                          : (ad.modelData.coins.length === 0 ? qsTr('empty · used')
-                                                             : (ad.modelData.coins.length === 1 ? qsTr('1 coin') : qsTr('%1 coins').arg(ad.modelData.coins.length)))
-                                                }
+                                                wrapMode: Text.WordWrap
+                                                textFormat: Text.RichText
+                                                font.family: FixedFont
+                                                font.pixelSize: 17
+                                                font.bold: true
+                                                color: S.ink
+                                                text: page.shortAddr(ad.modelData.address)
                                             }
                                             Label {
+                                                Layout.fillWidth: true
                                                 text: app.ehMoney(page.satsAmount(ad.modelData.sats))
-                                                font.pixelSize: 15; font.bold: true
-                                                color: ad.modelData.held ? '#c0392b' : '#2a2220'
+                                                font.family: SerifFont ? SerifFont : font.family
+                                                font.weight: Font.ExtraBold
+                                                font.pixelSize: 21
+                                                color: ad.modelData.held ? S.red : S.wineDark
+                                                wrapMode: Text.WrapAnywhere
                                             }
-                                            EhSpendSwitch {
-                                                visible: !ad.modelData['new']
-                                                blockedText: qsTr('blocked (address)')
-                                                spendable: !ad.modelData.held
-                                                onToggled: {
-                                                    Daemon.currentWallet.ehSetAddressFrozen(ad.modelData.address, !spendable)
-                                                    page.reload()
-                                                }
+                                            Label {
+                                                visible: ad.modelData.label !== ''
+                                                Layout.fillWidth: true
+                                                elide: Text.ElideRight
+                                                text: ad.modelData.label
+                                                font.family: BodyFont ? BodyFont : font.family
+                                                font.pixelSize: 16; font.italic: true; color: S.wine
+                                            }
+                                            Label {
+                                                Layout.fillWidth: true
+                                                wrapMode: Text.WordWrap
+                                                font.family: BodyFont ? BodyFont : font.family
+                                                font.pixelSize: 16
+                                                color: S.muted
+                                                text: ad.modelData['new'] ? qsTr('empty · new')
+                                                      : (ad.modelData.coins.length === 0 ? qsTr('empty · used')
+                                                         : (ad.modelData.coins.length === 1 ? qsTr('1 coin') : qsTr('%1 coins').arg(ad.modelData.coins.length)))
+                                            }
+                                        }
+                                        EhSpendSwitch {
+                                            visible: !ad.modelData['new']
+                                            blockedText: qsTr('blocked (address)')
+                                            spendable: !ad.modelData.held
+                                            onToggled: {
+                                                Daemon.currentWallet.ehSetAddressFrozen(ad.modelData.address, !spendable)
+                                                page.reload()
                                             }
                                         }
                                     }
-                                    // its coins, a little indented
-                                    Repeater {
-                                        model: ad.modelData.coins
+                                }
+                                // its coins, INSIDE their address (owner 13/11): indented under the
+                                // address text, joined to it by a wine "tree" line with a tick per coin,
+                                // on a tinted strip that belongs to this address block only
+                                Repeater {
+                                    model: ad.modelData.coins
+                                    Item {
+                                        id: cr
+                                        required property var modelData
+                                        required property int index
+                                        readonly property bool blocked: cr.modelData.held || ad.modelData.held
+                                        readonly property bool lastCoin: cr.index === ad.modelData.coins.length - 1
+                                        Layout.fillWidth: true
+                                        Layout.topMargin: cr.index === 0 ? -8 : 0
+                                        Layout.preferredHeight: Math.max(54, crRow.implicitHeight + 12) + (cr.lastCoin ? 10 : 0)
+                                        // the tree: down from under the address, a tick to each coin
                                         Rectangle {
-                                            id: cr
-                                            required property var modelData
-                                            readonly property bool blocked: cr.modelData.held || ad.modelData.held
-                                            Layout.fillWidth: true
-                                            Layout.preferredHeight: 46
-                                            color: '#fffaec'
-                                            opacity: blocked ? 0.65 : 1
-                                            RowLayout {
-                                                anchors.fill: parent
-                                                anchors.leftMargin: 28
-                                                anchors.rightMargin: 12
-                                                spacing: 8
-                                                Image { source: Qt.resolvedUrl('../../icons/eh_goldcoin_1.svg'); sourceSize.width: 26; sourceSize.height: 26; Layout.preferredWidth: 26; Layout.preferredHeight: 26 }
-                                                ColumnLayout {
+                                            x: 6; y: 0
+                                            width: 2
+                                            height: cr.lastCoin ? crBox.y + crBox.height / 2 + 1 : parent.height
+                                            color: S.wine
+                                        }
+                                        Rectangle {
+                                            x: 6; y: crBox.y + crBox.height / 2 - 1
+                                            width: 14; height: 2
+                                            color: S.wine
+                                        }
+                                        // tinted strip: top and bottom rounded only at the first / last coin
+                                        Rectangle {
+                                            id: crBox
+                                            x: 20; y: 0
+                                            width: parent.width - 20
+                                            height: parent.height - (cr.lastCoin ? 10 : 0)
+                                            radius: 10
+                                            color: S.parch
+                                            Rectangle { visible: !cr.lastCoin; anchors.left: parent.left; anchors.right: parent.right; anchors.bottom: parent.bottom; height: 10; color: S.parch }
+                                            Rectangle { visible: cr.index > 0; anchors.left: parent.left; anchors.right: parent.right; anchors.top: parent.top; height: 10; color: S.parch }
+                                        }
+                                        RowLayout {
+                                            id: crRow
+                                            anchors.left: crBox.left
+                                            anchors.right: crBox.right
+                                            anchors.verticalCenter: crBox.verticalCenter
+                                            anchors.leftMargin: 10
+                                            anchors.rightMargin: 10
+                                            spacing: 8
+                                            opacity: cr.blocked ? 0.65 : 1
+                                            Image { source: Qt.resolvedUrl('../../icons/eh_goldcoin_1.svg'); sourceSize.width: 26; sourceSize.height: 26; Layout.preferredWidth: 26; Layout.preferredHeight: 26 }
+                                            ColumnLayout {
+                                                Layout.fillWidth: true
+                                                spacing: 0
+                                                Label {
                                                     Layout.fillWidth: true
-                                                    spacing: 0
-                                                    Label { text: app.ehMoney(page.satsAmount(cr.modelData.sats)); font.pixelSize: 14; font.bold: true }
-                                                    Label {
-                                                        font.pixelSize: 11
-                                                        color: '#6b5d55'
-                                                        text: ad.modelData.held ? qsTr('blocked (with the address)')
-                                                              : (cr.modelData.held ? qsTr('blocked') : 'UTXO ' + page.shortUtxo(cr.modelData.outpoint))
-                                                    }
+                                                    text: app.ehMoney(page.satsAmount(cr.modelData.sats))
+                                                    font.family: BodyFont ? BodyFont : font.family
+                                                    font.pixelSize: 17; font.bold: true; color: S.ink
+                                                    wrapMode: Text.WrapAnywhere
+                                                }
+                                                Label {
+                                                    Layout.fillWidth: true
+                                                    wrapMode: Text.WordWrap
+                                                    font.family: BodyFont ? BodyFont : font.family
+                                                    font.pixelSize: 16
+                                                    color: S.muted
+                                                    text: ad.modelData.held ? qsTr('blocked (with the address)')
+                                                          : (cr.modelData.held ? qsTr('blocked') : 'UTXO ' + page.shortUtxo(cr.modelData.outpoint))
                                                 }
                                             }
                                         }

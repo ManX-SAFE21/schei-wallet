@@ -2,6 +2,8 @@
 // a gold coin of variable value: bigger value, bigger coin. Each one can be
 // blocked (frozen: the app will not spend it). Second tab: the addresses.
 // Uses Electrum's own addressCoinModel; only the look is ours.
+// "Bottega" (WP5): parchment page, the list is one paper sheet (the delegates draw
+// its sides, the header and the footer its rounded top and bottom: no Canvas per row).
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
@@ -10,14 +12,15 @@ import QtQuick.Controls.Material
 import org.electrum 1.0
 
 import "controls"
+import "controls/EhStyle.js" as S
 
 Item {
     id: page
     property bool ehHideHeader: true
     property bool showAddresses: false
     Material.theme: Material.Light
-    Material.foreground: '#2a2220'
-    Material.accent: '#5e1a33'
+    Material.foreground: S.ink
+    Material.accent: S.wine
 
     readonly property var filterModel: Daemon.currentWallet ? Daemon.currentWallet.addressCoinModel.filterModel : null
     function applyFilter() {
@@ -31,6 +34,12 @@ Item {
         var i = outpoint.indexOf(':')
         var txid = i > 0 ? outpoint.substring(0, i) : outpoint
         return txid.substring(0, 4) + '…' + txid.slice(-4) + (i > 0 ? outpoint.substring(i) : '')
+    }
+    // short address: prefix, first 4 … last 4, the two groups of 4 highlighted
+    function shortAddrRich(a) {
+        var p = app.ehAddressParts(a)
+        var hl = function (s) { return '<span style="background-color:' + S.highlight + '"><font color="' + S.wineDark + '">' + s + '</font></span>' }
+        return (p.prefix !== '' ? p.prefix + ' ' : '') + hl(p.first) + ' … ' + hl(p.last)
     }
     // coin size from its value: 1 000 sat -> 26 px ... 1 BTC -> 52 px
     function coinSize(sats) {
@@ -49,74 +58,38 @@ Item {
         }).open()
     }
 
-    Rectangle { anchors.fill: parent; color: '#faf7ef' }
-    EhGlow { tone: 'gold'; x: -page.width * 0.3; y: 40; width: page.width * 1.6; height: 380 }
+    Rectangle { anchors.fill: parent; color: S.parch }
+
+    // the paper of the sheet behind one list item: paper with the two side edges
+    component SheetSide: Item {
+        anchors.fill: parent
+        Rectangle { anchors.fill: parent; color: S.paper }
+        Rectangle { x: 0; width: 1.5; height: parent.height; color: S.edge }
+        Rectangle { x: parent.width - 1.5; width: 1.5; height: parent.height; color: S.edge }
+    }
 
     ColumnLayout {
         anchors.fill: parent
         anchors.leftMargin: 16
         anchors.rightMargin: 16
         anchors.bottomMargin: 12 + app.navigationBarHeight
-        spacing: 8
+        spacing: 10
 
         EhPageTop { title: ''; Layout.leftMargin: 6; Layout.rightMargin: 6 }
-        Label {
-            Layout.topMargin: -14
-            text: '‹ ' + qsTr('Back')
-            color: '#5e1a33'; font.pixelSize: 17; font.bold: true
-            TapHandler { margin: 10; onTapped: app.ehPop() }
-        }
-        Label {
-            Layout.fillWidth: true
-            text: qsTr('Your gold coins')
-            color: '#3f0f21'
-            font.family: TitleFont ? TitleFont : font.family
-            font.weight: Font.Black
-            font.pixelSize: 28
-            wrapMode: Text.WordWrap
-        }
+        EhBackLink { onClicked: app.ehPop() }
+        EhTitle { Layout.topMargin: -6; text: qsTr('Your gold coins') }
 
         // two tabs: coins / addresses
-        Rectangle {
-            Layout.fillWidth: true
-            Layout.preferredHeight: 46
-            radius: 23
-            color: Qt.rgba(0.94, 0.90, 0.83, 0.9)
-            RowLayout {
-                anchors.fill: parent
-                anchors.margins: 4
-                spacing: 4
-                Repeater {
-                    model: [qsTr('Coins'), qsTr('Addresses')]
-                    Rectangle {
-                        required property string modelData
-                        required property int index
-                        readonly property bool on: (index === 1) === page.showAddresses
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
-                        radius: height / 2
-                        color: on ? '#ffffff' : 'transparent'
-                        Label { anchors.centerIn: parent; text: modelData; font.pixelSize: 16; font.bold: true; color: parent.on ? '#3f0f21' : '#6b5d55' }
-                        TapHandler { onTapped: page.showAddresses = (index === 1) }
-                    }
-                }
-            }
+        EhSegmented {
+            model: [qsTr('Coins'), qsTr('Addresses')]
+            currentIndex: page.showAddresses ? 1 : 0
+            onActivated: (i) => page.showAddresses = (i === 1)
         }
 
-        Rectangle {
+        EhInfoBox {
             visible: !page.showAddresses
-            Layout.fillWidth: true
-            Layout.preferredHeight: noteL.implicitHeight + 20
-            radius: 14
-            color: Qt.rgba(0.98, 0.94, 0.84, 0.92)
-            Label {
-                id: noteL
-                anchors.fill: parent; anchors.margins: 10
-                wrapMode: Text.WordWrap
-                textFormat: Text.StyledText
-                font.pixelSize: 14
-                text: qsTr('Your balance is made of several <b>gold coins</b>: each one is a payment you received, and it is worth what is inside. You can <b>block</b> one: the app will not use it to pay.')
-            }
+            kind: 'tip'
+            text: qsTr('Your balance is made of several <b>gold coins</b>: each one is a payment you received, and it is worth what is inside. You can <b>block</b> one: the app will not use it to pay.')
         }
 
         ListView {
@@ -126,56 +99,96 @@ Item {
             clip: true
             spacing: 0
             model: page.filterModel
+            // rounded top of the sheet
+            header: Item {
+                width: list.width
+                height: list.count > 0 ? 14 : 0
+                visible: list.count > 0
+                clip: true
+                Rectangle {
+                    width: parent.width
+                    height: 40
+                    radius: 18
+                    color: S.paper
+                    border.width: 1.5
+                    border.color: S.edge
+                }
+            }
             // T22: section.property must NOT change while the list is alive (Qt crashed
             // switching to the Addresses tab): always 'type', headers hidden for coins
             section.property: 'type'
             section.criteria: ViewSection.FullString
             // the ListView drives the visibility of section items itself: wrap the label
             section.delegate: Item {
+                id: sec
                 required property string section
                 width: ListView.view.width
-                height: page.showAddresses ? 34 : 0
+                height: page.showAddresses ? secCol.implicitHeight + 10 : 0
                 clip: true
-                Label {
+                SheetSide { visible: page.showAddresses }
+                ColumnLayout {
+                    id: secCol
                     visible: page.showAddresses
-                    anchors.fill: parent
-                    topPadding: 10
-                    bottomPadding: 4
-                    leftPadding: 4
-                    text: parent.section === 'receive' ? qsTr('TO RECEIVE') : (parent.section === 'change' ? qsTr('CHANGE') : parent.section.toUpperCase())
-                    font.pixelSize: 12
-                    font.bold: true
-                    font.letterSpacing: 0.6
-                    color: '#6b5d55'
+                    x: 12
+                    y: 8
+                    width: parent.width - 24
+                    spacing: 4
+                    Label {
+                        Layout.fillWidth: true
+                        text: sec.section === 'receive' ? qsTr('TO RECEIVE') : (sec.section === 'change' ? qsTr('CHANGE') : sec.section.toUpperCase())
+                        color: S.olive
+                        font.family: BodyFont ? BodyFont : font.family
+                        font.pixelSize: 16
+                        font.bold: true
+                        font.letterSpacing: 0.5
+                        wrapMode: Text.WordWrap
+                    }
+                    EhRule {}
                 }
             }
             delegate: Loader {
                 id: ld
                 required property var model
+                required property int index
+                readonly property bool lastOne: ld.index === list.count - 1
                 width: ListView.view.width
                 sourceComponent: ld.model.outpoint ? coinRow : addrRow
 
                 Component {
                     id: coinRow
-                    Rectangle {
+                    Item {
+                        readonly property bool blocked: ld.model.held || ld.model.addr_held
                         width: ld.width
-                        height: Math.max(66, cRow.implicitHeight + 16)
-                        color: cTap.pressed ? Qt.rgba(1, 1, 1, 0.85) : Qt.rgba(1, 1, 1, 0.66)
-                        Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: Qt.rgba(0.16, 0.13, 0.13, 0.07) }
+                        height: Math.max(76, cRow.implicitHeight + 20)
+                        SheetSide {}
+                        Rectangle {
+                            anchors.fill: parent
+                            anchors.leftMargin: 6; anchors.rightMargin: 6
+                            anchors.topMargin: 2; anchors.bottomMargin: 2
+                            radius: 10
+                            color: S.sand
+                            opacity: cTap.pressed ? 0.4 : 0
+                        }
+                        EhDotLine {
+                            visible: !ld.lastOne
+                            x: 12
+                            width: parent.width - 24
+                            anchors.bottom: parent.bottom
+                        }
                         RowLayout {
                             id: cRow
                             anchors.fill: parent
-                            anchors.leftMargin: 8
-                            anchors.rightMargin: 10
-                            spacing: 10
+                            anchors.leftMargin: 10
+                            anchors.rightMargin: 12
+                            spacing: 8
                             Item {
-                                Layout.preferredWidth: 56
-                                Layout.preferredHeight: 44
+                                Layout.preferredWidth: 46
+                                Layout.preferredHeight: 52
                                 Image {
                                     anchors.horizontalCenter: parent.horizontalCenter
-                                    anchors.bottom: parent.bottom
+                                    anchors.verticalCenter: parent.verticalCenter
                                     readonly property int s: page.coinSize(ld.model.amount.satsInt)
-                                    width: s; height: s
+                                    width: Math.min(46, s); height: width
                                     source: page.coinIcon(ld.model.amount.satsInt)
                                     sourceSize.width: 120
                                     sourceSize.height: 120
@@ -184,61 +197,83 @@ Item {
                             }
                             ColumnLayout {
                                 Layout.fillWidth: true
-                                spacing: 1
+                                spacing: 2
                                 Label {
+                                    Layout.fillWidth: true
                                     text: app.ehMoney(ld.model.amount)
-                                    font.pixelSize: 17
-                                    font.bold: true
-                                    color: (ld.model.held || ld.model.addr_held) ? '#8a7d70' : '#2a2220'
+                                    font.family: SerifFont ? SerifFont : font.family
+                                    font.weight: Font.ExtraBold
+                                    font.pixelSize: 21
+                                    color: (ld.model.held || ld.model.addr_held) ? S.muted : S.wineDark
+                                    wrapMode: Text.WrapAnywhere
                                 }
                                 // T11: real pen icon (the phone font had no ✎ and drew a dark block)
                                 RowLayout {
                                     visible: ld.model.label !== undefined && ld.model.label !== ''
                                     Layout.fillWidth: true
-                                    spacing: 4
+                                    spacing: 5
                                     Image {
                                         source: Qt.resolvedUrl('../../icons/eh_pen_wine.svg')
-                                        sourceSize.width: 14; sourceSize.height: 14
-                                        Layout.preferredWidth: 14; Layout.preferredHeight: 14
+                                        sourceSize.width: 16; sourceSize.height: 16
+                                        Layout.preferredWidth: 16; Layout.preferredHeight: 16
                                     }
                                     Label {
                                         Layout.fillWidth: true
                                         elide: Text.ElideRight
                                         text: ld.model.label
-                                        font.pixelSize: 13
+                                        font.family: BodyFont ? BodyFont : font.family
+                                        font.pixelSize: 16
                                         font.italic: true
-                                        color: '#5e1a33'
+                                        color: S.wine
                                     }
                                 }
-                                RowLayout {
-                                    spacing: 5
-                                    Label { text: 'UTXO'; font.pixelSize: 12; color: '#6b5d55' }
-                                    Label { text: page.shortUtxo(ld.model.outpoint); font.family: FixedFont; font.pixelSize: 12; font.bold: true; color: '#2a2220' }
-                                    Rectangle {
-                                        Layout.preferredWidth: 18; Layout.preferredHeight: 18; radius: 9
-                                        color: '#45541f'
-                                        Label { anchors.centerIn: parent; text: 'i'; color: '#ffffff'; font.pixelSize: 12; font.bold: true; font.family: 'serif' }
-                                        MouseArea { anchors.fill: parent; anchors.margins: -6; onClicked: page.showUtxoInfo() }
-                                    }
-                                }
-                                Rectangle {
-                                    Layout.preferredHeight: 20
-                                    Layout.preferredWidth: stL.implicitWidth + 14
-                                    radius: 10
-                                    color: (ld.model.held || ld.model.addr_held) ? '#ece6db' : (ld.model.height > 0 ? '#e6ecc8' : '#fbf0d6')
+                                Flow {
+                                    Layout.fillWidth: true
+                                    spacing: 6
                                     Label {
-                                        id: stL
-                                        anchors.centerIn: parent
-                                        font.pixelSize: 11
-                                        font.bold: true
-                                        color: (ld.model.held || ld.model.addr_held) ? '#6b5d55' : (ld.model.height > 0 ? '#2f3a12' : '#8a5a12')
-                                        text: ld.model.addr_held ? qsTr('blocked (with the address)') : (ld.model.held ? qsTr('blocked') : (ld.model.height > 0 ? qsTr('confirmed') : qsTr('arriving')))
+                                        height: 28
+                                        verticalAlignment: Text.AlignVCenter
+                                        text: 'UTXO'
+                                        font.family: BodyFont ? BodyFont : font.family
+                                        font.pixelSize: 16
+                                        color: S.muted
                                     }
+                                    Label {
+                                        height: 28
+                                        verticalAlignment: Text.AlignVCenter
+                                        text: page.shortUtxo(ld.model.outpoint)
+                                        font.family: FixedFont
+                                        font.pixelSize: 16
+                                        font.bold: true
+                                        color: S.ink
+                                    }
+                                    // the "i": 28 px, 48 px to the finger
+                                    Rectangle {
+                                        width: 28; height: 28; radius: 14
+                                        color: 'transparent'
+                                        border.width: 2.5
+                                        border.color: S.olive
+                                        Label { anchors.centerIn: parent; text: 'i'; color: S.olive; font.pixelSize: 18; font.bold: true; font.family: 'serif' }
+                                        MouseArea { anchors.fill: parent; anchors.margins: -10; onClicked: page.showUtxoInfo() }
+                                    }
+                                }
+                                // the state, as text (no small pill)
+                                Label {
+                                    Layout.fillWidth: true
+                                    wrapMode: Text.WordWrap
+                                    font.family: BodyFont ? BodyFont : font.family
+                                    font.pixelSize: 16
+                                    font.bold: true
+                                    color: (ld.model.held || ld.model.addr_held) ? S.muted : (ld.model.height > 0 ? S.olive : S.waitInk)
+                                    text: ld.model.addr_held ? qsTr('blocked (with the address)')
+                                          : (ld.model.held ? qsTr('blocked')
+                                             : (ld.model.height > 0 ? '✓ ' + qsTr('confirmed') : qsTr('arriving')))
                                 }
                             }
                             EhSpendSwitch {
                                 spendable: !ld.model.held && !ld.model.addr_held
                                 enabled: !ld.model.addr_held   // unblock it from its address
+                                opacity: ld.model.addr_held ? 0.5 : 1
                                 onToggled: Daemon.currentWallet.ehSetCoinFrozen(ld.model.outpoint, !spendable)  // T10: freeze = not spendable
                             }
                         }
@@ -259,42 +294,63 @@ Item {
 
                 Component {
                     id: addrRow
-                    Rectangle {
+                    Item {
                         width: ld.width
-                        height: Math.max(56, aCol.implicitHeight + 16)
-                        color: aTap.pressed ? Qt.rgba(1, 1, 1, 0.85) : Qt.rgba(1, 1, 1, 0.66)
-                        Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: Qt.rgba(0.16, 0.13, 0.13, 0.07) }
-                        RowLayout {
+                        height: Math.max(64, aRow.implicitHeight + 18)
+                        SheetSide {}
+                        Rectangle {
                             anchors.fill: parent
+                            anchors.leftMargin: 6; anchors.rightMargin: 6
+                            anchors.topMargin: 2; anchors.bottomMargin: 2
+                            radius: 10
+                            color: S.sand
+                            opacity: aTap.pressed ? 0.4 : 0
+                        }
+                        EhDotLine {
+                            visible: !ld.lastOne
+                            x: 12
+                            width: parent.width - 24
+                            anchors.bottom: parent.bottom
+                        }
+                        RowLayout {
+                            id: aRow
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.verticalCenter: parent.verticalCenter
                             anchors.leftMargin: 12
                             anchors.rightMargin: 12
+                            spacing: 8
                             ColumnLayout {
-                                id: aCol
                                 Layout.fillWidth: true
-                                spacing: 2
+                                spacing: 3
                                 Label {
-                                    readonly property var parts: app.ehAddressParts(ld.model.address)
-                                    textFormat: Text.StyledText
+                                    Layout.fillWidth: true
+                                    textFormat: Text.RichText
                                     font.family: FixedFont
-                                    font.pixelSize: 14
+                                    font.pixelSize: 17
                                     font.bold: true
-                                    text: (parts.prefix !== '' ? parts.prefix + ' ' : '') + '<u>' + parts.first + '</u> … <u>' + parts.last + '</u>'
+                                    color: S.ink
+                                    wrapMode: Text.WordWrap
+                                    text: page.shortAddrRich(ld.model.address)
                                 }
                                 Label {
-                                    font.pixelSize: 12
-                                    color: '#6b5d55'
+                                    Layout.fillWidth: true
+                                    wrapMode: Text.WordWrap
+                                    font.family: BodyFont ? BodyFont : font.family
+                                    font.pixelSize: 16
+                                    color: S.muted
                                     text: (ld.model.numtx > 0 ? (ld.model.numtx === 1 ? qsTr('1 movement') : qsTr('%1 movements').arg(ld.model.numtx)) : qsTr('no movements'))
                                           + (ld.model.balance && ld.model.balance.satsInt > 0 ? ' · ' + app.ehMoney(ld.model.balance) : '')
                                 }
                             }
-                            Rectangle {
-                                Layout.preferredHeight: 22
-                                Layout.preferredWidth: uL.implicitWidth + 16
-                                radius: 11
-                                color: ld.model.numtx > 0 ? '#e6ecc8' : '#f3e3e8'
-                                Label { id: uL; anchors.centerIn: parent; font.pixelSize: 12; font.bold: true
-                                        color: ld.model.numtx > 0 ? '#2f3a12' : '#5e1a33'
-                                        text: ld.model.numtx > 0 ? qsTr('used') : qsTr('new') }
+                            // used / new: text, not a small pill
+                            Label {
+                                Layout.alignment: Qt.AlignVCenter
+                                font.family: BodyFont ? BodyFont : font.family
+                                font.pixelSize: 16
+                                font.bold: true
+                                color: ld.model.numtx > 0 ? S.olive : S.wine
+                                text: ld.model.numtx > 0 ? qsTr('used') : qsTr('new')
                             }
                         }
                         TapHandler { id: aTap; onTapped: app.ehZoomAddress(ld.model.address, true) }
@@ -303,39 +359,40 @@ Item {
             }
             footer: Item {
                 width: list.width
-                height: page.showAddresses ? chNote.implicitHeight + 24 : howBtn.height + 20
+                height: botCap.height + (page.showAddresses ? chNote.implicitHeight + 24 : howSheet.implicitHeight + 22)
+                // rounded bottom of the sheet, with its hard shadow
+                Item {
+                    id: botCap
+                    width: parent.width
+                    height: list.count > 0 ? 17 : 0
+                    visible: list.count > 0
+                    clip: true
+                    Rectangle { y: -23; width: parent.width; height: 40; radius: 18; color: S.edgeShadow }
+                    Rectangle { y: -26; width: parent.width; height: 40; radius: 18; color: S.paper; border.width: 1.5; border.color: S.edge }
+                }
                 Label {
                     id: chNote
                     visible: page.showAddresses
-                    x: 4; y: 12
+                    x: 4; y: botCap.height + 12
                     width: parent.width - 8
                     wrapMode: Text.WordWrap
-                    font.pixelSize: 13
-                    color: '#6b5d55'
+                    font.family: BodyFont ? BodyFont : font.family
+                    font.pixelSize: 16
+                    color: S.muted
                     text: qsTr('"Change": when you pay, what is left over from a coin comes back to you on a new address, like the change at the shop.')
                 }
-                Rectangle {
-                    id: howBtn
+                EhSheet {
+                    id: howSheet
                     visible: !page.showAddresses
-                    y: 12
+                    y: botCap.height + 14
                     width: parent.width
-                    height: howRow.implicitHeight + 24
-                    radius: 16
-                    color: howTap.pressed ? '#ffffff' : Qt.rgba(1, 1, 1, 0.7)
-                    border.width: 2
-                    border.color: '#ecd49a'
-                    RowLayout {
-                        id: howRow
-                        anchors.fill: parent
-                        anchors.leftMargin: 12
-                        anchors.rightMargin: 12
-                        spacing: 10
-                        Image { source: Qt.resolvedUrl('../../icons/eh_goldcoin.svg'); sourceSize.width: 40; sourceSize.height: 40 }
-                        Label { Layout.fillWidth: true; wrapMode: Text.WordWrap; font.pixelSize: 15; font.bold: true
-                                text: qsTr('How do the gold coins of digital gold (bitcoin) work?') }
-                        Label { text: '›'; font.pixelSize: 22; color: '#5e1a33' }
+                    EhRow {
+                        icon: 'eh_goldcoin.svg'
+                        iconColor: S.brassRing
+                        text: qsTr('How do the gold coins of digital gold (bitcoin) work?')
+                        last: true
+                        onClicked: app.ehPush(Qt.resolvedUrl('EhCoinsHowPage.qml'))
                     }
-                    TapHandler { id: howTap; onTapped: app.ehPush(Qt.resolvedUrl('EhCoinsHowPage.qml')) }
                 }
             }
             Label {
@@ -344,8 +401,9 @@ Item {
                 width: parent.width - 30
                 horizontalAlignment: Text.AlignHCenter
                 wrapMode: Text.WordWrap
-                color: '#6b5d55'
-                font.pixelSize: 15
+                color: S.muted
+                font.family: BodyFont ? BodyFont : font.family
+                font.pixelSize: 17
                 text: page.showAddresses ? '' : qsTr('No coins yet: they arrive when someone sends you bitcoin.')
             }
         }

@@ -5,6 +5,8 @@
 // Tap = tick, then the button at the bottom; or press, hold and drag to the other
 // pocket. More than 8 coins: compact look (3 per row, blocked addresses folded).
 // All the wallet work is done by QEWallet.ehAddresses / ehPocketMove.
+// "Bottega" (WP5): the two pockets are paper sheets (olive / wine caption), the little bags
+// keep their dashed frame (brass), stitched buttons. Logic and drag unchanged.
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
@@ -13,12 +15,13 @@ import QtQuick.Controls.Material
 import org.electrum 1.0
 
 import "controls"
+import "controls/EhStyle.js" as S
 
 Item {
     id: page
     property bool ehHideHeader: true
     Material.theme: Material.Light
-    Material.foreground: '#2a2220'
+    Material.foreground: S.ink
 
     // demo: fake coins for the PC previews (no wallet call is made)
     property bool demo: false
@@ -199,8 +202,7 @@ Item {
         if (to !== '' && list.length > 0 && to !== list[0].pocket) page.move(list, to === 'aside')
     }
 
-    Rectangle { anchors.fill: parent; color: '#faf7ef' }
-    EhGlow { tone: 'gold'; x: -page.width * 0.3; y: 40; width: page.width * 1.6; height: 380 }
+    Rectangle { anchors.fill: parent; color: S.parch }
 
     // ---------- one coin ----------
     component Tile: Rectangle {
@@ -211,43 +213,47 @@ Item {
         readonly property int cols: page.compact ? 3 : 2
         readonly property var cat: app.ehCat(coin.origin)
         width: Math.floor((parent.width - (cols - 1) * 7) / cols)
-        height: page.compact ? 60 : 56
+        // comfortable: the amount may take two lines (16 px, no shrinking); compact: as before
+        height: page.compact ? 60 : Math.max(64, tlCol.implicitHeight + 14)
         radius: 12
-        color: on ? '#fff8e3' : Qt.rgba(1, 1, 1, 0.93)
-        border.width: 2.5
-        border.color: on ? '#e0a21a' : 'transparent'
+        color: on ? S.ivory : S.paper
+        border.width: on ? 2.5 : 1.5
+        border.color: on ? S.brassRing : S.edge
         opacity: page.dragging && page.dragList.indexOf(coin) >= 0 ? 0.4 : 1
 
         // comfortable: coin on the left, amount and note on the right
         RowLayout {
             visible: !page.compact
             anchors.fill: parent
-            anchors.leftMargin: 7
+            anchors.leftMargin: 6
             anchors.rightMargin: 6
-            spacing: 6
+            spacing: 5
             Item {
-                Layout.preferredWidth: 40; Layout.preferredHeight: 40
-                Image { anchors.centerIn: parent; readonly property int s: page.coinSize(tl.coin.sats); width: s; height: s
+                Layout.preferredWidth: 34; Layout.preferredHeight: 40
+                Image { anchors.centerIn: parent; readonly property int s: Math.min(34, page.coinSize(tl.coin.sats)); width: s; height: s
                         source: page.coinIcon(tl.coin.sats); sourceSize.width: 96; sourceSize.height: 96 }
             }
             ColumnLayout {
+                id: tlCol
                 Layout.fillWidth: true
                 spacing: 0
-                Label { Layout.fillWidth: true; text: page.money(tl.coin.sats); font.pixelSize: 15; font.bold: true
-                        fontSizeMode: Text.HorizontalFit; minimumPixelSize: 10 }
+                Label { Layout.fillWidth: true; text: page.money(tl.coin.sats)
+                        font.family: BodyFont ? BodyFont : font.family; font.pixelSize: 16; font.bold: true; color: S.ink
+                        wrapMode: Text.WordWrap; lineHeight: 1.0 }
                 RowLayout {
                     Layout.fillWidth: true
                     spacing: 4
-                    Rectangle { visible: tl.cat.id !== ''; Layout.preferredWidth: 9; Layout.preferredHeight: 9; radius: 4.5; color: tl.cat.color }
-                    Label { Layout.fillWidth: true; elide: Text.ElideRight; font.pixelSize: 11
+                    Rectangle { visible: tl.cat.id !== ''; Layout.preferredWidth: 12; Layout.preferredHeight: 12; radius: 6; color: tl.cat.color }
+                    Label { Layout.fillWidth: true; elide: Text.ElideRight
+                            font.family: BodyFont ? BodyFont : font.family; font.pixelSize: 16
                             font.bold: tl.cat.id !== ''
                             font.italic: tl.cat.id === '' && tl.coin.label !== ''
-                            color: tl.cat.id !== '' ? tl.cat.color : (tl.coin.label !== '' ? '#5e1a33' : '#6b5d55')
+                            color: tl.cat.id !== '' ? tl.cat.color : (tl.coin.label !== '' ? S.wine : S.muted)
                             text: tl.cat.id !== '' ? tl.cat.name : (tl.coin.label !== '' ? tl.coin.label : page.shortUtxo(tl.coin.outpoint)) }
                 }
             }
         }
-        // compact: coin above, amount below
+        // compact: coin above, amount below (size kept: these tiles are also dragged)
         ColumnLayout {
             visible: page.compact
             anchors.fill: parent
@@ -258,25 +264,34 @@ Item {
                 Image { anchors.centerIn: parent; readonly property int s: page.coinSize(tl.coin.sats); width: s; height: s
                         source: page.coinIcon(tl.coin.sats); sourceSize.width: 96; sourceSize.height: 96 }
             }
-            Label { Layout.fillWidth: true; horizontalAlignment: Text.AlignHCenter; text: page.money(tl.coin.sats); font.pixelSize: 13; font.bold: true
+            Label { Layout.fillWidth: true; horizontalAlignment: Text.AlignHCenter; text: page.money(tl.coin.sats)
+                    font.family: BodyFont ? BodyFont : font.family; font.pixelSize: 13; font.bold: true; color: S.ink
                     fontSizeMode: Text.HorizontalFit; minimumPixelSize: 9 }
         }
         Rectangle {
             visible: page.compact && tl.cat.id !== ''
-            x: 6; y: 6; width: 10; height: 10; radius: 5
+            x: 6; y: 6; width: 12; height: 12; radius: 6
             color: tl.cat.color
         }
         // a single coin whose address is blocked too
         Image {
             visible: tl.coin.af && !tl.inGroup
             anchors.right: parent.right; anchors.bottom: parent.bottom; anchors.margins: 4
-            source: Qt.resolvedUrl('../../icons/eh_lock.svg'); sourceSize.width: 12; sourceSize.height: 12
+            source: Qt.resolvedUrl('../../icons/eh_lock.svg'); sourceSize.width: 16; sourceSize.height: 16
         }
+        // ticked: a brass stud with the tick
         Rectangle {
             visible: tl.on
-            anchors.right: parent.right; anchors.top: parent.top; anchors.rightMargin: -6; anchors.topMargin: -6
-            width: 20; height: 20; radius: 10; color: '#e0a21a'
-            Image { anchors.centerIn: parent; source: Qt.resolvedUrl('../../icons/eh_check_white.svg'); sourceSize.width: 12; sourceSize.height: 12 }
+            anchors.right: parent.right; anchors.top: parent.top; anchors.rightMargin: -7; anchors.topMargin: -7
+            width: 24; height: 24; radius: 12
+            border.width: 2
+            border.color: S.brassRing
+            gradient: Gradient {
+                GradientStop { position: 0.0; color: S.brassLight }
+                GradientStop { position: 0.55; color: S.brass }
+                GradientStop { position: 1.0; color: S.brassDark }
+            }
+            Image { anchors.centerIn: parent; source: Qt.resolvedUrl('../../icons/eh_check_wine.svg'); sourceSize.width: 14; sourceSize.height: 14 }
         }
         MouseArea {
             anchors.fill: parent
@@ -291,53 +306,65 @@ Item {
         }
     }
 
-    // ---------- one pocket ----------
-    component Pocket: Rectangle {
+    // ---------- one pocket: a paper sheet, olive caption (to spend) or wine (set aside) ----------
+    component Pocket: Item {
         id: pk
         property string which
         property var d: ({ 'groups': [], 'singles': [], 'count': 0, 'sats': 0 })
         readonly property bool folded: { page.rev; return page.fold[which] === true }
+        readonly property color ink: which === 'spend' ? S.oliveInk : S.wine
         Layout.fillWidth: true
-        Layout.preferredHeight: pkCol.implicitHeight + 26
-        radius: 18
-        gradient: Gradient {
-            GradientStop { position: 0; color: pk.which === 'spend' ? '#76853f' : '#8a3a58' }
-            GradientStop { position: 1; color: pk.which === 'spend' ? '#45541f' : '#5e1a33' }
+        Layout.preferredHeight: pkCol.implicitHeight + 22 + 3
+        // hard shadow and the sheet
+        Rectangle { y: 3; width: parent.width; height: parent.height - 3; radius: 18; color: S.edgeShadow }
+        Rectangle {
+            width: parent.width; height: parent.height - 3; radius: 18
+            color: S.paper
+            border.width: page.dragOver === pk.which ? 4 : 1.5
+            border.color: page.dragOver === pk.which ? S.gold : S.edge
         }
-        border.width: page.dragOver === which ? 4 : 0
-        border.color: '#e0a21a'
-        EhDashedBorder { anchors.fill: parent; inset: 5; radius: 14; lineWidth: 1.6; color: Qt.rgba(1, 0.91, 0.77, 0.6) }
         ColumnLayout {
             id: pkCol
-            x: 13; y: 13
-            width: parent.width - 26
-            spacing: 7
+            x: 12; y: 8
+            width: parent.width - 24
+            spacing: 8
             // title: tap to fold / unfold
             Item {
                 Layout.fillWidth: true
-                Layout.preferredHeight: 26
+                Layout.preferredHeight: Math.max(48, pkHead.implicitHeight + 8)
                 RowLayout {
-                    anchors.fill: parent
-                    anchors.leftMargin: 5
-                    anchors.rightMargin: 5
+                    id: pkHead
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.verticalCenter: parent.verticalCenter
                     spacing: 6
-                    Label { text: pk.folded ? '▸' : '▾'; color: '#ffffff'; font.pixelSize: 13 }
-                    Image { visible: pk.which === 'aside'; source: Qt.resolvedUrl('../../icons/eh_lock_white.svg'); sourceSize.width: 15; sourceSize.height: 15 }
-                    Label { text: pk.which === 'spend' ? qsTr('To spend') : qsTr('Set aside'); color: '#ffffff'; font.pixelSize: 17; font.bold: true }
-                    Label { Layout.fillWidth: true; text: pk.d.count === 1 ? qsTr('1 coin') : qsTr('%1 coins').arg(pk.d.count); color: '#ffffff'; opacity: 0.9; font.pixelSize: 13 }
-                    Label { text: page.money(pk.d.sats); color: '#ffffff'; font.family: TitleFont ? TitleFont : font.family; font.weight: Font.Black; font.pixelSize: 18 }
+                    Label { text: pk.folded ? '▸' : '▾'; color: pk.ink; font.pixelSize: 18 }
+                    Image { visible: pk.which === 'aside'; source: Qt.resolvedUrl('../../icons/eh_lock.svg'); sourceSize.width: 18; sourceSize.height: 18 }
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        spacing: 0
+                        Label { Layout.fillWidth: true; text: pk.which === 'spend' ? qsTr('To spend') : qsTr('Set aside'); color: pk.ink
+                                font.family: BodyFont ? BodyFont : font.family; font.pixelSize: 17; font.bold: true
+                                font.letterSpacing: 0.5; font.capitalization: Font.AllUppercase; wrapMode: Text.WordWrap }
+                        Label { Layout.fillWidth: true; text: pk.d.count === 1 ? qsTr('1 coin') : qsTr('%1 coins').arg(pk.d.count); color: S.muted
+                                font.family: BodyFont ? BodyFont : font.family; font.pixelSize: 16 }
+                    }
+                    Label { text: page.money(pk.d.sats); color: pk.ink
+                            font.family: SerifFont ? SerifFont : font.family; font.weight: Font.ExtraBold; font.pixelSize: 21 }
                 }
                 MouseArea { anchors.fill: parent; onClicked: { var f = page.fold; f[pk.which] = !f[pk.which]; page.fold = f; page.rev++ } }
             }
+            EhRule { visible: !pk.folded; Layout.topMargin: -4 }
             Label {
                 visible: !pk.folded && pk.d.count === 0
                 Layout.fillWidth: true
-                Layout.topMargin: 8; Layout.bottomMargin: 8
+                Layout.topMargin: 6; Layout.bottomMargin: 6
                 horizontalAlignment: Text.AlignHCenter
                 text: qsTr('no coins here')
-                color: '#ffffff'; opacity: 0.8; font.pixelSize: 14
+                color: S.muted
+                font.family: BodyFont ? BodyFont : font.family; font.pixelSize: 16
             }
-            // the "sacchetti"
+            // the "sacchetti": dashed brass frame
             Repeater {
                 model: pk.folded ? [] : pk.d.groups
                 Rectangle {
@@ -346,37 +373,50 @@ Item {
                     readonly property bool shut: { page.rev; return page.compact && modelData.blocked && page.openAddr[modelData.address] !== true }
                     readonly property bool allOn: { page.selRev; return modelData.coins.every(function (c) { return page.sel[c.outpoint] === true }) }
                     Layout.fillWidth: true
-                    Layout.preferredHeight: grCol.implicitHeight + 12
+                    Layout.preferredHeight: grCol.implicitHeight + 14
                     radius: 13
-                    color: Qt.rgba(1, 1, 1, 0.12)
-                    EhDashedBorder { anchors.fill: parent; inset: 1; radius: 13; lineWidth: 2; color: Qt.rgba(1, 1, 1, 0.75) }
+                    color: S.parch
+                    EhDashedBorder { anchors.fill: parent; inset: 1; radius: 13; lineWidth: 2; color: S.brassRing }
                     ColumnLayout {
                         id: grCol
-                        x: 6; y: 6
-                        width: parent.width - 12
-                        spacing: 5
+                        x: 7; y: 7
+                        width: parent.width - 14
+                        spacing: 6
                         Item {
                             Layout.fillWidth: true
-                            Layout.preferredHeight: 24
+                            Layout.preferredHeight: Math.max(48, grHead.implicitHeight + 6)
                             RowLayout {
-                                anchors.fill: parent
+                                id: grHead
+                                anchors.left: parent.left
+                                anchors.right: parent.right
+                                anchors.verticalCenter: parent.verticalCenter
                                 anchors.leftMargin: 3
                                 anchors.rightMargin: 2
                                 spacing: 6
-                                Image { visible: gr.modelData.blocked; source: Qt.resolvedUrl('../../icons/eh_lock_white.svg'); sourceSize.width: 13; sourceSize.height: 13 }
-                                Label { Layout.fillWidth: true; elide: Text.ElideRight; text: page.shortAddr(gr.modelData.address)
-                                        color: '#ffffff'; font.family: FixedFont; font.pixelSize: 12; font.bold: true }
-                                Label { color: '#ffffff'; opacity: 0.92; font.pixelSize: 11
-                                        text: (gr.modelData.coins.length === gr.modelData.n ? gr.modelData.n : qsTr('%1 of %2').arg(gr.modelData.coins.length).arg(gr.modelData.n))
-                                              + ' · ' + page.money(gr.modelData.sats) }
-                                Rectangle {
-                                    Layout.preferredWidth: 21; Layout.preferredHeight: 21; radius: 10.5
-                                    color: gr.allOn ? '#e0a21a' : 'transparent'
-                                    border.width: 2
-                                    border.color: gr.allOn ? '#e0a21a' : '#ffffff'
-                                    Image { visible: gr.allOn; anchors.centerIn: parent; source: Qt.resolvedUrl('../../icons/eh_check_white.svg'); sourceSize.width: 12; sourceSize.height: 12 }
+                                Image { visible: gr.modelData.blocked; source: Qt.resolvedUrl('../../icons/eh_lock.svg'); sourceSize.width: 16; sourceSize.height: 16 }
+                                ColumnLayout {
+                                    Layout.fillWidth: true
+                                    spacing: 0
+                                    Label { Layout.fillWidth: true; elide: Text.ElideRight; text: page.shortAddr(gr.modelData.address)
+                                            color: S.ink; font.family: FixedFont; font.pixelSize: 16; font.bold: true }
+                                    Label { Layout.fillWidth: true; wrapMode: Text.WordWrap; color: S.muted
+                                            font.family: BodyFont ? BodyFont : font.family; font.pixelSize: 16
+                                            text: (gr.modelData.coins.length === gr.modelData.n ? gr.modelData.n : qsTr('%1 of %2').arg(gr.modelData.coins.length).arg(gr.modelData.n))
+                                                  + ' · ' + page.money(gr.modelData.sats) }
                                 }
-                                Item { visible: page.compact && gr.modelData.blocked; Layout.preferredWidth: 20; Layout.preferredHeight: 24 }
+                                // tick all: empty ring, or brass with the tick
+                                Rectangle {
+                                    Layout.preferredWidth: 28; Layout.preferredHeight: 28; radius: 14
+                                    border.width: 2.5
+                                    border.color: gr.allOn ? S.brassRing : S.switchOff
+                                    gradient: Gradient {
+                                        GradientStop { position: 0.0; color: gr.allOn ? S.brassLight : S.paper }
+                                        GradientStop { position: 0.55; color: gr.allOn ? S.brass : S.paper }
+                                        GradientStop { position: 1.0; color: gr.allOn ? S.brassDark : S.paper }
+                                    }
+                                    Image { visible: gr.allOn; anchors.centerIn: parent; source: Qt.resolvedUrl('../../icons/eh_check_wine.svg'); sourceSize.width: 15; sourceSize.height: 15 }
+                                }
+                                Item { visible: page.compact && gr.modelData.blocked; Layout.preferredWidth: 28; Layout.preferredHeight: 28 }
                             }
                             // the name of the address: tick all its coins; hold: drag the whole little bag
                             MouseArea {
@@ -394,9 +434,9 @@ Item {
                             Label {
                                 visible: page.compact && gr.modelData.blocked
                                 anchors.right: parent.right; anchors.verticalCenter: parent.verticalCenter
-                                width: 22; horizontalAlignment: Text.AlignHCenter
-                                text: gr.shut ? '▸' : '▾'; color: '#ffffff'; font.pixelSize: 15
-                                MouseArea { anchors.fill: parent; anchors.margins: -8
+                                width: 28; horizontalAlignment: Text.AlignHCenter
+                                text: gr.shut ? '▸' : '▾'; color: S.wine; font.pixelSize: 20
+                                MouseArea { anchors.fill: parent; anchors.margins: -10
                                             onClicked: { var o = page.openAddr; o[gr.modelData.address] = !(o[gr.modelData.address] === true); page.openAddr = o; page.rev++ } }
                             }
                         }
@@ -412,7 +452,8 @@ Item {
                             Layout.leftMargin: 3
                             wrapMode: Text.WordWrap
                             text: qsTr('address blocked: also the coins that will arrive here')
-                            color: '#ffffff'; opacity: 0.9; font.pixelSize: 11
+                            color: S.wine
+                            font.family: BodyFont ? BodyFont : font.family; font.pixelSize: 16
                         }
                     }
                 }
@@ -421,6 +462,7 @@ Item {
             Flow {
                 visible: !pk.folded && pk.d.singles.length > 0
                 Layout.fillWidth: true
+                Layout.topMargin: 2
                 spacing: 7
                 Repeater { model: pk.folded ? [] : pk.d.singles; Tile { required property var modelData; coin: modelData } }
             }
@@ -429,43 +471,39 @@ Item {
 
     ColumnLayout {
         anchors.fill: parent
-        anchors.leftMargin: 14
-        anchors.rightMargin: 14
+        anchors.leftMargin: 16
+        anchors.rightMargin: 16
         anchors.bottomMargin: 10 + app.navigationBarHeight
-        spacing: 6
+        spacing: 8
 
-        EhPageTop { title: ''; Layout.leftMargin: 8; Layout.rightMargin: 8 }
+        EhPageTop { title: ''; Layout.leftMargin: 6; Layout.rightMargin: 6 }
         RowLayout {
             Layout.fillWidth: true
             Layout.topMargin: -14
-            Label {
+            EhBackLink {
+                Layout.topMargin: 0
                 Layout.fillWidth: true
                 text: '‹ ' + qsTr('Advanced privacy')
-                color: '#5e1a33'; font.pixelSize: 17; font.bold: true
-                TapHandler { margin: 10; onTapped: app.ehPop() }
+                onClicked: app.ehPop()
             }
             Rectangle {
-                Layout.preferredWidth: 28; Layout.preferredHeight: 28; radius: 14
-                color: '#45541f'
-                Label { anchors.centerIn: parent; text: 'i'; color: '#ffffff'; font.pixelSize: 16; font.bold: true; font.family: 'serif' }
+                Layout.preferredWidth: 32; Layout.preferredHeight: 32; radius: 16
+                color: 'transparent'
+                border.width: 2.5
+                border.color: S.olive
+                Label { anchors.centerIn: parent; text: 'i'; color: S.olive; font.pixelSize: 20; font.bold: true; font.family: 'serif' }
                 MouseArea { anchors.fill: parent; anchors.margins: -8; onClicked: page.showHelp() }
             }
         }
+        EhTitle { Layout.topMargin: -6; text: qsTr('Your gold coins') }
         Label {
             Layout.fillWidth: true
-            text: qsTr('Your gold coins')
-            color: '#3f0f21'
-            font.family: TitleFont ? TitleFont : font.family
-            font.weight: Font.Black
-            font.pixelSize: 26
-            wrapMode: Text.WordWrap
-        }
-        Label {
-            Layout.fillWidth: true
+            Layout.topMargin: -4
             wrapMode: Text.WordWrap
             textFormat: Text.StyledText
-            font.pixelSize: 13
-            color: '#6b5d55'
+            font.family: BodyFont ? BodyFont : font.family
+            font.pixelSize: 16
+            color: S.muted
             text: {
                 page.rev
                 var aside = page.coins.filter(function (c) { return c.pocket === 'aside' }).length
@@ -478,7 +516,7 @@ Item {
         Flickable {
             visible: page.compact
             Layout.fillWidth: true
-            Layout.preferredHeight: 34
+            Layout.preferredHeight: 50
             contentWidth: fRow.implicitWidth
             flickableDirection: Flickable.HorizontalFlick
             clip: true
@@ -488,7 +526,7 @@ Item {
                 Repeater {
                     model: {
                         page.rev
-                        var l = [{ 'id': '*', 'name': qsTr('All (coins)'), 'color': '#3f0f21', 'n': -1 }]
+                        var l = [{ 'id': '*', 'name': qsTr('All (coins)'), 'color': S.wineDark, 'n': -1 }]
                         var cats = app.ehCats().concat([app.ehCat('')])
                         for (var i = 0; i < cats.length; i++) {
                             var n = page.coins.filter(function (c) { return page.catId(c.origin) === cats[i].id }).length
@@ -500,16 +538,17 @@ Item {
                         id: fc
                         required property var modelData
                         readonly property bool on: page.filter === modelData.id
-                        width: fcRow.implicitWidth + 20; height: 30; radius: 15
-                        color: on ? '#ffffff' : '#f1eadc'
-                        border.width: 2
+                        width: fcRow.implicitWidth + 24; height: 48; radius: 16
+                        color: on ? S.paper : S.sand
+                        border.width: on ? 2.5 : 0
                         border.color: on ? modelData.color : 'transparent'
                         RowLayout {
                             id: fcRow
                             anchors.centerIn: parent
-                            spacing: 5
-                            Rectangle { visible: fc.modelData.id !== '*'; Layout.preferredWidth: 9; Layout.preferredHeight: 9; radius: 4.5; color: fc.modelData.color }
-                            Label { text: fc.modelData.name + (fc.modelData.n >= 0 ? ' ' + fc.modelData.n : ''); font.pixelSize: 13; font.bold: true; color: fc.modelData.color }
+                            spacing: 6
+                            Rectangle { visible: fc.modelData.id !== '*'; Layout.preferredWidth: 12; Layout.preferredHeight: 12; radius: 6; color: fc.modelData.color }
+                            Label { text: fc.modelData.name + (fc.modelData.n >= 0 ? ' ' + fc.modelData.n : '')
+                                    font.family: BodyFont ? BodyFont : font.family; font.pixelSize: 16; font.bold: true; color: fc.modelData.color }
                         }
                         MouseArea { anchors.fill: parent; onClicked: { page.filter = fc.modelData.id; page.sel = ({}); page.selRev++; page.rev++ } }
                     }
@@ -527,54 +566,37 @@ Item {
             ColumnLayout {
                 id: pkWrap
                 width: fl.width
-                spacing: 10
+                spacing: 12
                 Label {
                     visible: page.coins.length === 0
                     Layout.fillWidth: true
                     Layout.topMargin: 30
                     horizontalAlignment: Text.AlignHCenter
                     wrapMode: Text.WordWrap
-                    color: '#6b5d55'; font.pixelSize: 16
+                    color: S.muted
+                    font.family: BodyFont ? BodyFont : font.family; font.pixelSize: 17
                     text: qsTr('No coins yet: they arrive when someone sends you bitcoin.')
                 }
-                Rectangle {
+                // T20 step 4: a strange small coin arrived
+                EhInfoBox {
                     visible: page.dust.length > 0
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: duCol.implicitHeight + 22
-                    radius: 16
-                    color: '#fdf1d4'
-                    border.width: 2
-                    border.color: '#e0a21a'
-                    ColumnLayout {
-                        id: duCol
-                        x: 11; y: 11
-                        width: parent.width - 22
+                    kind: 'warn'
+                    title: qsTr('A strange little coin arrived')
+                    text: page.dust.length === 0 ? '' :
+                          qsTr('<b>%1</b>, very small. Sometimes they are sent on purpose to follow your payments. If you did not expect it, set it aside: so the app never uses it.').arg(page.money(page.dust[0].sats))
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Layout.topMargin: 2
                         spacing: 8
-                        Label { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: qsTr('A strange little coin arrived'); font.pixelSize: 16; font.bold: true; color: '#7a4d00' }
-                        Label {
-                            Layout.fillWidth: true
-                            wrapMode: Text.WordWrap
-                            textFormat: Text.StyledText
-                            font.pixelSize: 14
-                            text: page.dust.length === 0 ? '' :
-                                  qsTr('<b>%1</b>, very small. Sometimes they are sent on purpose to follow your payments. If you did not expect it, set it aside: so the app never uses it.').arg(page.money(page.dust[0].sats))
+                        EhStitchButton {
+                            kind: 'paper'
+                            text: qsTr('Put aside')
+                            onClicked: page.move([page.dust[0]], true)
                         }
-                        RowLayout {
-                            Layout.fillWidth: true
-                            spacing: 8
-                            Rectangle {
-                                Layout.fillWidth: true; Layout.preferredHeight: 44; radius: 18
-                                color: '#5e1a33'
-                                Label { anchors.centerIn: parent; text: qsTr('Put aside'); color: '#ffffff'; font.pixelSize: 15; font.bold: true }
-                                MouseArea { anchors.fill: parent; onClicked: page.move([page.dust[0]], true) }
-                            }
-                            Rectangle {
-                                Layout.fillWidth: true; Layout.preferredHeight: 44; radius: 18
-                                color: '#ffffff'; border.width: 2; border.color: '#e3d9c6'
-                                Label { anchors.centerIn: parent; text: qsTr('I know it, leave it'); color: '#3f0f21'; font.pixelSize: 15; font.bold: true
-                                        width: parent.width - 12; horizontalAlignment: Text.AlignHCenter; fontSizeMode: Text.HorizontalFit; minimumPixelSize: 11 }
-                                MouseArea { anchors.fill: parent; onClicked: { app.ehSetDustOk(page.dust[0].outpoint); page.rev++ } }
-                            }
+                        EhStitchButton {
+                            kind: 'paper'
+                            text: qsTr('I know it, leave it')
+                            onClicked: { app.ehSetDustOk(page.dust[0].outpoint); page.rev++ }
                         }
                     }
                 }
@@ -584,115 +606,89 @@ Item {
         }
 
         // where the ticked coins come from: one tap gives them all the same origin
-        Rectangle {
+        EhSheet {
             visible: page.choosing && page.picked.length > 0
-            Layout.fillWidth: true
-            Layout.preferredHeight: chCol.implicitHeight + 20
-            radius: 16
-            color: '#ffffff'
-            border.width: 2
-            border.color: '#e0a21a'
-            ColumnLayout {
-                id: chCol
-                x: 10; y: 10
-                width: parent.width - 20
-                spacing: 6
-                Label { text: qsTr('Where do they come from?'); font.pixelSize: 14; font.bold: true; color: '#3f0f21' }
-                Flow {
-                    Layout.fillWidth: true
-                    spacing: 7
-                    Repeater {
-                        model: app.ehCats().concat([app.ehCat('')])
-                        Rectangle {
-                            id: cc
-                            required property var modelData
-                            width: ccRow.implicitWidth + 22; height: 38; radius: 19
-                            color: '#f4efe4'
-                            RowLayout {
-                                id: ccRow
-                                anchors.centerIn: parent
-                                spacing: 6
-                                Rectangle { Layout.preferredWidth: 11; Layout.preferredHeight: 11; radius: 5.5; color: cc.modelData.color }
-                                Label { text: cc.modelData.name; font.pixelSize: 15; font.bold: true; color: cc.modelData.color }
-                            }
-                            MouseArea { anchors.fill: parent; onClicked: page.setOrigin(page.picked, cc.modelData.id) }
+            topPadding: 10
+            bottomPadding: 12
+            spacing: 8
+            borderColor: S.gold
+            Label {
+                Layout.fillWidth: true
+                wrapMode: Text.WordWrap
+                text: qsTr('Where do they come from?')
+                font.family: BodyFont ? BodyFont : font.family; font.pixelSize: 17; font.bold: true; color: S.wineDark
+            }
+            Flow {
+                Layout.fillWidth: true
+                spacing: 7
+                Repeater {
+                    model: app.ehCats().concat([app.ehCat('')])
+                    Rectangle {
+                        id: cc
+                        required property var modelData
+                        width: ccRow.implicitWidth + 24; height: 48; radius: 16
+                        color: ccMa.pressed ? S.sand : S.parch
+                        border.width: 1.5
+                        border.color: S.edge
+                        RowLayout {
+                            id: ccRow
+                            anchors.centerIn: parent
+                            spacing: 6
+                            Rectangle { Layout.preferredWidth: 12; Layout.preferredHeight: 12; radius: 6; color: cc.modelData.color }
+                            Label { text: cc.modelData.name; font.family: BodyFont ? BodyFont : font.family; font.pixelSize: 16; font.bold: true; color: cc.modelData.color }
                         }
+                        MouseArea { id: ccMa; anchors.fill: parent; onClicked: page.setOrigin(page.picked, cc.modelData.id) }
                     }
                 }
             }
         }
-        // the button: appears when something is ticked
+        // the buttons: they appear when something is ticked
         RowLayout {
             visible: page.picked.length > 0
             Layout.fillWidth: true
             spacing: 8
-            Rectangle {
-                Layout.preferredWidth: 56
-                Layout.preferredHeight: 56
-                radius: 20
-                color: page.choosing ? '#fff8e3' : '#ffffff'
-                border.width: 2
-                border.color: page.choosing ? '#e0a21a' : '#e3d9c6'
-                // three dots of colour = "where it comes from"
+            // three dots of colour = "where it comes from"
+            EhStitchButton {
+                kind: 'paper'
+                Layout.fillWidth: false
+                Layout.preferredWidth: 64
+                text: ''
+                onClicked: page.choosing = !page.choosing
                 Row {
                     anchors.centerIn: parent
                     spacing: 3
                     Repeater { model: ['#1f6fb2', '#b4690e', '#6a4c93']; Rectangle { required property string modelData; width: 10; height: 10; radius: 5; color: modelData } }
                 }
-                MouseArea { anchors.fill: parent; onClicked: page.choosing = !page.choosing }
             }
-            Rectangle {
+            EhStitchButton {
                 visible: page.picked.length === 1
-                Layout.preferredWidth: 84
-                Layout.preferredHeight: 56
-                radius: 20
-                color: dtMa.pressed ? '#f1ebdf' : '#ffffff'
-                border.width: 2
-                border.color: '#e3d9c6'
-                Label { anchors.centerIn: parent; text: qsTr('Details'); color: '#3f0f21'; font.pixelSize: 15; font.bold: true }
-                MouseArea {
-                    id: dtMa
-                    anchors.fill: parent
-                    onClicked: {
-                        var c = page.picked[0]
-                        if (page.demo) return
-                        app.ehPush(Qt.resolvedUrl('EhCoinDetailPage.qml'), {
-                            outpoint: c.outpoint, txid: c.txid, address: c.address, amount: page.satsAmount(c.sats),
-                            blockHeight: c.height, held: c.held, addrHeld: c.af, note: c.label })
-                    }
-                }
-            }
-            Rectangle {
-                id: bar
-                readonly property bool toAside: page.selPocket() === 'spend'
-                readonly property int whole: page.wholeAddresses(page.picked)
+                kind: 'paper'
                 Layout.fillWidth: true
-                Layout.preferredHeight: 56
-                radius: 20
-                color: toAside ? (barMa.pressed ? '#4a1428' : '#5e1a33') : (barMa.pressed ? '#3a4719' : '#45541f')
-                ColumnLayout {
-                    anchors.centerIn: parent
-                    spacing: 0
-                    RowLayout {
-                        Layout.alignment: Qt.AlignHCenter
-                        spacing: 7
-                        Image { source: Qt.resolvedUrl('../../icons/' + (bar.toAside ? 'eh_lock_white.svg' : 'eh_check_white.svg')); sourceSize.width: 17; sourceSize.height: 17 }
-                        Label { Layout.maximumWidth: bar.width - 44; text: bar.toAside ? qsTr('Put aside') : qsTr('Back to spend'); color: '#ffffff'; font.pixelSize: 18; font.bold: true
-                                fontSizeMode: Text.HorizontalFit; minimumPixelSize: 12 }
-                    }
-                    Label {
-                        Layout.alignment: Qt.AlignHCenter
-                        color: '#ffffff'; opacity: 0.92; font.pixelSize: 12
-                        text: {
-                            var s = 0
-                            for (var i = 0; i < page.picked.length; i++) s += page.picked[i].sats
-                            return page.picked.length + ' · ' + page.money(s)
-                                   + (bar.whole === 1 ? ' · ' + qsTr('whole address') : (bar.whole > 1 ? ' · ' + qsTr('%1 whole addresses').arg(bar.whole) : ''))
-                        }
-                    }
+                text: qsTr('Details')
+                onClicked: {
+                    var c = page.picked[0]
+                    if (page.demo) return
+                    app.ehPush(Qt.resolvedUrl('EhCoinDetailPage.qml'), {
+                        outpoint: c.outpoint, txid: c.txid, address: c.address, amount: page.satsAmount(c.sats),
+                        blockHeight: c.height, held: c.held, addrHeld: c.af, note: c.label })
                 }
-                MouseArea { id: barMa; anchors.fill: parent; onClicked: page.move(page.picked, bar.toAside) }
             }
+        }
+        EhStitchButton {
+            id: bar
+            readonly property bool toAside: page.selPocket() === 'spend'
+            readonly property int whole: page.wholeAddresses(page.picked)
+            visible: page.picked.length > 0
+            kind: toAside ? 'wine' : 'olive'
+            icon: toAside ? 'eh_lock_white.svg' : 'eh_check_white.svg'
+            text: toAside ? qsTr('Put aside') : qsTr('Back to spend')
+            sub: {
+                var s = 0
+                for (var i = 0; i < page.picked.length; i++) s += page.picked[i].sats
+                return page.picked.length + ' · ' + page.money(s)
+                       + (bar.whole === 1 ? ' · ' + qsTr('whole address') : (bar.whole > 1 ? ' · ' + qsTr('%1 whole addresses').arg(bar.whole) : ''))
+            }
+            onClicked: page.move(page.picked, bar.toAside)
         }
     }
 
@@ -702,15 +698,15 @@ Item {
         visible: page.dragging
         z: 50
         width: 62; height: 62; radius: 31
-        color: Qt.rgba(1, 1, 1, 0.92)
+        color: S.paper
         border.width: 3
-        border.color: '#e0a21a'
+        border.color: S.gold
         Image { anchors.centerIn: parent; width: 40; height: 40; source: Qt.resolvedUrl('../../icons/eh_goldcoin_2.svg'); sourceSize.width: 96; sourceSize.height: 96 }
         Rectangle {
             visible: page.dragList.length > 1
-            anchors.right: parent.right; anchors.top: parent.top; anchors.margins: -4
-            width: 24; height: 24; radius: 12; color: '#5e1a33'
-            Label { anchors.centerIn: parent; text: page.dragList.length; color: '#ffffff'; font.pixelSize: 13; font.bold: true }
+            anchors.right: parent.right; anchors.top: parent.top; anchors.margins: -6
+            width: 28; height: 28; radius: 14; color: S.wine
+            Label { anchors.centerIn: parent; text: page.dragList.length; color: S.ivory; font.pixelSize: 16; font.bold: true }
         }
     }
 }

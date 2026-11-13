@@ -10,15 +10,19 @@ import QtQuick.Controls
 import QtQuick.Controls.Material
 
 import "controls"
+import "controls/EhStyle.js" as S
 
+// "Bottega" (WP5): only the frame and the texts changed; the scene (times, positions,
+// drawings) is the same.
 Item {
     id: page
     property bool ehHideHeader: true
     Material.theme: Material.Light
-    Material.foreground: '#2a2220'
+    Material.foreground: S.ink
 
-    Rectangle { anchors.fill: parent; color: '#faf7ef' }
-    EhGlow { tone: 'gold'; x: -page.width * 0.3; y: 40; width: page.width * 1.6; height: 380 }
+    readonly property color tagBg: Qt.rgba(1, 0.992, 0.965, 0.9)    // S.paper, a little see-through
+
+    Rectangle { anchors.fill: parent; color: S.parch }
 
     // piecewise linear value at time t (0..1): pts = [[t0, v0], [t1, v1], ...]
     function k(t, pts) {
@@ -41,38 +45,21 @@ Item {
             id: col
             x: 16
             width: parent.width - 32
-            spacing: 10
+            spacing: 12
 
             EhPageTop { title: ''; Layout.leftMargin: 6; Layout.rightMargin: 6 }
-            Label {
-                Layout.topMargin: -14
-                text: '‹ ' + qsTr('Back')   // opened from the coin choice (owner 12/11)
-                color: '#5e1a33'; font.pixelSize: 17; font.bold: true
-                TapHandler { margin: 10; onTapped: app.ehPop() }
-            }
-            Label {
-                Layout.fillWidth: true
-                wrapMode: Text.WordWrap
+            // opened from the coin choice (owner 12/11)
+            EhBackLink { onClicked: app.ehPop() }
+            EhTitle {
+                Layout.topMargin: -6
                 text: qsTr('How do the gold coins of digital gold (bitcoin) work?')
-                color: '#3f0f21'
-                font.family: TitleFont ? TitleFont : font.family
-                font.weight: Font.Black
-                font.pixelSize: 23
             }
 
             // euro coins vs gold coins
-            Rectangle {
-                Layout.fillWidth: true
-                Layout.preferredHeight: vsCol.implicitHeight + 24
-                radius: 16
-                color: Qt.rgba(1, 1, 1, 0.75)
-                border.width: 2
-                border.color: '#ecd49a'
-                ColumnLayout {
-                    id: vsCol
-                    x: 12; y: 12
-                    width: parent.width - 24
-                    spacing: 8
+            EhSheet {
+                topPadding: 12
+                bottomPadding: 14
+                spacing: 10
                     RowLayout {
                         Layout.fillWidth: true
                         spacing: 10
@@ -81,7 +68,8 @@ Item {
                             Layout.preferredWidth: 1
                             spacing: 2
                             EhCoin { Layout.alignment: Qt.AlignHCenter; c: 200; Layout.preferredWidth: 36; Layout.preferredHeight: 36 }
-                            Label { Layout.fillWidth: true; horizontalAlignment: Text.AlignHCenter; wrapMode: Text.WordWrap; font.pixelSize: 13
+                            Label { Layout.fillWidth: true; horizontalAlignment: Text.AlignHCenter; wrapMode: Text.WordWrap; font.pixelSize: 16
+                                    font.family: BodyFont ? BodyFont : font.family; color: S.ink
                                     textFormat: Text.StyledText; text: '<b>' + qsTr('Euro') + '</b><br>' + qsTr('fixed value, written on it') }
                         }
                         ColumnLayout {
@@ -89,31 +77,34 @@ Item {
                             Layout.preferredWidth: 1
                             spacing: 2
                             Image { Layout.alignment: Qt.AlignHCenter; source: Qt.resolvedUrl('../../icons/eh_goldcoin.svg'); sourceSize.width: 44; sourceSize.height: 44 }
-                            Label { Layout.fillWidth: true; horizontalAlignment: Text.AlignHCenter; wrapMode: Text.WordWrap; font.pixelSize: 13
+                            Label { Layout.fillWidth: true; horizontalAlignment: Text.AlignHCenter; wrapMode: Text.WordWrap; font.pixelSize: 16
+                                    font.family: BodyFont ? BodyFont : font.family; color: S.ink
                                     textFormat: Text.StyledText; text: '<b>' + qsTr('Digital gold (bitcoin)') + '</b><br>' + qsTr('variable value: what is inside') }
                         }
                     }
+                    EhDotLine {}
                     Label {
                         Layout.fillWidth: true
                         wrapMode: Text.WordWrap
                         textFormat: Text.StyledText
-                        font.pixelSize: 14
+                        font.family: BodyFont ? BodyFont : font.family
+                        font.pixelSize: 16
+                        lineHeight: 1.1
+                        color: S.ink
                         text: qsTr('Euro coins have their value printed on them (1 €, 2 €, 50 c) and do not change. Digital gold coins do not: each one is worth what is inside, every time a different amount, and they can be <b>melted</b> to make smaller ones or joined into a bigger one.')
                     }
-                }
             }
 
             // ---------------- the crucible scene ----------------
             Rectangle {
                 id: scene
                 Layout.fillWidth: true
-                Layout.preferredHeight: 330
-                radius: 20
+                Layout.preferredHeight: 400      // 330 -> 400: room for the 16 px step captions (positions unchanged)
+                radius: 18
                 clip: true
-                gradient: Gradient {
-                    GradientStop { position: 0; color: '#fbf4e4' }
-                    GradientStop { position: 1; color: '#f3e6c8' }
-                }
+                color: S.paper
+                border.width: 1.5
+                border.color: S.edge
                 readonly property real sx: width / 293      // mockup scene was 293 px wide
                 property real t: 0
                 // T12: slower (20 s a round instead of 12) and a tap on the crucible
@@ -136,19 +127,19 @@ Item {
                     x: 8; y: 118
                     width: 70
                     Image { anchors.horizontalCenter: parent.horizontalCenter; source: Qt.resolvedUrl('../../icons/eh_rx_olive.svg'); sourceSize.width: 36; sourceSize.height: 36 }
-                    Label { anchors.horizontalCenter: parent.horizontalCenter; text: qsTr('you'); font.pixelSize: 12; font.bold: true; color: '#3f0f21' }
+                    Label { anchors.horizontalCenter: parent.horizontalCenter; text: qsTr('you'); font.family: BodyFont ? BodyFont : font.family; font.pixelSize: 16; font.bold: true; color: S.wineDark }
                 }
                 Column {
                     x: scene.width - 82; y: 118
                     width: 76
                     Image { anchors.horizontalCenter: parent.horizontalCenter; source: Qt.resolvedUrl('../../icons/eh_home_wine.svg'); sourceSize.width: 32; sourceSize.height: 32 }
-                    Label { anchors.horizontalCenter: parent.horizontalCenter; text: qsTr('who receives'); font.pixelSize: 12; font.bold: true; color: '#3f0f21' }
+                    Label { anchors.horizontalCenter: parent.horizontalCenter; text: qsTr('who receives'); font.family: BodyFont ? BodyFont : font.family; font.pixelSize: 16; font.bold: true; color: S.wineDark }
                 }
                 Column {
                     x: scene.width - 82; y: 40
                     width: 70
                     Image { anchors.horizontalCenter: parent.horizontalCenter; source: Qt.resolvedUrl('../../icons/eh_pick.svg'); sourceSize.width: 28; sourceSize.height: 28 }
-                    Label { anchors.horizontalCenter: parent.horizontalCenter; text: qsTr('miner'); font.pixelSize: 12; font.bold: true; color: '#8a5a12' }
+                    Label { anchors.horizontalCenter: parent.horizontalCenter; text: qsTr('miner'); font.family: BodyFont ? BodyFont : font.family; font.pixelSize: 16; font.bold: true; color: S.waitInk }
                 }
 
                 // crucible: flames behind, pot, glow in front
@@ -176,10 +167,10 @@ Item {
                     width: Math.min(ctagL.implicitWidth, scene.width - 56) + 16
                     height: ctagL.height + 6
                     radius: 8
-                    color: Qt.rgba(1, 1, 1, 0.88)
+                    color: page.tagBg
                     border.width: 1
-                    border.color: '#ecd49a'
-                    Label { id: ctagL; anchors.centerIn: parent; textFormat: Text.StyledText; font.pixelSize: 13; font.bold: true; color: '#3f0f21'
+                    border.color: S.edge
+                    Label { id: ctagL; anchors.centerIn: parent; textFormat: Text.StyledText; font.family: BodyFont ? BodyFont : font.family; font.pixelSize: 16; font.bold: true; color: S.wineDark
                             width: Math.min(implicitWidth, scene.width - 56); wrapMode: Text.WordWrap; horizontalAlignment: Text.AlignHCenter
                             text: qsTr('the <b>crucible</b> = the transaction on the blockchain') }
                 }
@@ -209,12 +200,12 @@ Item {
                         width: tagCol.implicitWidth + 10
                         height: tagCol.implicitHeight + 4
                         radius: 8
-                        color: Qt.rgba(1, 1, 1, 0.88)
+                        color: page.tagBg
                         Column {
                             id: tagCol
                             anchors.centerIn: parent
-                            Label { anchors.horizontalCenter: parent.horizontalCenter; text: mv.value; font.pixelSize: 11; font.bold: true; color: '#3f0f21' }
-                            Label { anchors.horizontalCenter: parent.horizontalCenter; text: 'UTXO ' + mv.utxo; font.family: FixedFont; font.pixelSize: 9; font.bold: true; color: '#8a5a12' }
+                            Label { anchors.horizontalCenter: parent.horizontalCenter; text: mv.value; font.family: BodyFont ? BodyFont : font.family; font.pixelSize: 11; font.bold: true; color: S.wineDark }
+                            Label { anchors.horizontalCenter: parent.horizontalCenter; text: 'UTXO ' + mv.utxo; font.family: FixedFont; font.pixelSize: 9; font.bold: true; color: S.waitInk }
                         }
                     }
                 }
@@ -249,7 +240,7 @@ Item {
                         y: scene.height - height - 8
                         height: capL.implicitHeight + 16
                         radius: 12
-                        color: Qt.rgba(1, 1, 1, 0.85)
+                        color: page.tagBg
                         opacity: page.k(scene.t, [[modelData.a, 0], [modelData.a + 0.02, 1], [modelData.b, 1], [modelData.b + 0.02, 0]])
                         Label {
                             id: capL
@@ -258,50 +249,30 @@ Item {
                             wrapMode: Text.WordWrap
                             horizontalAlignment: Text.AlignHCenter
                             textFormat: Text.StyledText
-                            font.pixelSize: 14
+                            font.family: BodyFont ? BodyFont : font.family
+                            font.pixelSize: 16
+                            color: S.ink
                             text: modelData.txt
                         }
                     }
                 }
             }
 
-            Rectangle {
-                Layout.fillWidth: true
-                Layout.preferredHeight: whatL.implicitHeight + 22
-                radius: 14
-                color: Qt.rgba(1, 1, 1, 0.78)
-                border.width: 2
-                border.color: '#ecd49a'
-                Label {
-                    id: whatL
-                    x: 11; y: 11
-                    width: parent.width - 22
-                    wrapMode: Text.WordWrap
-                    textFormat: Text.StyledText
-                    font.pixelSize: 14
-                    text: qsTr('<b>What is the crucible?</b> In Bitcoin it is called <b>transaction</b>. It takes some gold coins (the UTXOs you spend), melts them and mints new coins: one for who receives and one with the change for you. The old coins disappear for ever: they cannot be spent twice.')
-                }
+            EhInfoBox {
+                kind: "warn"
+                text: qsTr('<b>What is the crucible?</b> In Bitcoin it is called <b>transaction</b>. It takes some gold coins (the UTXOs you spend), melts them and mints new coins: one for who receives and one with the change for you. The old coins disappear for ever: they cannot be spent twice.')
             }
-            Rectangle {
-                Layout.fillWidth: true
-                Layout.preferredHeight: sumL.implicitHeight + 22
-                radius: 14
-                color: Qt.rgba(0.98, 0.94, 0.84, 0.92)
-                Label {
-                    id: sumL
-                    x: 11; y: 11
-                    width: parent.width - 22
-                    wrapMode: Text.WordWrap
-                    font.pixelSize: 14
-                    text: qsTr('120 € + 50 € = 170 € go in · 150 € + 19.90 € = 169.90 € come out · the 10 cents missing are the tip to the miner.')
-                }
+            EhInfoBox {
+                kind: "tip"
+                text: qsTr('120 € + 50 € = 170 € go in · 150 € + 19.90 € = 169.90 € come out · the 10 cents missing are the tip to the miner.')
             }
             Label {
                 Layout.fillWidth: true
                 wrapMode: Text.WordWrap
                 textFormat: Text.StyledText
-                font.pixelSize: 13
-                color: '#6b5d55'
+                font.family: BodyFont ? BodyFont : font.family
+                font.pixelSize: 16
+                color: S.muted
                 text: qsTr('The change arrives on one of your <b>change addresses</b>: you find it in "Addresses", in the group "Change".')
             }
         }
