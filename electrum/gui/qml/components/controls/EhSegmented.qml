@@ -1,4 +1,4 @@
-// Easy Heirs (schèi), "Bottega": a choice of 2-4 side by side.
+// Easy Heirs (schȅi), "Bottega": a choice of 2-4 side by side.
 // look 'filter' (Movements Tutti/Ricevuti/Inviati, euro/BTC, Coins/Addresses, export period):
 //   sand track 56 high, items 17 bold ink; the chosen one is a paper tab with wine text.
 // look 'level' (Settings BASE/MEDIO/ESPERTO, the two seed choices): paper tiles >= 64 high with

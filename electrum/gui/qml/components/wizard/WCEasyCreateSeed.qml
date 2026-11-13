@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): "Le tue 12 parole" — shows the new seed, big and numbered.
+// Easy Heirs (schȅi): "Le tue 12 parole" — shows the new seed, big and numbered.
 // Replaces WCCreateSeed. No passphrase step (seed_extend = false).
 // "Bottega" (WP6): parchment page, the hints in the warning box, paper word tiles with the
 // number in brass, "I wrote them down" in wine leather with the pen and the arrow.

@@ -13,7 +13,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.GCMParameterSpec;
 
 /**
- * Easy Heirs (Schèi): the phone's safe.
+ * Easy Heirs (Schȅi): the phone's safe.
  *
  * The wallet password is a long random secret. It is stored only "wrapped":
  * encrypted with an AES key that lives in the AndroidKeyStore (the secure chip

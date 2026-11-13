@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): first screen, choose the language (Italiano, Veneto, English).
+// Easy Heirs (schȅi): first screen, choose the language (Italiano, Veneto, English).
 // Shown only at first start. The choice is applied at once, so every
 // following screen is already in the chosen language, without a restart.
 // Style "Bottega" (owner 13/11, preview pulsanti-grandi-rimasti.html): the B landscape on top as

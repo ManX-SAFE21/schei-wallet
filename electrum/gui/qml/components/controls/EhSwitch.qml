@@ -1,4 +1,4 @@
-// Easy Heirs (schèi), "Bottega": on/off switch. Track 60x34 (off warm grey, on olive) with a
+// Easy Heirs (schȅi), "Bottega": on/off switch. Track 60x34 (off warm grey, on olive) with a
 // brass knob. It IS a Switch (only the look changes), so the API is the same as the Material
 // Switch it replaces: checked, enabled, toggled() (checked is already the new value in
 // onToggled) and a binding on checked is not broken by a tap. 8 px of touch room all round.

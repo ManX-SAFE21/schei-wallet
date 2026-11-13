@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): the two pockets of the advanced privacy (T20 step 2).
+// Easy Heirs (schȅi): the two pockets of the advanced privacy (T20 step 2).
 // "Da spendere" = coins the app may use; "Da parte" = blocked coins (frozen).
 // Coins that sit on the same address are kept together in a dashed "sacchetto":
 // moving the whole sacchetto aside blocks the ADDRESS (Electrum's freeze address).

@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): "Gestione privacy avanzata" (T20, owner 2026-11-09).
+// Easy Heirs (schȅi): "Gestione privacy avanzata" (T20, owner 2026-11-09).
 // For advanced users only, off by default: with the switch off the app shows
 // no pockets, no origin colours and no privacy warnings.
 // Step 1: the page and its switch. Next steps add the pockets with the

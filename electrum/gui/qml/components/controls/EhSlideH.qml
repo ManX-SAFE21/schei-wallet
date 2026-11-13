@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): horizontal slide with the bitcoin coin (T24, owner 2026-11-11).
+// Easy Heirs (schȅi): horizontal slide with the bitcoin coin (T24, owner 2026-11-11).
 // Push the coin to the right end: it stays there, locked, for lockSeconds and
 // waits for the other slide; if nothing happens it goes back by itself.
 // Two of them confirm a payment: together with two fingers, or one at a time.

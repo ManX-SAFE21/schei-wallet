@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): shows our pages (coins list, crucible, coin detail…) ABOVE a dialog, e.g.
+// Easy Heirs (schȅi): shows our pages (coins list, crucible, coin detail…) ABOVE a dialog, e.g.
 // from the coin choice of a payment. It has its own StackView; while it is open app.ehPush /
 // app.ehPop act on it, so the pages work the same here and on the main stack.
 import QtQuick

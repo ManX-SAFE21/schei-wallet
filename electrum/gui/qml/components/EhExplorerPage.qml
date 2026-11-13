@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): "Dove vedere i movimenti" (T32, owner 2026-11-11).
+// Easy Heirs (schȅi): "Dove vedere i movimenti" (T32, owner 2026-11-11).
 // The site opened by "Vedi sulla blockchain": a tap chooses it, the pencil changes its
 // name and address, "+ Aggiungi un sito" adds one. Electrum's own setting underneath
 // (Config.ehExplorers / ehSelectExplorer / ehSaveExplorer / ehForgetExplorer).

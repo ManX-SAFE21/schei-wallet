@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): "Collegamento" (advanced settings). Automatic servers or
+// Easy Heirs (schȅi): "Collegamento" (advanced settings). Automatic servers or
 // only your own node, and "Passa da Tor" through the Orbot app. Electrum's own
 // network settings (setServerParameters, proxy, probeTor): only the look is ours.
 // "Bottega" look (WP4): status line on a paper sheet, the two choices as radio rows,
@@ -197,7 +197,7 @@ Item {
 
             EhInfoBox {
                 kind: 'warn'
-                text: qsTr('Schèi connects by itself to the public Electrum servers, to know the balance and to send payments. If you have <b>your own node</b> (for example on Umbrel), you can connect only to that.')
+                text: qsTr('Schȅi connects by itself to the public Electrum servers, to know the balance and to send payments. If you have <b>your own node</b> (for example on Umbrel), you can connect only to that.')
             }
 
             // automatic or only my node
@@ -321,8 +321,8 @@ Item {
                 visible: page.torOn
                 kind: 'warn'
                 text: page.torFound === 0
-                      ? qsTr('<b>What to do:</b> open the <b>Orbot</b> app and tap the big button to turn it on. Then come back here: Schèi connects by itself.') + '<br><br>'
-                        + qsTr('If you do not have Orbot, turn off "Go through Tor" and Schèi connects normally again.')
+                      ? qsTr('<b>What to do:</b> open the <b>Orbot</b> app and tap the big button to turn it on. Then come back here: Schȅi connects by itself.') + '<br><br>'
+                        + qsTr('If you do not have Orbot, turn off "Go through Tor" and Schȅi connects normally again.')
                       : qsTr('With Tor the connection is a bit slower: a few seconds more when opening and to update the balance.')
             }
         }

@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): "Valuta" (T48, owner 12/11, preview valuta.html). The reference
+// Easy Heirs (schȅi): "Valuta" (T48, owner 12/11, preview valuta.html). The reference
 // currency for the amounts. Electrum knows many; only real money is listed (no other crypto),
 // the most used first, with a search. Changing it uses Electrum's own exchange rates.
 // Look: "Bottega" (paper sheets, rows like EhRow, the chosen one with an olive tick).

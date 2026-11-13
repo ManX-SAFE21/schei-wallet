@@ -6,7 +6,7 @@ import QtQuick.Controls.Material
 import "controls"
 import "controls/EhStyle.js" as S
 
-// Easy Heirs (schèi): name and colour of the wallet (shown on the balance card).
+// Easy Heirs (schȅi): name and colour of the wallet (shown on the balance card).
 // Look: "Bottega"; the page scrolls (the keyboard opens here).
 Item {
     id: page

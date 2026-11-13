@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): 4-digit PIN entry: four dots, a message line and big
+// Easy Heirs (schȅi): 4-digit PIN entry: four dots, a message line and big
 // 0-9 keys. Emits completed(pin) when the 4th digit is typed.
 // "Bottega" look (WP1): brass dots, paper keys (EhKey); the behaviour is the owner's of 13/11.
 import QtQuick

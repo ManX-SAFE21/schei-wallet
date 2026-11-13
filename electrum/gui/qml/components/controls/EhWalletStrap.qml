@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): the closing strap of the leather wallet card.
+// Easy Heirs (schȅi): the closing strap of the leather wallet card.
 // It comes from the back, wraps round the right edge (darker fold) and lies on
 // the front with a rounded end. Its golden snap button opens the settings.
 import QtQuick

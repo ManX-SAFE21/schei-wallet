@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): all movements, grouped by period, filter All /
+// Easy Heirs (schȅi): all movements, grouped by period, filter All /
 // Received / Sent, CSV export at the bottom. Tap a row for the details.
 // Look: "Bottega" (one paper sheet for the list, periods with the gold rule, dotted lines).
 import QtQuick

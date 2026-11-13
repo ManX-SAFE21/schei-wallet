@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): export the movements to a CSV file (Excel, accountant).
+// Easy Heirs (schȅi): export the movements to a CSV file (Excel, accountant).
 // Period: all / this year / last year. The file is shared (email, WhatsApp,
 // Drive...) through the Android share sheet.
 // Look: "Bottega"; the page scrolls (nothing under the Android keys).
@@ -93,7 +93,7 @@ Item {
                 text: qsTr('Create and share the file')
                 onClicked: AppController.ehShareFile('schei-' + (Daemon.currentWallet ? Daemon.currentWallet.name : 'wallet').replace(/[^A-Za-z0-9_-]/g, '_')
                                                      + '-' + Qt.formatDateTime(new Date(), 'yyyyMMdd-hhmm') + '.csv',
-                                                     page.csv, qsTr('Schèi movements (CSV)'))
+                                                     page.csv, qsTr('Schȅi movements (CSV)'))
             }
         }
     }

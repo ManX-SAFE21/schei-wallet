@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): "Benvenuto" screen, first step of the new wallet wizard.
+// Easy Heirs (schȅi): "Benvenuto" screen, first step of the new wallet wizard.
 // Two big choices only; wallet name, wallet type and seed type are set
 // automatically (see QENewWalletWizard.eh_welcome_accept).
 // Style "Bottega" (WP6): the home's B landscape on top (bell tower, cypresses, bitcoin sun with

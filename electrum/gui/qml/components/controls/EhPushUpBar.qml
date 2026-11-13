@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): vertical "push up to send" bar. The Bitcoin coin starts
+// Easy Heirs (schȅi): vertical "push up to send" bar. The Bitcoin coin starts
 // at the bottom; pushed all the way up it confirms. With lockSeconds > 0 the
 // coin stays locked at the top for that time (used by the double confirmation)
 // and then falls back by itself.

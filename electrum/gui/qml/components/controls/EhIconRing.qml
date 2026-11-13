@@ -1,4 +1,4 @@
-// Easy Heirs (schèi), "Bottega": icon in a ring (rows, movements, detail page).
+// Easy Heirs (schȅi), "Bottega": icon in a ring (rows, movements, detail page).
 // 40x40 transparent circle, 2.5 border (wine = money out / settings, olive = money in),
 // icon 23 inside. big: true = the 60x60 ring of a detail page (border 3, paper fill, icon 36).
 import QtQuick

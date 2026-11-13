@@ -248,7 +248,7 @@ Item {
         Component.onCompleted: updateImplicitWidth()
     }
 
-    // Easy Heirs (schèi): home in the "Colline del vino" style.
+    // Easy Heirs (schȅi): home in the "Colline del vino" style.
     // The app header is hidden on this page (ehHideHeader); our own top bar has
     // the logo and a small gear button for the settings.
     property bool ehHideHeader: true
@@ -315,7 +315,7 @@ Item {
         anchors.bottomMargin: 14 + app.navigationBarHeight
         spacing: 8
 
-        // logo "schèi Wallet" at the top, in the sky
+        // logo "schȅi Wallet" at the top, in the sky
         Item {
             Layout.fillWidth: true
             Layout.preferredHeight: mainView.ehTop + mainView.ehHeadH
@@ -581,12 +581,12 @@ Item {
                 ehdialog.open()
                 return
             }
-            // Easy Heirs (review 2026-11-11): Schèi pays only plain bitcoin addresses, through its
+            // Easy Heirs (review 2026-11-11): Schȅi pays only plain bitcoin addresses, through its
             // own screens (PIN, two slides, countdown). Lightning invoices, also those with an
             // on-chain fallback, would open Electrum's dialog and pay with none of that: refuse them.
             app.ehInfoDialog.createObject(app, {
-                pageTitle: qsTr('This code cannot be paid with Schèi'),
-                bodyText: qsTr('It is a <b>Lightning</b> payment request. Schèi pays only normal bitcoin addresses (they start with bc1, 1 or 3).')
+                pageTitle: qsTr('This code cannot be paid with Schȅi'),
+                bodyText: qsTr('It is a <b>Lightning</b> payment request. Schȅi pays only normal bitcoin addresses (they start with bc1, 1 or 3).')
                           + '<br><br>' + qsTr('Ask the person you pay for a normal bitcoin address.')
             }).open()
         }

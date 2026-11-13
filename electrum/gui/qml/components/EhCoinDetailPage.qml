@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): one gold coin seen up close: its full UTXO (serial
+// Easy Heirs (schȅi): one gold coin seen up close: its full UTXO (serial
 // number) to read, copy and share, the spend / block switch, where it arrived.
 // "Bottega" (WP5): parchment page, paper sheets, stitched paper buttons.
 import QtQuick

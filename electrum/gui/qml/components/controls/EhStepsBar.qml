@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): the steps to do, as icons joined by a line, at the top
+// Easy Heirs (schȅi): the steps to do, as icons joined by a line, at the top
 // of the page over the hills (like the Àncòra plugin and the offline multisig).
 // Done steps: green with a tick; the current one: wine and bigger; later: light.
 // Tapping a step that is done goes back to it (the data typed stay); the current

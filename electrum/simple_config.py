@@ -245,7 +245,7 @@ class SimpleConfig(Logger):
         for chain in constants.NETS_LIST:
             if android_pkg_name == f"org.electrum.{chain.cli_flag()}.electrum":
                 config_options[chain.cli_flag()] = True
-            # Schèi testnet4: io.safe21.easyheirs.testnet4.electrum
+            # Schȅi testnet4: io.safe21.easyheirs.testnet4.electrum
             if android_pkg_name == f"io.safe21.easyheirs.{chain.cli_flag()}.electrum":
                 config_options[chain.cli_flag()] = True
 

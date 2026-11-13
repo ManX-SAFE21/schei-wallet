@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): more wallets (expert option). Wallet cards side by side,
+// Easy Heirs (schȅi): more wallets (expert option). Wallet cards side by side,
 // swipe to change wallet (BlueWallet-like idea, own design). The last card adds
 // a new wallet (max 7). Dots show where you are.
 import QtQuick

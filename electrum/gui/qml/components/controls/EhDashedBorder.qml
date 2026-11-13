@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): dashed rounded outline, drawn (QML borders are solid).
+// Easy Heirs (schȅi): dashed rounded outline, drawn (QML borders are solid).
 import QtQuick
 
 Canvas {

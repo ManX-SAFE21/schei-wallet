@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): "I tuoi schèi", the balance as real money on a table.
+// Easy Heirs (schȅi): "I tuoi schȅi", the balance as real money on a table.
 // Every banknote is drawn (100, 50, 20, 10, 5), slightly overlapped, in real
 // euro proportions; then the coins. Many 100s are grouped in bundles of
 // 1,000 euro (10 notes with the paper strap). Still picture, no animations.

@@ -1,4 +1,4 @@
-// Easy Heirs (schèi), "Bottega": dotted separator between rows (one tiled SVG, no Canvas).
+// Easy Heirs (schȅi), "Bottega": dotted separator between rows (one tiled SVG, no Canvas).
 import QtQuick
 import QtQuick.Layouts
 

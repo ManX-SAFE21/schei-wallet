@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): "How much do you pay for sending?". Electrum's own fee
+// Easy Heirs (schȅi): "How much do you pay for sending?". Electrum's own fee
 // slider (ETA targets 1008 ... 1 blocks), shown as cost in euro + time.
 // The choice is for this payment only: every new payment starts from normal.
 // "Bottega": parchment page, cost and time on a paper sheet, sand track with a brass knob.

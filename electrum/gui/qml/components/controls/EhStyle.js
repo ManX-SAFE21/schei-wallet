@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): the "Bottega" style tokens (anteprima/stile-bottega-piano.md, section 1).
+// Easy Heirs (schȅi): the "Bottega" style tokens (anteprima/stile-bottega-piano.md, section 1).
 // Parchment page, paper sheets, stitched leather buttons, brass for what you grab,
 // wine = money out, olive = money in.
 // Use: import "EhStyle.js" as S   (pages: "controls/EhStyle.js", wizard: "../controls/EhStyle.js")

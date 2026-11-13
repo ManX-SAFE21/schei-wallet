@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): one banknote, simple drawing (not the real one), owner 12/11
+// Easy Heirs (schȅi): one banknote, simple drawing (not the real one), owner 12/11
 // (preview banconote-euro-dollaro.html).
 // EUR: real colours, arch in the middle, silver strip, stars, big value bottom right.
 // USD: classic green, dark green frame, a coloured stripe for the value, big value.

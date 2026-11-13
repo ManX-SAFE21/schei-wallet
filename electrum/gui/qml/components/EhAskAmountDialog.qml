@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): "Quanto chiedi?" (expert option "Ask for an amount").
+// Easy Heirs (schȅi): "Quanto chiedi?" (expert option "Ask for an amount").
 // Euro keypad; "Inserisci l'importo" makes a new receive request with it.
 // "Bottega": parchment page, the amount keys of the Send page, olive leather button.
 import QtQuick

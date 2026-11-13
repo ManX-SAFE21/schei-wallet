@@ -1,4 +1,4 @@
-// Easy Heirs (schèi), "Bottega": a paper sheet on the parchment page. Paper, radius 18,
+// Easy Heirs (schȅi), "Bottega": a paper sheet on the parchment page. Paper, radius 18,
 // 1.5 border, and a hard 3 px shadow (one more Rectangle, no blur). The children go in a
 // ColumnLayout (spacing 0) with 12 px side padding: put EhRow's in it, or any content.
 //   EhSheet { EhRow { ... } EhRow { ...; last: true } }

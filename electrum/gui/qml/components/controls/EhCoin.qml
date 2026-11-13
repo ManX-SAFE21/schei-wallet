@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): one coin, simple drawing (owner 12/11: euro and US dollar).
+// Easy Heirs (schȅi): one coin, simple drawing (owner 12/11: euro and US dollar).
 // EUR: 2 € silver outside / gold inside, 1 € the other way round, 50-10 cent gold, 5 and 1 cent copper.
 // USD: 25, 10, 5 cent silver, 1 cent copper.
 // c = value in cents. Size is set by the user.

@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): amount with banknotes and coins (euro or US dollar, owner 12/11).
+// Easy Heirs (schȅi): amount with banknotes and coins (euro or US dollar, owner 12/11).
 // Tapping a note or a coin makes it fly onto the heap in the purse
 // ("gruzzoletto"); the total and how many of each kind are shown beside it.
 // Notes and coins keep the real euro proportions (the 50 is the biggest note,

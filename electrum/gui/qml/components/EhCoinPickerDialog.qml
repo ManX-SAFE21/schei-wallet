@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): "Quali monete fondere?". Pick by hand the gold coins
+// Easy Heirs (schȅi): "Quali monete fondere?". Pick by hand the gold coins
 // (UTXOs) the payment will melt; blocked coins are not shown. Empty choice =
 // the app chooses by itself (Electrum's normal coin selection).
 // "Bottega" (WP5): parchment page, "Needed / You chose" on a paper sheet, the list is

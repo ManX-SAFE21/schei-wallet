@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): RICEVI. Big QR in a green frame, an address card that
+// Easy Heirs (schȅi): RICEVI. Big QR in a green frame, an address card that
 // holds the address and its own Share / Copy buttons. When the payment shows
 // up, the same screen changes to "Ti sono arrivati" with the waiting note.
 // "Bottega": parchment page, olive title, the address on a paper sheet, stitched buttons.

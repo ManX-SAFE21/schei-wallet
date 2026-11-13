@@ -6,7 +6,7 @@ import QtQuick.Controls.Material
 import "controls"
 import "controls/EhStyle.js" as S
 
-// Easy Heirs (schèi): the 12 words again (after the PIN).
+// Easy Heirs (schȅi): the 12 words again (after the PIN).
 // "Bottega" (WP6): same word tiles as the new-wallet page (paper, number in brass), the scam
 // warning in the rose box; the page scrolls.
 Item {

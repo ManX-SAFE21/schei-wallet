@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): the address in big letters: first 4 (after bc1q) and
+// Easy Heirs (schȅi): the address in big letters: first 4 (after bc1q) and
 // last 4, spaced, to read them aloud and compare with the other person.
 // "Bottega": parchment page, the two groups on paper tiles, the whole address on a sheet.
 import QtQuick

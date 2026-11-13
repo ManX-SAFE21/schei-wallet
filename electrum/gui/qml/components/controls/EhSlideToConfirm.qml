@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): horizontal "Scorri per inviare" slider. The knob must be
+// Easy Heirs (schȅi): horizontal "Scorri per inviare" slider. The knob must be
 // dragged all the way to the right; released early, it goes back.
 import QtQuick
 import QtQuick.Controls

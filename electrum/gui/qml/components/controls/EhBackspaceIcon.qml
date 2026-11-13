@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): the "delete" key symbol, drawn (arrow-shaped key with a
+// Easy Heirs (schȅi): the "delete" key symbol, drawn (arrow-shaped key with a
 // cross). The font character U+232B is missing on many Android phones and
 // shows as an empty box, so we never use it.
 import QtQuick

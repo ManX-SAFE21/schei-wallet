@@ -1,4 +1,4 @@
-// Easy Heirs (schèi), "Bottega": page title. Fraunces 30 wine, optional icon (32 px) on the
+// Easy Heirs (schȅi), "Bottega": page title. Fraunces 30 wine, optional icon (32 px) on the
 // left, the double gold rule under it. For the pages that draw their own title after
 // EhPageTop { title: '' } (Settings, Movements, Receive, ...).
 //   EhTitle { text: qsTr('Settings'); icon: 'eh_gear.svg' }

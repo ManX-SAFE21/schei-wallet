@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): details of one movement: amount, personal note,
+// Easy Heirs (schȅi): details of one movement: amount, personal note,
 // date, sending cost (if sent), status with confirmations, address.
 // Look: "Bottega" (ring icon, serif amount, paper sheets, stitched buttons).
 import QtQuick

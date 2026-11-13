@@ -1,4 +1,4 @@
-// Easy Heirs (schèi), "Bottega": the double gold rule under titles (two 1 px lines, 1 px apart).
+// Easy Heirs (schȅi), "Bottega": the double gold rule under titles (two 1 px lines, 1 px apart).
 import QtQuick
 import QtQuick.Layouts
 

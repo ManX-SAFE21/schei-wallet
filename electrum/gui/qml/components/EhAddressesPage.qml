@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): "I tuoi indirizzi", opened from Receive (T8, owner 2026-11-09).
+// Easy Heirs (schȅi): "I tuoi indirizzi", opened from Receive (T8, owner 2026-11-09).
 // Every address is a "pocket" of the wallet and can hold more coins (UTXO).
 // The switch blocks the whole address (Electrum's "freeze address"): none of its
 // coins is used to pay, also the ones that will arrive later.

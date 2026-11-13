@@ -6,7 +6,7 @@ import QtQuick.Controls.Material
 import "controls"
 import "controls/EhStyle.js" as S
 
-// Easy Heirs (schèi): information: logo, version, "few schei" note,
+// Easy Heirs (schȅi): information: logo, version, "few schei" note,
 // credit to Electrum (MIT licence, as the licence requires).
 // Look: "Bottega" (paper sheets, warn box, stitched paper buttons for the links).
 Item {
@@ -59,7 +59,7 @@ Item {
             EhInfoBox {
                 kind: 'warn'
                 icon: 'eh_wallet.svg'
-                text: '<b>' + qsTr('Schèi is like the wallet in your pocket:') + '</b> ' + qsTr('keep only a few schei in it, the ones for spending. It is not a safe: for big savings use a safer system.')
+                text: '<b>' + qsTr('Schȅi is like the wallet in your pocket:') + '</b> ' + qsTr('keep only a few schei in it, the ones for spending. It is not a safe: for big savings use a safer system.')
             }
             EhSheet {
                 topPadding: 12
@@ -78,25 +78,25 @@ Item {
                 topPadding: 12
                 bottomPadding: 12
                 Para {
-                    text: qsTr('The code of Schèi is free and public on GitHub. Nobody, not even who made the app, can see your 12 words or touch your money.')
+                    text: qsTr('The code of Schȅi is free and public on GitHub. Nobody, not even who made the app, can see your 12 words or touch your money.')
                 }
             }
 
-            // what Schèi changes and what stays Electrum's (owner 2026-11-11)
+            // what Schȅi changes and what stays Electrum's (owner 2026-11-11)
             EhSheet {
                 topPadding: 4
                 bottomPadding: 12
                 spacing: 8
                 EhCaption { text: qsTr('WHAT SCHÈI CHANGES'); rule: true; Layout.topMargin: 8; Layout.bottomMargin: 0 }
                 Para {
-                    text: qsTr('Schèi is a <b>new look</b> of the Electrum mobile wallet, made simpler for everyone: screens, words, big buttons.')
+                    text: qsTr('Schȅi is a <b>new look</b> of the Electrum mobile wallet, made simpler for everyone: screens, words, big buttons.')
                 }
                 Para {
                     text: qsTr('All the parts that protect your money are the <b>original ones of Electrum</b>, not changed: the cryptography, the creation of the 12 words, the signature of the payments, the keys.')
                 }
                 Para {
                     color: S.muted
-                    text: qsTr('Schèi only adds the PIN and keeps the wallet password in the safe of the phone (Android Keystore), the same way Electrum does with the fingerprint.')
+                    text: qsTr('Schȅi only adds the PIN and keeps the wallet password in the safe of the phone (Android Keystore), the same way Electrum does with the fingerprint.')
                 }
             }
 
@@ -112,7 +112,7 @@ Item {
                 Repeater {
                     model: [
                         { 'icon': 'eh_mail_wine.svg', 'title': qsTr('Write an e-mail'), 'sub': 'schei@safe21.io',
-                          'url': 'mailto:schei@safe21.io?subject=' + encodeURIComponent('Schèi Wallet ' + BUILD.electrum_version) },
+                          'url': 'mailto:schei@safe21.io?subject=' + encodeURIComponent('Schȅi Wallet ' + BUILD.electrum_version) },
                         { 'icon': 'eh_github_wine.svg', 'title': qsTr('Report a problem on GitHub'), 'sub': 'github.com/ManX-SAFE21/schei-wallet',
                           'url': 'https://github.com/ManX-SAFE21/schei-wallet/issues' }
                     ]

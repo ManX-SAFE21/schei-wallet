@@ -1,4 +1,4 @@
-// Easy Heirs (schèi), "Bottega": a key of a keypad (PIN, amount, fee, letter keyboard).
+// Easy Heirs (schȅi), "Bottega": a key of a keypad (PIN, amount, fee, letter keyboard).
 // Paper, radius 18, 1.5 border, hard 3 px shadow; pressed = sand and the key "goes down" 2 px.
 // Digit: Fraunces 34 wineDark. letter: true = Lexend 20 bold. isDelete: true = the delete key
 // (sand fill, drawn backspace symbol in wine).

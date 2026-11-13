@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): switch of one gold coin. Green "si spende" (default),
+// Easy Heirs (schȅi): switch of one gold coin. Green "si spende" (default),
 // red "bloccata" (the app will not use the coin to pay).
 // "Bottega" (WP1): track 60x34 with the brass knob, label 16 bold.
 import QtQuick

@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): "Maggiori informazioni" button. "Bottega" (WP1): a thin wrapper over
+// Easy Heirs (schȅi): "Maggiori informazioni" button. "Bottega" (WP1): a thin wrapper over
 // EhStitchButton (paper, info icon, height 60).
 import QtQuick
 import QtQuick.Layouts

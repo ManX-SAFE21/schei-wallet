@@ -1,4 +1,4 @@
-# Easy Heirs (Schèi): the phone's safe and the PIN.
+# Easy Heirs (Schȅi): the phone's safe and the PIN.
 #
 # The wallet password is a long random secret, kept "wrapped" by the Android
 # keystore (java_classes/org/safe21/eh/KeyVault.java), so the wallet opens and

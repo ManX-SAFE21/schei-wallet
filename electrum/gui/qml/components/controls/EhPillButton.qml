@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): big pill button of the "Colline del vino" style.
+// Easy Heirs (schȅi): big pill button of the "Colline del vino" style.
 // "Bottega" (WP1, plan section 2 "Migration"): it is now a thin wrapper over EhStitchButton,
 // height 60: color picks the kind (wine-ish -> 'wine', olive-ish -> 'olive', light -> 'paper');
 // the children of the old round tile go in the icon place, on a small disc of tileColor (so the

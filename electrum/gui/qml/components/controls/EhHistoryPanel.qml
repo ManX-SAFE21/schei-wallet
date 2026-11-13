@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): compact list of the latest movements for the home.
+// Easy Heirs (schȅi): compact list of the latest movements for the home.
 // Home "Bottega" (owner 13/11, preview home-nuova-grafica.html, proposal B): the movements are
 // written on a sheet of paper, like an old account book: on the left what happened and when,
 // on the right the amount, all in one column. Received = olive, sent = wine.

@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): "Come funzionano le monete d'oro digitale (bitcoin)".
+// Easy Heirs (schȅi): "Come funzionano le monete d'oro digitale (bitcoin)".
 // Euro coins (fixed value) vs gold coins (variable value), then a 12 s loop:
 // two gold coins go into the crucible (= the transaction), it melts them, and
 // at the same time come out the coin for who receives, the change for you and

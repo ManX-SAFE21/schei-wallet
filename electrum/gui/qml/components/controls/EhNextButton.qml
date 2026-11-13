@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): "go on" button. "Bottega" (WP1): a thin wrapper over EhStitchButton
+// Easy Heirs (schȅi): "go on" button. "Bottega" (WP1): a thin wrapper over EhStitchButton
 // (wine leather, or olive when color is olive; the arrow on the right). Old API kept so the
 // pages keep working until they use EhStitchButton directly: color picks the kind,
 // textColor / arrowColor / fontSize are ignored.

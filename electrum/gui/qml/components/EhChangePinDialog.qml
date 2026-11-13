@@ -6,7 +6,7 @@ import QtQuick.Controls.Material
 import "controls"
 import "controls/EhStyle.js" as S
 
-// Easy Heirs (schèi): change the 4-digit PIN: old PIN, new PIN, repeat.
+// Easy Heirs (schȅi): change the 4-digit PIN: old PIN, new PIN, repeat.
 ElDialog {
     id: root
     Material.theme: Material.Light

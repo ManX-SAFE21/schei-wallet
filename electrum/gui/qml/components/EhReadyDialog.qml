@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): "Il tuo portafoglio è pronto" — shown once, after a new
+// Easy Heirs (schȅi): "Il tuo portafoglio è pronto" — shown once, after a new
 // wallet is created, with the "few schei, it is not a safe" notice.
 // "Bottega" (WP6): parchment page, green "done" box, warning box, wine leather button; it scrolls.
 import QtQuick
@@ -54,7 +54,7 @@ ElDialog {
         EhInfoBox {
             kind: 'warn'
             icon: 'eh_wallet.svg'
-            text: '<b>' + qsTr('Schèi is like the wallet in your pocket:') + '</b> '
+            text: '<b>' + qsTr('Schȅi is like the wallet in your pocket:') + '</b> '
                 + qsTr('keep only a few schei in it, the ones for spending. It is not a safe: for big savings use a safer system.')
             fontSize: 17
         }

@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): full-screen 4-digit PIN dialog.
+// Easy Heirs (schȅi): full-screen 4-digit PIN dialog.
 // mode 'open'  : unlock the wallet at app start (replaces OpenWalletDialog)
 // mode 'verify': confirm an action that needs the password (replaces PasswordDialog)
 // Old wallets: the wallet password is the PIN followed by "00"; once opened they

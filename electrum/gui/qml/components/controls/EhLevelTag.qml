@@ -1,4 +1,4 @@
-// Easy Heirs (schèi), "Bottega": level tag MEDIO / ESPERTO (14 bold caps: one of the allowed
+// Easy Heirs (schȅi), "Bottega": level tag MEDIO / ESPERTO (14 bold caps: one of the allowed
 // texts under 16 px). Paper fill, 1.5 border; olive = MEDIO (level 1), wine = ESPERTO (2).
 import QtQuick
 import QtQuick.Layouts

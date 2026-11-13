@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): banknotes and coins of the currencies that have them in the app
+// Easy Heirs (schȅi): banknotes and coins of the currencies that have them in the app
 // (owner 12/11: euro and US dollar). Values in cents; real sizes in millimetres.
 .pragma library
 

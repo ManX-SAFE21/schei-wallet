@@ -1,4 +1,4 @@
-// Easy Heirs (schèi), "Bottega": a box with something to read.
+// Easy Heirs (schȅi), "Bottega": a box with something to read.
 // kind 'warn'   (to know / to do): ivory, gold border, brass info icon
 // kind 'danger' (cannot be undone, scam, not enough money): rose, wine border, wine triangle
 // kind 'tip'    (green advice at the end of info pages): pale green, olive text

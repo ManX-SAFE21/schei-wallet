@@ -1,4 +1,4 @@
-// Easy Heirs (schèi), "Bottega": THE button of the app (owner rule 2026-11-13): a rounded
+// Easy Heirs (schȅi), "Bottega": THE button of the app (owner rule 2026-11-13): a rounded
 // rectangle with dashed stitching inside, icon on the left, the text, an optional small icon on
 // the right. Three kinds:
 //   'wine'  wine leather, gold stitching, ivory text   (main action: send, confirm, next)

@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): "Cerca più indirizzi" (Electrum's gap limit, on the desktop
+// Easy Heirs (schȅi): "Cerca più indirizzi" (Electrum's gap limit, on the desktop
 // only from the console: wallet.change_gap_limit). Electrum looks at the
 // addresses in order and stops after 20 empty ones in a row; money beyond them
 // is not seen. Here the person can look further: 50, 100, 200...
@@ -107,7 +107,7 @@ Item {
             EhTitle { text: qsTr('Look at more addresses') }
 
             Note {
-                text: qsTr('<b>What it is for.</b> The wallet has a long row of addresses, always the same, born from the 12 words. To find your money Schèi looks at them <b>one after the other</b>, and stops when it finds <b>%1 empty in a row</b>: it thinks there is nothing after.').arg(20)   // always explain the normal value
+                text: qsTr('<b>What it is for.</b> The wallet has a long row of addresses, always the same, born from the 12 words. To find your money Schȅi looks at them <b>one after the other</b>, and stops when it finds <b>%1 empty in a row</b>: it thinks there is nothing after.').arg(20)   // always explain the normal value
             }
             // the row of addresses: used, empty, and money hidden after many empty ones
             Flow {
@@ -135,7 +135,7 @@ Item {
                 text: qsTr('green = used · grey = empty · gold = money that is <b>after</b> many empty ones')
             }
             Note {
-                text: qsTr('<b>When it is needed.</b> If the 12 words were also used in another wallet that created many addresses without using them, the money can be after more than 20 empty addresses. Schèi does not see it and the balance seems to be missing. Looking further finds it.')
+                text: qsTr('<b>When it is needed.</b> If the 12 words were also used in another wallet that created many addresses without using them, the money can be after more than 20 empty addresses. Schȅi does not see it and the balance seems to be missing. Looking further finds it.')
             }
 
             EhCaption { text: qsTr('Look up to'); Layout.topMargin: 6; Layout.bottomMargin: 0 }

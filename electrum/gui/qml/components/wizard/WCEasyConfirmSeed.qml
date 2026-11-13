@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): "Controlliamo" — the 12 words are shown shuffled as big
+// Easy Heirs (schȅi): "Controlliamo" — the 12 words are shown shuffled as big
 // buttons; the user taps them in the order written on paper. Checks every word
 // and the order, without any keyboard. Replaces WCConfirmSeed.
 // "Bottega" (WP6): parchment page, messages in info boxes, paper word keys (mono), slots on

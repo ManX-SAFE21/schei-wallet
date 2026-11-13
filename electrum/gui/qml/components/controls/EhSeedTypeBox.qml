@@ -1,5 +1,5 @@
-// Easy Heirs (schèi): the kind of seed, to write on the paper under the 12 words.
-// Schèi seeds are Electrum seeds (segwit), NOT BIP39: another wallet that only
+// Easy Heirs (schȅi): the kind of seed, to write on the paper under the 12 words.
+// Schȅi seeds are Electrum seeds (segwit), NOT BIP39: another wallet that only
 // knows BIP39 would refuse them or show an empty wallet.
 // "Bottega" (WP1): ivory box with a gold border, like EhInfoBox 'warn'.
 import QtQuick
@@ -57,7 +57,7 @@ Rectangle {
             color: S.ink
             text: root.review
                   ? qsTr('Check that this is written on your paper too.')
-                  : qsTr('It is needed to get the money back with another program: <b>Electrum</b> (or Schèi) is fine. No extra word (passphrase).')
+                  : qsTr('It is needed to get the money back with another program: <b>Electrum</b> (or Schȅi) is fine. No extra word (passphrase).')
         }
     }
 }

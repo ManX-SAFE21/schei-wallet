@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): "Hai dimenticato il PIN?" (third review). The 12 words of THIS wallet
+// Easy Heirs (schȅi): "Hai dimenticato il PIN?" (third review). The 12 words of THIS wallet
 // prove who you are: if they match, a new PIN is chosen (EhChangePinDialog without the old PIN).
 // Same words area and keyboard as the restore page (WCEasyHaveSeed.qml).
 // "Bottega" (WP6): parchment page, back link, Fraunces title, the same tiles and keys as there;

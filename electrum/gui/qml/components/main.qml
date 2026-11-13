@@ -18,7 +18,7 @@ ApplicationWindow
 
     visible: false // initial value
 
-    // Schèi testnet4: the striped band under the status bar takes its room on every page
+    // Schȅi testnet4: the striped band under the status bar takes its room on every page
     readonly property bool ehTest: Network.isTestNet
     readonly property int ehTestBand: ehTest ? 22 : 0
     readonly property int statusBarHeight: (AppController ? AppController.getStatusBarHeight() : 0) + ehTestBand
@@ -578,10 +578,10 @@ ApplicationWindow
             if (Daemon.availableWallets.rowCount() > 0) {
                 Daemon.loadWallet()
             } else if (app.ehTest) {
-                // Schèi testnet4: first start, what this app is, before the wallet is created
+                // Schȅi testnet4: first start, what this app is, before the wallet is created
                 ehAsk(qsTr('This is the test app'),
                       qsTr('It uses the Bitcoin test network (testnet4): the coins here are worth nothing and cannot be changed into euro. It is for learning and trying without fear.')
-                      + '\n\n' + qsTr('For real money use the Schèi Wallet app.')
+                      + '\n\n' + qsTr('For real money use the Schȅi Wallet app.')
                       + '\n\n' + qsTr('Free test coins: search "testnet4 faucet" on the internet.'),
                       ehFirstWizard, ehFirstWizard, qsTr("I understand, let's start"), '')
             } else {
@@ -619,7 +619,7 @@ ApplicationWindow
         }
     }
 
-    // Schèi testnet4: striped blue band, always visible on top of every page
+    // Schȅi testnet4: striped blue band, always visible on top of every page
     Rectangle {
         parent: Overlay.overlay
         visible: app.ehTest
@@ -676,7 +676,7 @@ ApplicationWindow
             stack.pop()
         } else {
             var dialog = Qt.createComponent(Qt.resolvedUrl('EhAskDialog.qml')).createObject(app, {
-                text: qsTr('Close Schèi Wallet?')
+                text: qsTr('Close Schȅi Wallet?')
             })
             dialog.accepted.connect(function() {
                 AppController.wantClose = true
@@ -834,7 +834,7 @@ ApplicationWindow
             showBlocks: true,
             bodyText: qsTr('About every <b>10 minutes</b> the Bitcoin network writes a new "block" with the payments. When your payment enters a block it has <b>1 confirmation</b>; every block after that adds another one.')
                 + '<br><br>' + qsTr('The more confirmations, the more impossible it is to go back. People moving <b>millions of euro</b> wait for 6 confirmations, about one hour.'),
-            tipText: qsTr('<b>Schèi is a pocket wallet</b>, made for everyday amounts. For these amounts <b>1 confirmation is more than enough</b>: that is why we already show it as "✓ Confirmed".'),
+            tipText: qsTr('<b>Schȅi is a pocket wallet</b>, made for everyday amounts. For these amounts <b>1 confirmation is more than enough</b>: that is why we already show it as "✓ Confirmed".'),
             // owner 13/11: the general explanation of the coins, at the bottom
             linkText: qsTr('How do bitcoin coins work?'),
             linkUrl: Qt.resolvedUrl('EhCoinsHowPage.qml')
@@ -846,7 +846,7 @@ ApplicationWindow
             bodyText: qsTr('Bitcoin payments are written on the <b>blockchain</b>, the big public register, by computers called <b>"miners"</b>.')
                 + '<br><br>' + qsTr('To do it they ask for a small <b>tip</b>: whoever offers more goes first, like in a queue.')
                 + '<br><br>' + qsTr('The cost <b>does not depend on how much you send</b>: sending 10 € or 1,000 € costs the same. It only changes a little with the network traffic.'),
-            tipText: qsTr('<b>Schèi chooses a "normal" tip by itself</b>: the payment usually arrives in about an hour. If you are in a hurry, move the slider to the right. The whole tip goes to the miners: Schèi takes nothing.')
+            tipText: qsTr('<b>Schȅi chooses a "normal" tip by itself</b>: the payment usually arrives in about an hour. If you are in a hurry, move the slider to the right. The whole tip goes to the miners: Schȅi takes nothing.')
         }).open()
     }
 
@@ -954,7 +954,7 @@ ApplicationWindow
         var askNode = function() {
             if (to !== 'base' || !(wasNode || wasTor)) return
             ehAsk(qsTr('Back to the automatic connection?'),
-                  qsTr('You were using your own node or Tor. In BASE their row is hidden: with "Yes" Schèi connects by itself to the public servers, as at the start.'),
+                  qsTr('You were using your own node or Tor. In BASE their row is hidden: with "Yes" Schȅi connects by itself to the public servers, as at the start.'),
                   function() {
                       if (wasTor) Network.proxy = { 'enabled': false, 'mode': 'socks5', 'host': '', 'port': '', 'user': '', 'password': '' }
                       if (wasNode) Network.setServerParameters('', true, false)
@@ -1115,7 +1115,7 @@ ApplicationWindow
     Component { id: _ehAddressZoom; EhAddressZoom { onClosed: destroy() } }
     function ehZoomAddress(address, mine) { ehAddressZoom.createObject(app, { address: address, mine: mine }).open() }
 
-    // Schèi testnet4: test coins have no price, always in bitcoin
+    // Schȅi testnet4: test coins have no price, always in bitcoin
     function ehBtcOnly() { ehOptRev; return app.ehTest || Config.ehGet('opt_btc_only') === true }
     function ehSetBtcOnly(on) {
         ehSetOption('btc_only', on)
@@ -1231,7 +1231,7 @@ ApplicationWindow
     function ehChangeLanguage() {
         var d = languagePicker.createObject(app)
         d.accepted.connect(function() {
-            var m = app.messageDialog.createObject(app, { text: qsTr('Close and reopen Schèi to see everything in the new language.') })
+            var m = app.messageDialog.createObject(app, { text: qsTr('Close and reopen Schȅi to see everything in the new language.') })
             m.open()
         })
         d.open()

@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): full-screen explanation page ("Maggiori informazioni").
+// Easy Heirs (schȅi): full-screen explanation page ("Maggiori informazioni").
 // "Bottega" (WP6): parchment page, back link, Fraunces title, green tip box.
 import QtQuick
 import QtQuick.Layouts

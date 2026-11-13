@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): PIN for big payments: on / off and the threshold. Opened with the
+// Easy Heirs (schȅi): PIN for big payments: on / off and the threshold. Opened with the
 // PIN from Settings (level ESPERTO, T50); the other expert rows are in Settings.
 // "Bottega" look (WP4): one paper sheet, brass switch, amount choices as tabs
 // (the chosen one in wine leather), the "other amount" field on paper.

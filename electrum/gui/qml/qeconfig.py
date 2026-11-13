@@ -225,7 +225,7 @@ class QEConfig(AuthMixin, QObject):
     def ehExplorerTxUrl(self, txid: str) -> str:
         from electrum.util import block_explorer_URL
         if not self.config.BLOCK_EXPLORER_CUSTOM and self.config.get('block_explorer', None) is None:
-            self._eh_apply()   # write the Schèi default (mempool.space) once
+            self._eh_apply()   # write the Schȅi default (mempool.space) once
         return block_explorer_URL(self.config, 'tx', txid) or ''
 
     languagesChanged = pyqtSignal()

@@ -1,4 +1,4 @@
-// Easy Heirs (schèi), "Bottega": the back link at the top of a page: "‹ Indietro", Lexend 17
+// Easy Heirs (schȅi), "Bottega": the back link at the top of a page: "‹ Indietro", Lexend 17
 // bold wine with a 2 px wine underline; 48 px touch height. It pulls itself up 14 px (the old
 // hand-made links used Layout.topMargin: -14 under EhPageTop): override it if needed.
 //   EhBackLink { onClicked: app.stack.pop() }

@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): step 3, choose a 4-digit PIN (twice). Replaces
+// Easy Heirs (schȅi): step 3, choose a 4-digit PIN (twice). Replaces
 // WCWalletPassword. Electrum needs at least 6 characters, so the wallet
 // password is the PIN followed by "00" (owner's decision).
 // "Bottega" (WP6): parchment page, Fraunces title (EhPageTop), brass PIN pad (WP1).

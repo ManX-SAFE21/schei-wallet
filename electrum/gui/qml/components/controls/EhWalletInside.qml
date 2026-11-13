@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): the inside of the wallet (T37). It stays BEHIND the card: when the coin
+// Easy Heirs (schȅi): the inside of the wallet (T37). It stays BEHIND the card: when the coin
 // is pulled down the card leans forward and this part rises, showing the dark lining, two
 // banknotes and the card slots, like a real bifold wallet that opens.
 import QtQuick

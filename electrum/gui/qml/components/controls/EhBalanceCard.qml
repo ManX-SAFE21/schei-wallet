@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): wine balance card: wallet name, status pill,
+// Easy Heirs (schȅi): wine balance card: wallet name, status pill,
 // balance in euro (big) and in bitcoin (small).
 import QtQuick
 import QtQuick.Layouts

@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): settings in three levels BASE / MEDIO / ESPERTO (owner 12/11, T50).
+// Easy Heirs (schȅi): settings in three levels BASE / MEDIO / ESPERTO (owner 12/11, T50).
 // The choice at the top shows the rows of the level and turns on its preset (main.qml
 // ehSetLevel); every switch can then be changed by hand. ESPERTO asks the PIN, and its
 // delicate rows (PIN threshold, node, more addresses, reset) ask it again.
@@ -106,7 +106,7 @@ Item {
                     icon: 'eh_textsize.svg'; text: qsTr('Bigger text'); note: qsTr('to read better'); key: 'bigtext'
                     last: col.lv < 1 && !seeSheet.cashRow
                     onOptionSet: {
-                        var m = app.messageDialog.createObject(app, { text: qsTr('Close and reopen Schèi to see the new text size.') })
+                        var m = app.messageDialog.createObject(app, { text: qsTr('Close and reopen Schȅi to see the new text size.') })
                         m.open()
                     }
                 }

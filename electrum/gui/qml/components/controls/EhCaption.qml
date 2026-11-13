@@ -1,4 +1,4 @@
-// Easy Heirs (schèi), "Bottega": section caption (YOUR WALLET, STEP 1 OF 3, ...): 16 bold caps olive.
+// Easy Heirs (schȅi), "Bottega": section caption (YOUR WALLET, STEP 1 OF 3, ...): 16 bold caps olive.
 // rule: true = the double gold rule under it (captions INSIDE a sheet, e.g. movement periods).
 // Margins: 16 top / 6 bottom / 4 left (set Layout.topMargin again to change the top one).
 import QtQuick

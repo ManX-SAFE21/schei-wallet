@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): top of a page: thin hills band, step label ("PASSO 1 DI 3") and the
+// Easy Heirs (schȅi): top of a page: thin hills band, step label ("PASSO 1 DI 3") and the
 // page title. "Bottega" (WP1): the band is the home's B landscape (olive hills, wine bell
 // tower, cypresses, bitcoin sun with gold rays) ending in the parchment; the title is
 // Fraunces 30 wine with the double gold rule under it (titleColor: S.oliveInk on Receive).

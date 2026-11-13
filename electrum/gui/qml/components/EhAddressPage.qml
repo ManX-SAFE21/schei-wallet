@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): one address seen up close (T8): the whole address to read,
+// Easy Heirs (schȅi): one address seen up close (T8): the whole address to read,
 // copy and share, "Receive on this address", its note, its coins (each with its
 // own switch) and the switch that blocks the whole address.
 // "Bottega" (WP5): parchment page, paper sheets, stitched buttons (olive leather for

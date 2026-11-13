@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): vertical slide bar with the Bitcoin logo in the centre.
+// Easy Heirs (schȅi): vertical slide bar with the Bitcoin logo in the centre.
 // Push the coin to the top = send, pull it to the bottom = receive.
 // Released early, it springs back. A tap without dragging shows a hint.
 import QtQuick

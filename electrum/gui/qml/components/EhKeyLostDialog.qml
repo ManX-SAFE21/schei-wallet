@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): "Questo telefono non riconosce più la chiave" (second review W2).
+// Easy Heirs (schȅi): "Questo telefono non riconosce più la chiave" (second review W2).
 // Shown instead of the PIN pad when the phone's safe cannot open the wallet any more
 // (app moved to another phone, restored from a backup): the PIN is not the problem, the
 // 12 words are the way back.

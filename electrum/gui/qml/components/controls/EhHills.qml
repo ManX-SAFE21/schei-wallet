@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): hills background with the gold Bitcoin sun.
+// Easy Heirs (schȅi): hills background with the gold Bitcoin sun.
 // The hills stretch to any width; the sun is drawn on top so it stays round.
 // band: true = thin strip used at the top of pages, false = big landscape.
 import QtQuick

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Schèi Wallet: write the table of all the app's own texts (Italian, Venetian, English).
+"""Schȅi Wallet: write the table of all the app's own texts (Italian, Venetian, English).
 
 It reads electrum/eh_strings.py (the app's translations) without importing it and writes:
   TRADUZIONI.md   — the table GitHub shows (searchable with Ctrl+F)
@@ -58,7 +58,7 @@ def main():
     missing = {code: sum(1 for k in keys if k not in data.get(code, {})) for code, _ in LANGS}
 
     md = io.StringIO()
-    md.write('# Traduzioni di Schèi Wallet\n\n')
+    md.write('# Traduzioni di Schȅi Wallet\n\n')
     md.write('Tutti i testi dell\'app in **italiano**, **veneto** e **inglese**. '
              'Questo file si aggiorna da solo a ogni modifica delle traduzioni '
              '(`electrum/eh_strings.py`): non modificarlo a mano.\n\n')

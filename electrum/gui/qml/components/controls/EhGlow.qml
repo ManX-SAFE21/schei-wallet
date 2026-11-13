@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): a soft coloured light ("luce colorata" style).
+// Easy Heirs (schȅi): a soft coloured light ("luce colorata" style).
 // tone: wine = your money, rose = sending, green = receiving / all ok,
 // gold = attention, white = small halo. Place it behind content (z: -1)
 // and give it a size: it fades to nothing at its edges, no border.

@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): "Le tue monete d'oro". Every coin of the wallet (UTXO) is
+// Easy Heirs (schȅi): "Le tue monete d'oro". Every coin of the wallet (UTXO) is
 // a gold coin of variable value: bigger value, bigger coin. Each one can be
 // blocked (frozen: the app will not spend it). Second tab: the addresses.
 // Uses Electrum's own addressCoinModel; only the look is ours.

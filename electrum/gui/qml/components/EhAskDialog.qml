@@ -1,5 +1,5 @@
-// Easy Heirs (schèi): small yes / no question in our colours
-// (e.g. "Vuoi chiudere Schèi Wallet?"). Two big buttons: Sì on the left (paper), No on the right
+// Easy Heirs (schȅi): small yes / no question in our colours
+// (e.g. "Vuoi chiudere Schȅi Wallet?"). Two big buttons: Sì on the left (paper), No on the right
 // (wine leather): the safe answer is in the easy place, "Sì" must be chosen on purpose (owner 2026-11-11).
 // "Bottega" (WP6): paper sheet, Fraunces title with the gold rule, stitched buttons.
 import QtQuick

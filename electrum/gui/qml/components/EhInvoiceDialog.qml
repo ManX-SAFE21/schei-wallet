@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): INVIA steps 2 and 3 and the "Inviati!" screen.
+// Easy Heirs (schȅi): INVIA steps 2 and 3 and the "Inviati!" screen.
 //  amount : how much, in euro, big keys (skipped if the QR already has it)
 //  review : what you send, sending cost, total, address with the last 4
 //           letters highlighted, "cannot be undone" warning, slide to send

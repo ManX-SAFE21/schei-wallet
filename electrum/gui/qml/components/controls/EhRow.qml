@@ -1,4 +1,4 @@
-// Easy Heirs (schèi), "Bottega": a row of a sheet (put it in an EhSheet).
+// Easy Heirs (schȅi), "Bottega": a row of a sheet (put it in an EhSheet).
 // Icon ring on the left, text 17 bold, optional hint 16 muted and level tag; on the right:
 // value + chevron, lock + chevron, a switch, or your own item (default property: children
 // go on the right, before the chevron). Dotted line at the bottom unless last: true.

@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): "Scrivi le tue 12 parole" — restore from existing words.
+// Easy Heirs (schȅi): "Scrivi le tue 12 parole" — restore from existing words.
 // Two big choices (Electrum / other wallet = BIP39), the words shown one by one
 // with their number, big suggestions, and our own on-screen keyboard: 7 keys
 // per row in alphabetical order, no phone keyboard (it could remember or send
@@ -47,7 +47,7 @@ WizardComponent {
         wizard_data['seed'] = seedText.trim()
         wizard_data['seed_variant'] = variant
         wizard_data['seed_type'] = _seedType
-        // review 2026-11-11 (W4): Schèi never adds "extra words" to the 12 words: no stock page about it
+        // review 2026-11-11 (W4): Schȅi never adds "extra words" to the 12 words: no stock page about it
         wizard_data['seed_extend'] = false
     }
 
@@ -81,7 +81,7 @@ WizardComponent {
         _canPassphrase = r.can_passphrase
         var ok = r.valid
         // review 2026-11-11 (W1): Electrum accepts ANY text as "another wallet" (BIP39) words and
-        // opens an empty wallet. Schèi accepts them only if they are a real list: right number of
+        // opens an empty wallet. Schȅi accepts them only if they are a real list: right number of
         // words, all from the list, and the last one matching the others (checksum).
         var n = s === '' ? 0 : s.split(/ +/).length
         if (variant === 'bip39')
@@ -92,7 +92,7 @@ WizardComponent {
             var r2 = wiz.verifySeed(s, other, wizard_data['wallet_type'])
             if (r2.valid && (other === 'electrum' || (r2.message === '' && [12, 15, 18, 21, 24].indexOf(n) >= 0)))
                 hint = other === 'electrum'
-                       ? qsTr('These words were made with Schèi or Electrum: choose "Made with Schèi or Electrum" above.')
+                       ? qsTr('These words were made with Schȅi or Electrum: choose "Made with Schȅi or Electrum" above.')
                        : qsTr('These words were made with another wallet: choose "Made with another wallet" above.')
         }
         valid = ok
@@ -142,7 +142,7 @@ WizardComponent {
         EhSegmented {
             look: 'level'
             readonly property var values: ['electrum', 'bip39']
-            model: [qsTr('Made with Schèi or Electrum'), qsTr('Made with another wallet')]
+            model: [qsTr('Made with Schȅi or Electrum'), qsTr('Made with another wallet')]
             currentIndex: root.variant === 'bip39' ? 1 : 0
             onActivated: (i) => { root.variant = values[i]; root.setText(root.seedText) }
         }

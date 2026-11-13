@@ -1,4 +1,4 @@
-// Easy Heirs (schèi): INVIA step 1 - "A chi mandi?". Camera already on, or
+// Easy Heirs (schȅi): INVIA step 1 - "A chi mandi?". Camera already on, or
 // paste a bitcoin address. Found data goes to the usual Electrum resolver
 // (piResolver -> invoiceParser), then our EhInvoiceDialog opens.
 // "Bottega": parchment page, the pasted address on a paper sheet, stitched buttons.
@@ -62,12 +62,12 @@ ElDialog {
     function dispatch(data) {
         data = data.trim()
         // review 2026-11-11: nobody listened to txFound / channelBackupFound, the QR was ignored.
-        // Schèi does not use these codes: say it, instead of doing nothing.
+        // Schȅi does not use these codes: say it, instead of doing nothing.
         if (bitcoin.isRawTx(data) || Daemon.currentWallet.isValidChannelBackup(data)) {
             if (camLoader.item) camLoader.item.stop()
             var info = app.ehInfoDialog.createObject(app, {
                 pageTitle: qsTr('This code is not an address'),
-                bodyText: qsTr('This QR code holds a whole transaction or a backup, not a bitcoin address to pay. Schèi cannot use it.')
+                bodyText: qsTr('This QR code holds a whole transaction or a backup, not a bitcoin address to pay. Schȅi cannot use it.')
                           + '<br><br>' + qsTr('Ask the person you pay for their bitcoin address.')
             })
             // second review (F1): the camera starts again only when the page is closed, and with
