@@ -1,8 +1,11 @@
 // Easy Heirs (schèi): 4-digit PIN entry: four dots, a message line and big
 // 0-9 keys. Emits completed(pin) when the 4th digit is typed.
+// "Bottega" look (WP1): brass dots, paper keys (EhKey); the behaviour is the owner's of 13/11.
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
+
+import "EhStyle.js" as S
 
 ColumnLayout {
     id: root
@@ -57,11 +60,16 @@ ColumnLayout {
             model: root.length
             Rectangle {
                 required property int index
+                readonly property bool lit: index < root.pin.length
                 width: 26; height: 26; radius: 13
-                readonly property color ink: root.checking ? '#45541f' : '#5e1a33'
-                color: index < root.pin.length ? ink : 'transparent'
-                border.width: 3
-                border.color: ink
+                // empty: paper with a brass ring; typed: brass; checking: all green
+                border.width: lit ? 2 : 3
+                border.color: root.checking ? '#2f3a12' : S.brassRing
+                gradient: Gradient {
+                    GradientStop { position: 0.0; color: root.checking ? '#6f8038' : (lit ? S.brassLight : S.paper) }
+                    GradientStop { position: 0.55; color: root.checking ? S.olive : (lit ? S.brass : S.paper) }
+                    GradientStop { position: 1.0; color: root.checking ? '#2f3a12' : (lit ? S.brassDark : S.paper) }
+                }
             }
         }
     }
@@ -79,7 +87,8 @@ ColumnLayout {
         Layout.preferredHeight: 26
         horizontalAlignment: Text.AlignHCenter
         text: root.checking ? qsTr('Checking…') : root.message
-        color: root.checking ? '#45541f' : (root.messageBad ? '#5e1a33' : '#6b5d55')
+        color: root.checking ? S.olive : (root.messageBad ? S.wine : S.muted)
+        font.family: BodyFont ? BodyFont : font.family
         font.pixelSize: 17
         font.bold: root.messageBad || root.checking
         wrapMode: Text.WordWrap
@@ -94,34 +103,19 @@ ColumnLayout {
         columnSpacing: 10
         Repeater {
             model: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', 'del']
-            delegate: Rectangle {
+            delegate: EhKey {
                 id: key
                 required property string modelData
                 Layout.fillWidth: true
                 Layout.preferredHeight: 64
-                radius: height / 2
-                visible: true
                 opacity: modelData === '' ? 0 : 1
-                color: modelData === 'del' ? '#efe6d3' : (tapk.pressed ? '#f3ecdd' : '#ffffff')
-                border.width: modelData === 'del' ? 0 : 2
-                border.color: '#e2d7c1'
-                EhBackspaceIcon { visible: key.modelData === 'del'; anchors.centerIn: parent; width: 38; height: 27; fill: '#efe6d3' }
-                Label {
-                    anchors.centerIn: parent
-                    visible: key.modelData !== 'del'
-                    text: key.modelData
-                    font.pixelSize: 32
-                    font.bold: true
-                    color: '#2a2220'
-                }
+                enabled: modelData !== ''
+                text: modelData === 'del' ? '' : modelData
+                isDelete: modelData === 'del'
                 // owner 13/11: the digit counts when the key is TOUCHED, so fast typing loses nothing
                 // (on release, a finger already on the next key or slipping a little lost the tap)
-                TapHandler {
-                    id: tapk
-                    enabled: key.modelData !== ''
-                    gesturePolicy: TapHandler.DragThreshold
-                    onPressedChanged: if (pressed) { key.modelData === 'del' ? root.back() : root.press(key.modelData) }
-                }
+                fireOnPress: true
+                onActivated: key.modelData === 'del' ? root.back() : root.press(key.modelData)
             }
         }
     }

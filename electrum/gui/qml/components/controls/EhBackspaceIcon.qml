@@ -5,8 +5,8 @@ import QtQuick
 
 Canvas {
     id: root
-    property color ink: '#3f0f21'
-    property color fill: '#ffffff'
+    property color ink: '#5e1a33'       // "Bottega": wine stroke on the sand delete key
+    property color fill: '#ead9b0'
     implicitWidth: 38
     implicitHeight: 27
     onInkChanged: requestPaint()

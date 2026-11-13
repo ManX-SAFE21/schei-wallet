@@ -14,9 +14,23 @@ Item {
     property string art: ''       // other drawing (home "Bottega": eh_hills_bottega.svg)
     property bool rays: false     // home "Bottega": gold rays behind the sun
     property color fadeColor: '#faf7ef'
+    // "Bottega" page band (WP1): the drawing starts topInset px down (so it keeps its own
+    // proportions under any status bar); above it the same sky colour
+    property real topInset: 0
+    property color skyColor: '#f8eed6'
+    // big landscape (no sunTop given): the sun never goes up under the status bar / test band
+    readonly property real _safeTop: (typeof app !== 'undefined' && app) ? app.statusBarHeight + 4 : 0
+
+    Rectangle {
+        visible: root.topInset > 0
+        width: parent.width
+        height: root.topInset + 1
+        color: root.skyColor
+    }
 
     Image {
         anchors.fill: parent
+        anchors.topMargin: root.topInset
         source: Qt.resolvedUrl(root.art !== '' ? '../../../icons/' + root.art
                                : (root.band ? '../../../icons/eh_band.svg' : '../../../icons/eh_hills.svg'))
         sourceSize.width: 1080
@@ -40,7 +54,8 @@ Item {
         // same place as the sun in the original drawings (viewBox 340x250 / 340x74)
         readonly property real d: root.sunSize > 0 ? root.sunSize : (root.band ? root.height * 0.62 : root.height * 0.5)
         readonly property real cx: root.sunSize > 0 ? root.width - root.sunRight - d / 2 : root.width * (root.band ? 290 : 250) / 340
-        readonly property real cy: root.sunTop >= 0 ? root.sunTop + d / 2 : root.height * (root.band ? 26 : 78) / (root.band ? 74 : 250)
+        readonly property real cy: root.sunTop >= 0 ? root.sunTop + d / 2
+                                   : Math.max(root.height * (root.band ? 26 : 78) / (root.band ? 74 : 250), root.band ? 0 : root._safeTop + d / 2)
         visible: root.showSun
         x: cx - d / 2
         y: cy - d / 2

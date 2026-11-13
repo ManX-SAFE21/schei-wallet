@@ -10,6 +10,7 @@ import QtQuick.Controls
 import QtQuick.Controls.Material
 
 import "EhMoney.js" as Money
+import "EhStyle.js" as S
 
 Item {
     id: pad
@@ -117,32 +118,42 @@ Item {
             z: 5
             Layout.fillWidth: true
             Layout.preferredHeight: pad.purseH
-            radius: 22
-            gradient: Gradient {
-                GradientStop { position: 0; color: '#7a2645' }
-                GradientStop { position: 1; color: '#3f0f21' }
-            }
+            // "Bottega" (WP1): a paper sheet with a hard shadow (was a wine purse)
+            radius: 18
+            color: S.paper
+            border.width: 1.5
+            border.color: S.edge
+            Rectangle { z: -1; y: 3; width: parent.width; height: parent.height; radius: parent.radius; color: S.edgeShadow }
             Label {
-                x: 14; y: 10
+                x: 14; y: 8
+                width: parent.width - 150      // up to the "Clear" button
                 text: qsTr('Your little stash')
-                color: Qt.rgba(1, 1, 1, 0.85)
-                font.pixelSize: 13
+                color: S.olive
+                font.family: BodyFont ? BodyFont : font.family
+                font.pixelSize: 16
+                font.bold: true
+                elide: Text.ElideRight
             }
             Item {
                 id: heap
                 x: 12; y: 30
-                width: 118; height: pad.purseH - 56
-                Rectangle { anchors.fill: parent; radius: 16; color: heapTap.pressed ? Qt.rgba(1, 1, 1, 0.18) : Qt.rgba(1, 1, 1, 0.08) }
+                width: 118; height: pad.purseH - 74   // WP1: room for a 16 px hint on two lines under it
+                Rectangle { anchors.fill: parent; radius: 14; color: heapTap.pressed ? S.sand : S.parch; border.width: 1; border.color: S.edgeShadow }
                 TapHandler { id: heapTap; onTapped: pad.removeLast() }
                 Label {
                     visible: heapModel.count > 0
                     anchors.top: parent.bottom
-                    anchors.topMargin: 3
-                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.topMargin: 2
+                    anchors.left: parent.left
+                    width: parent.width + 8
                     text: qsTr('tap: take the last one back')
-                    color: Qt.rgba(1, 1, 1, 0.85)
-                    font.pixelSize: 11
-                    font.bold: true
+                    color: S.muted
+                    font.family: BodyFont ? BodyFont : font.family
+                    font.pixelSize: 16
+                    lineHeight: 0.95
+                    wrapMode: Text.WordWrap
+                    maximumLineCount: 2
+                    elide: Text.ElideRight
                 }
                 Label {
                     visible: heapModel.count === 0
@@ -150,8 +161,10 @@ Item {
                     horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter
                     wrapMode: Text.WordWrap
                     text: qsTr('the money you put in lands here')
-                    color: Qt.rgba(1, 1, 1, 0.6)
-                    font.pixelSize: 12
+                    color: S.muted
+                    font.family: BodyFont ? BodyFont : font.family
+                    font.pixelSize: 16
+                    lineHeight: 1.05
                 }
                 Repeater {
                     id: heapRep
@@ -219,9 +232,9 @@ Item {
                 Label {
                     Layout.fillWidth: true
                     text: app.ehSym() + ' ' + app.ehGroup('' + Math.floor(pad.cents / 100)) + app.ehLocale().decimalPoint + ('0' + (pad.cents % 100)).slice(-2)
-                    color: '#ffffff'
-                    font.family: TitleFont ? TitleFont : font.family
-                    font.weight: Font.Black
+                    color: S.wineDark
+                    font.family: SerifFont ? SerifFont : font.family
+                    font.weight: Font.ExtraBold
                     font.pixelSize: 30
                     fontSizeMode: Text.HorizontalFit
                     minimumPixelSize: 18
@@ -230,8 +243,9 @@ Item {
                     Layout.fillWidth: true
                     text: pad.cents > 0 ? qsTr('about %1').arg(app.ehBtc(Config.unitsToSats(((parseInt(Daemon.fx.satoshiValue((pad.cents / 100).toFixed(2), true)) || 0) / 100000000).toFixed(8))))
                                         : qsTr('tap notes and coins')
-                    color: Qt.rgba(1, 1, 1, 0.8)
-                    font.pixelSize: 13
+                    color: S.muted
+                    font.family: BodyFont ? BodyFont : font.family
+                    font.pixelSize: 16
                     elide: Text.ElideRight
                 }
                 Flickable {
@@ -250,9 +264,11 @@ Item {
                                 required property int modelData
                                 visible: (pad.counts[modelData] || 0) > 0
                                 width: visible ? chipRow.implicitWidth + 12 : 0
-                                height: visible ? 26 : 0
-                                radius: 13
-                                color: chipTap.pressed ? Qt.rgba(1, 1, 1, 0.3) : Qt.rgba(1, 1, 1, 0.14)
+                                height: visible ? 30 : 0
+                                radius: 15
+                                color: chipTap.pressed ? S.sand : S.parch
+                                border.width: 1
+                                border.color: S.edge
                                 Row {
                                     id: chipRow
                                     anchors.centerIn: parent
@@ -265,8 +281,8 @@ Item {
                                         Component { id: miniNote; EhNote { c: chip.modelData; ccy: pad.ccy } }
                                         Component { id: miniCoin; EhCoin { c: chip.modelData; ccy: pad.ccy } }
                                     }
-                                    Label { anchors.verticalCenter: parent.verticalCenter; text: '×' + (pad.counts[chip.modelData] || 0); color: '#ffffff'; font.pixelSize: 13; font.bold: true }
-                                    Label { anchors.verticalCenter: parent.verticalCenter; text: '−'; color: Qt.rgba(1, 1, 1, 0.7); font.pixelSize: 15; font.bold: true }
+                                    Label { anchors.verticalCenter: parent.verticalCenter; text: '×' + (pad.counts[chip.modelData] || 0); color: S.ink; font.family: BodyFont ? BodyFont : font.family; font.pixelSize: 16; font.bold: true }
+                                    Label { anchors.verticalCenter: parent.verticalCenter; text: '−'; color: S.wine; font.family: BodyFont ? BodyFont : font.family; font.pixelSize: 16; font.bold: true }
                                 }
                                 TapHandler { id: chipTap; margin: 3; onTapped: pad.removeOne(chip.modelData) }
                             }
@@ -282,16 +298,16 @@ Item {
                 width: clrRow.implicitWidth + 26
                 height: 40
                 radius: 20
-                color: clrTap.pressed ? Qt.rgba(1, 1, 1, 0.4) : Qt.rgba(1, 1, 1, 0.22)
+                color: clrTap.pressed ? S.sand : S.paper
                 border.width: 1.5
-                border.color: Qt.rgba(1, 1, 1, 0.45)
+                border.color: S.edge
                 scale: clrTap.pressed ? 0.96 : 1
                 Row {
                     id: clrRow
                     anchors.centerIn: parent
                     spacing: 6
-                    Image { anchors.verticalCenter: parent.verticalCenter; source: Qt.resolvedUrl('../../../icons/eh_undo_white.svg'); sourceSize.width: 18; sourceSize.height: 18 }
-                    Label { anchors.verticalCenter: parent.verticalCenter; text: qsTr('Clear'); color: '#ffffff'; font.pixelSize: 15; font.bold: true }
+                    Image { anchors.verticalCenter: parent.verticalCenter; source: Qt.resolvedUrl('../../../icons/eh_undo.svg'); sourceSize.width: 18; sourceSize.height: 18 }
+                    Label { anchors.verticalCenter: parent.verticalCenter; text: qsTr('Clear'); color: S.wine; font.family: BodyFont ? BodyFont : font.family; font.pixelSize: 16; font.bold: true }
                 }
                 TapHandler { id: clrTap; margin: 8; onTapped: pad.clear() }
             }

@@ -3,6 +3,7 @@ import QtQuick.Controls
 import QtQuick.Controls.Material
 
 import ".."
+import "EhStyle.js" as S
 
 Item {
     id: toaster
@@ -35,16 +36,27 @@ Item {
         PropertyAction { target: toaster; property: 'visible'; value: false }
     }
 
+    // "Bottega" (WP1): dark ink tag with ivory text 17, radius 14
     Rectangle {
         id: rect
-        width: label.implicitWidth
+        width: Math.min(label.implicitWidth, toaster.parent ? toaster.parent.width - 32 : label.implicitWidth)
         height: label.implicitHeight
-        color: constants.colorAlpha(Material.background, 0.90)
+        radius: 14
+        color: S.ink
 
         Label {
             id: label
-            padding: 10
+            width: parent.width
+            padding: 12
+            leftPadding: 18
+            rightPadding: 18
             text: toaster._text
+            color: S.ivory
+            font.family: BodyFont ? BodyFont : font.family
+            font.pixelSize: 17
+            font.bold: true
+            wrapMode: Text.WordWrap
+            horizontalAlignment: Text.AlignHCenter
         }
     }
 }

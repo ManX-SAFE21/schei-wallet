@@ -1,9 +1,12 @@
 // Easy Heirs (schèi): the kind of seed, to write on the paper under the 12 words.
 // Schèi seeds are Electrum seeds (segwit), NOT BIP39: another wallet that only
 // knows BIP39 would refuse them or show an empty wallet.
+// "Bottega" (WP1): ivory box with a gold border, like EhInfoBox 'warn'.
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
+
+import "EhStyle.js" as S
 
 Rectangle {
     id: root
@@ -15,10 +18,10 @@ Rectangle {
 
     Layout.fillWidth: true
     Layout.preferredHeight: col.implicitHeight + 20
-    radius: 14
-    color: '#fbf0d6'
+    radius: 16
+    color: S.ivory
     border.width: 2
-    border.color: '#e0a020'
+    border.color: S.gold
 
     ColumnLayout {
         id: col
@@ -29,26 +32,29 @@ Rectangle {
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
             text: root.review ? qsTr('KIND') : qsTr('WRITE THIS TOO, UNDER THE WORDS')
-            font.pixelSize: 12
+            font.family: BodyFont ? BodyFont : font.family
+            font.pixelSize: 16
             font.bold: true
             font.letterSpacing: 0.5
-            color: '#8a5a12'
+            color: S.waitInk
         }
         Label {
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
             text: root.label
-            color: '#3f0f21'
-            font.family: TitleFont ? TitleFont : font.family
-            font.weight: Font.Black
+            color: S.wineDark
+            font.family: FixedFont
+            font.bold: true
             font.pixelSize: 18
         }
         Label {
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
             textFormat: Text.StyledText
-            font.pixelSize: 13
-            color: '#4a4038'
+            font.family: BodyFont ? BodyFont : font.family
+            font.pixelSize: 16
+            lineHeight: 1.1
+            color: S.ink
             text: root.review
                   ? qsTr('Check that this is written on your paper too.')
                   : qsTr('It is needed to get the money back with another program: <b>Electrum</b> (or Schèi) is fine. No extra word (passphrase).')

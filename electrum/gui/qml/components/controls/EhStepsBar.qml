@@ -4,8 +4,12 @@
 // Tapping a step that is done goes back to it (the data typed stay); the current
 // step and the next ones only show a small bubble that explains them.
 // steps: [{ icon: 'qr', title: '...', text: '...' }, ...]   current: 1-based
+// "Bottega" (WP1): paper track with an olive progress line; done = olive disc, current = wine
+// disc with a gold ring, later = paper with an edge ring; the words 14 bold on a paper pill.
 import QtQuick
 import QtQuick.Controls
+
+import "EhStyle.js" as S
 
 Item {
     id: root
@@ -13,10 +17,10 @@ Item {
     property int current: 1
     property bool allowBack: true      // false once the money has left
     signal stepClicked(int n)
-    readonly property real small: 44
-    readonly property real big: 52
+    readonly property real small: 42
+    readonly property real big: 48
 
-    implicitHeight: big + 6 + 20      // circles + the short word under each one
+    implicitHeight: big + 6 + 22      // circles + the short word under each one
 
     // the line that joins the icons: a light track, green where it is done
     Rectangle {
@@ -26,16 +30,16 @@ Item {
         y: root.big / 2 + 3 - height / 2
         height: 8
         radius: 4
-        color: Qt.rgba(1, 1, 1, 0.82)
-        border.width: 1
-        border.color: Qt.rgba(0.27, 0.33, 0.12, 0.25)
+        color: S.paper
+        border.width: 1.5
+        border.color: S.edge
         Rectangle {
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
             height: 4
             anchors.leftMargin: 2
             radius: 2
-            color: '#45541f'
+            color: S.olive
             width: root.steps.length > 1 ? Math.max(0, (track.width - 4) * (root.current - 1) / (root.steps.length - 1)) : 0
         }
     }
@@ -55,23 +59,23 @@ Item {
             y: root.big / 2 + 3 - d / 2
             x: root.steps.length > 1 ? (root.small / 2 + (root.width - root.small) * index / (root.steps.length - 1)) - d / 2 : 0
 
-            // soft light behind the current step
+            // the current step: a gold ring with a thin brass line round it
             Rectangle {
                 visible: st.now
                 anchors.centerIn: parent
-                width: parent.width + 12
+                width: parent.width + 9
                 height: width
                 radius: width / 2
-                color: Qt.rgba(0.37, 0.10, 0.20, 0.18)
+                color: S.gold
+                border.width: 1.5
+                border.color: S.brassRing
             }
             Rectangle {
                 anchors.fill: parent
                 radius: width / 2
-                color: st.done ? Qt.rgba(0.27, 0.33, 0.12, 0.92)
-                     : st.now ? Qt.rgba(0.37, 0.10, 0.20, 0.94)
-                     : Qt.rgba(1, 1, 1, 0.82)
+                color: st.done ? S.olive : st.now ? S.wine : S.paper
                 border.width: st.done || st.now ? 0 : 2
-                border.color: '#d8cdb8'
+                border.color: S.edge
                 scale: stTap.pressed ? 0.92 : 1
                 Image {
                     anchors.centerIn: parent
@@ -90,24 +94,25 @@ Item {
                 width: 18; height: 18; radius: 9
                 color: '#ffffff'
                 border.width: 2
-                border.color: '#45541f'
+                border.color: S.olive
                 Image { anchors.centerIn: parent; source: Qt.resolvedUrl('../../../icons/eh_st_check_o.svg'); sourceSize.width: 12; sourceSize.height: 12 }
             }
             // short word under the circle, always visible
             Rectangle {
                 anchors.horizontalCenter: parent.horizontalCenter
-                y: (root.big / 2 + 3 - st.d / 2 > 0 ? root.big + 6 - (root.big / 2 + 3 - st.d / 2) : root.big + 6) - 1
-                width: wordL.implicitWidth + 10
+                y: (root.big / 2 + 3 - st.d / 2 > 0 ? root.big + 6 - (root.big / 2 + 3 - st.d / 2) : root.big + 6) + (st.now ? 2 : -1)
+                width: wordL.implicitWidth + 12
                 height: wordL.implicitHeight + 2
-                radius: height / 2
-                color: Qt.rgba(1, 1, 1, 0.85)
+                radius: 9
+                color: S.paper
                 Label {
                     id: wordL
                     anchors.centerIn: parent
                     text: st.modelData.word
-                    font.pixelSize: 12
+                    font.family: BodyFont ? BodyFont : font.family
+                    font.pixelSize: 14
                     font.bold: true
-                    color: st.done ? '#45541f' : (st.now ? '#5e1a33' : '#8a7d70')
+                    color: st.done ? S.oliveInk : (st.now ? S.wine : S.muted)
                 }
             }
             TapHandler {
@@ -127,21 +132,21 @@ Item {
         property string title
         property string text
         property real arrowX: 20
-        width: Math.min(root.width, 260)
+        width: Math.min(root.width, 290)
         padding: 12
         modal: false
         closePolicy: Popup.CloseOnPressOutside | Popup.CloseOnEscape
         background: Item {
-            Rectangle { anchors.fill: parent; radius: 14; color: '#2a2220' }
+            Rectangle { anchors.fill: parent; radius: 14; color: S.ink }
             Rectangle {
-                width: 14; height: 14; rotation: 45; color: '#2a2220'
+                width: 14; height: 14; rotation: 45; color: S.ink
                 x: bubble.arrowX - 7; y: -6
             }
         }
         contentItem: Column {
             spacing: 2
-            Label { width: bubble.availableWidth; text: bubble.title; color: '#ffffff'; font.pixelSize: 15; font.bold: true; wrapMode: Text.WordWrap }
-            Label { width: bubble.availableWidth; text: bubble.text; color: '#ffffff'; font.pixelSize: 14; wrapMode: Text.WordWrap; lineHeight: 1.15 }
+            Label { width: bubble.availableWidth; text: bubble.title; color: S.ivory; font.family: BodyFont ? BodyFont : font.family; font.pixelSize: 17; font.bold: true; wrapMode: Text.WordWrap }
+            Label { width: bubble.availableWidth; text: bubble.text; color: S.ivory; font.family: BodyFont ? BodyFont : font.family; font.pixelSize: 16; wrapMode: Text.WordWrap; lineHeight: 1.15 }
         }
         function showFor(st) {
             title = st.n + ' · ' + st.modelData.title
