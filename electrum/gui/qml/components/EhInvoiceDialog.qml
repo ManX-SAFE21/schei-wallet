@@ -3,6 +3,7 @@
 //  review : what you send, sending cost, total, address with the last 4
 //           letters highlighted, "cannot be undone" warning, slide to send
 //  sent   : "Inviati!" with the confirmation note
+// "Bottega": parchment page, the receipt on a paper sheet, info boxes, stitched buttons.
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
@@ -11,12 +12,14 @@ import QtQuick.Controls.Material
 import org.electrum 1.0
 
 import "controls"
+import "controls/EhStyle.js" as S
 
 ElDialog {
     id: dialog
     Material.theme: Material.Light
-    Material.foreground: '#2a2220'
-    Material.accent: '#5e1a33'
+    Material.foreground: S.ink
+    Material.accent: S.wine
+    font.family: BodyFont ? BodyFont : Qt.application.font.family
 
     property var invoice            // InvoiceParser from WalletMainView
     property string phase: 'amount'
@@ -44,11 +47,7 @@ ElDialog {
     topPadding: 0
     header: null
     needsSystemBarPadding: false
-    background: Rectangle {
-        color: '#faf7ef'
-        // luce colorata: rose = sending, green once sent
-        EhGlow { tone: dialog.phase === 'sent' ? 'green' : 'rose'; z: 0; x: -parent.width * 0.25; y: 30; width: parent.width * 1.5; height: 340 }
-    }
+    background: Rectangle { color: S.parch }
 
     // ---------- helpers ----------
     // blocked gold coins cannot be spent: "you have" is what can be spent
@@ -102,7 +101,7 @@ ElDialog {
         var a = invoice ? invoice.address : ''
         var n = Math.ceil(a.length / 4), half = Math.ceil(n / 2), out = ''
         for (var i = 0; i < a.length; i++) {
-            if (i === a.length - 4) out += '<span style="background-color:#f7e3e8"><font color="#3f0f21"><u>'
+            if (i === a.length - 4) out += '<span style="background-color:' + S.highlight + '"><font color="' + S.wineDark + '"><u>'
             out += a[i]
             if (i === a.length - 1) out += '</u></font></span>'
             var left = a.length - 1 - i
@@ -196,12 +195,24 @@ ElDialog {
     }
 
     // ---------- layout ----------
-    ColumnLayout {
+    // every page scrolls (nothing under the phone keys). In "Check carefully" the page fits and
+    // does not move: only the middle scrolls, the two slides stay always visible.
+    Flickable {
+        id: pageFlick
         anchors.fill: parent
-        anchors.leftMargin: 18
-        anchors.rightMargin: 18
-        anchors.bottomMargin: 18 + app.navigationBarHeight
-        spacing: 9
+        anchors.bottomMargin: app.navigationBarHeight
+        flickableDirection: Flickable.VerticalFlick
+        contentHeight: Math.max(height, col.implicitHeight + 16)
+        boundsBehavior: Flickable.StopAtBounds
+        interactive: contentHeight > height + 1
+        clip: true
+
+    ColumnLayout {
+        id: col
+        x: S.margin
+        width: pageFlick.width - 2 * S.margin
+        height: Math.max(pageFlick.height - 16, implicitHeight)
+        spacing: 8
 
         EhPageTop {
             title: ''
@@ -211,26 +222,18 @@ ElDialog {
             onStepClicked: (n) => dialog.goToStep(n)
         }
 
-        Label {
+        EhBackLink {
             visible: dialog.phase !== 'sent'
             enabled: !dialog.busy        // review 2026-11-11: no "Back" while the payment is leaving
             opacity: enabled ? 1 : 0.35
-            Layout.topMargin: -14
-            text: '‹ ' + qsTr('Back')
-            color: '#5e1a33'
-            font.pixelSize: 17
-            font.bold: true
-            TapHandler {
-                margin: 10
-                onTapped: {
-                    if (dialog.phase === 'review' && dialog.invoice.amount.isEmpty) {
-                        dialog.useMax = false
-                        dialog.phase = 'amount'
-                    }
-                    else {
-                        app._ehDraft = null
-                        dialog.doClose()
-                    }
+            onClicked: {
+                if (dialog.phase === 'review' && dialog.invoice.amount.isEmpty) {
+                    dialog.useMax = false
+                    dialog.phase = 'amount'
+                }
+                else {
+                    app._ehDraft = null
+                    dialog.doClose()
                 }
             }
         }
@@ -238,86 +241,56 @@ ElDialog {
         Label {
             visible: false   // the steps bar at the top says it now
             text: qsTr('STEP %1 OF %2').arg(dialog.phase === 'amount' ? 2 : 3).arg(3)
-            color: '#5e1a33'
-            font.pixelSize: 14
+            color: S.olive
+            font.pixelSize: 16
             font.bold: true
         }
 
-        RowLayout {
+        EhTitle {
             visible: dialog.phase !== 'sent'
-            spacing: 10
-            Image {
-                source: Qt.resolvedUrl('../../icons/eh_tx_wine.svg')
-                sourceSize.width: 34
-                sourceSize.height: 34
-            }
-            Label {
-                text: dialog.phase === 'amount' ? qsTr('How much are you sending?') : qsTr('Check carefully')
-                color: '#5e1a33'
-                font.family: TitleFont ? TitleFont : font.family
-                font.weight: Font.Black
-                font.pixelSize: 26
-            }
+            text: dialog.phase === 'amount' ? qsTr('How much are you sending?') : qsTr('Check carefully')
         }
 
         // ===== amount =====
-        Rectangle {
+        EhSegmented {
             visible: dialog.phase === 'amount' && app.ehOption('euro_btc') && !app.ehBtcOnly()
-            Layout.fillWidth: true
-            Layout.preferredHeight: 50
-            radius: 25
-            color: '#efe6d3'
-            RowLayout {
-                anchors.fill: parent
-                anchors.margins: 4
-                spacing: 4
-                Repeater {
-                    model: [ { b: false, t: (app.ehSym() !== app.ehCcy() ? app.ehSym() + '  ' : '') + app.ehCcyTitle() }, { b: true, t: 'Bitcoin (BTC)' } ]
-                    delegate: Rectangle {
-                        required property var modelData
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
-                        radius: height / 2
-                        color: dialog.btcMode === modelData.b ? '#ffffff' : 'transparent'
-                        Label { anchors.centerIn: parent; text: modelData.t; font.pixelSize: 17; font.bold: true; color: dialog.btcMode === modelData.b ? '#3f0f21' : '#6b5d55' }
-                        TapHandler {
-                            onTapped: {
-                                if (dialog.btcMode === modelData.b) return
-                                // convert what is typed to the other unit
-                                var sats = dialog.inputSats()
-                                dialog.btcMode = modelData.b
-                                if (sats <= 0) { dialog.euroInput = ''; return }
-                                if (dialog.btcMode) {
-                                    dialog.euroInput = (sats / 100000000).toFixed(8).replace(/0+$/, '').replace(/\.$/, '').replace('.', ',')
-                                } else {
-                                    var e = Daemon.fx.fiatValue(dialog.satsToAmount(sats), true)
-                                    dialog.euroInput = isNaN(Number(e)) || e === '' ? '' : Number(e).toFixed(2).replace('.', ',')
-                                }
-                            }
-                        }
-                    }
+            model: [ (app.ehSym() !== app.ehCcy() ? app.ehSym() + '  ' : '') + app.ehCcyTitle(), 'Bitcoin (BTC)' ]
+            currentIndex: dialog.btcMode ? 1 : 0
+            onActivated: (i) => {
+                var b = (i === 1)
+                if (dialog.btcMode === b) return
+                // convert what is typed to the other unit
+                var sats = dialog.inputSats()
+                dialog.btcMode = b
+                if (sats <= 0) { dialog.euroInput = ''; return }
+                if (dialog.btcMode) {
+                    dialog.euroInput = (sats / 100000000).toFixed(8).replace(/0+$/, '').replace(/\.$/, '').replace('.', ',')
+                } else {
+                    var e = Daemon.fx.fiatValue(dialog.satsToAmount(sats), true)
+                    dialog.euroInput = isNaN(Number(e)) || e === '' ? '' : Number(e).toFixed(2).replace('.', ',')
                 }
             }
         }
         Label {
             visible: dialog.phase === 'amount' && !dialog.useCoins
             Layout.alignment: Qt.AlignHCenter
-            Layout.maximumWidth: parent.width
+            Layout.maximumWidth: col.width
             text: dialog.euroDisplay()
-            color: '#3f0f21'
-            font.family: TitleFont ? TitleFont : font.family
-            font.weight: Font.Black
+            color: S.wineDark
+            font.family: SerifFont ? SerifFont : font.family
+            font.weight: Font.ExtraBold
             font.pixelSize: 50
             fontSizeMode: Text.HorizontalFit   // T13: shrinks instead of pushing the page out
             minimumPixelSize: 22
         }
         Label {
             Layout.alignment: Qt.AlignHCenter
+            Layout.topMargin: -6
             visible: dialog.phase === 'amount' && !app.ehBtcOnly() && !dialog.useCoins
             text: dialog.btcMode ? qsTr('about %1').arg(app.ehEuro(dialog.satsToAmount(dialog.inputSats())))
                                  : qsTr('about %1').arg(app.ehBtc(dialog.satsToAmount(dialog.inputSats())))
-            color: '#6b5d55'
-            font.pixelSize: 15
+            color: S.muted
+            font.pixelSize: 16
         }
         RowLayout {
             visible: dialog.phase === 'amount' && dialog.inputSats() <= dialog.balanceSats()
@@ -326,16 +299,16 @@ ElDialog {
             ColumnLayout {
                 spacing: 0
                 Layout.fillWidth: dialog.btcMode
-                Label { text: qsTr('YOU HAVE'); color: '#6b5d55'; font.pixelSize: 12; font.bold: true }
+                Label { text: qsTr('YOU HAVE'); color: S.olive; font.pixelSize: 16; font.bold: true; font.letterSpacing: 0.5 }
                 Label {
                     Layout.fillWidth: dialog.btcMode
                     text: app.ehMoney(dialog.satsToAmount(dialog.balanceSats()))
-                    color: '#3f0f21'
-                    font.family: TitleFont ? TitleFont : font.family
-                    font.weight: Font.Black
+                    color: S.wineDark
+                    font.family: SerifFont ? SerifFont : font.family
+                    font.weight: Font.ExtraBold
                     font.pixelSize: 24
                     fontSizeMode: Text.HorizontalFit
-                    minimumPixelSize: 14
+                    minimumPixelSize: 16
                 }
             }
             Item { Layout.fillWidth: true; visible: !dialog.btcMode }
@@ -343,45 +316,30 @@ ElDialog {
                 // T13 (owner): typing in bitcoin, "Left" goes away: too many decimals
                 visible: !dialog.btcMode
                 spacing: 0
-                Label { Layout.alignment: Qt.AlignRight; text: qsTr('LEFT'); color: '#6b5d55'; font.pixelSize: 12; font.bold: true }
+                Label { Layout.alignment: Qt.AlignRight; text: qsTr('LEFT'); color: S.olive; font.pixelSize: 16; font.bold: true; font.letterSpacing: 0.5 }
                 Label {
                     Layout.alignment: Qt.AlignRight
                     text: app.ehMoney(dialog.satsToAmount(Math.max(0, dialog.balanceSats() - dialog.inputSats())))
-                    color: '#45541f'
-                    font.family: TitleFont ? TitleFont : font.family
-                    font.weight: Font.Black
+                    color: S.oliveInk
+                    font.family: SerifFont ? SerifFont : font.family
+                    font.weight: Font.ExtraBold
                     font.pixelSize: 24
                 }
             }
         }
-        Rectangle {
+        EhInfoBox {
+            id: haveL
             visible: dialog.phase === 'amount' && dialog.inputSats() > dialog.balanceSats()
-            Layout.alignment: Qt.AlignHCenter
-            Layout.preferredHeight: 26
-            Layout.preferredWidth: haveL.implicitWidth + 24
-            radius: 13
-            color: dialog.inputSats() > dialog.balanceSats() ? '#f7e3e8' : '#efe6d3'
-            Label {
-                id: haveL
-                anchors.centerIn: parent
-                font.pixelSize: 14
-                font.bold: dialog.inputSats() > dialog.balanceSats()
-                color: dialog.inputSats() > dialog.balanceSats() ? '#3f0f21' : '#4a4038'
-                text: dialog.inputSats() > dialog.balanceSats()
-                      ? qsTr('You do not have enough schei')
-                      : qsTr('You have %1').arg(app.ehMoney(Daemon.currentWallet.ehTotal))
-            }
+            kind: dialog.inputSats() > dialog.balanceSats() ? 'danger' : 'warn'
+            text: dialog.inputSats() > dialog.balanceSats()
+                  ? '<b>' + qsTr('You do not have enough schei') + '</b>'
+                  : qsTr('You have %1').arg(app.ehMoney(Daemon.currentWallet.ehTotal))
         }
-        Rectangle {
+        EhStitchButton {
             visible: dialog.phase === 'amount' && app.ehOption('max')
-            Layout.fillWidth: true
-            Layout.preferredHeight: 48
-            radius: 24
-            color: maxTap.pressed ? '#fbeef2' : '#ffffff'
-            border.width: 2
-            border.color: '#e9cdd6'
-            Label { anchors.centerIn: parent; text: qsTr('All the balance'); color: '#5e1a33'; font.pixelSize: 17; font.bold: true }
-            TapHandler { id: maxTap; onTapped: { dialog.useMax = true; dialog.goReview(MAX) } }
+            kind: 'paper'
+            text: qsTr('All the balance')
+            onClicked: { dialog.useMax = true; dialog.goReview(MAX) }
         }
         EhCoinPad {
             id: coinPad
@@ -390,78 +348,49 @@ ElDialog {
             Layout.fillHeight: true
             onEuroInputChanged: if (dialog.useCoins) dialog.euroInput = euroInput
         }
-        Label {
+        EhBackLink {
             visible: dialog.phase === 'amount' && dialog.useCoins
+            Layout.topMargin: 0
             Layout.alignment: Qt.AlignHCenter
             text: qsTr('Prefer to write the numbers?')
-            color: '#5e1a33'; font.pixelSize: 15; font.bold: true; font.underline: true
-            TapHandler { margin: 8; onTapped: dialog.coinsMode = false }
+            onClicked: dialog.coinsMode = false
         }
         Item { visible: dialog.phase === 'amount' && !dialog.useCoins; Layout.fillHeight: true }
         GridLayout {
             visible: dialog.phase === 'amount' && !dialog.useCoins
             Layout.fillWidth: true
             columns: 3
-            rowSpacing: 9
+            rowSpacing: 8
             columnSpacing: 9
             Repeater {
                 model: ['1', '2', '3', '4', '5', '6', '7', '8', '9', ',', '0', 'del']
-                delegate: Rectangle {
+                delegate: EhKey {
                     id: key
                     required property string modelData
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 54
-                    radius: 27
-                    color: modelData === 'del' ? '#efe6d3' : (kt.pressed ? '#f3ecdd' : '#ffffff')
-                    border.width: modelData === 'del' ? 0 : 2
-                    border.color: '#e2d7c1'
-                    EhBackspaceIcon { visible: key.modelData === 'del'; anchors.centerIn: parent; width: 38; height: 27; fill: '#efe6d3' }
-                    Label {
-                        anchors.centerIn: parent
-                        visible: key.modelData !== 'del'
-                        text: key.modelData === ',' ? app.ehLocale().decimalPoint : key.modelData
-                        font.pixelSize: 27
-                        font.bold: true
-                        color: '#2a2220'
-                    }
-                    TapHandler { id: kt; onTapped: dialog.press(key.modelData) }
+                    text: modelData === ',' ? app.ehLocale().decimalPoint : modelData
+                    isDelete: modelData === 'del'
+                    onActivated: dialog.press(key.modelData)
                 }
             }
         }
         // third review (#7): no euro price yet: say it, and offer to write in bitcoin
-        Rectangle {
+        EhInfoBox {
+            id: nrCol
             visible: dialog.phase === 'amount' && dialog.noRate
-            Layout.fillWidth: true
-            Layout.preferredHeight: nrCol.implicitHeight + 22
-            radius: 16
-            color: '#fbf0d8'
-            border.width: 2
-            border.color: '#d9b25a'
-            ColumnLayout {
-                id: nrCol
-                x: 12; y: 11
-                width: parent.width - 24
-                spacing: 8
-                Label {
-                    Layout.fillWidth: true
-                    wrapMode: Text.WordWrap
-                    textFormat: Text.StyledText
-                    font.pixelSize: 14
-                    text: '<b>' + qsTr('I do not know the price in %1 right now.').arg(app.ehCcyName()) + '</b> '
-                          + qsTr('Wait a few seconds, or write the amount in bitcoin.')
-                }
-                EhPillButton {
-                    text: qsTr('Write in bitcoin')
-                    fontSize: 16
-                    color: '#ffffff'
-                    textColor: '#5e1a33'
-                    onClicked: { dialog.euroInput = ''; dialog.btcMode = true }
-                    Label { anchors.centerIn: parent; text: '₿'; font.pixelSize: 20; font.bold: true; color: '#5e1a33' }
-                }
+            kind: 'warn'
+            text: '<b>' + qsTr('I do not know the price in %1 right now.').arg(app.ehCcyName()) + '</b> '
+                  + qsTr('Wait a few seconds, or write the amount in bitcoin.')
+            EhStitchButton {
+                kind: 'paper'
+                text: qsTr('Write in bitcoin')
+                onClicked: { dialog.euroInput = ''; dialog.btcMode = true }
+                Label { anchors.centerIn: parent; text: '₿'; font.pixelSize: 22; font.bold: true; color: S.wine }
             }
         }
-        EhNextButton {
+        EhStitchButton {
             visible: dialog.phase === 'amount'
+            kind: 'wine'
+            endIcon: 'next'
             enabled: dialog.inputSats() > 0 && dialog.inputSats() <= dialog.balanceSats()
             text: qsTr('Next')
             onClicked: dialog.goReview(dialog.satsToAmount(dialog.inputSats()))
@@ -469,61 +398,52 @@ ElDialog {
 
         // ===== review =====
         // double confirmation: amount on one line and the address across the
-        // whole width; the two bars start below them
-        Rectangle {
+        // whole width; the two bars start below them (kept, never shown: needsDouble is false)
+        EhSheet {
             visible: dialog.phase === 'review' && dialog.needsDouble
-            Layout.fillWidth: true
-            Layout.preferredHeight: dsCol.implicitHeight + 16
-            radius: 16
-            color: '#ffffff'
+            topPadding: 8
+            bottomPadding: 8
             ColumnLayout {
                 id: dsCol
-                anchors.fill: parent
-                anchors.margins: 8
-                anchors.leftMargin: 14
-                anchors.rightMargin: 14
+                Layout.fillWidth: true
                 spacing: 0
                 RowLayout {
                     Layout.fillWidth: true
-                    Label { text: qsTr('You send'); font.pixelSize: 16 }
+                    Label { text: qsTr('You send'); font.pixelSize: 17; color: S.ink }
                     Item { Layout.fillWidth: true }
                     Label {
                         text: app.ehMoney(finalizer.valid ? finalizer.effectiveAmount : (dialog.chosen ? dialog.chosen : finalizer.amount))
+                        font.family: SerifFont ? SerifFont : font.family
+                        font.weight: Font.ExtraBold
                         font.pixelSize: 24
-                        font.bold: true
-                        color: '#3f0f21'
+                        color: S.wine
                     }
                 }
                 Label {
                     Layout.fillWidth: true
                     horizontalAlignment: Text.AlignRight
                     wrapMode: Text.WordWrap
-                    font.pixelSize: 14
-                    color: '#6b5d55'
+                    font.pixelSize: 16
+                    color: S.muted
                     text: qsTr('Sending cost') + ' ' + (finalizer.valid ? app.ehMoney(finalizer.fee) : '…') + ' · ' + qsTr('Total') + ' '
                           + (finalizer.valid ? app.ehMoney(dialog.satsToAmount(finalizer.effectiveAmount.satsInt + finalizer.fee.satsInt)) : '…')
                     TapHandler { onTapped: app.ehShowFeeInfo() }
                 }
             }
         }
-        Rectangle {
+        EhSheet {
             visible: dialog.phase === 'review' && dialog.needsDouble
-            Layout.fillWidth: true
-            Layout.preferredHeight: daCol.implicitHeight + 14
-            radius: 16
-            color: '#ffffff'
-            border.width: 2
-            border.color: '#f3e3e8'
+            topPadding: 8
+            bottomPadding: 8
             ColumnLayout {
                 id: daCol
-                anchors.fill: parent
-                anchors.margins: 7
+                Layout.fillWidth: true
                 spacing: 2
                 RowLayout {
                     Layout.alignment: Qt.AlignHCenter
                     spacing: 6
-                    Label { text: qsTr('TO THIS ADDRESS'); font.pixelSize: 13; font.bold: true; color: '#5e1a33' }
-                    Image { source: Qt.resolvedUrl('../../icons/eh_zoom.svg'); sourceSize.width: 18; sourceSize.height: 18 }
+                    Label { text: qsTr('TO THIS ADDRESS'); font.pixelSize: 16; font.bold: true; color: S.wine }
+                    Image { source: Qt.resolvedUrl('../../icons/eh_zoom.svg'); sourceSize.width: 20; sourceSize.height: 20 }
                 }
                 Label {
                     id: dAddr
@@ -531,25 +451,26 @@ ElDialog {
                     horizontalAlignment: Text.AlignHCenter
                     wrapMode: Text.WordWrap
                     textFormat: Text.RichText
-                    text: app.ehAddressRich(dialog.invoice ? dialog.invoice.address : '', '#3f0f21', '#f7e3e8',
+                    text: app.ehAddressRich(dialog.invoice ? dialog.invoice.address : '', S.wineDark, S.highlight,
                                             Math.max(1, Math.floor((width + dFm.averageCharacterWidth) / (dFm.averageCharacterWidth * 5))))
                     font.family: FixedFont
                     font.bold: true
-                    font.pixelSize: 17
+                    font.pixelSize: 18
+                    color: S.ink
                     lineHeight: 1.2
                     FontMetrics { id: dFm; font: dAddr.font }
                 }
+                TapHandler { onTapped: app.ehZoomAddress(dialog.invoice.address, false) }
             }
-            TapHandler { onTapped: app.ehZoomAddress(dialog.invoice.address, false) }
         }
 
-        // single confirmation: one push-up bar on the left, text on the right.
-        // double confirmation (big amounts): text on the left, two long bars on the right.
+        // T24: the first slide on top, the second at the bottom; the middle scrolls,
+        // the two slides stay always visible
         ColumnLayout {
             visible: dialog.phase === 'review'
             Layout.fillWidth: true
             Layout.fillHeight: true
-            spacing: 8
+            spacing: 6
 
             // T24: first slide, above the text
             EhSlideH {
@@ -560,9 +481,11 @@ ElDialog {
             }
 
             Flickable {
+                id: midFlick
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                contentHeight: textCol.implicitHeight
+                Layout.minimumHeight: 150
+                contentHeight: textCol.implicitHeight + 4
                 clip: true
                 boundsBehavior: Flickable.StopAtBounds
                 interactive: contentHeight > height
@@ -571,321 +494,244 @@ ElDialog {
                 width: parent.width
                 spacing: 8
 
-                Rectangle {
+                // the receipt: You send / sending cost / Total on one paper sheet
+                EhSheet {
                     visible: !dialog.needsDouble
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: sumCol.implicitHeight + 18
-                    radius: 16
-                    color: '#ffffff'
                     ColumnLayout {
                         id: sumCol
-                        anchors.fill: parent
-                        anchors.margins: 9
-                        anchors.leftMargin: 12
-                        anchors.rightMargin: 12
-                        spacing: 3
-                        Label { text: qsTr('You send'); font.pixelSize: 16 }
-                        Label {
-                            text: app.ehMoney(finalizer.valid ? finalizer.effectiveAmount : (dialog.chosen ? dialog.chosen : finalizer.amount))
-                            font.pixelSize: 24
-                            font.bold: true
-                            color: '#3f0f21'
-                        }
-                        // the sending cost is a button: tap to choose it (EhFeeDialog)
-                        Rectangle {
+                        Layout.fillWidth: true
+                        spacing: 0
+                        RowLayout {
                             Layout.fillWidth: true
-                            Layout.preferredHeight: costRow.implicitHeight + 14
-                            radius: 12
-                            color: costTap.pressed ? '#f3dde5' : '#fbf4f6'
-                            border.width: 1.5
-                            border.color: '#e2b8c6'
+                            Layout.minimumHeight: 44
+                            spacing: 8
+                            Label { Layout.fillWidth: true; text: qsTr('You send'); font.pixelSize: 17; color: S.ink; wrapMode: Text.WordWrap }
+                            Label {
+                                text: app.ehMoney(finalizer.valid ? finalizer.effectiveAmount : (dialog.chosen ? dialog.chosen : finalizer.amount))
+                                font.family: SerifFont ? SerifFont : font.family
+                                font.weight: Font.ExtraBold
+                                font.pixelSize: 26
+                                color: S.wineDark
+                            }
+                        }
+                        EhDotLine {}
+                        // the sending cost is a button: tap to choose it (EhFeeDialog)
+                        Item {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: Math.max(64, costRow.implicitHeight + 10)
+                            Rectangle {
+                                anchors.fill: parent
+                                anchors.leftMargin: -6
+                                anchors.rightMargin: -6
+                                anchors.topMargin: 2
+                                anchors.bottomMargin: 2
+                                radius: 10
+                                color: S.sand
+                                opacity: costTap.pressed ? 0.4 : 0
+                            }
                             RowLayout {
                                 id: costRow
-                                anchors.fill: parent
-                                anchors.leftMargin: 8
-                                anchors.rightMargin: 8
+                                anchors.left: parent.left
+                                anchors.right: parent.right
+                                anchors.verticalCenter: parent.verticalCenter
+                                spacing: 6
                                 ColumnLayout {
-                                    spacing: 0
-                                    Label { textFormat: Text.StyledText; text: qsTr('Sending cost') + ' <font color="#6b5d55">' + qsTr('(tip to the miners)') + '</font>'; font.pixelSize: 16 }
-                                    Label { text: app.ehFeeEta(finalizer.sliderPos); font.pixelSize: 13; color: '#6b5d55' }
-                                    // T6: the invitation is inside the button, not below it
-                                    Label { text: qsTr('tap to change it'); font.pixelSize: 13; font.bold: true; color: '#5e1a33' }
-                                    // T46 (owner 12/11): what the tip is, here next to the cost (not under the coins)
+                                    Layout.fillWidth: true
+                                    spacing: 1
                                     Label {
                                         Layout.fillWidth: true
-                                        Layout.topMargin: 3
                                         wrapMode: Text.WordWrap
                                         textFormat: Text.StyledText
-                                        font.pixelSize: 13
-                                        color: '#6b5d55'
-                                        text: qsTr('It is the small tip to the "miners" who write your payment on the blockchain.')
-                                              + ' <u><font color="#5e1a33"><b>' + qsTr('More information') + '</b></font></u>'
-                                        TapHandler { onTapped: app.ehShowFeeInfo() }
+                                        text: qsTr('Sending cost') + ' <font color="' + S.muted + '">' + qsTr('(tip to the miners)') + '</font>'
+                                        font.pixelSize: 16
+                                        color: S.ink
                                     }
+                                    Label { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: app.ehFeeEta(finalizer.sliderPos); font.pixelSize: 16; color: S.muted }
+                                    // T6: the invitation is inside the button, not below it
+                                    Label { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: qsTr('tap to change it'); font.pixelSize: 16; font.bold: true; font.underline: true; color: S.wine }
                                 }
-                                Item { Layout.fillWidth: true }
-                                Label { text: finalizer.valid ? app.ehMoney(finalizer.fee) : '…'; font.pixelSize: 16; font.bold: true }
-                                Label { text: '›'; font.pixelSize: 24; font.bold: true; color: '#5e1a33' }
+                                Label {
+                                    text: finalizer.valid ? app.ehMoney(finalizer.fee) : '…'
+                                    font.family: SerifFont ? SerifFont : font.family
+                                    font.weight: Font.ExtraBold
+                                    font.pixelSize: 21
+                                    color: S.wineDark
+                                }
+                                Label { text: '›'; font.pixelSize: 30; font.bold: true; color: S.wine }
                             }
                             TapHandler { id: costTap; onTapped: dialog.chooseFee() }
                         }
+                        // T46 (owner 12/11): what the tip is, here next to the cost (not under the coins)
+                        Label {
+                            Layout.fillWidth: true
+                            Layout.bottomMargin: 6
+                            wrapMode: Text.WordWrap
+                            textFormat: Text.StyledText
+                            font.pixelSize: 16
+                            lineHeight: 1.05
+                            color: S.muted
+                            text: qsTr('It is the small tip to the "miners" who write your payment on the blockchain.')
+                                  + ' <u><font color="' + S.wine + '"><b>' + qsTr('More information') + '</b></font></u>'
+                            TapHandler { onTapped: app.ehShowFeeInfo() }
+                        }
                         // which gold coins the payment melts: chosen by the app, or by hand
                         // (owner 12/11: only with "Gold coins (UTXO)" on in Advanced)
-                        Rectangle {
+                        EhDotLine { visible: app.ehOption('utxo') }
+                        EhRow {
+                            id: coinsRow
                             visible: app.ehOption('utxo')
-                            Layout.fillWidth: true
-                            Layout.preferredHeight: coinsRow.implicitHeight + 14
-                            radius: 12
-                            color: coinsTap.pressed ? '#f4ead2' : '#fbf6e8'
-                            RowLayout {
-                                id: coinsRow
-                                anchors.fill: parent
-                                anchors.leftMargin: 8
-                                anchors.rightMargin: 8
-                                spacing: 6
-                                Image { source: Qt.resolvedUrl('../../icons/eh_goldcoin.svg'); sourceSize.width: 26; sourceSize.height: 26 }
-                                ColumnLayout {
-                                    Layout.fillWidth: true
-                                    spacing: 0
-                                    Label { text: qsTr('Coins used'); font.pixelSize: 15 }
-                                    Label {
-                                        Layout.fillWidth: true
-                                        elide: Text.ElideRight
-                                        font.pixelSize: 13
-                                        color: '#6b5d55'
-                                        text: (finalizer.valid ? finalizer.ehInputCount + ' · ' : '')
-                                              + (finalizer.ehCoins.length > 0 ? qsTr('chosen by you') : qsTr('chosen by itself'))
-                                    }
-                                }
-                                Label { text: '›'; font.pixelSize: 22; font.bold: true; color: '#5e1a33' }
-                            }
-                            TapHandler { id: coinsTap; onTapped: dialog.chooseCoins() }
+                            icon: 'eh_goldcoin.svg'
+                            text: qsTr('Coins used')
+                            hint: (finalizer.valid ? finalizer.ehInputCount + ' · ' : '')
+                                  + (finalizer.ehCoins.length > 0 ? qsTr('chosen by you') : qsTr('chosen by itself'))
+                            last: true
+                            onClicked: dialog.chooseCoins()
                         }
                         // T20: privacy warning, it never blocks the payment
-                        Rectangle {
+                        EhInfoBox {
+                            id: mixCol
                             visible: dialog.mixCoins.length > 0 && !dialog.mixOk
-                            Layout.fillWidth: true
-                            Layout.preferredHeight: mixCol.implicitHeight + 20
-                            radius: 14
-                            color: '#fdf1d4'
-                            border.width: 2
-                            border.color: '#e0a21a'
-                            ColumnLayout {
-                                id: mixCol
-                                x: 10; y: 10
-                                width: parent.width - 20
-                                spacing: 6
-                                Label { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: qsTr('You are mixing coins'); font.pixelSize: 16; font.bold: true; color: '#7a4d00' }
-                                Label {
-                                    Layout.fillWidth: true
-                                    wrapMode: Text.WordWrap
-                                    textFormat: Text.StyledText
-                                    font.pixelSize: 14
-                                    text: qsTr('This payment uses coins of <b>different origins</b>. Who receives can understand that they are all yours.')
-                                }
-                                Repeater {
-                                    model: dialog.mixCoins
-                                    RowLayout {
-                                        id: mx
-                                        required property var modelData
-                                        Layout.fillWidth: true
-                                        spacing: 6
-                                        Image { source: Qt.resolvedUrl('../../icons/eh_goldcoin.svg'); sourceSize.width: 20; sourceSize.height: 20 }
-                                        Label { Layout.fillWidth: true; text: app.ehMoney(dialog.satsToAmount(mx.modelData.sats)); font.pixelSize: 14; font.bold: true }
-                                        Rectangle { Layout.preferredWidth: 9; Layout.preferredHeight: 9; radius: 4.5; color: mx.modelData.cat.color }
-                                        Label { text: mx.modelData.cat.name; font.pixelSize: 13; font.bold: true; color: mx.modelData.cat.color }
-                                    }
-                                }
-                                ColumnLayout {
+                            Layout.topMargin: 4
+                            Layout.bottomMargin: 8
+                            kind: 'warn'
+                            title: qsTr('You are mixing coins')
+                            text: qsTr('This payment uses coins of <b>different origins</b>. Who receives can understand that they are all yours.')
+                            Repeater {
+                                model: dialog.mixCoins
+                                RowLayout {
+                                    id: mx
+                                    required property var modelData
                                     Layout.fillWidth: true
                                     spacing: 6
-                                    Rectangle {
-                                        Layout.fillWidth: true; Layout.preferredHeight: 42; radius: 18
-                                        color: '#45541f'
-                                        Label { anchors.centerIn: parent; text: qsTr('I choose the coins'); color: '#ffffff'; font.pixelSize: 14; font.bold: true }
-                                        MouseArea { anchors.fill: parent; onClicked: dialog.chooseCoins() }
-                                    }
-                                    Rectangle {
-                                        Layout.fillWidth: true; Layout.preferredHeight: 42; radius: 18
-                                        color: '#ffffff'; border.width: 2; border.color: '#e3d9c6'
-                                        Label { anchors.centerIn: parent; text: qsTr('It is fine'); color: '#3f0f21'; font.pixelSize: 14; font.bold: true }
-                                        MouseArea { anchors.fill: parent; onClicked: dialog.mixOk = true }
-                                    }
+                                    Image { source: Qt.resolvedUrl('../../icons/eh_goldcoin.svg'); sourceSize.width: 22; sourceSize.height: 22 }
+                                    Label { Layout.fillWidth: true; text: app.ehMoney(dialog.satsToAmount(mx.modelData.sats)); font.pixelSize: 16; font.bold: true; color: S.ink; elide: Text.ElideRight }
+                                    Rectangle { Layout.preferredWidth: 10; Layout.preferredHeight: 10; radius: 5; color: mx.modelData.cat.color }
+                                    Label { Layout.maximumWidth: mixCol.width * 0.4; text: mx.modelData.cat.name; font.pixelSize: 16; font.bold: true; color: mx.modelData.cat.color; elide: Text.ElideRight }
                                 }
                             }
+                            // one under the other: side by side the words do not fit in the box
+                            EhStitchButton {
+                                Layout.topMargin: 2
+                                kind: 'paper'
+                                compact: true
+                                text: qsTr('I choose the coins')
+                                onClicked: dialog.chooseCoins()
+                            }
+                            EhStitchButton {
+                                kind: 'paper'
+                                compact: true
+                                text: qsTr('It is fine')
+                                onClicked: dialog.mixOk = true
+                            }
                         }
-                        Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 2; color: '#ece4d2' }
+                        Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 2; color: S.edge }
                         RowLayout {
                             Layout.fillWidth: true
-                            Label { text: qsTr('Total'); font.pixelSize: 18; font.bold: true }
-                            Item { Layout.fillWidth: true }
+                            Layout.minimumHeight: 44
+                            spacing: 8
+                            Label { Layout.fillWidth: true; text: qsTr('Total'); font.pixelSize: 18; font.bold: true; color: S.ink; wrapMode: Text.WordWrap }
                             Label {
                                 text: finalizer.valid ? app.ehMoney(dialog.satsToAmount(finalizer.effectiveAmount.satsInt + finalizer.fee.satsInt)) : '…'
-                                font.pixelSize: 18
-                                font.bold: true
-                                color: '#5e1a33'
+                                font.family: SerifFont ? SerifFont : font.family
+                                font.weight: Font.ExtraBold
+                                font.pixelSize: 24
+                                color: S.wine
                             }
                         }
                     }
                 }
 
                 // address card: first and last 4 letters, tap to enlarge
-                Rectangle {
+                EhSheet {
                     visible: !dialog.needsDouble
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: addrCol.implicitHeight + 18
-                    radius: 16
-                    color: '#ffffff'
-                    border.width: 2
-                    border.color: '#f3e3e8'
+                    topPadding: 8
+                    bottomPadding: 8
                     ColumnLayout {
                         id: addrCol
-                        anchors.fill: parent
-                        anchors.margins: 9
-                        spacing: 4
-                        Label { text: qsTr('TO THIS ADDRESS'); font.pixelSize: 13; font.bold: true; color: '#5e1a33' }
+                        Layout.fillWidth: true
+                        spacing: 6
+                        Label {
+                            Layout.fillWidth: true
+                            text: qsTr('TO THIS ADDRESS')
+                            font.pixelSize: 16
+                            font.bold: true
+                            font.letterSpacing: 0.5
+                            color: S.wine
+                            wrapMode: Text.WordWrap
+                        }
+                        EhDotLine { Layout.topMargin: -2 }
                         Label {
                             Layout.fillWidth: true
                             horizontalAlignment: Text.AlignHCenter
                             wrapMode: Text.WordWrap
                             textFormat: Text.RichText
                             id: sAddr
-                            text: app.ehAddressRich(dialog.invoice ? dialog.invoice.address : '', '#3f0f21', '#f7e3e8',
+                            text: app.ehAddressRich(dialog.invoice ? dialog.invoice.address : '', S.wineDark, S.highlight,
                                                     Math.max(1, Math.floor((width + sFm.averageCharacterWidth) / (sFm.averageCharacterWidth * 5))))
                             font.family: FixedFont
                             font.bold: true
-                            font.pixelSize: 16
+                            font.pixelSize: 18
+                            color: S.ink
                             lineHeight: 1.25
                             FontMetrics { id: sFm; font: sAddr.font }
                         }
                         RowLayout {
                             Layout.alignment: Qt.AlignHCenter
+                            Layout.maximumWidth: addrCol.width
                             spacing: 6
                             Image { source: Qt.resolvedUrl('../../icons/eh_zoom.svg'); sourceSize.width: 20; sourceSize.height: 20 }
-                            Label { text: qsTr('tap to enlarge'); font.pixelSize: 13; font.bold: true; color: '#5e1a33' }
+                            Label { Layout.fillWidth: true; text: qsTr('tap to enlarge'); font.pixelSize: 16; font.bold: true; color: S.muted; wrapMode: Text.WordWrap }
                         }
+                        TapHandler { onTapped: app.ehZoomAddress(dialog.invoice.address, false) }
                     }
-                    TapHandler { onTapped: app.ehZoomAddress(dialog.invoice.address, false) }
                 }
 
-                Rectangle {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: askL.implicitHeight + 18
-                    radius: 14
-                    color: '#fbf0d6'
-                    Label {
-                        id: askL
-                        anchors.fill: parent
-                        anchors.margins: 9
-                        anchors.leftMargin: 11
-                        wrapMode: Text.WordWrap
-                        textFormat: Text.StyledText
-                        font.pixelSize: 16
-                        lineHeight: 1.15
-                        readonly property var parts: app.ehAddressParts(dialog.invoice ? dialog.invoice.address : '')
-                        text: (parts.prefix !== ''
-                               ? qsTr('<b>Ask the person receiving</b> what comes after %1 and how their address ends:').arg(parts.prefix)
-                               : qsTr('<b>Ask the person receiving</b> how their address starts and ends:'))
-                              + ' <b>' + (parts.prefix !== '' ? parts.prefix + ' ' : '') + parts.first + ' … ' + parts.last + '</b>'
-                    }
+                EhInfoBox {
+                    id: askL
+                    kind: 'warn'
+                    readonly property var parts: app.ehAddressParts(dialog.invoice ? dialog.invoice.address : '')
+                    text: (parts.prefix !== ''
+                           ? qsTr('<b>Ask the person receiving</b> what comes after %1 and how their address ends:').arg(parts.prefix)
+                           : qsTr('<b>Ask the person receiving</b> how their address starts and ends:'))
+                          + ' <b>' + (parts.prefix !== '' ? parts.prefix + ' ' : '') + parts.first + ' … ' + parts.last + '</b>'
                 }
 
                 // big payment: the PIN comes after the coin
-                Rectangle {
+                EhInfoBox {
+                    id: pinNote
                     visible: dialog.needsPin
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: pinNote.implicitHeight + 18
-                    radius: 14
-                    color: '#fbf0d6'
-                    border.width: 2
-                    border.color: '#ecd49a'
-                    RowLayout {
-                        anchors.fill: parent
-                        anchors.margins: 9
-                        spacing: 8
-                        Image {
-                            Layout.alignment: Qt.AlignTop
-                            source: Qt.resolvedUrl('../../icons/eh_lock.svg')
-                            sourceSize.width: 22
-                            sourceSize.height: 22
-                        }
-                        Label {
-                            id: pinNote
-                            Layout.fillWidth: true
-                            wrapMode: Text.WordWrap
-                            textFormat: Text.StyledText
-                            font.pixelSize: 15
-                            lineHeight: 1.1
-                            color: '#2a2220'
-                            text: qsTr('<b>It is a big payment</b> (more than %1). When you have pushed up the bitcoin coin, I will ask you for the PIN.').arg(app.ehBigLimitText())
-                        }
-                    }
+                    kind: 'warn'
+                    icon: 'eh_lock_brass.svg'
+                    text: qsTr('<b>It is a big payment</b> (more than %1). When you have pushed up the bitcoin coin, I will ask you for the PIN.').arg(app.ehBigLimitText())
                 }
 
                 Label {
                     visible: finalizer.warning !== ''
                     Layout.fillWidth: true
                     wrapMode: Text.WordWrap
-                    color: '#5e1a33'
-                    font.pixelSize: 15
+                    color: S.wine
+                    font.pixelSize: 16
                     text: finalizer.warning
                 }
 
-                Rectangle {
+                EhInfoBox {
+                    id: maxNote
                     visible: dialog.useMax
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: maxNote.implicitHeight + 18
-                    radius: 14
-                    color: '#fbf0d6'
-                    Label {
-                        id: maxNote
-                        anchors.fill: parent
-                        anchors.margins: 9
-                        wrapMode: Text.WordWrap
-                        textFormat: Text.StyledText
-                        font.pixelSize: 15
-                        text: qsTr('You send <b>everything you have</b>. The sending cost is already taken off: the wallet will be left at zero.')
-                    }
+                    kind: 'warn'
+                    text: qsTr('You send <b>everything you have</b>. The sending cost is already taken off: the wallet will be left at zero.')
                 }
 
-                Rectangle {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: irrL.implicitHeight + 18
-                    radius: 14
-                    color: '#f7e3e8'
-                    Label {
-                        id: irrL
-                        anchors.fill: parent
-                        anchors.margins: 9
-                        anchors.leftMargin: 11
-                        wrapMode: Text.WordWrap
-                        textFormat: Text.StyledText
-                        font.pixelSize: 15
-                        lineHeight: 1.1
-                        color: '#3f0f21'
-                        text: '<b>' + qsTr('It cannot be undone.') + '</b> ' + qsTr('Once sent, only the person who receives them can give them back.')
-                    }
+                EhInfoBox {
+                    id: irrL
+                    kind: 'danger'
+                    text: '<b>' + qsTr('It cannot be undone.') + '</b> ' + qsTr('Once sent, only the person who receives them can give them back.')
                 }
 
-                Rectangle {
+                EhInfoBox {
+                    id: dblL
                     visible: dialog.needsDouble
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: dblL.implicitHeight + 18
-                    radius: 14
-                    color: '#f7e3e8'
-                    border.width: 2
-                    border.color: '#5e1a33'
-                    Label {
-                        id: dblL
-                        anchors.fill: parent
-                        anchors.margins: 9
-                        anchors.leftMargin: 11
-                        wrapMode: Text.WordWrap
-                        textFormat: Text.StyledText
-                        font.pixelSize: 16
-                        color: '#3f0f21'
-                        text: '<b>' + qsTr('It is a big amount.') + '</b> ' + qsTr('Push up <b>both coins together</b>, with two fingers.')
-                    }
+                    kind: 'danger'
+                    text: '<b>' + qsTr('It is a big amount.') + '</b> ' + qsTr('Push up <b>both coins together</b>, with two fingers.')
                 }
 
             }
@@ -895,9 +741,10 @@ ElDialog {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
                 wrapMode: Text.WordWrap
-                font.pixelSize: 14
+                font.pixelSize: 16
                 font.bold: true
-                color: sl1.locked !== sl2.locked ? '#45541f' : '#6b5d55'
+                lineHeight: 1.0
+                color: sl1.locked !== sl2.locked ? S.oliveInk : S.ink
                 text: sl1.locked !== sl2.locked ? qsTr('Now the other one, quickly!')
                                                 : qsTr('Push both coins to the right: together with two fingers, or one after the other.')
             }
@@ -922,44 +769,47 @@ ElDialog {
                 sourceSize.width: 110
                 sourceSize.height: 110
             }
-            Label { Layout.alignment: Qt.AlignHCenter; text: qsTr('Sent!'); font.pixelSize: 22; font.bold: true }
             Label {
                 Layout.alignment: Qt.AlignHCenter
+                text: qsTr('Sent!')
+                font.family: SerifFont ? SerifFont : font.family
+                font.weight: Font.ExtraBold
+                font.pixelSize: 26
+                color: S.wineDark
+            }
+            Label {
+                Layout.alignment: Qt.AlignHCenter
+                Layout.maximumWidth: col.width
                 text: dialog.sentEuro !== '' ? dialog.sentEuro : dialog.sentBtc
-                font.family: TitleFont ? TitleFont : font.family
-                font.weight: Font.Black
+                font.family: SerifFont ? SerifFont : font.family
+                font.weight: Font.ExtraBold
                 font.pixelSize: 44
-                color: '#5e1a33'
+                fontSizeMode: Text.HorizontalFit
+                minimumPixelSize: 24
+                color: S.wine
             }
-            Label { Layout.alignment: Qt.AlignHCenter; text: qsTr('have left'); font.pixelSize: 16; color: '#6b5d55' }
-            Rectangle {
-                Layout.fillWidth: true
-                Layout.preferredHeight: sentNote.implicitHeight + 24
-                radius: 16
-                color: '#fbf0d6'
-                Label {
-                    id: sentNote
-                    anchors.fill: parent
-                    anchors.margins: 12
-                    wrapMode: Text.WordWrap
-                    textFormat: Text.StyledText
-                    font.pixelSize: 16
-                    text: qsTr('They reach the other person after the <b>first confirmation</b>, usually about ten minutes. In the list of movements you will see "⏳ Unconfirmed" and then "✓ Confirmed".')
-                }
+            Label { Layout.alignment: Qt.AlignHCenter; text: qsTr('have left'); font.pixelSize: 16; color: S.muted }
+            EhInfoBox {
+                id: sentNote
+                kind: 'warn'
+                text: qsTr('They reach the other person after the <b>first confirmation</b>, usually about ten minutes. In the list of movements you will see "⏳ Unconfirmed" and then "✓ Confirmed".')
             }
-            EhMoreInfoButton { Layout.fillWidth: true; onClicked: app.ehShowConfirmationsInfo() }
+            EhStitchButton {
+                kind: 'paper'
+                icon: 'eh_info.svg'
+                text: qsTr('More information')
+                onClicked: app.ehShowConfirmationsInfo()
+            }
         }
         Item { visible: dialog.phase === 'sent'; Layout.fillHeight: true }
-        EhPillButton {
+        EhStitchButton {
             visible: dialog.phase === 'sent'
+            kind: 'wine'
+            icon: 'eh_home_ivory.svg'
             text: qsTr('Back to home')
-            color: '#5e1a33'
-            textColor: '#ffffff'
-            tileColor: '#d9b25a'
-            outlined: false
             onClicked: dialog.doAccept()
-            Image { anchors.centerIn: parent; source: Qt.resolvedUrl('../../icons/eh_home_wine.svg'); sourceSize.width: 28; sourceSize.height: 28 }
         }
+    }
     }
 
     TxFinalizer {
@@ -1023,7 +873,7 @@ ElDialog {
         visible: dialog.countdown >= 0
         anchors.fill: parent
         z: 100
-        color: '#faf7ef'
+        color: S.parch
         MouseArea { anchors.fill: parent }    // nothing behind can be touched
         Rectangle {
             anchors.centerIn: parent
@@ -1043,26 +893,32 @@ ElDialog {
                 horizontalAlignment: Text.AlignHCenter
                 wrapMode: Text.WordWrap
                 text: qsTr('Sending the bitcoin…')
-                color: '#3f0f21'
-                font.family: TitleFont ? TitleFont : font.family
-                font.weight: Font.Black
+                color: S.wineDark
+                font.family: SerifFont ? SerifFont : font.family
+                font.weight: Font.ExtraBold
                 font.pixelSize: 26
             }
             Label {
                 Layout.alignment: Qt.AlignHCenter
+                Layout.maximumWidth: parent.width
                 text: finalizer.valid ? app.ehMoney(dialog.satsToAmount(finalizer.effectiveAmount.satsInt + finalizer.fee.satsInt)) : ''
-                color: '#5e1a33'
-                font.family: TitleFont ? TitleFont : font.family
-                font.weight: Font.Black
+                color: S.wine
+                font.family: SerifFont ? SerifFont : font.family
+                font.weight: Font.ExtraBold
                 font.pixelSize: 30
+                fontSizeMode: Text.HorizontalFit
+                minimumPixelSize: 20
             }
             Label {
                 Layout.alignment: Qt.AlignHCenter
+                Layout.maximumWidth: parent.width
                 readonly property var parts: app.ehAddressParts(dialog.invoice ? dialog.invoice.address : '')
                 text: qsTr('to %1').arg((parts.prefix !== '' ? parts.prefix + ' ' : '') + parts.first + ' … ' + parts.last)
                 font.family: FixedFont
-                font.pixelSize: 15
+                font.pixelSize: 17
                 font.bold: true
+                color: S.ink
+                wrapMode: Text.WordWrap
             }
             // the ring empties second after second, the big number in the middle
             Item {
@@ -1080,10 +936,10 @@ ElDialog {
                         c.reset()
                         c.lineWidth = 12
                         c.lineCap = 'round'
-                        c.strokeStyle = '#efe3c8'
+                        c.strokeStyle = S.sand
                         c.beginPath(); c.arc(95, 95, 84, 0, 2 * Math.PI); c.stroke()
                         if (part > 0) {
-                            c.strokeStyle = '#f7931a'
+                            c.strokeStyle = S.bitcoin
                             c.beginPath(); c.arc(95, 95, 84, -Math.PI / 2, -Math.PI / 2 + 2 * Math.PI * part); c.stroke()
                         }
                     }
@@ -1091,9 +947,9 @@ ElDialog {
                 Label {
                     anchors.centerIn: parent
                     text: Math.max(0, dialog.countdown)
-                    color: '#f7931a'
-                    font.family: TitleFont ? TitleFont : font.family
-                    font.weight: Font.Black
+                    color: S.bitcoin
+                    font.family: SerifFont ? SerifFont : font.family
+                    font.weight: Font.ExtraBold
                     font.pixelSize: 96
                 }
             }
@@ -1102,24 +958,16 @@ ElDialog {
                 horizontalAlignment: Text.AlignHCenter
                 wrapMode: Text.WordWrap
                 text: qsTr('Until zero you can still stop it.')
-                color: '#6b5d55'
-                font.pixelSize: 15
+                color: S.muted
+                font.pixelSize: 17
             }
-            Rectangle {
-                Layout.fillWidth: true
+            EhStitchButton {
+                id: cdCancel
                 Layout.topMargin: 12
-                Layout.preferredHeight: 68
-                radius: 26
-                color: cdMa.pressed ? '#fbeef2' : '#ffffff'
-                border.width: 3
-                border.color: '#5e1a33'
-                RowLayout {
-                    anchors.centerIn: parent
-                    spacing: 10
-                    Image { source: Qt.resolvedUrl('../../icons/eh_cross.svg'); sourceSize.width: 22; sourceSize.height: 22 }
-                    Label { text: qsTr('Cancel'); color: '#5e1a33'; font.pixelSize: 22; font.bold: true }
-                }
-                MouseArea { id: cdMa; anchors.fill: parent; onClicked: dialog.cancelCountdown() }
+                kind: 'paper'
+                icon: 'eh_cross.svg'
+                text: qsTr('Cancel')
+                onClicked: dialog.cancelCountdown()
             }
         }
     }

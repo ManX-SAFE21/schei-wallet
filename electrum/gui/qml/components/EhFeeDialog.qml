@@ -1,18 +1,21 @@
 // Easy Heirs (schèi): "How much do you pay for sending?". Electrum's own fee
 // slider (ETA targets 1008 ... 1 blocks), shown as cost in euro + time.
 // The choice is for this payment only: every new payment starts from normal.
+// "Bottega": parchment page, cost and time on a paper sheet, sand track with a brass knob.
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 import QtQuick.Controls.Material
 
 import "controls"
+import "controls/EhStyle.js" as S
 
 ElDialog {
     id: root
     Material.theme: Material.Light
-    Material.foreground: '#2a2220'
-    Material.accent: '#5e1a33'
+    Material.foreground: S.ink
+    Material.accent: S.wine
+    font.family: BodyFont ? BodyFont : Qt.application.font.family
 
     property var finalizer
     readonly property int normalPos: 4          // owner 12/11: the middle, "in about 1 hour" (eta:5)
@@ -56,7 +59,7 @@ ElDialog {
     topPadding: 0
     header: null
     needsSystemBarPadding: false
-    background: Rectangle { color: '#faf7ef' }
+    background: Rectangle { color: S.parch }
 
     Flickable {
         id: fl
@@ -65,72 +68,67 @@ ElDialog {
         flickableDirection: Flickable.VerticalFlick
         // T4: the page must not steal the finger from the slider; scroll only if needed
         interactive: !slider.pressed && contentHeight > height + 1
-        contentHeight: Math.max(height, col.implicitHeight + 18)
+        contentHeight: Math.max(height, col.implicitHeight + 16)
+        boundsBehavior: Flickable.StopAtBounds
         clip: true
     ColumnLayout {
         id: col
-        x: 18
-        width: fl.width - 36
-        height: Math.max(fl.height - 18, implicitHeight)
+        x: S.margin
+        width: fl.width - 2 * S.margin
+        height: Math.max(fl.height - 16, implicitHeight)
         spacing: 10
 
-        EhPageTop { title: '' ; Layout.bottomMargin: -14 }
-        Label {
-            text: '‹ ' + qsTr('Back')
-            color: '#5e1a33'; font.pixelSize: 17; font.bold: true
-            TapHandler { margin: 10; onTapped: root.doAccept() }
+        EhPageTop { title: '' }
+        EhBackLink { onClicked: root.doAccept() }
+        EhTitle { text: qsTr('How much do you pay for sending?') }
+        EhInfoBox {
+            id: why
+            kind: 'warn'
+            text: qsTr('Who leaves a <b>higher tip</b> to the miners goes first. With the lowest tip it can take <b>a few hours</b>.')
         }
-        Label {
-            Layout.fillWidth: true
-            wrapMode: Text.WordWrap
-            text: qsTr('How much do you pay for sending?')
-            color: '#3f0f21'
-            font.family: TitleFont ? TitleFont : font.family
-            font.weight: Font.Black
-            font.pixelSize: 24
-        }
-        Rectangle {
-            Layout.fillWidth: true
-            Layout.preferredHeight: why.implicitHeight + 22
-            radius: 16
-            color: '#fbf0d6'
-            Label {
-                id: why
-                anchors.fill: parent; anchors.margins: 11
-                wrapMode: Text.WordWrap
-                textFormat: Text.StyledText
-                font.pixelSize: 16
-                text: qsTr('Who leaves a <b>higher tip</b> to the miners goes first. With the lowest tip it can take <b>a few hours</b>.')
-            }
-        }
-        Rectangle {
-            Layout.fillWidth: true
-            Layout.preferredHeight: big.implicitHeight + 24
-            radius: 18
-            color: '#ffffff'
+        EhSheet {
+            topPadding: 10
+            bottomPadding: 12
             ColumnLayout {
                 id: big
-                anchors.left: parent.left; anchors.right: parent.right
-                anchors.verticalCenter: parent.verticalCenter
+                Layout.fillWidth: true
                 spacing: 2
-                Label { Layout.alignment: Qt.AlignHCenter; textFormat: Text.StyledText
-                        text: '<b>' + qsTr('SENDING COST') + '</b> ' + qsTr('(tip to the miners)'); color: '#6b5d55'; font.pixelSize: 13 }
+                Label {
+                    Layout.fillWidth: true
+                    horizontalAlignment: Text.AlignHCenter
+                    wrapMode: Text.WordWrap
+                    textFormat: Text.StyledText
+                    text: '<b>' + qsTr('SENDING COST') + '</b> ' + qsTr('(tip to the miners)')
+                    color: S.muted
+                    font.pixelSize: 16
+                }
                 Label {
                     Layout.alignment: Qt.AlignHCenter
                     text: root.finalizer && root.finalizer.valid ? app.ehMoney(root.finalizer.fee) : '…'
-                    color: '#3f0f21'
-                    font.family: TitleFont ? TitleFont : font.family
-                    font.weight: Font.Black
-                    font.pixelSize: 32
+                    color: S.wineDark
+                    font.family: SerifFont ? SerifFont : font.family
+                    font.weight: Font.ExtraBold
+                    font.pixelSize: 26
                 }
-                Label { Layout.topMargin: 8; Layout.alignment: Qt.AlignHCenter; text: qsTr('IT ARRIVES'); color: '#6b5d55'; font.pixelSize: 13; font.bold: true }
+                EhDotLine { Layout.topMargin: 8; Layout.bottomMargin: 6 }
                 Label {
                     Layout.alignment: Qt.AlignHCenter
+                    text: qsTr('IT ARRIVES')
+                    color: S.muted
+                    font.pixelSize: 16
+                    font.bold: true
+                    font.letterSpacing: 0.5
+                }
+                Label {
+                    Layout.alignment: Qt.AlignHCenter
+                    Layout.maximumWidth: big.width
                     text: app.ehFeeEta(root.pos)
-                    color: root.pos <= 2 ? '#8a5a12' : '#45541f'
-                    font.family: TitleFont ? TitleFont : font.family
-                    font.weight: Font.Black
+                    color: root.pos <= 2 ? S.waitInk : S.oliveInk
+                    font.family: SerifFont ? SerifFont : font.family
+                    font.weight: Font.ExtraBold
                     font.pixelSize: 26
+                    fontSizeMode: Text.HorizontalFit
+                    minimumPixelSize: 18
                 }
             }
         }
@@ -140,13 +138,13 @@ ElDialog {
             ColumnLayout {
                 spacing: 0
                 Image { Layout.alignment: Qt.AlignHCenter; source: Qt.resolvedUrl('../../icons/eh_slow.svg'); sourceSize.width: 54; sourceSize.height: 36 }
-                Label { Layout.alignment: Qt.AlignHCenter; horizontalAlignment: Text.AlignHCenter; text: qsTr('slower\ncosts less'); color: '#45541f'; font.pixelSize: 13; font.bold: true }
+                Label { Layout.alignment: Qt.AlignHCenter; horizontalAlignment: Text.AlignHCenter; text: qsTr('slower\ncosts less'); color: S.oliveInk; font.pixelSize: 16; font.bold: true; lineHeight: 0.95 }
             }
             Item { Layout.fillWidth: true }
             ColumnLayout {
                 spacing: 0
                 Image { Layout.alignment: Qt.AlignHCenter; source: Qt.resolvedUrl('../../icons/eh_fast.svg'); sourceSize.width: 54; sourceSize.height: 36 }
-                Label { Layout.alignment: Qt.AlignHCenter; horizontalAlignment: Text.AlignHCenter; text: qsTr('faster\ncosts more'); color: '#5e1a33'; font.pixelSize: 13; font.bold: true }
+                Label { Layout.alignment: Qt.AlignHCenter; horizontalAlignment: Text.AlignHCenter; text: qsTr('faster\ncosts more'); color: S.wine; font.pixelSize: 16; font.bold: true; lineHeight: 0.95 }
             }
         }
         Slider {
@@ -168,43 +166,55 @@ ElDialog {
                          if (root.manual) { root.manualText = ''; root.finalizer.ehBackToSlider(Math.round(value)) }
                          else root.finalizer.sliderPos = Math.round(value)
                      }
+            // sand track, 10 px, with a little depth at the top
             background: Rectangle {
                 x: slider.leftPadding
                 y: slider.topPadding + slider.availableHeight / 2 - height / 2
                 width: slider.availableWidth
-                height: 14
-                radius: 7
-                gradient: Gradient {
-                    orientation: Gradient.Horizontal
-                    GradientStop { position: 0.0; color: '#c9d39a' }
-                    GradientStop { position: 0.5; color: '#e8c56a' }
-                    GradientStop { position: 1.0; color: '#e2a0b6' }
+                height: 10
+                radius: 5
+                color: S.sand
+                border.width: 1
+                border.color: S.edge
+                Rectangle {
+                    anchors.left: parent.left; anchors.right: parent.right; anchors.top: parent.top
+                    anchors.margins: 1
+                    height: 4
+                    radius: 2
+                    color: Qt.rgba(0, 0, 0, 0.08)
                 }
             }
+            // brass knob, 44 px (material 5: vertical gradient and a 2 px ring)
             handle: Rectangle {
                 x: slider.leftPadding + slider.visualPosition * (slider.availableWidth - width)
                 y: slider.topPadding + slider.availableHeight / 2 - height / 2
-                width: 46; height: 46; radius: 23
-                color: '#ffffff'
-                border.width: 4
-                border.color: '#5e1a33'
+                width: 44; height: 44; radius: 22
+                border.width: 2
+                border.color: S.brassRing
+                gradient: Gradient {
+                    GradientStop { position: 0.0; color: S.brassLight }
+                    GradientStop { position: 0.55; color: S.brass }
+                    GradientStop { position: 1.0; color: S.brassDark }
+                }
             }
         }
-        // T44: the times under the slider, from "1 day" to "10 min"
+        // T44: the times under the slider, from "4 hours" to "10 min"
         Item {
             Layout.fillWidth: true
             Layout.topMargin: -14
-            Layout.preferredHeight: 16
+            Layout.preferredHeight: 22
             Repeater {
                 model: [qsTr('4 hours'), qsTr('2 hours'), qsTr('1 hour'), qsTr('20 min'), qsTr('10 min')]
                 Label {
                     required property string modelData
                     required property int index
                     readonly property real k: index / 4
-                    x: slider.leftPadding + 23 + k * (slider.availableWidth - 46) - implicitWidth / 2
+                    // centred under its stop, but never out of the page
+                    x: Math.max(-4, Math.min(parent.width + 4 - implicitWidth,
+                                             slider.leftPadding + 22 + k * (slider.availableWidth - 44) - implicitWidth / 2))
                     text: modelData
-                    font.pixelSize: 11
-                    color: root.pos === index + root.minPos ? '#3f0f21' : '#6b5d55'
+                    font.pixelSize: 16
+                    color: root.pos === index + root.minPos ? S.wineDark : S.muted
                     font.bold: root.pos === index + root.minPos
                 }
             }
@@ -213,70 +223,62 @@ ElDialog {
         Rectangle {
             visible: root.manualOn
             Layout.fillWidth: true
-            Layout.preferredHeight: 56
-            radius: 14
-            color: fieldTap.pressed ? '#f3ecdd' : '#ffffff'
-            border.width: 2
-            border.color: root.padOpen ? '#5e1a33' : '#d9b25a'
+            Layout.topMargin: 4
+            Layout.preferredHeight: S.fieldH
+            radius: 16
+            color: fieldTap.pressed ? S.sand : S.paper
+            border.width: root.padOpen ? 2.5 : 2
+            border.color: root.padOpen ? S.wine : S.edge
             TapHandler { id: fieldTap; onTapped: root.padOpen = !root.padOpen }
             RowLayout {
                 anchors.fill: parent
                 anchors.leftMargin: 12
                 anchors.rightMargin: 12
                 spacing: 8
-                Label { text: qsTr('Tip by hand'); font.pixelSize: 14; font.bold: true }
+                Image { source: Qt.resolvedUrl('../../icons/eh_pen_wine.svg'); sourceSize.width: 24; sourceSize.height: 24 }
+                Label { text: qsTr('Tip by hand'); font.pixelSize: 16; font.bold: true; color: S.ink }
                 Label {
                     Layout.fillWidth: true
                     horizontalAlignment: Text.AlignHCenter
                     text: root.manualText !== '' ? root.manualText : (root.padOpen ? '–' : qsTr('tap to write'))
-                    font.family: root.manualText !== '' ? 'monospace' : Qt.application.font.family
-                    font.pixelSize: root.manualText !== '' || root.padOpen ? 24 : 15
+                    font.family: root.manualText !== '' ? FixedFont : font.family
+                    font.pixelSize: root.manualText !== '' || root.padOpen ? 24 : 16
                     font.bold: true
-                    color: '#3f0f21'
+                    color: root.manualText !== '' || root.padOpen ? S.wineDark : S.muted
+                    wrapMode: Text.WordWrap
+                    maximumLineCount: 2
+                    lineHeight: 0.95
+                    elide: Text.ElideRight
                 }
-                Label { text: 'sat/vB'; font.pixelSize: 14 }
+                Label { text: 'sat/vB'; font.pixelSize: 16; color: S.muted }
             }
         }
-        Rectangle {
+        EhInfoBox {
+            id: lowL
             visible: root.manual && (root.manualRate < root.minRate || root.manualRate < 1 || (root.slowRate > 0 && root.manualRate < root.slowRate))
-            Layout.fillWidth: true
-            Layout.preferredHeight: lowL.implicitHeight + 18
-            radius: 12
-            color: '#fbf0d8'
-            border.width: 2
-            border.color: '#d9b25a'
-            Label {
-                id: lowL
-                anchors.fill: parent; anchors.margins: 9
-                wrapMode: Text.WordWrap
-                textFormat: Text.StyledText
-                font.pixelSize: 14
-                text: root.manualRate < root.minRate
-                      ? '<b>' + qsTr('Too low.') + '</b> '
-                        + qsTr('The connected server accepts at least %1 sat/vB.').arg(app.ehFeeRate(root.minRate.toFixed(1) + ' sat/vB').replace(' sat/vB', ''))
-                      : root.manualRate < 1
-                      ? '<b>' + qsTr('Very low tip.') + '</b> '
-                        + qsTr('Less than 1 sat/vB: the payment can wait a long time, and some nodes may not pass it on.')
-                      : '<b>' + qsTr('Very low tip.') + '</b> '
-                        + qsTr('It is less than what is needed to arrive within 4 hours (now about %1 sat/vB): the payment can wait a long time, or the miners may never take it.')
-                          .arg(app.ehFeeRate(root.slowRate.toFixed(1) + ' sat/vB').replace(' sat/vB', ''))
-            }
+            kind: root.manualRate < root.minRate ? 'danger' : 'warn'
+            text: root.manualRate < root.minRate
+                  ? '<b>' + qsTr('Too low.') + '</b> '
+                    + qsTr('The connected server accepts at least %1 sat/vB.').arg(app.ehFeeRate(root.minRate.toFixed(1) + ' sat/vB').replace(' sat/vB', ''))
+                  : root.manualRate < 1
+                  ? '<b>' + qsTr('Very low tip.') + '</b> '
+                    + qsTr('Less than 1 sat/vB: the payment can wait a long time, and some nodes may not pass it on.')
+                  : '<b>' + qsTr('Very low tip.') + '</b> '
+                    + qsTr('It is less than what is needed to arrive within 4 hours (now about %1 sat/vB): the payment can wait a long time, or the miners may never take it.')
+                      .arg(app.ehFeeRate(root.slowRate.toFixed(1) + ' sat/vB').replace(' sat/vB', ''))
         }
         GridLayout {
             visible: root.manualOn && root.padOpen
             Layout.fillWidth: true
-            columns: 3; rowSpacing: 6; columnSpacing: 6
+            columns: 3; rowSpacing: 8; columnSpacing: 8
             Repeater {
                 model: ['1', '2', '3', '4', '5', '6', '7', '8', '9', ',', '0', 'del']
-                delegate: Rectangle {
-                    id: fk
+                delegate: EhKey {
                     required property string modelData
-                    Layout.fillWidth: true; Layout.preferredHeight: 42; radius: 21
-                    color: modelData === 'del' ? '#efe6d3' : (fkt.pressed ? '#f3ecdd' : '#ffffff')
-                    border.width: modelData === 'del' ? 0 : 2; border.color: '#e2d7c1'
-                    EhBackspaceIcon { visible: fk.modelData === 'del'; anchors.centerIn: parent; width: 32; height: 23; fill: '#efe6d3' }
-                    Label { anchors.centerIn: parent; visible: fk.modelData !== 'del'; text: fk.modelData === ',' ? app.ehLocale().decimalPoint : fk.modelData; font.pixelSize: 21; font.bold: true }
-                    TapHandler { id: fkt; onTapped: root.press(fk.modelData) }
+                    implicitHeight: 56
+                    text: modelData === ',' ? app.ehLocale().decimalPoint : modelData
+                    isDelete: modelData === 'del'
+                    onActivated: root.press(modelData)
                 }
             }
         }
@@ -285,23 +287,21 @@ ElDialog {
             Layout.alignment: Qt.AlignHCenter
             visible: root.finalizer && root.finalizer.valid
             text: qsTr('for experts: %1').arg(root.finalizer ? app.ehFeeRate(root.finalizer.feeRate + ' sat/vB') : '')
-            color: '#6b5d55'
-            font.pixelSize: 13
+            color: S.muted
+            font.pixelSize: 16
         }
-        EhNextButton {
-            Layout.fillWidth: true
+        EhStitchButton {
+            kind: 'wine'
+            icon: 'eh_check_white.svg'
             enabled: !root.manual || root.manualRate >= root.minRate
             text: qsTr('That is fine')
             onClicked: root.doAccept()
         }
-        EhPillButton {
+        EhStitchButton {
+            kind: 'paper'
+            icon: 'eh_undo.svg'
             text: qsTr('Back to normal')
-            color: '#ffffff'
-            textColor: '#2a2220'
-            tileColor: '#efe6d3'
-            fontSize: 18
             onClicked: if (root.finalizer) { root.padOpen = false; root.manualText = ''; root.finalizer.ehBackToSlider(root.normalPos) }
-            Image { anchors.centerIn: parent; source: Qt.resolvedUrl('../../icons/eh_undo.svg'); sourceSize.width: 26; sourceSize.height: 26 }
         }
     }
     }

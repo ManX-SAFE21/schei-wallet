@@ -1,16 +1,19 @@
 // Easy Heirs (schèi): "Quanto chiedi?" (expert option "Ask for an amount").
 // Euro keypad; "Inserisci l'importo" makes a new receive request with it.
+// "Bottega": parchment page, the amount keys of the Send page, olive leather button.
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 import QtQuick.Controls.Material
 
 import "controls"
+import "controls/EhStyle.js" as S
 
 ElDialog {
     id: dialog
     Material.theme: Material.Light
-    Material.foreground: '#2a2220'
+    Material.foreground: S.ink
+    font.family: BodyFont ? BodyFont : Qt.application.font.family
     property string euroInput: ''
     width: parent.width
     height: parent.height
@@ -18,10 +21,7 @@ ElDialog {
     topPadding: 0
     header: null
     needsSystemBarPadding: false
-    background: Rectangle {
-        color: '#faf7ef'
-        EhGlow { tone: 'green'; z: 0; x: -parent.width * 0.25; y: 30; width: parent.width * 1.5; height: 340 }
-    }
+    background: Rectangle { color: S.parch }
 
     readonly property bool btc: app.ehBtcOnly()
     property bool coinsMode: app.ehOption('coins') && !btc && app.ehHasCash()
@@ -48,38 +48,61 @@ ElDialog {
         euroInput += k
     }
 
-    ColumnLayout {
+    // every page scrolls: nothing under the phone keys, also with the big phone font
+    Flickable {
+        id: flick
         anchors.fill: parent
-        anchors.leftMargin: 18
-        anchors.rightMargin: 18
-        anchors.bottomMargin: 18 + app.navigationBarHeight
+        anchors.bottomMargin: app.navigationBarHeight
+        contentHeight: Math.max(height, col.implicitHeight + 16)
+        boundsBehavior: Flickable.StopAtBounds
+        interactive: contentHeight > height + 1
+        clip: true
+
+    ColumnLayout {
+        id: col
+        x: S.margin
+        width: flick.width - 2 * S.margin
+        height: Math.max(flick.height - 16, implicitHeight)
         spacing: 9
         EhPageTop { title: '' }
+        EhBackLink { onClicked: dialog.doReject() }
+        EhTitle {
+            text: qsTr('How much are you asking for?')
+            icon: 'eh_rx_olive.svg'
+            color: S.oliveInk
+        }
         Label {
-            Layout.topMargin: -14
-            text: '‹ ' + qsTr('Back')
-            color: '#5e1a33'; font.pixelSize: 17; font.bold: true
-            TapHandler { margin: 10; onTapped: dialog.doReject() }
+            visible: !dialog.coinsMode
+            Layout.alignment: Qt.AlignHCenter
+            Layout.maximumWidth: col.width
+            text: dialog.display()
+            color: S.wineDark
+            font.family: SerifFont ? SerifFont : font.family
+            font.weight: Font.ExtraBold
+            font.pixelSize: 50
+            fontSizeMode: Text.HorizontalFit
+            minimumPixelSize: 22
         }
-        RowLayout {
-            spacing: 10
-            Image { source: Qt.resolvedUrl('../../icons/eh_rx_olive.svg'); sourceSize.width: 34; sourceSize.height: 34 }
-            Label { text: qsTr('How much are you asking for?'); color: '#45541f'; font.family: TitleFont ? TitleFont : font.family; font.weight: Font.Black; font.pixelSize: 26 }
+        Label {
+            visible: !dialog.btc && !dialog.coinsMode
+            Layout.alignment: Qt.AlignHCenter
+            text: qsTr('about %1').arg(app.ehBtc(dialog.amount()))
+            color: S.muted
+            font.pixelSize: 16
         }
-        Label { visible: !dialog.coinsMode; Layout.alignment: Qt.AlignHCenter; text: dialog.display(); color: '#3f0f21'; font.family: TitleFont ? TitleFont : font.family; font.weight: Font.Black; font.pixelSize: 50 }
-        Label { visible: !dialog.btc && !dialog.coinsMode; Layout.alignment: Qt.AlignHCenter; text: qsTr('about %1').arg(app.ehBtc(dialog.amount())); color: '#6b5d55'; font.pixelSize: 15 }
         EhCoinPad {
             visible: dialog.coinsMode
             Layout.fillWidth: true
             Layout.fillHeight: true
             onEuroInputChanged: if (dialog.coinsMode) dialog.euroInput = euroInput
         }
-        Label {
+        EhBackLink {
             visible: dialog.coinsMode
+            Layout.topMargin: 0
             Layout.alignment: Qt.AlignHCenter
             text: qsTr('Prefer to write the numbers?')
-            color: '#45541f'; font.pixelSize: 15; font.bold: true; font.underline: true
-            TapHandler { margin: 8; onTapped: dialog.coinsMode = false }
+            color: S.oliveInk
+            onClicked: dialog.coinsMode = false
         }
         Item { visible: !dialog.coinsMode; Layout.fillHeight: true }
         GridLayout {
@@ -88,27 +111,25 @@ ElDialog {
             columns: 3; rowSpacing: 9; columnSpacing: 9
             Repeater {
                 model: ['1', '2', '3', '4', '5', '6', '7', '8', '9', ',', '0', 'del']
-                delegate: Rectangle {
-                    id: key
+                delegate: EhKey {
                     required property string modelData
-                    Layout.fillWidth: true; Layout.preferredHeight: 54; radius: 27
-                    color: modelData === 'del' ? '#efe6d3' : (kt.pressed ? '#f3ecdd' : '#ffffff')
-                    border.width: modelData === 'del' ? 0 : 2; border.color: '#e2d7c1'
-                    EhBackspaceIcon { visible: key.modelData === 'del'; anchors.centerIn: parent; width: 38; height: 27; fill: '#efe6d3' }
-                    Label { anchors.centerIn: parent; visible: key.modelData !== 'del'; text: key.modelData === ',' ? app.ehLocale().decimalPoint : key.modelData; font.pixelSize: 27; font.bold: true }
-                    TapHandler { id: kt; onTapped: dialog.press(key.modelData) }
+                    text: modelData === ',' ? app.ehLocale().decimalPoint : modelData
+                    isDelete: modelData === 'del'
+                    onActivated: dialog.press(modelData)
                 }
             }
         }
-        EhNextButton {
+        EhStitchButton {
+            kind: 'olive'
+            endIcon: 'next'
             enabled: dialog.sats() > 0
             text: qsTr('Enter the amount')
-            color: '#45541f'
             onClicked: {
                 // a request with an amount expires after 1 day, so its address frees itself
                 Daemon.currentWallet.createRequest(dialog.amount(), '', 86400, false, true)
                 dialog.doAccept()
             }
         }
+    }
     }
 }
