@@ -5,6 +5,7 @@
 
 STRINGS = {
     'it_IT': {
+        'waiting': 'in attesa',
         'Put the QR code inside the frame': 'Metti il codice QR dentro il riquadro',
         'Checking…': 'Controllo…',
         'TEST NETWORK (testnet4) · coins without value': 'RETE DI PROVA (testnet4) · monete senza valore',
@@ -760,6 +761,7 @@ STRINGS = {
         'LEARN': 'IMPARA',
     },
     'vec_IT': {
+        'waiting': 'in atesa',
         # owner 13/11: the 53 that were missing (they showed in Italian)
         'Warning: Some data (prev txs / "full utxos") was left out of the QR code as it would not fit.': 'Atension: qualche dato (transasion de prima / "full utxos") el xe restà fora dal QR parché no el ghe stava.',
         'This might cause issues if signing offline.': 'Questo el pol dar problemi se te firmi fora linea.',

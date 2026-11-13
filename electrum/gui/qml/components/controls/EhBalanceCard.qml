@@ -476,9 +476,15 @@ Rectangle {
         anchors.leftMargin: root.showGear ? 92 : 18    // room for the strap on the left
         anchors.rightMargin: 16
 
+        // owner 13/11: the top row is above the strap, so it can start at the left stitching
+        readonly property real topShift: root.showGear ? 68 : 0
+        // name and status on one line only when both fit whole; otherwise the status goes under
+        readonly property bool statusBelow: root.compact || (hName.implicitWidth + hStatusW.implicitWidth + 22 + 14 > hTop.width)
+        TextMetrics { id: hStatusW; font.family: root.body; font.pixelSize: 15; font.bold: true; text: root.statusText }
         RowLayout {
             id: hTop
-            width: parent.width
+            x: -homeBox.topShift
+            width: parent.width + homeBox.topShift
             height: 24
             spacing: 7
             Image {
@@ -488,6 +494,7 @@ Rectangle {
                 sourceSize.height: 22
             }
             Label {
+                id: hName
                 Layout.fillWidth: true
                 Layout.alignment: Qt.AlignVCenter
                 text: root.previewName !== '' ? root.previewName : app.ehWalletName()
@@ -497,7 +504,7 @@ Rectangle {
                 elide: Text.ElideRight
             }
             Label {
-                visible: !root.compact && !root.watch
+                visible: !homeBox.statusBelow && !root.watch
                 Layout.alignment: Qt.AlignVCenter
                 text: root.statusText
                 color: root.statusInk
@@ -509,7 +516,8 @@ Rectangle {
         // narrow card: the status under the name; "watch only" always under the name (the name stays whole)
         Label {
             id: hStatus2
-            visible: root.compact && !root.watch
+            visible: homeBox.statusBelow && !root.watch
+            x: hTop.x + 29
             y: hTop.height
             height: 20
             verticalAlignment: Text.AlignVCenter
@@ -521,6 +529,7 @@ Rectangle {
         }
         Rectangle {
             visible: root.watch
+            x: hTop.x + 29
             y: hTop.height + 1
             height: 20
             width: hWatch2.implicitWidth + 14
@@ -531,7 +540,7 @@ Rectangle {
 
         Column {
             id: hMid
-            readonly property real top0: hTop.height + (root.compact || root.watch ? 21 : 0) + 2
+            readonly property real top0: hTop.height + (homeBox.statusBelow || root.watch ? 21 : 0) + 2
             width: parent.width
             y: top0 + Math.max(0, Math.round((parent.height - top0 - height) / 2))
             spacing: 0

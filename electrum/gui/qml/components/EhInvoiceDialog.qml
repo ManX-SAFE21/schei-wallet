@@ -219,13 +219,38 @@ ElDialog {
         }
     }
 
+    // owner 13/11: on "How much do you send?" the Next button stays always visible at the bottom
+    // (with the big banknotes the page is taller than the screen and it went under the edge)
+    readonly property bool ehAmountFooter: dialog.phase === 'amount'
+    Rectangle {
+        visible: dialog.ehAmountFooter
+        z: 20
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: app.navigationBarHeight
+        height: 84
+        color: S.parch
+        Rectangle { anchors.left: parent.left; anchors.right: parent.right; height: 1; color: S.edge }
+        EhStitchButton {
+            x: S.margin
+            width: parent.width - 2 * S.margin
+            anchors.verticalCenter: parent.verticalCenter
+            kind: 'wine'
+            endIcon: 'next'
+            enabled: dialog.inputSats() > 0 && dialog.inputSats() <= dialog.balanceSats()
+            text: qsTr('Next')
+            onClicked: dialog.goReview(dialog.satsToAmount(dialog.inputSats()))
+        }
+    }
+
     // ---------- layout ----------
     // every page scrolls (nothing under the phone keys). In "Check carefully" the page fits and
     // does not move: only the middle scrolls, the two slides stay always visible.
     Flickable {
         id: pageFlick
         anchors.fill: parent
-        anchors.bottomMargin: app.navigationBarHeight
+        anchors.bottomMargin: app.navigationBarHeight + (dialog.ehAmountFooter ? 84 : 0)
         flickableDirection: Flickable.VerticalFlick
         contentHeight: Math.max(height, col.implicitHeight + 16)
         boundsBehavior: Flickable.StopAtBounds
@@ -416,7 +441,7 @@ ElDialog {
             }
         }
         EhStitchButton {
-            visible: dialog.phase === 'amount'
+            visible: false     // owner 13/11: it lives in the footer now (always visible)
             kind: 'wine'
             endIcon: 'next'
             enabled: dialog.inputSats() > 0 && dialog.inputSats() <= dialog.balanceSats()

@@ -289,7 +289,7 @@ Item {
                         border.width: 1
                         border.color: '#ecd49a'
                         Label { id: pl2; anchors.centerIn: parent; width: Math.min(implicitWidth, parent.width - 8); elide: Text.ElideRight
-                                text: qsTr('unconfirmed'); font.family: root.body; font.pixelSize: 13; font.bold: true; color: '#7a4a12' }
+                                text: qsTr('waiting'); font.family: root.body; font.pixelSize: 14; font.bold: true; color: '#7a4a12' }
                     }
                     // only bitcoin: 8 decimals, on its own line on the right (it does not fit next to the words)
                     Item {
