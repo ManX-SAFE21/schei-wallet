@@ -111,9 +111,9 @@ Item {
                 }
                 Repeater {
                     model: [
-                        { 'icon': 'eh_mail.svg', 'title': qsTr('Write an e-mail'), 'sub': 'schei@safe21.io',
+                        { 'icon': 'eh_mail_wine.svg', 'title': qsTr('Write an e-mail'), 'sub': 'schei@safe21.io',
                           'url': 'mailto:schei@safe21.io?subject=' + encodeURIComponent('Schèi Wallet ' + BUILD.electrum_version) },
-                        { 'icon': 'eh_github.svg', 'title': qsTr('Report a problem on GitHub'), 'sub': 'github.com/ManX-SAFE21/schei-wallet',
+                        { 'icon': 'eh_github_wine.svg', 'title': qsTr('Report a problem on GitHub'), 'sub': 'github.com/ManX-SAFE21/schei-wallet',
                           'url': 'https://github.com/ManX-SAFE21/schei-wallet/issues' }
                     ]
                     EhStitchButton {
@@ -124,7 +124,7 @@ Item {
                         text: sp.modelData.title
                         // the button has one line of title when it has a sub-line: the long GitHub
                         // title needs its two lines, so only the e-mail shows its address under it
-                        sub: sp.modelData.icon === 'eh_mail.svg' ? sp.modelData.sub : ''
+                        sub: sp.modelData.sub
                         endIcon: 'open'
                         onClicked: Qt.openUrlExternally(sp.modelData.url)
                     }

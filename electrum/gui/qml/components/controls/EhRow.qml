@@ -87,7 +87,10 @@ Item {
         }
         Label {
             visible: root.value !== ''
-            Layout.maximumWidth: root.width * 0.4
+            Layout.maximumWidth: root.width * 0.5
+            horizontalAlignment: Text.AlignRight
+            wrapMode: Text.WordWrap
+            maximumLineCount: 2
             text: root.value
             color: S.muted
             font.family: BodyFont ? BodyFont : font.family

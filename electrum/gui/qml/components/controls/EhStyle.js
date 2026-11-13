@@ -39,7 +39,7 @@ var waitInk = '#7a4a12'        // "unconfirmed"
 var red = '#b3261e'            // only "blocked" and real errors
 var bitcoin = '#f7931a'
 var switchOff = '#a8977a'
-var dim = 'rgba(41,33,31,0.5)' // behind popups
+var dim = '#80291f1f' // behind popups
 
 // ---- sizes ----
 var margin = 16                // page side margin

@@ -23,9 +23,6 @@ Item {
 
     function refresh() { csv = Daemon.fx.exportHistoryCsv(Daemon.currentWallet, year) }
 
-    // the share icon in ivory, for the olive leather button (gui/icons has only the dark ones)
-    readonly property string shareIvory: 'data:image/svg+xml;base64,' + Qt.btoa(
-        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="64" height="64"><g fill="none" stroke="#fbeccb" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.7l7.4-4.3M8.3 13.3l7.4 4.3"/></g></svg>')
 
     Rectangle { anchors.fill: parent; color: S.parch }
 
@@ -92,7 +89,7 @@ Item {
             EhStitchButton {
                 Layout.bottomMargin: 6
                 kind: 'olive'
-                icon: page.shareIvory
+                icon: 'eh_share_ivory.svg'
                 text: qsTr('Create and share the file')
                 onClicked: AppController.ehShareFile('schei-' + (Daemon.currentWallet ? Daemon.currentWallet.name : 'wallet').replace(/[^A-Za-z0-9_-]/g, '_')
                                                      + '-' + Qt.formatDateTime(new Date(), 'yyyyMMdd-hhmm') + '.csv',

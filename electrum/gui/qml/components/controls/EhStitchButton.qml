@@ -34,7 +34,8 @@ Item {
 
     signal clicked
 
-    implicitHeight: compact ? S.buttonCompactH : (sub !== '' ? S.buttonTallH : S.buttonH)
+    implicitHeight: compact ? S.buttonCompactH
+                            : Math.max(sub !== '' ? S.buttonTallH : S.buttonH, content.implicitHeight + 20)
     implicitWidth: content.implicitWidth + 32
     Layout.fillWidth: true
     Layout.preferredHeight: implicitHeight
@@ -132,7 +133,7 @@ Item {
                 lineHeight: 1.05
                 horizontalAlignment: (!root._hasIcon && root._endSrc === '') ? Text.AlignHCenter : Text.AlignLeft
                 wrapMode: Text.WordWrap
-                maximumLineCount: (root.sub !== '' || root.compact) ? 1 : 2
+                maximumLineCount: root.compact ? 1 : 2
                 elide: Text.ElideRight
             }
             Label {
