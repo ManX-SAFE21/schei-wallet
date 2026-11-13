@@ -222,7 +222,7 @@ costs more"
 212;PER ESPERTI;PAR ESPERTI;FOR EXPERTS
 213;per chi se ne intende: %1;par chi che se ne intende: %1;for experts: %1
 214;Per i soldi veri usa l'app Schèi Wallet.;Par i schèi veri dòpara l'app Schèi Wallet.;For real money use the Schèi Wallet app.
-215;Per sicurezza spingi a destra <b>tutte e due</b> le monete.;Par sicuresa spenzi a destra <b>tute do</b> le monede.;For safety push <b>both</b> coins to the right.
+215;Per sicurezza spingi a destra <b>tutte e due</b> le monete.;Par sicuresa spingi a destra <b>tute do</b> le monede.;For safety push <b>both</b> coins to the right.
 216;Per chi sa già usare Bitcoin. Di serie è tutto spento, tranne la doppia conferma.;Par chi che sa zà doparar Bitcoin. De serie xe tuto destuà, fora che la dopia conferma.;For those who already know how to use Bitcoin. By default everything is off, except the double confirmation.
 217;Per chi sa già usare Bitcoin. Di serie è tutto spento, tranne il PIN per gli invii grandi.;Par chi che sa zà doparar Bitcoin. De serie xe tuto destuà, fora che el PIN par i invii grandi.;For those who already know how to use Bitcoin. By default everything is off, except the PIN for big payments.
 218;Per chi sa già usare Bitcoin. Di serie è tutto spento.;Par chi che sa zà doparar Bitcoin. De serie xe tuto destuà.;For those who already know how to use Bitcoin. By default everything is off.
@@ -236,7 +236,7 @@ costs more"
 226;Passa da Tor;Passa da Tor;Go through Tor
 227;Monete d'oro (UTXO);Monede d'oro (UTXO);Gold coins (UTXO)
 228;Bene! Tutte e due su: invio.;Ben! Tute do su: mando.;Good! Both up: sending.
-229;Bene! Ora spingi a destra l'altra.;Ben! Desso spenzi a destra l'altra.;Good! Now push the other one to the right.
+229;Bene! Ora spingi a destra l'altra.;Ben! Desso spingi a destra l'altra.;Good! Now push the other one to the right.
 230;verde = usato · grigio = vuoto · oro = soldi che stanno <b>dopo</b> tanti vuoti;verde = doperà · grixo = vodo · oro = schei che sta <b>dopo</b> tanti vodi;green = used · grey = empty · gold = money that is <b>after</b> many empty ones
 231;sono partiti;i xe partìi;have left
 232;Fai inquadrare questo codice QR a chi ti manda i bitcoin.;Fa inquadrar sto codice QR a chi che te manda i bitcoin.;Have the person sending you bitcoin scan this QR code.
@@ -292,7 +292,7 @@ costs more"
 282;Non cambia i tuoi soldi e non costa niente. Più lontano cerca, un po' più tempo ci mette ad aggiornare il saldo. Se non serve, lascia 20.;No el cambia i to schei e no el costa gnente. Più lontan che el serca, più tempo el ghe mete a ajornar el saldo. Se no serve, lassa 20.;It does not change your money and costs nothing. The further it looks, the more time it takes to update the balance. If it is not needed, leave 20.
 283;Succede quando l'app viene spostata su un altro telefono o ricopiata da un backup.;Sucede quando che la app la vien spostada su n'altro telefono o ricopiada da un backup.;It happens when the app is moved to another phone or copied back from a backup.
 284;È una cifra grande.;La xe na cifra granda.;It is a big amount.
-285;<b>È un invio grande</b> (più di %1). Quando avrai spinto a destra le due monete bitcoin scorrevoli, ti chiederò il PIN.;<b>El xe un invio grando</b> (più de %1). Co te ghe spento a destra le do monede bitcoin che score, te domandarò el PIN.;<b>It is a big payment</b> (more than %1). When you have pushed the two sliding bitcoin coins to the right, I will ask you for the PIN.
+285;<b>È un invio grande</b> (più di %1). Quando avrai spinto a destra le due monete bitcoin scorrevoli, ti chiederò il PIN.;<b>El xe un invio grando</b> (più de %1). Co te ghe spinto a destra le do monede bitcoin che score, te domandarò el PIN.;<b>It is a big payment</b> (more than %1). When you have pushed the two sliding bitcoin coins to the right, I will ask you for the PIN.
 286;È una richiesta di pagamento <b>Lightning</b>. Schèi paga solo indirizzi bitcoin normali (cominciano con bc1, 1 o 3).;El xe na richiesta de pagamento <b>Lightning</b>. Schèi el paga solo indirissi bitcoin normali (i scominsia co bc1, 1 o 3).;It is a <b>Lightning</b> payment request. Schèi pays only normal bitcoin addresses (they start with bc1, 1 or 3).
 287;Va bene lo stesso;Va ben istesso;It is fine
 288;Serve a chi vuole scegliere <b>quali monete tenere da parte</b>, per non collegare tra loro pagamenti diversi.;La serve a chi che vol sielzar <b>che monede tegnir da parte</b>, par no ligar tra de lori pagamenti difarenti.;It is for those who want to choose <b>which coins to keep apart</b>, so that different payments are not linked to each other.
@@ -321,7 +321,7 @@ costs more"
 311;come la carta contactless: sotto la soglia basta la moneta;come la carta contactless: soto la soglia basta la moneda;like a contactless card: below the threshold the coin is enough
 312;come mempool.space, su un altro server;come mempool.space, su n'altro server;like mempool.space, on another server
 313;bloccata · %1 s;blocà · %1 s;locked · %1 s
-314;Rivedi cifra, costo e indirizzo prima di mandare. Poi spingi a destra le due monete bitcoin.;Riguarda cifra, costo e indirisso prima de mandar. Dopo spenzi a destra le do monede bitcoin.;Look again at amount, cost and address before sending. Then push the two bitcoin coins to the right.
+314;Rivedi cifra, costo e indirizzo prima di mandare. Poi spingi a destra le due monete bitcoin.;Riguarda cifra, costo e indirisso prima de mandar. Dopo spingi a destra le do monede bitcoin.;Look again at amount, cost and address before sending. Then push the two bitcoin coins to the right.
 315;Cerca più indirizzi;Serca più indirissi;Look at more addresses
 316;Guarda il foglio e tocca le parole nell'ordine giusto: prima la 1, poi la 2…;Varda el foglio e toca le parole in ordine giusto: prima la 1, dopo la 2…;Look at your paper and tap the words in the right order: first number 1, then number 2…
 317;Cerca fino a;Serca fin a;Look up to
@@ -423,11 +423,11 @@ costs more"
 413;Riservatezza.;Riservatessa.;Privacy.
 414;tira giù;tira zo;pull down
 415;Tira giù la moneta per ricevere i primi bitcoin.;Tira zo la moneda par ricevar i primi bitcoin.;Pull the coin down to receive your first bitcoin.
-416;Spingi a destra <b>le due monete insieme</b>, con due dita.;Spenzi a destra <b>tute do le monede insieme</b>, co do dei.;Push <b>both coins to the right together</b>, with two fingers.
-417;Spingi a destra le due monete: insieme con due dita, oppure una dopo l'altra.;Spenzi a destra le do monede: insieme co do dei, opure una dopo l'altra.;Push both coins to the right: together with two fingers, or one after the other.
-418;Spingi a destra la prima moneta…;Spenzi a destra la prima moneda…;Push the first coin to the right…
-419;spingi a destra;spenzi a destra;push to the right
-420;spingi su;spenzi su;push up
+416;Spingi a destra <b>le due monete insieme</b>, con due dita.;Spingi a destra <b>tute do le monede insieme</b>, co do dei.;Push <b>both coins to the right together</b>, with two fingers.
+417;Spingi a destra le due monete: insieme con due dita, oppure una dopo l'altra.;Spingi a destra le do monede: insieme co do dei, opure una dopo l'altra.;Push both coins to the right: together with two fingers, or one after the other.
+418;Spingi a destra la prima moneta…;Spingi a destra la prima moneda…;Push the first coin to the right…
+419;spingi a destra;spingi a destra;push to the right
+420;spingi su;spingi su;push up
 421;Metti da parte;Meti da parte;Put aside
 422;Rimetti le 12 parole;Rimeti le 12 parole;Put back the 12 words
 423;Metti il codice QR dentro il riquadro;Meti el codice QR drento el riquadro;Put the QR code inside the frame
@@ -609,7 +609,7 @@ costs less"
 596;mi sto collegando…;me sto colegando…;trying to connect…
 597;spegnilo per bloccare questa moneta;studelo par blocar sta moneda;turn it off to block this coin
 598;spegnile se il telefono è lento;studele se el telefonin el xe lento;turn them off if the phone is slow
-599;due monete da spingere a destra, come due chiavi;do monede da spenzar a destra, come do ciavi;two coins to push to the right, like two keys
+599;due monete da spingere a destra, come due chiavi;do monede da spinger a destra, come do ciavi;two coins to push to the right, like two keys
 600;Tipo;Tipo;Type
 601;Scrivi il PIN per cambiare il collegamento;Scrivi el PIN par cambiar el colegamento;Type the PIN to change the connection
 602;Scrivi il PIN per cambiare il PIN per gli invii grandi;Scrivi el PIN par cambiar el PIN par i invii grandi;Type the PIN to change the PIN for big payments
