@@ -1,0 +1,38 @@
+name: traduzioni
+
+# Schèi Wallet: keeps TRADUZIONI.md and traduzioni.csv in step with the app's translations.
+# Runs when electrum/eh_strings.py (or the script) changes on main, or by hand.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'electrum/eh_strings.py'
+      - 'contrib/eh_translations.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: traduzioni
+  cancel-in-progress: false
+
+jobs:
+  table:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Write the table
+        run: python3 contrib/eh_translations.py
+      - name: Save it if it changed
+        run: |
+          if git diff --quiet -- TRADUZIONI.md traduzioni.csv; then
+            echo "table already up to date"
+            exit 0
+          fi
+          git config user.name "schei-traduzioni[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add TRADUZIONI.md traduzioni.csv
+          git commit -m "Tabella traduzioni aggiornata" -m "- Rigenerata da electrum/eh_strings.py (commit ${GITHUB_SHA::8})"
+          git push
