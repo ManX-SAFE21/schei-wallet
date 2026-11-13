@@ -2,7 +2,7 @@
 
 Tutti i testi dell'app in **italiano**, **veneto** e **inglese**. Questo file si aggiorna da solo a ogni modifica delle traduzioni (`electrum/eh_strings.py`): non modificarlo a mano.
 
-- Frasi: **731** · mancano in italiano: **1** · mancano in veneto: **0**
+- Frasi: **732** · mancano in italiano: **1** · mancano in veneto: **0**
 - La colonna **Inglese** è il testo di partenza scritto nel codice; `%1`, `%2` vengono sostituiti da un numero, una cifra o un nome.
 - Se una frase manca, l'app usa quella di un'altra lingua (veneto → italiano → inglese).
 - Per proporre una correzione: apri una *Issue* o una *Pull request* che cambia `electrum/eh_strings.py`.
@@ -642,102 +642,103 @@ Tutti i testi dell'app in **italiano**, **veneto** e **inglese**. Questo file si
 | 630 | piccolissime, da sconosciuti | picolissime, da foresti | very small, from strangers |
 | 631 | Sola visualizzazione e ricezione | Solo vardar e ricever | View and receive only |
 | 632 | Aspetta qualche secondo, oppure scrivi l'importo in bitcoin. | Speta qualche secondo, o scrivi l'importo in bitcoin. | Wait a few seconds, or write the amount in bitcoin. |
-| 633 | Dettagli del portafoglio | Detagli del portafojo | Wallet details |
-| 634 | PORTAFOGLI | PORTAFOJI | WALLETS |
-| 635 | Attenzione: alcuni dati (transazioni precedenti / "full utxos") sono rimasti fuori dal QR perché non ci stavano. | Atension: qualche dato (transasion de prima / "full utxos") el xe restà fora dal QR parché no el ghe stava. | Warning: Some data (prev txs / "full utxos") was left out of the QR code as it would not fit. |
-| 636 | AVVISI | AVISI | WARNINGS |
-| 637 | SOLO DA GUARDARE | SOLO DA VARDAR | WATCH ONLY |
-| 638 | Solo da guardare | Solo da vardar | Watch only |
-| 639 | Portafoglio solo da guardare | Portafojo solo da vardar | Watch-only wallet |
-| 640 | Benvenuto | Benvegnù | Welcome |
-| 641 | Cosa sono le conferme? | Cossa xe le conferme? | What are confirmations? |
-| 642 | <b>Cos'è il crogiuolo?</b> In Bitcoin si chiama <b>transazione</b>. Prende alcune monete d'oro (gli UTXO che spendi), le fonde e conia monete nuove: una per chi riceve e una con il resto per te. Le monete vecchie spariscono per sempre: non si possono spendere due volte. | <b>Cossa xe el crogiolo?</b> In Bitcoin el se ciama <b>transasion</b>. El ciapa qualche moneda de oro (i UTXO che te spendi), el le fonde e el conia monede nove: una par chi che riceve e una col resto par ti. Le monede vece le sparisse par sempre: no le se pol spendar do volte. | <b>What is the crucible?</b> In Bitcoin it is called <b>transaction</b>. It takes some gold coins (the UTXOs you spend), melts them and mints new coins: one for who receives and one with the change for you. The old coins disappear for ever: they cannot be spent twice. |
-| 643 | Cos'è il costo dell'invio? | Cossa xe el costo de l'invio? | What is the sending cost? |
-| 644 | <b>A cosa serve.</b> Il portafoglio ha una lunga fila di indirizzi, sempre gli stessi, che nascono dalle 12 parole. Per trovare i tuoi soldi Schèi li guarda <b>uno dopo l'altro</b>, e si ferma quando ne trova <b>%1 vuoti di fila</b>: pensa che dopo non ci sia più niente. | <b>A cossa che serve.</b> El portafojo el ga na fila longa de indirissi, sempre i stessi, che nasse da le 12 parole. Par catar i to schei Schèi el li varda <b>uno dopo l'altro</b>, e el se ferma co el ghe ne cata <b>%1 vodi de fila</b>: el pensa che dopo no ghe sia più gnente. | <b>What it is for.</b> The wallet has a long row of addresses, always the same, born from the 12 words. To find your money Schèi looks at them <b>one after the other</b>, and stops when it finds <b>%1 empty in a row</b>: it thinks there is nothing after. |
-| 645 | COSA CAMBIA SCHÈI | COSSA CHE CAMBIA SCHÈI | WHAT SCHÈI CHANGES |
-| 646 | <b>Come fare:</b> apri l'app <b>Orbot</b> e tocca il grande tasto per accenderla. Poi torna qui: Schèi si collega da solo. | <b>Come far:</b> verzi l'app <b>Orbot</b> e toca el boton grando par impissarla. Dopo torna qua: Schèi el se colega da solo. | <b>What to do:</b> open the <b>Orbot</b> app and tap the big button to turn it on. Then come back here: Schèi connects by itself. |
-| 647 | Quando | Quando | When |
-| 648 | Quando mescolo provenienze | Co missio provenienze | When I mix origins |
-| 649 | <b>Quando serve.</b> Se le 12 parole sono state usate anche in un altro portafoglio che ha creato tanti indirizzi senza usarli, i soldi possono stare dopo più di 20 indirizzi vuoti. Schèi non li vede e il saldo sembra mancare. Cercando più lontano li ritrova. | <b>Co che serve.</b> Se le 12 parole le xe stade dopará anca in n'altro portafojo che ga fato tanti indirissi sensa doperarli, i schei i pol star dopo più de 20 indirissi vodi. Schèi no el li vede e el saldo el par che manca. Sercando più lontan el li cata. | <b>When it is needed.</b> If the 12 words were also used in another wallet that created many addresses without using them, the money can be after more than 20 empty addresses. Schèi does not see it and the balance seems to be missing. Looking further finds it. |
-| 650 | Quando ricevi o invii bitcoin, li trovi qui. | Co te ricevi o te mandi bitcoin, te li cati qua. | When you receive or send bitcoin, you find them here. |
-| 651 | Da dove vengono? | Da dove vienle? | Where do they come from? |
-| 652 | DA DOVE VIENE | DA DOVE CHE LA VIEN | WHERE IT COMES FROM |
-| 653 | DA DOVE VENGONO LE MONETE | DA DOVE CHE VIEN LE MONEDE | WHERE THE COINS COME FROM |
-| 654 | Dove vedere i movimenti | Dove vardar i movimenti | Where to see the movements |
-| 655 | Quali monete fondere? | Che monede fondar? | Which coins to melt? |
-| 656 | A chi mandi? | A chi mandito? | Who are you sending to? |
-| 657 | Chi lascia una <b>mancia più alta</b> ai minatori passa prima. Con la mancia più bassa può volerci <b>qualche ora</b>. | Chi che lassa na <b>mancia più alta</b> ai minadori el passa prima. Co la mancia più bassa ghe pol voler <b>qualche ora</b>. | Who leaves a <b>higher tip</b> to the miners goes first. With the lowest tip it can take <b>a few hours</b>. |
-| 658 | Chi lascia una <b>mancia più alta</b> ai minatori passa prima. Con la mancia più bassa può volerci <b>fino a un giorno</b>. | Chi che lassa na <b>mancia più alta</b> ai minadori el passa prima. Co la mancia più bassa ghe pol voler <b>fin a un giorno</b>. | Who leaves a <b>higher tip</b> to the miners goes first. With the lowest tip it can take <b>up to a day</b>. |
-| 659 | Chi paga di più passa prima. <b>I soldi arrivano comunque</b>: cambia solo quanto tempo ci mettono. | Chi che paga de più el passa prima. <b>I schei i riva istesso</b>: cambia solo quanto tempo che i ghe mete. | Who pays more goes first. <b>The money arrives anyway</b>: only the time it takes changes. |
-| 660 | chi riceve | chi che riceve | who receives |
-| 661 | A chi | A chi | Who to |
-| 662 | Chi lo inquadra si trova la cifra già scritta: deve solo confermare. | Chi che lo inquadra el se cata la cifra zà scrita: el ga solo da confermar. | Whoever scans it finds the amount already written: they only have to confirm. |
-| 663 | indirizzo intero | indirisso intiero | whole address |
-| 664 | Con un sito pubblico puoi proteggerti con una <b>VPN</b> o con <b>Tor</b> (app Orbot o Tor Browser): il sito vede il movimento, ma non sa chi sei. | Co un sito publico te pol protegerte co na <b>VPN</b> o co <b>Tor</b> (app Orbot o Tor Browser): el sito el vede el movimento, ma no el sa chi che te si. | With a public site you can protect yourself with a <b>VPN</b> or with <b>Tor</b> (Orbot or Tor Browser app): the site sees the movement, but does not know who you are. |
-| 665 | con PIN | col PIN | with PIN |
-| 666 | Con il costo più basso, se ci sono tanti invii, può volerci anche più di un giorno. | Col costo più basso, se ghe xe tanti invii, ghe pol voler anca più de un dì. | With the lowest cost, when there are many payments it can take even more than a day. |
-| 667 | Con l'interruttore spento non cambia niente: l'app sceglie le monete da sola, come sempre. | Co l'interutor studà no cambia gnente: l'app la sielze le monede da sola, come sempre. | With the switch off nothing changes: the app chooses the coins by itself, as always. |
-| 668 | Con questo portafoglio puoi vedere il saldo e ricevere, ma <b>non puoi inviare</b>: le chiavi per firmare non sono su questo telefono. | Co sto portafojo te pol vedar el saldo e ricevar, ma <b>no te pol mandar</b>: le ciave par firmar no le xe su sto telefonin. | With this wallet you can see the balance and receive, but you <b>cannot send</b>: the keys to sign are not on this phone. |
-| 669 | Con Tor il collegamento è un po' più lento: qualche secondo in più all'apertura e per aggiornare il saldo. | Co Tor el colegamento el xe un fià più lento: qualche secondo in più a verzar e par ajornar el saldo. | With Tor the connection is a bit slower: a few seconds more when opening and to update the balance. |
-| 670 | Con Tor puoi scrivere anche l'indirizzo <b>.onion</b> del nodo: così ti colleghi a casa tua anche da fuori, senza toccare il router. | Co Tor te pol scrivar anca l'indirisso <b>.onion</b> del nodo: cussì te te colighi a casa tua anca da fora, sensa tocar el router. | With Tor you can also write the <b>.onion</b> address of the node: so you connect to your home even from outside, without touching the router. |
-| 671 | Con <b>il tuo nodo</b> non lo sa nessuno: resta tutto a casa tua. | Col <b>to nodo</b> no lo sa nissun: resta tuto a casa tua. | With <b>your node</b> nobody knows it: everything stays at your home. |
-| 672 | entro un giorno | entro un dì | within a day |
-| 673 | entro una settimana | entro na setimana | within a week |
-| 674 | scrivi una nota… | scrivi na nota… | write a note… |
-| 675 | Scrivi una mail | Scrivi na mail | Write an e-mail |
-| 676 | Scrivi in bitcoin | Scrivi in bitcoin | Write in bitcoin |
-| 677 | Scrivi le <b>12 parole</b> di questo portafoglio, quelle del foglio. Se sono giuste, scegli un PIN nuovo. | Scrivi le <b>12 parole</b> de sto portafojo, quele del foglio. Se le xe giuste, te sielgi un PIN novo. | Write the <b>12 words</b> of this wallet, the ones on the paper. If they are right, you choose a new PIN. |
-| 678 | scrivi l'importo in %1 o in BTC | scrivi l'importo in %1 o in BTC | write the amount in %1 or in BTC |
-| 679 | scrivi l'importo in € o in BTC | scrivi la cifra in € o in BTC | write the amount in € or in BTC |
-| 680 | Scrivile su carta in stampatello | Scrivile su la carta in stampatelo | Write them on paper in block capitals |
-| 681 | SCRIVI ANCHE QUESTO, SOTTO LE PAROLE | SCRIVI ANCA QUESTO, SOTO LE PAROLE | WRITE THIS TOO, UNDER THE WORDS |
-| 682 | Scrivi le tue 12 parole | Scrivi le to 12 parole | Write your 12 words |
-| 683 | PIN sbagliato, riprova. | PIN sbaglià, riprova. | Wrong PIN, try again. |
-| 684 | Sì | Sì | Yes |
-| 685 | Sì, è giusto: avanti | Sì, el xe giusto: avanti | Yes, it is right: next |
-| 686 | Ieri | Jeri | Yesterday |
-| 687 | ieri %1 | ieri %1 | yesterday %1 |
-| 688 | tu | ti | you |
-| 689 | Hai già 7 portafogli, il massimo. | Te ghe zà 7 portafoji, el massimo. | You already have 7 wallets, the maximum. |
-| 690 | Stai chiedendo %1 | Te sì drio domandar %1 | You are asking %1 |
-| 691 | Stai mescolando monete | Te stà missiando monede | You are mixing coins |
-| 692 | Puoi cambiare livello quando vuoi. | Te pol cambiar liveo quando che te vol. | You can change level whenever you want. |
-| 693 | Hai scelto | Te ghe sielto | You chose |
-| 694 | Non hai abbastanza fondi on-chain per proteggere i tuoi canali Lightning. | No te ghe bastansa schei on-chain par protejar i to canai Lightning. | You do not have enough on-chain funds to protect your Lightning channels. |
-| 695 | Non hai abbastanza schei | No te ghe basta schei | You do not have enough schei |
-| 696 | Lo trovi nell'app "Electrs" o "Fulcrum" del tuo nodo. ":s" vuol dire collegamento protetto. | Te lo cati ne l'app "Electrs" o "Fulcrum" del to nodo. ":s" vol dir colegamento protèto. | You find it in the "Electrs" or "Fulcrum" app of your node. ":s" means protected connection. |
-| 697 | Ritrovi le voci di questo livello come le avevi lasciate. | Te ritrovi le vosi de sto liveo come che te le gavevi lassà. | You find the switches of this level as you left them. |
-| 698 | le trovi nel pagamento ("Monete usate") e in "bloccati ›" sulla scheda del portafoglio | te le cati nel pagamento ("Monede doparà") e in "blocà ›" su la scheda del portafojo | you find them in the payment ("Coins used") and in "blocked ›" on the wallet card |
-| 699 | HAI | TE GHE | YOU HAVE |
-| 700 | Hai %1 | Te ghe %1 | You have %1 |
-| 701 | Hai %1 monete bloccate: l'app non le usa per pagare. Senza monete d'oro non le vedi più. Le sblocco tutte? | Te ghe %1 monede blocae: l'app no le dopra par pagar. Sensa monede d'oro no te le vedi più. Le sbloco tute? | You have %1 blocked coins: the app does not use them to pay. Without gold coins you do not see them any more. Unblock them all? |
-| 702 | hai %1 portafogli: resta acceso, così li vedi tutti | te ghe %1 portafoji: el resta inpissà, cussì te li vedi tuti | you have %1 wallets: it stays on, so you see them all |
-| 703 | Servono per riavere i soldi se perdi il telefono. | Le serve par riavere i schei se te perdi el telefonin. | You need them to get your money back if you lose your phone. |
-| 704 | HAI INCOLLATO QUESTO INDIRIZZO | TE GHE INCOLÀ STO INDIRISSO | YOU PASTED THIS ADDRESS |
-| 705 | Ti sono arrivati | Te ze rivà | You received |
-| 706 | Hai ricevuto {} | Te ghe ricevùo {} | You received {} |
-| 707 | Mandi | Te mandi | You send |
-| 708 | Mandi <b>tutto quello che hai</b>. Il costo dell'invio è già tolto: il portafoglio resterà a zero. | Te mandi <b>tuto quel che te ghe</b>. El costo de l'invio el xe zà cavà: el portafojo el restarà a zero. | You send <b>everything you have</b>. The sending cost is already taken off: the wallet will be left at zero. |
-| 709 | Hai mandato {} | Te ghe mandà {} | You sent {} |
-| 710 | Dovresti avere almeno %1 on-chain per poter recuperare le uscite dei canali. | Te gavarissi da aver almanco %1 on-chain par poder recuperar le uscite dei canai. | You should have at least %1 on-chain in order to be able to sweep channel outputs. |
-| 711 | Usavi un tuo nodo o Tor. In BASE la loro voce è nascosta: con "Sì" Schèi si collega da solo ai server pubblici, come all'inizio. | Te dopravi un to nodo o Tor. In BASE la so vose la xe sconta: col "Sì" Schèi el se colega da solo ai server publici, come a l'inizio. | You were using your own node or Tor. In BASE their row is hidden: with "Yes" Schèi connects by itself to the public servers, as at the start. |
-| 712 | Scrivi gli importi in %1 o in bitcoin | Te scrivi i importi in %1 o in bitcoin | You write the amounts in %1 or in bitcoin |
-| 713 | Le tue 12 parole | Le to 12 parole | Your 12 words |
-| 714 | I tuoi indirizzi | I to indirissi | Your addresses |
-| 715 | Il saldo è fatto di più <b>monete d'oro</b>: ognuna è un pagamento che hai ricevuto e vale quanto c'è dentro. Puoi <b>bloccarne</b> una: l'app non la userà per pagare. | El saldo el xe fato de più <b>monede de oro</b>: ognuna la xe un pagamento che te ghe ricevùo e la val quel che ghe xe drento. Te pol <b>blocarghene</b> una: l'app no la la doparà par pagar. | Your balance is made of several <b>gold coins</b>: each one is a payment you received, and it is worth what is inside. You can <b>block</b> one: the app will not use it to pay. |
-| 716 | IL TUO INDIRIZZO BITCOIN | EL TO INDIRISSO BITCOIN | YOUR BITCOIN ADDRESS |
-| 717 | Le tue scelte (modalità esperto, colori) torneranno come all'inizio. | Le to sielte (modalità esperto, colori) le tornarà come a l'inizio. | Your choices (expert mode, colours) will go back to how they were at the start. |
-| 718 | A proteggere le tue monete sono le 12 parole. | A proteger le to monede xe le 12 parole. | Your coins are protected by the 12 words. |
-| 719 | Le tue monete nelle tasche | Le to monede ne le scarsele | Your coins in the pockets |
-| 720 | Il tuo PIN attuale | El to PIN de desso | Your current PIN |
-| 721 | Le tue monete bitcoin | Le to monede bitcoin | Your gold coins |
-| 722 | Le tue monete bitcoin e gli indirizzi | Le to monede bitcoin e i indirissi | Your gold coins and addresses |
-| 723 | Il tuo gruzzoletto | El to gruzoleto | Your little stash |
-| 724 | I tuoi schèi | I to schèi | Your money |
-| 725 | I tuoi soldi non sono persi | I to schèi no i xe persi | Your money is not lost |
-| 726 | I tuoi soldi, le 12 parole e il PIN non cambiano. | I to schei, le 12 parole e el PIN no i cambia. | Your money, the 12 words and the PIN do not change. |
-| 727 | I tuoi soldi, i portafogli, le 12 parole, il PIN, il nome e la lingua non cambiano. | I to schei, i portafoji, le 12 parole, el PIN, el nome e la lengua no i cambia. | Your money, the wallets, the 12 words, the PIN, the name and the language do not change. |
-| 728 | Il tuo PIN | El to PIN | Your PIN |
-| 729 | IL TUO PORTAFOGLIO | EL TO PORTAFOJO | YOUR WALLET |
-| 730 | Il tuo portafoglio è pronto | El to portafojo el xe pronto | Your wallet is ready |
-| 731 | {} movimenti nuovi | {} movimenti novi | {} new movements |
+| 633 | in attesa | in atesa | waiting |
+| 634 | Dettagli del portafoglio | Detagli del portafojo | Wallet details |
+| 635 | PORTAFOGLI | PORTAFOJI | WALLETS |
+| 636 | Attenzione: alcuni dati (transazioni precedenti / "full utxos") sono rimasti fuori dal QR perché non ci stavano. | Atension: qualche dato (transasion de prima / "full utxos") el xe restà fora dal QR parché no el ghe stava. | Warning: Some data (prev txs / "full utxos") was left out of the QR code as it would not fit. |
+| 637 | AVVISI | AVISI | WARNINGS |
+| 638 | SOLO DA GUARDARE | SOLO DA VARDAR | WATCH ONLY |
+| 639 | Solo da guardare | Solo da vardar | Watch only |
+| 640 | Portafoglio solo da guardare | Portafojo solo da vardar | Watch-only wallet |
+| 641 | Benvenuto | Benvegnù | Welcome |
+| 642 | Cosa sono le conferme? | Cossa xe le conferme? | What are confirmations? |
+| 643 | <b>Cos'è il crogiuolo?</b> In Bitcoin si chiama <b>transazione</b>. Prende alcune monete d'oro (gli UTXO che spendi), le fonde e conia monete nuove: una per chi riceve e una con il resto per te. Le monete vecchie spariscono per sempre: non si possono spendere due volte. | <b>Cossa xe el crogiolo?</b> In Bitcoin el se ciama <b>transasion</b>. El ciapa qualche moneda de oro (i UTXO che te spendi), el le fonde e el conia monede nove: una par chi che riceve e una col resto par ti. Le monede vece le sparisse par sempre: no le se pol spendar do volte. | <b>What is the crucible?</b> In Bitcoin it is called <b>transaction</b>. It takes some gold coins (the UTXOs you spend), melts them and mints new coins: one for who receives and one with the change for you. The old coins disappear for ever: they cannot be spent twice. |
+| 644 | Cos'è il costo dell'invio? | Cossa xe el costo de l'invio? | What is the sending cost? |
+| 645 | <b>A cosa serve.</b> Il portafoglio ha una lunga fila di indirizzi, sempre gli stessi, che nascono dalle 12 parole. Per trovare i tuoi soldi Schèi li guarda <b>uno dopo l'altro</b>, e si ferma quando ne trova <b>%1 vuoti di fila</b>: pensa che dopo non ci sia più niente. | <b>A cossa che serve.</b> El portafojo el ga na fila longa de indirissi, sempre i stessi, che nasse da le 12 parole. Par catar i to schei Schèi el li varda <b>uno dopo l'altro</b>, e el se ferma co el ghe ne cata <b>%1 vodi de fila</b>: el pensa che dopo no ghe sia più gnente. | <b>What it is for.</b> The wallet has a long row of addresses, always the same, born from the 12 words. To find your money Schèi looks at them <b>one after the other</b>, and stops when it finds <b>%1 empty in a row</b>: it thinks there is nothing after. |
+| 646 | COSA CAMBIA SCHÈI | COSSA CHE CAMBIA SCHÈI | WHAT SCHÈI CHANGES |
+| 647 | <b>Come fare:</b> apri l'app <b>Orbot</b> e tocca il grande tasto per accenderla. Poi torna qui: Schèi si collega da solo. | <b>Come far:</b> verzi l'app <b>Orbot</b> e toca el boton grando par impissarla. Dopo torna qua: Schèi el se colega da solo. | <b>What to do:</b> open the <b>Orbot</b> app and tap the big button to turn it on. Then come back here: Schèi connects by itself. |
+| 648 | Quando | Quando | When |
+| 649 | Quando mescolo provenienze | Co missio provenienze | When I mix origins |
+| 650 | <b>Quando serve.</b> Se le 12 parole sono state usate anche in un altro portafoglio che ha creato tanti indirizzi senza usarli, i soldi possono stare dopo più di 20 indirizzi vuoti. Schèi non li vede e il saldo sembra mancare. Cercando più lontano li ritrova. | <b>Co che serve.</b> Se le 12 parole le xe stade dopará anca in n'altro portafojo che ga fato tanti indirissi sensa doperarli, i schei i pol star dopo più de 20 indirissi vodi. Schèi no el li vede e el saldo el par che manca. Sercando più lontan el li cata. | <b>When it is needed.</b> If the 12 words were also used in another wallet that created many addresses without using them, the money can be after more than 20 empty addresses. Schèi does not see it and the balance seems to be missing. Looking further finds it. |
+| 651 | Quando ricevi o invii bitcoin, li trovi qui. | Co te ricevi o te mandi bitcoin, te li cati qua. | When you receive or send bitcoin, you find them here. |
+| 652 | Da dove vengono? | Da dove vienle? | Where do they come from? |
+| 653 | DA DOVE VIENE | DA DOVE CHE LA VIEN | WHERE IT COMES FROM |
+| 654 | DA DOVE VENGONO LE MONETE | DA DOVE CHE VIEN LE MONEDE | WHERE THE COINS COME FROM |
+| 655 | Dove vedere i movimenti | Dove vardar i movimenti | Where to see the movements |
+| 656 | Quali monete fondere? | Che monede fondar? | Which coins to melt? |
+| 657 | A chi mandi? | A chi mandito? | Who are you sending to? |
+| 658 | Chi lascia una <b>mancia più alta</b> ai minatori passa prima. Con la mancia più bassa può volerci <b>qualche ora</b>. | Chi che lassa na <b>mancia più alta</b> ai minadori el passa prima. Co la mancia più bassa ghe pol voler <b>qualche ora</b>. | Who leaves a <b>higher tip</b> to the miners goes first. With the lowest tip it can take <b>a few hours</b>. |
+| 659 | Chi lascia una <b>mancia più alta</b> ai minatori passa prima. Con la mancia più bassa può volerci <b>fino a un giorno</b>. | Chi che lassa na <b>mancia più alta</b> ai minadori el passa prima. Co la mancia più bassa ghe pol voler <b>fin a un giorno</b>. | Who leaves a <b>higher tip</b> to the miners goes first. With the lowest tip it can take <b>up to a day</b>. |
+| 660 | Chi paga di più passa prima. <b>I soldi arrivano comunque</b>: cambia solo quanto tempo ci mettono. | Chi che paga de più el passa prima. <b>I schei i riva istesso</b>: cambia solo quanto tempo che i ghe mete. | Who pays more goes first. <b>The money arrives anyway</b>: only the time it takes changes. |
+| 661 | chi riceve | chi che riceve | who receives |
+| 662 | A chi | A chi | Who to |
+| 663 | Chi lo inquadra si trova la cifra già scritta: deve solo confermare. | Chi che lo inquadra el se cata la cifra zà scrita: el ga solo da confermar. | Whoever scans it finds the amount already written: they only have to confirm. |
+| 664 | indirizzo intero | indirisso intiero | whole address |
+| 665 | Con un sito pubblico puoi proteggerti con una <b>VPN</b> o con <b>Tor</b> (app Orbot o Tor Browser): il sito vede il movimento, ma non sa chi sei. | Co un sito publico te pol protegerte co na <b>VPN</b> o co <b>Tor</b> (app Orbot o Tor Browser): el sito el vede el movimento, ma no el sa chi che te si. | With a public site you can protect yourself with a <b>VPN</b> or with <b>Tor</b> (Orbot or Tor Browser app): the site sees the movement, but does not know who you are. |
+| 666 | con PIN | col PIN | with PIN |
+| 667 | Con il costo più basso, se ci sono tanti invii, può volerci anche più di un giorno. | Col costo più basso, se ghe xe tanti invii, ghe pol voler anca più de un dì. | With the lowest cost, when there are many payments it can take even more than a day. |
+| 668 | Con l'interruttore spento non cambia niente: l'app sceglie le monete da sola, come sempre. | Co l'interutor studà no cambia gnente: l'app la sielze le monede da sola, come sempre. | With the switch off nothing changes: the app chooses the coins by itself, as always. |
+| 669 | Con questo portafoglio puoi vedere il saldo e ricevere, ma <b>non puoi inviare</b>: le chiavi per firmare non sono su questo telefono. | Co sto portafojo te pol vedar el saldo e ricevar, ma <b>no te pol mandar</b>: le ciave par firmar no le xe su sto telefonin. | With this wallet you can see the balance and receive, but you <b>cannot send</b>: the keys to sign are not on this phone. |
+| 670 | Con Tor il collegamento è un po' più lento: qualche secondo in più all'apertura e per aggiornare il saldo. | Co Tor el colegamento el xe un fià più lento: qualche secondo in più a verzar e par ajornar el saldo. | With Tor the connection is a bit slower: a few seconds more when opening and to update the balance. |
+| 671 | Con Tor puoi scrivere anche l'indirizzo <b>.onion</b> del nodo: così ti colleghi a casa tua anche da fuori, senza toccare il router. | Co Tor te pol scrivar anca l'indirisso <b>.onion</b> del nodo: cussì te te colighi a casa tua anca da fora, sensa tocar el router. | With Tor you can also write the <b>.onion</b> address of the node: so you connect to your home even from outside, without touching the router. |
+| 672 | Con <b>il tuo nodo</b> non lo sa nessuno: resta tutto a casa tua. | Col <b>to nodo</b> no lo sa nissun: resta tuto a casa tua. | With <b>your node</b> nobody knows it: everything stays at your home. |
+| 673 | entro un giorno | entro un dì | within a day |
+| 674 | entro una settimana | entro na setimana | within a week |
+| 675 | scrivi una nota… | scrivi na nota… | write a note… |
+| 676 | Scrivi una mail | Scrivi na mail | Write an e-mail |
+| 677 | Scrivi in bitcoin | Scrivi in bitcoin | Write in bitcoin |
+| 678 | Scrivi le <b>12 parole</b> di questo portafoglio, quelle del foglio. Se sono giuste, scegli un PIN nuovo. | Scrivi le <b>12 parole</b> de sto portafojo, quele del foglio. Se le xe giuste, te sielgi un PIN novo. | Write the <b>12 words</b> of this wallet, the ones on the paper. If they are right, you choose a new PIN. |
+| 679 | scrivi l'importo in %1 o in BTC | scrivi l'importo in %1 o in BTC | write the amount in %1 or in BTC |
+| 680 | scrivi l'importo in € o in BTC | scrivi la cifra in € o in BTC | write the amount in € or in BTC |
+| 681 | Scrivile su carta in stampatello | Scrivile su la carta in stampatelo | Write them on paper in block capitals |
+| 682 | SCRIVI ANCHE QUESTO, SOTTO LE PAROLE | SCRIVI ANCA QUESTO, SOTO LE PAROLE | WRITE THIS TOO, UNDER THE WORDS |
+| 683 | Scrivi le tue 12 parole | Scrivi le to 12 parole | Write your 12 words |
+| 684 | PIN sbagliato, riprova. | PIN sbaglià, riprova. | Wrong PIN, try again. |
+| 685 | Sì | Sì | Yes |
+| 686 | Sì, è giusto: avanti | Sì, el xe giusto: avanti | Yes, it is right: next |
+| 687 | Ieri | Jeri | Yesterday |
+| 688 | ieri %1 | ieri %1 | yesterday %1 |
+| 689 | tu | ti | you |
+| 690 | Hai già 7 portafogli, il massimo. | Te ghe zà 7 portafoji, el massimo. | You already have 7 wallets, the maximum. |
+| 691 | Stai chiedendo %1 | Te sì drio domandar %1 | You are asking %1 |
+| 692 | Stai mescolando monete | Te stà missiando monede | You are mixing coins |
+| 693 | Puoi cambiare livello quando vuoi. | Te pol cambiar liveo quando che te vol. | You can change level whenever you want. |
+| 694 | Hai scelto | Te ghe sielto | You chose |
+| 695 | Non hai abbastanza fondi on-chain per proteggere i tuoi canali Lightning. | No te ghe bastansa schei on-chain par protejar i to canai Lightning. | You do not have enough on-chain funds to protect your Lightning channels. |
+| 696 | Non hai abbastanza schei | No te ghe basta schei | You do not have enough schei |
+| 697 | Lo trovi nell'app "Electrs" o "Fulcrum" del tuo nodo. ":s" vuol dire collegamento protetto. | Te lo cati ne l'app "Electrs" o "Fulcrum" del to nodo. ":s" vol dir colegamento protèto. | You find it in the "Electrs" or "Fulcrum" app of your node. ":s" means protected connection. |
+| 698 | Ritrovi le voci di questo livello come le avevi lasciate. | Te ritrovi le vosi de sto liveo come che te le gavevi lassà. | You find the switches of this level as you left them. |
+| 699 | le trovi nel pagamento ("Monete usate") e in "bloccati ›" sulla scheda del portafoglio | te le cati nel pagamento ("Monede doparà") e in "blocà ›" su la scheda del portafojo | you find them in the payment ("Coins used") and in "blocked ›" on the wallet card |
+| 700 | HAI | TE GHE | YOU HAVE |
+| 701 | Hai %1 | Te ghe %1 | You have %1 |
+| 702 | Hai %1 monete bloccate: l'app non le usa per pagare. Senza monete d'oro non le vedi più. Le sblocco tutte? | Te ghe %1 monede blocae: l'app no le dopra par pagar. Sensa monede d'oro no te le vedi più. Le sbloco tute? | You have %1 blocked coins: the app does not use them to pay. Without gold coins you do not see them any more. Unblock them all? |
+| 703 | hai %1 portafogli: resta acceso, così li vedi tutti | te ghe %1 portafoji: el resta inpissà, cussì te li vedi tuti | you have %1 wallets: it stays on, so you see them all |
+| 704 | Servono per riavere i soldi se perdi il telefono. | Le serve par riavere i schei se te perdi el telefonin. | You need them to get your money back if you lose your phone. |
+| 705 | HAI INCOLLATO QUESTO INDIRIZZO | TE GHE INCOLÀ STO INDIRISSO | YOU PASTED THIS ADDRESS |
+| 706 | Ti sono arrivati | Te ze rivà | You received |
+| 707 | Hai ricevuto {} | Te ghe ricevùo {} | You received {} |
+| 708 | Mandi | Te mandi | You send |
+| 709 | Mandi <b>tutto quello che hai</b>. Il costo dell'invio è già tolto: il portafoglio resterà a zero. | Te mandi <b>tuto quel che te ghe</b>. El costo de l'invio el xe zà cavà: el portafojo el restarà a zero. | You send <b>everything you have</b>. The sending cost is already taken off: the wallet will be left at zero. |
+| 710 | Hai mandato {} | Te ghe mandà {} | You sent {} |
+| 711 | Dovresti avere almeno %1 on-chain per poter recuperare le uscite dei canali. | Te gavarissi da aver almanco %1 on-chain par poder recuperar le uscite dei canai. | You should have at least %1 on-chain in order to be able to sweep channel outputs. |
+| 712 | Usavi un tuo nodo o Tor. In BASE la loro voce è nascosta: con "Sì" Schèi si collega da solo ai server pubblici, come all'inizio. | Te dopravi un to nodo o Tor. In BASE la so vose la xe sconta: col "Sì" Schèi el se colega da solo ai server publici, come a l'inizio. | You were using your own node or Tor. In BASE their row is hidden: with "Yes" Schèi connects by itself to the public servers, as at the start. |
+| 713 | Scrivi gli importi in %1 o in bitcoin | Te scrivi i importi in %1 o in bitcoin | You write the amounts in %1 or in bitcoin |
+| 714 | Le tue 12 parole | Le to 12 parole | Your 12 words |
+| 715 | I tuoi indirizzi | I to indirissi | Your addresses |
+| 716 | Il saldo è fatto di più <b>monete d'oro</b>: ognuna è un pagamento che hai ricevuto e vale quanto c'è dentro. Puoi <b>bloccarne</b> una: l'app non la userà per pagare. | El saldo el xe fato de più <b>monede de oro</b>: ognuna la xe un pagamento che te ghe ricevùo e la val quel che ghe xe drento. Te pol <b>blocarghene</b> una: l'app no la la doparà par pagar. | Your balance is made of several <b>gold coins</b>: each one is a payment you received, and it is worth what is inside. You can <b>block</b> one: the app will not use it to pay. |
+| 717 | IL TUO INDIRIZZO BITCOIN | EL TO INDIRISSO BITCOIN | YOUR BITCOIN ADDRESS |
+| 718 | Le tue scelte (modalità esperto, colori) torneranno come all'inizio. | Le to sielte (modalità esperto, colori) le tornarà come a l'inizio. | Your choices (expert mode, colours) will go back to how they were at the start. |
+| 719 | A proteggere le tue monete sono le 12 parole. | A proteger le to monede xe le 12 parole. | Your coins are protected by the 12 words. |
+| 720 | Le tue monete nelle tasche | Le to monede ne le scarsele | Your coins in the pockets |
+| 721 | Il tuo PIN attuale | El to PIN de desso | Your current PIN |
+| 722 | Le tue monete bitcoin | Le to monede bitcoin | Your gold coins |
+| 723 | Le tue monete bitcoin e gli indirizzi | Le to monede bitcoin e i indirissi | Your gold coins and addresses |
+| 724 | Il tuo gruzzoletto | El to gruzoleto | Your little stash |
+| 725 | I tuoi schèi | I to schèi | Your money |
+| 726 | I tuoi soldi non sono persi | I to schèi no i xe persi | Your money is not lost |
+| 727 | I tuoi soldi, le 12 parole e il PIN non cambiano. | I to schei, le 12 parole e el PIN no i cambia. | Your money, the 12 words and the PIN do not change. |
+| 728 | I tuoi soldi, i portafogli, le 12 parole, il PIN, il nome e la lingua non cambiano. | I to schei, i portafoji, le 12 parole, el PIN, el nome e la lengua no i cambia. | Your money, the wallets, the 12 words, the PIN, the name and the language do not change. |
+| 729 | Il tuo PIN | El to PIN | Your PIN |
+| 730 | IL TUO PORTAFOGLIO | EL TO PORTAFOJO | YOUR WALLET |
+| 731 | Il tuo portafoglio è pronto | El to portafojo el xe pronto | Your wallet is ready |
+| 732 | {} movimenti nuovi | {} movimenti novi | {} new movements |
