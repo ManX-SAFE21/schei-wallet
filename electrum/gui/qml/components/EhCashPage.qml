@@ -2,19 +2,21 @@
 // Every banknote is drawn (100, 50, 20, 10, 5), slightly overlapped, in real
 // euro proportions; then the coins. Many 100s are grouped in bundles of
 // 1,000 euro (10 notes with the paper strap). Still picture, no animations.
+// Look: "Bottega" (parchment, the "table" is a paper sheet); the drawings are not changed.
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 import QtQuick.Controls.Material
 
 import "controls/EhMoney.js" as Money
+import "controls/EhStyle.js" as S
 import "controls"
 
 Item {
     id: page
     property bool ehHideHeader: true
     Material.theme: Material.Light
-    Material.foreground: '#2a2220'
+    Material.foreground: S.ink
 
     property int cents: 0
     property real demoEuro: -1      // previews only
@@ -59,63 +61,62 @@ Item {
         return app.ehSym() + ' ' + grp(Math.floor(c / 100)) + app.ehLocale().decimalPoint + ('0' + (c % 100)).slice(-2)
     }
 
-    Rectangle {
-        anchors.fill: parent
-        color: '#faf7ef'
-        EhGlow { tone: 'wine'; z: 0; x: -parent.width * 0.25; y: 30; width: parent.width * 1.5; height: 340; opacity: 0.8 }
-    }
+    Rectangle { anchors.fill: parent; color: S.parch }
 
     ColumnLayout {
         anchors.fill: parent
-        anchors.leftMargin: 14
-        anchors.rightMargin: 14
+        anchors.leftMargin: 16
+        anchors.rightMargin: 16
         anchors.bottomMargin: 14 + app.navigationBarHeight
         spacing: 8
 
-        EhPageTop { title: '' }
-        Label {
-            Layout.topMargin: -14
-            text: '‹ ' + qsTr('Back')
-            color: '#5e1a33'; font.pixelSize: 17; font.bold: true
-            TapHandler { margin: 10; onTapped: app.stack.pop() }
-        }
-        Label {
-            text: qsTr('Your money')
-            color: '#5e1a33'
-            font.family: TitleFont ? TitleFont : font.family
-            font.weight: Font.Black
-            font.pixelSize: 26
-        }
+        EhPageTop { title: ''; Layout.leftMargin: 6; Layout.rightMargin: 6 }
+        EhBackLink { onClicked: app.stack.pop() }
+        EhTitle { text: qsTr('Your money') }
         Flow {
             Layout.fillWidth: true
             spacing: 10
             Label {
+                id: totalL
                 text: page.euroText(page.cents)
-                color: '#3f0f21'
-                font.family: TitleFont ? TitleFont : font.family
-                font.weight: Font.Black
-                font.pixelSize: 34
+                color: S.wineDark
+                font.family: SerifFont ? SerifFont : font.family
+                font.weight: Font.ExtraBold
+                font.pixelSize: 36
             }
             Label {
-                height: 40
+                height: totalL.height - 6
                 verticalAlignment: Text.AlignBottom
                 text: Daemon.currentWallet ? qsTr('about %1').arg(app.ehBtc(Daemon.currentWallet.ehTotal)) : ''
-                color: '#6b5d55'
-                font.pixelSize: 14
+                color: S.muted
+                font.family: BodyFont ? BodyFont : font.family
+                font.pixelSize: 16
             }
         }
 
-        // ===== the green table =====
+        // ===== the table: a paper sheet =====
         Rectangle {
             id: table
             Layout.fillWidth: true
             Layout.fillHeight: true
-            color: 'transparent'
-            clip: true
-            EhGlow { tone: 'green'; z: 0; anchors.fill: parent; anchors.margins: -4 }
+            Layout.bottomMargin: 3
+            color: S.paper
+            radius: 18
+            border.width: 1.5
+            border.color: S.edge
+            // hard shadow
+            Rectangle {
+                z: -1
+                y: 3
+                width: parent.width
+                height: parent.height
+                radius: parent.radius
+                color: S.edgeShadow
+            }
             Flickable {
                 anchors.fill: parent
                 anchors.margins: 10
+                clip: true
                 contentHeight: groupsCol.implicitHeight + 6
                 boundsBehavior: Flickable.StopAtBounds
                 Column {
@@ -133,14 +134,15 @@ Item {
                                 width: parent.width
                                 wrapMode: Text.WordWrap
                                 textFormat: Text.StyledText
-                                color: '#2f3a12'
-                                font.pixelSize: 15
+                                color: S.oliveInk
+                                font.family: BodyFont ? BodyFont : font.family
+                                font.pixelSize: 16
                                 font.bold: true
                                 text: gd.modelData.kind === 'bundle'
-                                      ? qsTr('%1 × bundle of %2').arg(gd.modelData.count).arg('1.000 ' + app.ehSym()) + ' <font color="#6b5d55">' + qsTr('(10 notes of 100)') + '</font>'
+                                      ? qsTr('%1 × bundle of %2').arg(gd.modelData.count).arg('1.000 ' + app.ehSym()) + ' <font color="#5a4c44">' + qsTr('(10 notes of 100)') + '</font>'
                                       : gd.modelData.kind === 'note'
-                                        ? gd.modelData.count + ' × ' + (gd.modelData.value / 100) + ' ' + app.ehSym() + ' <font color="#6b5d55">= ' + page.grp(gd.modelData.count * gd.modelData.value / 100) + ' ' + app.ehSym() + '</font>'
-                                        : qsTr('Coins') + ' <font color="#6b5d55">= ' + page.euroText(gd.modelData.value).replace(app.ehSym() + ' ', '') + ' ' + app.ehSym() + '</font>'
+                                        ? gd.modelData.count + ' × ' + (gd.modelData.value / 100) + ' ' + app.ehSym() + ' <font color="#5a4c44">= ' + page.grp(gd.modelData.count * gd.modelData.value / 100) + ' ' + app.ehSym() + '</font>'
+                                        : qsTr('Coins') + ' <font color="#5a4c44">= ' + page.euroText(gd.modelData.value).replace(app.ehSym() + ' ', '') + ' ' + app.ehSym() + '</font>'
                             }
                             // bundles of 1,000 euro
                             Flow {
@@ -234,8 +236,9 @@ Item {
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
             text: qsTr('The value in %1 changes with the bitcoin price.').arg(app.ehCcyName())
-            color: '#4a4038'
-            font.pixelSize: 14
+            color: S.muted
+            font.family: BodyFont ? BodyFont : font.family
+            font.pixelSize: 16
         }
     }
 

@@ -1,12 +1,14 @@
 // Easy Heirs (schèi): export the movements to a CSV file (Excel, accountant).
 // Period: all / this year / last year. The file is shared (email, WhatsApp,
 // Drive...) through the Android share sheet.
+// Look: "Bottega"; the page scrolls (nothing under the Android keys).
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 import QtQuick.Controls.Material
 
 import "controls"
+import "controls/EhStyle.js" as S
 
 Item {
     id: page
@@ -14,112 +16,88 @@ Item {
     property int year: 0       // 0 = all
     property string csv: ''
     Material.theme: Material.Light
-    Material.foreground: '#2a2220'
+    Material.foreground: S.ink
 
     readonly property int thisYear: new Date().getFullYear()
+    readonly property var years: [0, thisYear, thisYear - 1]
 
     function refresh() { csv = Daemon.fx.exportHistoryCsv(Daemon.currentWallet, year) }
 
-    Rectangle { anchors.fill: parent; color: '#faf7ef' }
+    // the share icon in ivory, for the olive leather button (gui/icons has only the dark ones)
+    readonly property string shareIvory: 'data:image/svg+xml;base64,' + Qt.btoa(
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="64" height="64"><g fill="none" stroke="#fbeccb" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.7l7.4-4.3M8.3 13.3l7.4 4.3"/></g></svg>')
 
-    ColumnLayout {
+    Rectangle { anchors.fill: parent; color: S.parch }
+
+    Flickable {
+        id: flick
         anchors.fill: parent
-        anchors.leftMargin: 16
-        anchors.rightMargin: 16
-        anchors.bottomMargin: 16 + app.navigationBarHeight
-        spacing: 10
+        anchors.bottomMargin: app.navigationBarHeight
+        contentHeight: col.height + 16
+        boundsBehavior: Flickable.StopAtBounds
+        clip: true
 
-        EhPageTop { title: ''; Layout.leftMargin: 6; Layout.rightMargin: 6 }
+        ColumnLayout {
+            id: col
+            x: 16
+            width: flick.width - 32
+            height: Math.max(implicitHeight, flick.height - 16)
+            spacing: 10
 
-        Label {
-            Layout.topMargin: -14
-            text: '‹ ' + qsTr('Movements')
-            color: '#5e1a33'
-            font.pixelSize: 17
-            font.bold: true
-            TapHandler { margin: 10; onTapped: app.stack.pop() }
-        }
+            EhPageTop { title: ''; Layout.leftMargin: 6; Layout.rightMargin: 6 }
 
-        Label {
-            text: qsTr('Export the movements')
-            color: '#3f0f21'
-            font.family: TitleFont ? TitleFont : font.family
-            font.weight: Font.Black
-            font.pixelSize: 26
-        }
-        Label {
-            Layout.fillWidth: true
-            wrapMode: Text.WordWrap
-            font.pixelSize: 16
-            text: qsTr('Creates a file with all your movements, to open with Excel or to give to the accountant.')
-        }
+            EhBackLink { text: '‹ ' + qsTr('Movements'); onClicked: app.stack.pop() }
 
-        Label { text: qsTr('Period'); font.pixelSize: 14; font.bold: true; color: '#6b5d55' }
-        Rectangle {
-            Layout.fillWidth: true
-            Layout.preferredHeight: 48
-            radius: 24
-            color: '#efe6d3'
-            RowLayout {
-                anchors.fill: parent
-                anchors.margins: 4
-                spacing: 4
-                Repeater {
-                    model: [ { y: 0, t: qsTr('All') }, { y: page.thisYear, t: '' + page.thisYear }, { y: page.thisYear - 1, t: '' + (page.thisYear - 1) } ]
-                    delegate: Rectangle {
-                        required property var modelData
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
-                        radius: height / 2
-                        color: page.year === modelData.y ? '#ffffff' : 'transparent'
-                        Label { anchors.centerIn: parent; text: modelData.t; font.pixelSize: 15; font.bold: true; color: page.year === modelData.y ? '#3f0f21' : '#6b5d55' }
-                        TapHandler { onTapped: { page.year = modelData.y; page.refresh() } }
-                    }
+            EhTitle { text: qsTr('Export the movements') }
+            Label {
+                Layout.fillWidth: true
+                wrapMode: Text.WordWrap
+                color: S.ink
+                font.family: BodyFont ? BodyFont : font.family
+                font.pixelSize: 17
+                text: qsTr('Creates a file with all your movements, to open with Excel or to give to the accountant.')
+            }
+
+            EhCaption { text: qsTr('Period'); Layout.topMargin: 6; Layout.bottomMargin: -4 }
+            EhSegmented {
+                model: [qsTr('All'), '' + page.thisYear, '' + (page.thisYear - 1)]
+                currentIndex: page.years.indexOf(page.year)
+                onActivated: (i) => { page.year = page.years[i]; page.refresh() }
+            }
+
+            // a look at the first lines of the file
+            EhSheet {
+                Layout.topMargin: 4
+                topPadding: 10
+                bottomPadding: 10
+                Label {
+                    Layout.fillWidth: true
+                    Layout.maximumHeight: 230
+                    clip: true
+                    text: page.csv.split('\n').slice(0, 9).join('\n') + (page.csv.split('\n').length > 10 ? '\n…' : '')
+                    color: S.ink
+                    font.family: FixedFont
+                    font.pixelSize: 16
+                    wrapMode: Text.NoWrap
+                    elide: Text.ElideRight
                 }
             }
-        }
-
-        Rectangle {
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            Layout.maximumHeight: 260
-            radius: 14
-            color: '#ffffff'
-            border.width: 2
-            border.color: '#ece4d2'
-            clip: true
-            Label {
-                anchors.fill: parent
-                anchors.margins: 10
-                text: page.csv.split('\n').slice(0, 9).join('\n') + (page.csv.split('\n').length > 10 ? '\n…' : '')
-                font.family: FixedFont
-                font.pixelSize: 10
-                wrapMode: Text.NoWrap
-                elide: Text.ElideRight
+            EhInfoBox {
+                kind: 'tip'
+                text: qsTr('The amounts in %1 are the value <b>of the day</b> of each movement. Payments still arriving are not in the file.').arg(app.ehCcyName())
             }
-        }
-        Label {
-            Layout.fillWidth: true
-            wrapMode: Text.WordWrap
-            textFormat: Text.StyledText
-            font.pixelSize: 13
-            color: '#6b5d55'
-            text: qsTr('The amounts in %1 are the value <b>of the day</b> of each movement. Payments still arriving are not in the file.').arg(app.ehCcyName())
-        }
 
-        Item { Layout.fillHeight: true }
+            Item { Layout.fillHeight: true; Layout.minimumHeight: 6 }
 
-        EhPillButton {
-            text: qsTr('Create and share the file')
-            color: '#45541f'
-            textColor: '#ffffff'
-            tileColor: '#e6e9cf'
-            outlined: false
-            fontSize: 20
-            onClicked: AppController.ehShareFile('schei-' + (Daemon.currentWallet ? Daemon.currentWallet.name : 'wallet').replace(/[^A-Za-z0-9_-]/g, '_')
-                                                 + '-' + Qt.formatDateTime(new Date(), 'yyyyMMdd-hhmm') + '.csv',
-                                                 page.csv, qsTr('Schèi movements (CSV)'))
-            Image { anchors.centerIn: parent; source: Qt.resolvedUrl('../../icons/eh_share.svg'); sourceSize.width: 28; sourceSize.height: 28 }
+            EhStitchButton {
+                Layout.bottomMargin: 6
+                kind: 'olive'
+                icon: page.shareIvory
+                text: qsTr('Create and share the file')
+                onClicked: AppController.ehShareFile('schei-' + (Daemon.currentWallet ? Daemon.currentWallet.name : 'wallet').replace(/[^A-Za-z0-9_-]/g, '_')
+                                                     + '-' + Qt.formatDateTime(new Date(), 'yyyyMMdd-hhmm') + '.csv',
+                                                     page.csv, qsTr('Schèi movements (CSV)'))
+            }
         }
     }
 

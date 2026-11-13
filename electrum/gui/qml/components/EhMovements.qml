@@ -1,20 +1,23 @@
 // Easy Heirs (schèi): all movements, grouped by period, filter All /
 // Received / Sent, CSV export at the bottom. Tap a row for the details.
+// Look: "Bottega" (one paper sheet for the list, periods with the gold rule, dotted lines).
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 import QtQuick.Controls.Material
 
 import "controls"
+import "controls/EhStyle.js" as S
 
 Item {
     id: page
     property bool ehHideHeader: true
     property string filter: 'all'      // all | in | out
+    readonly property var filterKeys: ['all', 'in', 'out']
     Material.theme: Material.Light
-    Material.foreground: '#2a2220'
+    Material.foreground: S.ink
 
-    Rectangle { anchors.fill: parent; color: '#faf7ef' }
+    Rectangle { anchors.fill: parent; color: S.parch }
 
     function sectionName(s) {
         switch (s) {
@@ -38,193 +41,238 @@ Item {
 
         EhPageTop { title: ''; Layout.leftMargin: 6; Layout.rightMargin: 6 }
 
-        Label {
-            Layout.topMargin: -14
-            text: '‹ ' + qsTr('Back')
-            color: '#5e1a33'
-            font.pixelSize: 17
-            font.bold: true
-            TapHandler { margin: 10; onTapped: app.stack.pop() }
-        }
+        EhBackLink { Layout.topMargin: -15; onClicked: app.stack.pop() }
 
-        Label {
-            text: qsTr('Movements')
-            color: '#3f0f21'
-            font.family: TitleFont ? TitleFont : font.family
-            font.weight: Font.Black
-            font.pixelSize: 28
-        }
+        EhTitle { text: qsTr('Movements') }
 
         // filter
-        Rectangle {
-            Layout.fillWidth: true
-            Layout.preferredHeight: 48
-            radius: 24
-            color: '#efe6d3'
-            RowLayout {
-                anchors.fill: parent
-                anchors.margins: 4
-                spacing: 4
-                Repeater {
-                    model: [ { k: 'all', t: qsTr('All') }, { k: 'in', t: qsTr('Received') }, { k: 'out', t: qsTr('Sent') } ]
-                    delegate: Rectangle {
-                        required property var modelData
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
-                        radius: height / 2
-                        color: page.filter === modelData.k ? '#ffffff' : 'transparent'
-                        Label {
-                            anchors.centerIn: parent
-                            text: modelData.t
-                            font.pixelSize: 15
-                            font.bold: true
-                            color: page.filter === modelData.k ? '#3f0f21' : '#6b5d55'
-                        }
-                        TapHandler { onTapped: page.filter = modelData.k }
-                    }
-                }
-            }
+        EhSegmented {
+            model: [qsTr('All'), qsTr('Received'), qsTr('Sent')]
+            currentIndex: page.filterKeys.indexOf(page.filter)
+            onActivated: (i) => page.filter = page.filterKeys[i]
         }
 
-        ListView {
-            id: list
+        // the list on one paper sheet (the list scrolls, not the page)
+        Item {
+            id: sheet
+            visible: list.count > 0
             Layout.fillWidth: true
             Layout.fillHeight: true
-            clip: true
-            spacing: 0
-            model: Daemon.currentWallet ? Daemon.currentWallet.historyModel : null
-            section.property: 'section'
-            section.criteria: ViewSection.FullString
-            section.delegate: Label {
-                required property string section
-                width: ListView.view.width
-                topPadding: 10
-                bottomPadding: 4
-                leftPadding: 4
-                text: page.sectionName(section).toUpperCase()
-                color: '#45541f'
-                font.pixelSize: 13
-                font.bold: true
-                font.letterSpacing: 0.5
+            Layout.topMargin: 3
+            Layout.preferredHeight: list.contentHeight + 7
+            Layout.maximumHeight: list.contentHeight + 7
+            // hard shadow
+            Rectangle {
+                y: 3
+                width: face.width
+                height: face.height
+                radius: face.radius
+                color: S.edgeShadow
             }
-            delegate: Item {
-                id: row
-                required property var model
-                readonly property bool incoming: model.value.satsInt >= 0
-                readonly property bool shown: page.filter === 'all' || (page.filter === 'in') === incoming
-                width: ListView.view.width
-                height: shown ? 66 : 0
-                visible: shown
-                Rectangle {
-                    anchors.fill: parent
-                    color: '#ffffff'
-                    Rectangle { anchors.bottom: parent.bottom; anchors.left: parent.left; anchors.right: parent.right; anchors.margins: 12; height: 2; color: '#f1ebdf' }
+            Rectangle {
+                id: face
+                width: parent.width
+                height: parent.height - 3
+                radius: 18
+                color: S.paper
+                border.width: 1.5
+                border.color: S.edge
+            }
+
+            ListView {
+                id: list
+                anchors.fill: face
+                anchors.leftMargin: 12
+                anchors.rightMargin: 12
+                anchors.topMargin: 2
+                anchors.bottomMargin: 2
+                clip: true
+                spacing: 0
+                boundsBehavior: Flickable.StopAtBounds
+                model: Daemon.currentWallet ? Daemon.currentWallet.historyModel : null
+                section.property: 'section'
+                section.criteria: ViewSection.FullString
+                section.delegate: Column {
+                    required property string section
+                    width: ListView.view.width
+                    topPadding: 12
+                    spacing: 4
+                    Label {
+                        width: parent.width
+                        text: page.sectionName(section).toUpperCase()
+                        color: S.olive
+                        font.family: BodyFont ? BodyFont : font.family
+                        font.pixelSize: 16
+                        font.bold: true
+                        font.letterSpacing: 0.5
+                        elide: Text.ElideRight
+                    }
+                    EhRule { width: parent.width }
                 }
-                RowLayout {
-                    anchors.fill: parent
-                    anchors.leftMargin: 12
-                    anchors.rightMargin: 12
-                    spacing: 10
+                delegate: Item {
+                    id: row
+                    required property var model
+                    required property int index
+                    readonly property bool incoming: model.value.satsInt >= 0
+                    readonly property bool shown: page.filter === 'all' || (page.filter === 'in') === incoming
+                    readonly property bool waiting: model.confirmations < 1
+                    readonly property string amount: app.ehTxAmount(row.model.value, row.model.timestamp, true)
+                    // the + / − sign is drawn with the body font: in the serif font it is a hairline
+                    readonly property string sgn: '+−-'.indexOf(amount.charAt(0)) >= 0 ? amount.charAt(0) : ''
+                    readonly property string rest: sgn !== '' ? amount.substring(1) : amount
+                    readonly property color ink: incoming ? S.oliveInk : S.wine
+                    // bitcoin amounts are long: 18 instead of 21, and never more than about half the row (from the text, no layout loop)
+                    TextMetrics { id: tm; font.family: SerifFont ? SerifFont : font.family; font.weight: Font.ExtraBold; font.pixelSize: 21; text: row.rest }
+                    readonly property real amtSize: Math.max(16, Math.min(rest.indexOf(app.ehBtcUnit()) >= 0 ? 18 : 21, 21 * (width * 0.46 - 14) / Math.max(1, tm.advanceWidth)))
+                    width: ListView.view.width
+                    height: shown ? (waiting ? 84 : 68) : 0
+                    visible: shown
+
+                    // pressed
                     Rectangle {
-                        Layout.preferredWidth: 38
-                        Layout.preferredHeight: 38
-                        radius: 19
-                        color: row.incoming ? '#e6e9cf' : '#f3e3e8'
-                        Image {
-                            anchors.centerIn: parent
-                            source: Qt.resolvedUrl(row.incoming ? '../../icons/eh_rx_olive.svg' : '../../icons/eh_tx_wine.svg')
-                            sourceSize.width: 25
-                            sourceSize.height: 25
-                        }
+                        anchors.fill: parent
+                        anchors.topMargin: 2
+                        anchors.bottomMargin: 2
+                        radius: 10
+                        color: S.sand
+                        opacity: rowTap.pressed ? 0.4 : 0
                     }
-                    ColumnLayout {
-                        Layout.fillWidth: true
-                        spacing: 2
-                        Label {
+
+                    RowLayout {
+                        anchors.fill: parent
+                        spacing: 12
+                        EhIconRing {
+                            icon: row.incoming ? 'eh_mv_in.svg' : 'eh_mv_out.svg'
+                            ringColor: row.incoming ? S.olive : S.wine
+                            iconSize: 24
+                        }
+                        ColumnLayout {
                             Layout.fillWidth: true
-                            text: row.model.label !== '' ? row.model.label : (row.incoming ? qsTr('Received') : qsTr('Sent'))
-                            font.pixelSize: 16
-                            font.bold: true
-                            elide: Text.ElideRight
-                        }
-                        Label {
-                            text: app.ehWhen(row.model.timestamp, true)
-                            font.pixelSize: 13
-                            color: '#6b5d55'
-                        }
-                    }
-                    ColumnLayout {
-                        spacing: 3
-                        Label {
-                            Layout.alignment: Qt.AlignRight
-                            text: app.ehTxAmount(row.model.value, row.model.timestamp, true)
-                            font.pixelSize: 16
-                            font.bold: true
-                            color: row.incoming ? '#45541f' : '#5e1a33'
-                        }
-                        Rectangle {
-                            Layout.alignment: Qt.AlignRight
-                            Layout.preferredHeight: 18
-                            Layout.preferredWidth: badge.implicitWidth + 12
-                            radius: 6
-                            color: row.model.confirmations > 0 ? '#e9eed9' : '#fbf0d6'
+                            Layout.preferredWidth: 1      // the room the amount leaves
+                            spacing: 1
                             Label {
-                                id: badge
-                                anchors.centerIn: parent
-                                text: row.model.confirmations > 0 ? '✓ ' + qsTr('Confirmed') : '⏳ ' + qsTr('Unconfirmed') + (app.ehFeeRate(row.model.date) ? ' · ' + app.ehFeeRate(row.model.date) : '')
-                                font.pixelSize: 11
+                                Layout.fillWidth: true
+                                text: row.model.label !== '' ? row.model.label : (row.incoming ? qsTr('Received') : qsTr('Sent'))
+                                color: S.ink
+                                font.family: BodyFont ? BodyFont : font.family
+                                font.pixelSize: 17
                                 font.bold: true
-                                color: row.model.confirmations > 0 ? '#45541f' : '#7a4a12'
+                                elide: Text.ElideRight
+                            }
+                            RowLayout {
+                                Layout.fillWidth: true
+                                spacing: 4
+                                Label {
+                                    Layout.fillWidth: true
+                                    Layout.maximumWidth: implicitWidth
+                                    elide: Text.ElideRight
+                                    text: app.ehWhen(row.model.timestamp, true)
+                                    color: S.muted
+                                    font.family: BodyFont ? BodyFont : font.family
+                                    font.pixelSize: 16
+                                }
+                                Label {
+                                    visible: !row.waiting
+                                    text: '✓'
+                                    color: S.olive
+                                    font.family: BodyFont ? BodyFont : font.family
+                                    font.pixelSize: 18
+                                    font.bold: true
+                                }
+                            }
+                            Label {
+                                visible: row.waiting
+                                Layout.fillWidth: true
+                                text: '⏳ ' + qsTr('Unconfirmed') + (app.ehFeeRate(row.model.date) ? ' · ' + app.ehFeeRate(row.model.date) : '')
+                                color: S.waitInk
+                                font.family: BodyFont ? BodyFont : font.family
+                                font.pixelSize: 16
+                                font.bold: true
+                                elide: Text.ElideRight
+                            }
+                        }
+                        Row {
+                            Layout.alignment: Qt.AlignVCenter
+                            Layout.minimumWidth: implicitWidth
+                            spacing: 1
+                            Label {
+                                anchors.baseline: amtL.baseline
+                                text: row.sgn
+                                color: row.ink
+                                font.family: BodyFont ? BodyFont : font.family
+                                font.pixelSize: row.amtSize
+                                font.bold: true
+                            }
+                            Label {
+                                id: amtL
+                                text: row.rest
+                                color: row.ink
+                                font.family: SerifFont ? SerifFont : font.family
+                                font.weight: Font.ExtraBold
+                                font.pixelSize: row.amtSize
                             }
                         }
                     }
-                }
-                TapHandler {
-                    onTapped: app.stack.push(Qt.resolvedUrl('EhTxDetailsPage.qml'), { txid: row.model.key })
-                }
-            }
-
-            ColumnLayout {
-                visible: list.count === 0
-                anchors.centerIn: parent
-                width: parent.width - 40
-                spacing: 10
-                Image {
-                    Layout.alignment: Qt.AlignHCenter
-                    source: Qt.resolvedUrl('../../icons/eh_list.svg')
-                    sourceSize.width: 90
-                    sourceSize.height: 90
-                }
-                Label { Layout.alignment: Qt.AlignHCenter; text: qsTr('No movements yet'); font.pixelSize: 20; font.bold: true }
-                Label {
-                    Layout.fillWidth: true
-                    horizontalAlignment: Text.AlignHCenter
-                    wrapMode: Text.WordWrap
-                    text: qsTr('When you receive or send bitcoin, you find them here.')
-                    font.pixelSize: 17
-                    color: '#6b5d55'
+                    // dotted line between two rows of the same period (on top of the second one)
+                    EhDotLine {
+                        visible: row.index > 0 && row.ListView.previousSection === row.ListView.section
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.top: parent.top
+                    }
+                    TapHandler {
+                        id: rowTap
+                        onTapped: app.stack.push(Qt.resolvedUrl('EhTxDetailsPage.qml'), { txid: row.model.key })
+                    }
                 }
             }
         }
 
-        Rectangle {
-            visible: list.count > 0
+        // nothing yet
+        ColumnLayout {
+            visible: list.count === 0
             Layout.fillWidth: true
-            Layout.preferredHeight: 48
-            radius: 24
-            color: expTap.pressed ? '#eef1df' : '#ffffff'
-            border.width: 2
-            border.color: '#d5dbb0'
-            RowLayout {
-                anchors.centerIn: parent
-                spacing: 8
-                Image { source: Qt.resolvedUrl('../../icons/eh_download.svg'); sourceSize.width: 22; sourceSize.height: 22 }
-                Label { text: qsTr('Export the movements (CSV file)'); font.pixelSize: 16; font.bold: true; color: '#45541f' }
+            Layout.fillHeight: true
+            spacing: 10
+            Item { Layout.fillHeight: true }
+            Image {
+                Layout.alignment: Qt.AlignHCenter
+                source: Qt.resolvedUrl('../../icons/eh_list.svg')
+                sourceSize.width: 90
+                sourceSize.height: 90
             }
-            TapHandler {
-                id: expTap
-                onTapped: app.stack.push(Qt.resolvedUrl('EhExportPage.qml'))
+            Label {
+                Layout.fillWidth: true
+                horizontalAlignment: Text.AlignHCenter
+                wrapMode: Text.WordWrap
+                text: qsTr('No movements yet')
+                color: S.wine
+                font.family: SerifFont ? SerifFont : font.family
+                font.weight: Font.ExtraBold
+                font.pixelSize: 22
             }
+            Label {
+                Layout.fillWidth: true
+                horizontalAlignment: Text.AlignHCenter
+                wrapMode: Text.WordWrap
+                text: qsTr('When you receive or send bitcoin, you find them here.')
+                color: S.muted
+                font.family: BodyFont ? BodyFont : font.family
+                font.pixelSize: 17
+            }
+            Item { Layout.fillHeight: true }
         }
+
+        EhStitchButton {
+            visible: list.count > 0
+            Layout.topMargin: 5
+            kind: 'paper'
+            icon: 'eh_download_wine.svg'
+            text: qsTr('Export the movements (CSV file)')
+            onClicked: app.stack.push(Qt.resolvedUrl('EhExportPage.qml'))
+        }
+
+        // when the list is short, the room left goes here (the export button stays under the list)
+        Item { visible: list.count > 0; Layout.fillHeight: true; Layout.preferredHeight: 0 }
     }
 }
