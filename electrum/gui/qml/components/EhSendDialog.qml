@@ -45,6 +45,20 @@ ElDialog {
     }
     function addrOf(s) { return s.replace(/^bitcoin:/i, '').split('?')[0] }
 
+    // viewfinder: green corners and a vibration for a moment, then the code is used as before
+    property string _ehFound: ''
+    function ehQrFound(data) {
+        if (_ehFound !== '') return
+        _ehFound = data
+        AppController.haptic()
+        ehFoundTimer.restart()
+    }
+    Timer {
+        id: ehFoundTimer
+        interval: 300
+        onTriggered: { var d = root._ehFound; root._ehFound = ''; root.dispatch(d) }
+    }
+
     function dispatch(data) {
         data = data.trim()
         // review 2026-11-11: nobody listened to txFound / channelBackupFound, the QR was ignored.
@@ -128,8 +142,8 @@ ElDialog {
                 anchors.fill: parent
                 active: AppController.isAndroid()
                 sourceComponent: QRScan {
-                    hint: qsTr('the camera is already on')
-                    onFoundText: (data) => root.dispatch(data)
+                    hint: ''
+                    onFoundText: (data) => root.ehQrFound(data)
                 }
             }
             Label {
@@ -139,6 +153,117 @@ ElDialog {
                 color: '#ffffff'
                 font.pixelSize: 16
             }
+            // owner 13/11: a viewfinder, so it is clear where to put the code and how to turn it
+            Item {
+                id: finder
+                anchors.fill: parent
+                readonly property bool found: root._ehFound !== ''
+                readonly property real side: Math.max(60, Math.min(width - 60, height - 70))
+                readonly property real fx: (width - side) / 2
+                readonly property real fy: Math.max(12, (height - side) / 2 - 14)
+                readonly property color ink: found ? '#9cc25a' : S.gold
+                // darker outside the frame (one shape with a hole, with the box's round corners)
+                Canvas {
+                    anchors.fill: parent
+                    onWidthChanged: requestPaint()
+                    onHeightChanged: requestPaint()
+                    onPaint: {
+                        var c = getContext('2d')
+                        c.reset()
+                        c.fillStyle = 'rgba(0,0,0,0.55)'
+                        c.fillRule = Qt.OddEvenFill
+                        c.beginPath()
+                        c.roundedRect(0, 0, width, height, 20, 20)
+                        c.rect(finder.fx, finder.fy, finder.side, finder.side)
+                        c.fill()
+                    }
+                }
+                Item {
+                    id: fbox
+                    x: finder.fx
+                    y: finder.fy
+                    width: finder.side
+                    height: finder.side
+                    // the 3 squares of a QR code, transparent: how the code goes
+                    Repeater {
+                        model: 3
+                        Rectangle {
+                            required property int index
+                            readonly property real m: fbox.width * 0.09
+                            width: fbox.width * 0.18
+                            height: width
+                            x: index === 1 ? fbox.width - width - m : m
+                            y: index === 2 ? fbox.height - height - m : m
+                            radius: 4
+                            color: 'transparent'
+                            border.width: Math.max(3, width * 0.16)
+                            border.color: Qt.rgba(1, 1, 1, 0.35)
+                            Rectangle {
+                                anchors.centerIn: parent
+                                width: parent.width * 0.4
+                                height: width
+                                radius: 2
+                                color: Qt.rgba(1, 1, 1, 0.35)
+                            }
+                        }
+                    }
+                    // the gold corners
+                    Repeater {
+                        model: 4
+                        Item {
+                            required property int index
+                            readonly property bool isRight: index % 2 === 1
+                            readonly property bool isBottom: index >= 2
+                            width: 40
+                            height: 40
+                            x: isRight ? fbox.width - width + 3 : -3
+                            y: isBottom ? fbox.height - height + 3 : -3
+                            Rectangle { width: 40; height: 6; radius: 3; y: parent.isBottom ? 34 : 0; color: finder.ink }
+                            Rectangle { width: 6; height: 40; radius: 3; x: parent.isRight ? 34 : 0; color: finder.ink }
+                        }
+                    }
+                    // a gold line going up and down: the camera is looking
+                    Rectangle {
+                        id: scanLine
+                        visible: !finder.found
+                        x: 14
+                        width: fbox.width - 28
+                        height: 3
+                        radius: 1.5
+                        y: fbox.height / 2
+                        gradient: Gradient {
+                            orientation: Gradient.Horizontal
+                            GradientStop { position: 0.0; color: Qt.rgba(0.91, 0.78, 0.41, 0) }
+                            GradientStop { position: 0.5; color: Qt.rgba(0.91, 0.78, 0.41, 1) }
+                            GradientStop { position: 1.0; color: Qt.rgba(0.91, 0.78, 0.41, 0) }
+                        }
+                        SequentialAnimation on y {
+                            loops: Animation.Infinite
+                            running: !app.ehOption('no_anim') && !finder.found && fbox.height > 40
+                            NumberAnimation { from: 14; to: fbox.height - 17; duration: 1600; easing.type: Easing.InOutSine }
+                            NumberAnimation { from: fbox.height - 17; to: 14; duration: 1600; easing.type: Easing.InOutSine }
+                        }
+                    }
+                }
+                Label {
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.bottom: parent.bottom
+                    anchors.bottomMargin: 10
+                    anchors.leftMargin: 10
+                    anchors.rightMargin: 10
+                    horizontalAlignment: Text.AlignHCenter
+                    wrapMode: Text.WordWrap
+                    text: qsTr('Put the QR code inside the frame')
+                    color: '#ffffff'
+                    font.family: BodyFont ? BodyFont : font.family
+                    font.pixelSize: 16
+                    font.bold: true
+                    style: Text.Raised
+                    styleColor: Qt.rgba(0, 0, 0, 0.8)
+                }
+            }
+
             // the wine frame, over the camera picture
             Rectangle {
                 anchors.fill: parent
