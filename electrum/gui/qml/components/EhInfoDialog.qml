@@ -1,10 +1,12 @@
 // Easy Heirs (schèi): full-screen explanation page ("Maggiori informazioni").
+// "Bottega" (WP6): parchment page, back link, Fraunces title, green tip box.
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 import QtQuick.Controls.Material
 
 import "controls"
+import "controls/EhStyle.js" as S
 
 ElDialog {
     id: dialog
@@ -23,47 +25,35 @@ ElDialog {
     topPadding: 0
     header: null
     needsSystemBarPadding: false
-    background: Rectangle { color: '#faf7ef' }
+    background: Rectangle { color: S.parch }
 
     Flickable {
         anchors.fill: parent
+        anchors.bottomMargin: app.navigationBarHeight   // nothing under the Android keys
         contentHeight: col.implicitHeight + 30
+        boundsBehavior: Flickable.StopAtBounds
         clip: true
         ColumnLayout {
             id: col
-            width: parent.width - 36
-            x: 18
+            width: parent.width - 32
+            x: 16
             spacing: 12
 
             EhPageTop { title: '' }
 
-            Label {
-                text: '‹ ' + qsTr('Back')
-                color: '#5e1a33'
-                font.pixelSize: 17
-                font.bold: true
-                Layout.topMargin: -14
-                TapHandler { margin: 10; onTapped: dialog.doClose() }
-            }
+            EhBackLink { onClicked: dialog.doClose() }
 
-            Label {
-                Layout.fillWidth: true
-                text: dialog.pageTitle
-                wrapMode: Text.WordWrap
-                color: '#3f0f21'
-                font.family: TitleFont ? TitleFont : font.family
-                font.weight: Font.Black
-                font.pixelSize: 28
-            }
+            EhTitle { text: dialog.pageTitle }
 
             Label {
                 Layout.fillWidth: true
                 text: dialog.bodyText
                 textFormat: Text.StyledText
                 wrapMode: Text.WordWrap
+                font.family: BodyFont ? BodyFont : font.family
                 font.pixelSize: 17
                 lineHeight: 1.2
-                color: '#2a2220'
+                color: S.ink
             }
 
             Row {
@@ -76,38 +66,27 @@ ElDialog {
                     delegate: Rectangle {
                         required property string modelData
                         required property int index
-                        width: modelData === '›' ? 9 : Math.min(38, (col.width - 5 * 15) / 6)
+                        width: modelData === '›' ? 10 : Math.min(38, (col.width - 5 * 16) / 6)
                         height: 32
                         radius: 8
-                        color: modelData === '›' ? 'transparent' : (index === 0 ? '#45541f' : '#e2d7c1')
+                        color: modelData === '›' ? 'transparent' : (index === 0 ? S.olive : S.sand)
                         Label {
                             anchors.centerIn: parent
                             text: modelData
+                            font.family: BodyFont ? BodyFont : font.family
                             font.bold: true
-                            font.pixelSize: 13
-                            color: index === 0 ? '#ffffff' : '#6b5d55'
+                            font.pixelSize: 16
+                            color: index === 0 ? '#ffffff' : (modelData === '›' ? S.muted : S.ink)
                         }
                     }
                 }
             }
 
-            Rectangle {
+            EhInfoBox {
                 visible: dialog.tipText !== ''
-                Layout.fillWidth: true
-                Layout.preferredHeight: tip.implicitHeight + 26
-                radius: 16
-                color: '#e9eed9'
-                Label {
-                    id: tip
-                    anchors.fill: parent
-                    anchors.margins: 13
-                    text: dialog.tipText
-                    textFormat: Text.StyledText
-                    wrapMode: Text.WordWrap
-                    font.pixelSize: 17
-                    lineHeight: 1.2
-                    color: '#2f3a12'
-                }
+                kind: 'tip'
+                text: dialog.tipText
+                fontSize: 17
             }
         }
     }

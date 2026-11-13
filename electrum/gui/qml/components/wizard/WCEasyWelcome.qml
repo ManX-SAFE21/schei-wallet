@@ -1,13 +1,15 @@
 // Easy Heirs (schèi): "Benvenuto" screen, first step of the new wallet wizard.
 // Two big choices only; wallet name, wallet type and seed type are set
 // automatically (see QENewWalletWizard.eh_welcome_accept).
-// Style "Colline del vino": hills on top, wine title, pill buttons.
+// Style "Bottega" (WP6): the home's B landscape on top (bell tower, cypresses, bitcoin sun with
+// rays), parchment page, Fraunces title, stitched buttons (the new wallet in wine leather).
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 import QtQuick.Controls.Material
 
 import "../controls"
+import "../controls/EhStyle.js" as S
 
 WizardComponent {
     id: root
@@ -20,12 +22,7 @@ WizardComponent {
 
     property string choice: ''
 
-    readonly property color cBg: '#faf7ef'
-    readonly property color cWine: '#5e1a33'
-    readonly property color cWineDark: '#3f0f21'
-    readonly property color cGold: '#d9b25a'
-
-    background: Rectangle { color: root.cBg }
+    background: Rectangle { color: S.parch }
     padding: 0
     leftPadding: 0
     rightPadding: 0
@@ -44,12 +41,29 @@ WizardComponent {
     Item {
         anchors.fill: parent
 
-        EhHills {
+        // sky, then the B landscape at its own proportions at the bottom of it; the sun and its
+        // rays stay in the sky, well under the status bar / test band
+        Rectangle {
             id: hills
             anchors.top: parent.top
             anchors.left: parent.left
             anchors.right: parent.right
-            height: Math.round(parent.height * 0.33)
+            height: Math.max(Math.round(parent.height * 0.33), app.statusBarHeight + land.height + 50)
+            color: '#f8eed6'
+            EhHills {
+                id: land
+                art: 'eh_hills_bottega.svg'
+                band: true
+                fade: false
+                rays: true
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.bottom: parent.bottom
+                height: Math.round(width * 136 / 393)
+                sunSize: 56
+                sunTop: 8
+                sunRight: 40
+            }
         }
 
         // owner 12/11: the page scrolls when the phone is short (buttons never under the keys)
@@ -74,68 +88,52 @@ WizardComponent {
             Label {
                 Layout.fillWidth: true
                 text: qsTr('Welcome')
-                color: root.cWineDark
-                font.family: TitleFont ? TitleFont : font.family
-                font.pixelSize: 40
-                font.weight: Font.Black
+                color: S.wine
+                font.family: SerifFont ? SerifFont : font.family
+                font.pixelSize: 34
+                font.weight: Font.ExtraBold
                 wrapMode: Text.WordWrap
             }
+            EhRule {}
 
             Label {
                 Layout.fillWidth: true
+                Layout.topMargin: 4
                 text: qsTr('This is your Bitcoin wallet.')
-                color: '#3e3430'
+                color: S.ink
+                font.family: BodyFont ? BodyFont : font.family
                 font.pixelSize: 22
                 lineHeight: 1.25
                 wrapMode: Text.WordWrap
             }
 
-            Item { Layout.fillHeight: true }
+            Item { Layout.fillHeight: true; Layout.minimumHeight: 12 }
 
-            EhPillButton {
+            EhStitchButton {
+                kind: 'wine'
                 text: qsTr('Create a new wallet')
-                color: root.cWine
-                textColor: '#ffffff'
-                tileColor: root.cGold
-                outlined: false
+                endIcon: 'next'
                 onClicked: root.go('createseed')
-                Image {
-                    anchors.centerIn: parent
-                    source: Qt.resolvedUrl('../../../icons/eh_plus.svg')
-                    sourceSize.width: 34
-                    sourceSize.height: 34
-                }
+                // a "+" in ivory (there is no ivory plus icon)
+                Rectangle { anchors.centerIn: parent; width: 20; height: 3.5; radius: 2; color: S.ivory }
+                Rectangle { anchors.centerIn: parent; width: 3.5; height: 20; radius: 2; color: S.ivory }
             }
 
-            Item { Layout.preferredHeight: 6 }
+            Item { Layout.preferredHeight: 4 }
 
-            EhPillButton {
+            EhStitchButton {
                 visible: app.ehOption('watch') && Daemon.availableWallets.rowCount() > 0
+                kind: 'paper'
                 text: qsTr('Watch only')
-                color: '#fffaf0'
-                textColor: '#7a4a12'
-                tileColor: '#fbf0d6'
+                icon: 'eh_eye.svg'
                 onClicked: root.go('masterkey')
-                Image {
-                    anchors.centerIn: parent
-                    source: Qt.resolvedUrl('../../../icons/eh_eye.svg')
-                    sourceSize.width: 34
-                    sourceSize.height: 34
-                }
             }
 
-            EhPillButton {
+            EhStitchButton {
+                kind: 'paper'
                 text: qsTr('I already have the 12 words')
-                color: '#ffffff'
-                textColor: '#2a2220'
-                tileColor: '#efe6d3'
+                icon: 'eh_key_wine.svg'
                 onClicked: root.go('haveseed')
-                Image {
-                    anchors.centerIn: parent
-                    source: Qt.resolvedUrl('../../../icons/eh_key.svg')
-                    sourceSize.width: 34
-                    sourceSize.height: 34
-                }
             }
         }
         }

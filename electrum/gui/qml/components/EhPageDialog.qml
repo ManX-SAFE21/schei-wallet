@@ -5,6 +5,7 @@ import QtQuick
 import QtQuick.Controls
 
 import "controls"
+import "controls/EhStyle.js" as S
 
 ElDialog {
     id: dlg
@@ -17,7 +18,7 @@ ElDialog {
     topPadding: 0
     header: null
     needsSystemBarPadding: false
-    background: Rectangle { color: '#faf7ef' }
+    background: Rectangle { color: S.parch }
 
     StackView {
         id: sv

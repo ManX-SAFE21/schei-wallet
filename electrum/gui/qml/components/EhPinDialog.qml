@@ -11,6 +11,7 @@ import QtQuick.Controls.Material
 import org.electrum 1.0
 
 import "controls"
+import "controls/EhStyle.js" as S
 
 ElDialog {
     id: root
@@ -38,7 +39,7 @@ ElDialog {
     allowClose: canCancel
     closePolicy: canCancel ? Popup.CloseOnEscape : Popup.NoAutoClose
 
-    background: Rectangle { color: '#faf7ef' }
+    background: Rectangle { color: S.parch }
 
     Component.onCompleted: if (mode === 'verify' && app.ehPinLockMessage()) { pad.message = app.ehPinLockMessage(); pad.messageBad = true }
 
@@ -74,28 +75,83 @@ ElDialog {
         AppController.haptic()
     }
 
-    EhHills {
+    // a text link of this page ("I forgot the PIN", "Cancel"): 17 bold wine, 2 px underline,
+    // 48 px high to touch
+    component PinLink: Item {
+        id: lk
+        property alias text: lkLabel.text
+        signal clicked
+        Layout.fillWidth: true
+        Layout.preferredHeight: 48
+        Label {
+            id: lkLabel
+            anchors.centerIn: parent
+            color: S.wine
+            font.family: BodyFont ? BodyFont : font.family
+            font.pixelSize: 17
+            font.bold: true
+            opacity: lkTap.pressed ? 0.6 : 1
+        }
+        Rectangle {
+            x: lkLabel.x
+            y: lkLabel.y + lkLabel.height + 1
+            width: lkLabel.width
+            height: 2
+            color: S.wine
+            opacity: lkLabel.opacity
+        }
+        TapHandler { id: lkTap; onTapped: lk.clicked() }
+    }
+
+    // "Bottega": sky, then the B hills band (bell tower, cypresses) with the small bitcoin sun.
+    // At least status bar + 100 px high, so the sun and its rays never reach the test band.
+    // the page scrolls when the phone is too short for logo + pad + links (never under the keys)
+    Flickable {
+        id: ehFlick
+        anchors.fill: parent
+        anchors.bottomMargin: app.navigationBarHeight
+        contentHeight: ehCol.height
+        boundsBehavior: Flickable.StopAtBounds
+        clip: true
+    ColumnLayout {
+        id: ehCol
+        width: ehFlick.width
+        height: Math.max(implicitHeight, ehFlick.height)
+        spacing: 0
+
+    Rectangle {
         id: hills
-        anchors.top: parent.top
-        anchors.left: parent.left
-        anchors.right: parent.right
-        height: Math.round(root.height * 0.2)
+        Layout.fillWidth: true
+        Layout.preferredHeight: Math.max(Math.round(root.height * 0.2), app.statusBarHeight + 100)
+        color: '#f8eed6'
+        EhHills {
+            band: true
+            fade: false
+            rays: true
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+            height: 86
+            sunSize: 40
+            sunTop: 24
+            sunRight: 38
+        }
     }
 
     ColumnLayout {
-        anchors.top: hills.bottom
-        anchors.bottom: parent.bottom
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.leftMargin: 22
-        anchors.rightMargin: 22
-        anchors.bottomMargin: 22 + app.navigationBarHeight
-        spacing: 8
+        Layout.fillWidth: true
+        Layout.fillHeight: true
+        Layout.leftMargin: 22
+        Layout.rightMargin: 22
+        Layout.bottomMargin: 4
+        spacing: root.height < 800 ? 4 : 8
 
         Image {
+            // a smaller logo on short phones, so the two links fit above the Android keys
+            readonly property real w: root.height < 800 ? 116 : 160
             Layout.alignment: Qt.AlignHCenter
-            Layout.preferredWidth: 160
-            Layout.preferredHeight: 160 * 345 / 756
+            Layout.preferredWidth: w
+            Layout.preferredHeight: w * 345 / 756
             source: Qt.resolvedUrl('../../icons/eh_logo_wine.png')
             fillMode: Image.PreserveAspectFit
             mipmap: true
@@ -105,8 +161,10 @@ ElDialog {
             Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter
             wrapMode: Text.WordWrap
-            font.pixelSize: 21
-            color: '#2a2220'
+            font.family: SerifFont ? SerifFont : font.family
+            font.weight: Font.ExtraBold
+            font.pixelSize: 26
+            color: S.wine
             text: root.prompt !== '' ? root.prompt : qsTr('Type your PIN')
         }
 
@@ -119,35 +177,23 @@ ElDialog {
         }
 
         // third review: a forgotten PIN can be replaced with the 12 words of this wallet
-        Label {
+        PinLink {
             visible: root.mode === 'verify' && Daemon.currentWallet !== null
                      && Daemon.currentWallet.hasSeed && !Daemon.currentWallet.isWatchOnly
-            Layout.fillWidth: true
-            horizontalAlignment: Text.AlignHCenter
             text: qsTr('I forgot the PIN')
-            color: '#5e1a33'
-            font.pixelSize: 16
-            font.bold: true
-            font.underline: true
-            TapHandler {
-                margin: 8
-                // the words page opens ABOVE this pad: with the new PIN chosen, the person comes
-                // back here, types the new PIN and goes on with what they were doing
-                onTapped: app.ehOpenForgotPin()
-            }
+            // the words page opens ABOVE this pad: with the new PIN chosen, the person comes
+            // back here, types the new PIN and goes on with what they were doing
+            onClicked: app.ehOpenForgotPin()
         }
 
-        Label {
+        PinLink {
             visible: root.mode === 'verify'
-            Layout.fillWidth: true
-            Layout.topMargin: 6
-            horizontalAlignment: Text.AlignHCenter
+            Layout.topMargin: -6
             text: qsTr('Cancel')
-            color: '#5e1a33'
-            font.pixelSize: 18
-            font.underline: true
-            TapHandler { onTapped: root.doReject() }
+            onClicked: root.doReject()
         }
+    }
+    }
     }
 
     Connections {

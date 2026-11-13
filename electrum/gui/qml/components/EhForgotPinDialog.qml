@@ -1,6 +1,8 @@
 // Easy Heirs (schèi): "Hai dimenticato il PIN?" (third review). The 12 words of THIS wallet
 // prove who you are: if they match, a new PIN is chosen (EhChangePinDialog without the old PIN).
 // Same words area and keyboard as the restore page (WCEasyHaveSeed.qml).
+// "Bottega" (WP6): parchment page, back link, Fraunces title, the same tiles and keys as there;
+// the page scrolls when the phone is short.
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
@@ -9,6 +11,7 @@ import QtQuick.Controls.Material
 import org.electrum 1.0
 
 import "controls"
+import "controls/EhStyle.js" as S
 
 ElDialog {
     id: root
@@ -21,7 +24,7 @@ ElDialog {
     topPadding: 0
     header: null
     needsSystemBarPadding: false
-    background: Rectangle { color: '#faf7ef' }
+    background: Rectangle { color: S.parch }
     Binding { target: AppController; property: 'secureWindow'; value: true; when: root.visible }
 
     property string seedText: ''
@@ -51,35 +54,32 @@ ElDialog {
     }
     Bitcoin { id: bitcoin }
 
-    ColumnLayout {
+    Flickable {
+        id: ehFlick
         anchors.fill: parent
-        anchors.leftMargin: 16
-        anchors.rightMargin: 16
-        anchors.bottomMargin: 14 + app.navigationBarHeight
+        anchors.bottomMargin: app.navigationBarHeight   // nothing under the Android keys
+        contentHeight: ehCol.height
+        boundsBehavior: Flickable.StopAtBounds
+        clip: true
+    ColumnLayout {
+        id: ehCol
+        x: 16
+        width: ehFlick.width - 32
+        height: Math.max(implicitHeight, ehFlick.height)
         spacing: 8
 
         EhPageTop { title: ''; Layout.leftMargin: 6; Layout.rightMargin: 6 }
-        Label {
-            Layout.topMargin: -14
-            text: '‹ ' + qsTr('Back')
-            color: '#5e1a33'; font.pixelSize: 17; font.bold: true
-            TapHandler { margin: 10; onTapped: root.doReject() }
-        }
-        Label {
-            Layout.fillWidth: true
-            text: qsTr('Forgot the PIN?')
-            wrapMode: Text.WordWrap
-            color: '#3f0f21'
-            font.family: TitleFont ? TitleFont : font.family
-            font.weight: Font.Black
-            font.pixelSize: 26
-        }
+        EhBackLink { onClicked: root.doReject() }
+        EhTitle { text: qsTr('Forgot the PIN?') }
         Label {
             Layout.fillWidth: true
             text: qsTr('Write the <b>12 words</b> of this wallet, the ones on the paper. If they are right, you choose a new PIN.')
             textFormat: Text.StyledText
             wrapMode: Text.WordWrap
-            font.pixelSize: 15
+            color: S.ink
+            font.family: BodyFont ? BodyFont : font.family
+            font.pixelSize: 17
+            lineHeight: 1.15
         }
 
         // ---- the words, one by one with their number ----
@@ -88,9 +88,9 @@ ElDialog {
             Layout.fillHeight: true
             Layout.minimumHeight: 56
             radius: 16
-            color: '#ffffff'
+            color: S.paper
             border.width: 2
-            border.color: root.hint !== '' ? '#b0413e' : '#e2d7c1'
+            border.color: root.hint !== '' ? S.wine : S.edge
             Flickable {
                 id: wordsFlick
                 anchors.fill: parent
@@ -105,24 +105,42 @@ ElDialog {
                     spacing: 5
                     Repeater {
                         model: root.tokens
+                        // a word tile (number in brass, word in bold); the word being typed is
+                        // underlined in wine; a word not in the list is rose with a wine border
                         delegate: Rectangle {
                             id: chip
                             required property string modelData
                             required property int index
                             readonly property bool current: root.typing && index === root.tokens.length - 1
                             readonly property bool bad: !current && !root.isWord(modelData)
-                            width: chipRow.implicitWidth + 14
-                            height: 28
-                            radius: current ? 0 : 9
-                            color: current ? 'transparent' : (bad ? '#f6dada' : '#f3ece0')
+                            width: chipRow.implicitWidth + 16
+                            height: 34
+                            radius: current ? 0 : 10
+                            color: current ? 'transparent' : (bad ? S.dangerBg : S.parch)
+                            border.width: current ? 0 : 1.5
+                            border.color: bad ? S.wine : S.edge
                             Row {
                                 id: chipRow
                                 anchors.centerIn: parent
-                                spacing: 3
-                                Label { text: (chip.index + 1); color: '#6b5d55'; font.pixelSize: 12; anchors.verticalCenter: parent.verticalCenter }
-                                Label { text: chip.modelData; color: chip.bad ? '#8a1f1c' : '#2a2220'; font.pixelSize: 16; font.bold: true }
+                                spacing: 4
+                                Label {
+                                    text: (chip.index + 1)
+                                    color: S.brassRing
+                                    font.family: SerifFont ? SerifFont : font.family
+                                    font.weight: Font.ExtraBold
+                                    font.pixelSize: 16
+                                    anchors.verticalCenter: parent.verticalCenter
+                                }
+                                Label {
+                                    text: chip.modelData
+                                    color: chip.bad ? S.wine : S.ink
+                                    font.family: BodyFont ? BodyFont : font.family
+                                    font.pixelSize: 17
+                                    font.bold: true
+                                    anchors.verticalCenter: parent.verticalCenter
+                                }
                             }
-                            Rectangle { visible: chip.current; anchors.bottom: parent.bottom; width: parent.width; height: 3; color: '#5e1a33' }
+                            Rectangle { visible: chip.current; anchors.bottom: parent.bottom; width: parent.width; height: 3; color: S.wine }
                         }
                     }
                 }
@@ -134,63 +152,69 @@ ElDialog {
                 horizontalAlignment: Text.AlignHCenter
                 wrapMode: Text.WordWrap
                 text: qsTr('tap the letters, then the word')
-                color: '#a89a8e'
-                font.pixelSize: 16
+                color: S.muted
+                font.family: BodyFont ? BodyFont : font.family
+                font.pixelSize: 17
             }
         }
 
-        Label {
+        EhInfoBox {
             visible: root.hint !== ''
-            Layout.fillWidth: true
-            wrapMode: Text.WordWrap
-            text: root.hint
-            color: '#8a1f1c'
-            font.pixelSize: 15
-            font.bold: true
+            kind: 'danger'
+            text: '<b>' + root.hint + '</b>'
         }
 
         // ---- big suggestions ----
+        // paper keys, 48 high; the first (best) one has a wine border
         RowLayout {
             Layout.fillWidth: true
-            Layout.preferredHeight: 44
+            Layout.preferredHeight: 51
             spacing: 6
             Repeater {
                 model: root.suggestions
-                delegate: Rectangle {
+                delegate: Item {
                     id: sg
                     required property string modelData
                     required property int index
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 44
-                    radius: 22
-                    color: index === 0 ? (st.pressed ? '#3f0f21' : '#5e1a33') : (st.pressed ? '#f3ecdd' : '#ffffff')
-                    border.width: index === 0 ? 0 : 2
-                    border.color: '#5e1a33'
-                    Label {
-                        anchors.centerIn: parent
-                        width: parent.width - 10
-                        horizontalAlignment: Text.AlignHCenter
-                        elide: Text.ElideRight
-                        text: sg.modelData
-                        color: sg.index === 0 ? '#ffffff' : '#3f0f21'
-                        font.pixelSize: 18
-                        font.bold: true
+                    Layout.preferredHeight: 51
+                    Rectangle { visible: !st.pressed; y: 3; width: parent.width; height: parent.height - 3; radius: 16; color: S.edgeShadow }
+                    Rectangle {
+                        y: st.pressed ? 2 : 0
+                        width: parent.width
+                        height: parent.height - 3
+                        radius: 16
+                        color: st.pressed ? S.sand : S.paper
+                        border.width: sg.index === 0 ? 2.5 : 1.5
+                        border.color: sg.index === 0 ? S.wine : S.edge
+                        Label {
+                            anchors.centerIn: parent
+                            width: parent.width - 10
+                            horizontalAlignment: Text.AlignHCenter
+                            elide: Text.ElideRight
+                            text: sg.modelData
+                            color: S.wineDark
+                            font.family: BodyFont ? BodyFont : font.family
+                            font.pixelSize: 18
+                            font.bold: true
+                        }
                     }
                     TapHandler { id: st; onTapped: root.pick(sg.modelData) }
                 }
             }
-            Item { visible: root.suggestions.length === 0; Layout.fillWidth: true; Layout.preferredHeight: 44 }
+            Item { visible: root.suggestions.length === 0; Layout.fillWidth: true; Layout.preferredHeight: 51 }
         }
 
         // ---- the keyboard: 7 keys per row, alphabetical ----
+        // keys with the EhKey look (paper, hard shadow, letter Lexend bold), 48 high (with the shadow)
         Rectangle {
             id: kbd
             Layout.fillWidth: true
             readonly property real keyW: Math.floor((width - 6 - 6 * 4) / 7)
-            readonly property real keyH: 46
+            readonly property real keyH: 48
             Layout.preferredHeight: 4 * keyH + 3 * 6 + 12
             radius: 16
-            color: '#efe6d3'
+            color: S.sand
             Column {
                 anchors.centerIn: parent
                 spacing: 6
@@ -204,32 +228,35 @@ ElDialog {
                         spacing: 4
                         Repeater {
                             model: krow.modelData.split('')
-                            delegate: Rectangle {
+                            delegate: EhKey {
                                 id: kk
                                 required property string modelData
                                 width: kbd.keyW
                                 height: kbd.keyH
-                                radius: 9
-                                color: kt.pressed ? '#f3ecdd' : '#ffffff'
-                                Rectangle { z: -1; anchors.fill: parent; anchors.topMargin: 2; anchors.bottomMargin: -2; radius: 9; color: '#d6c9b1' }
-                                Label {
-                                    anchors.centerIn: parent
-                                    text: kk.modelData
-                                    color: '#2a2220'
-                                    font.pixelSize: 24
-                                    font.bold: true
-                                }
-                                TapHandler { id: kt; onTapped: root.key(kk.modelData) }
+                                letter: true
+                                fontSize: 22
+                                keyRadius: 10
+                                text: kk.modelData
+                                onActivated: root.key(kk.modelData)
                             }
                         }
-                        // delete key on the last row
-                        Rectangle {
+                        // delete key on the last row (a long press clears everything)
+                        Item {
                             visible: krow.index === 3
                             width: 2 * kbd.keyW + 4
                             height: kbd.keyH
-                            radius: 9
-                            color: bt.pressed ? '#d6c9b1' : '#e2d7c1'
-                            EhBackspaceIcon { anchors.centerIn: parent; width: 38; height: 27 }
+                            Rectangle { visible: !bt.pressed; y: 3; width: parent.width; height: parent.height - 3; radius: 10; color: S.edgeShadow }
+                            Rectangle {
+                                id: delFace
+                                y: bt.pressed ? 2 : 0
+                                width: parent.width
+                                height: parent.height - 3
+                                radius: 10
+                                color: bt.pressed ? Qt.darker(S.sandDel, 1.08) : S.sandDel
+                                border.width: 1.5
+                                border.color: S.edge
+                                EhBackspaceIcon { anchors.centerIn: parent; width: 38; height: 27; ink: S.wine; fill: delFace.color }
+                            }
                             TapHandler { id: bt; onTapped: root.backspace(); onLongPressed: root.setText('') }
                         }
                     }
@@ -237,22 +264,14 @@ ElDialog {
             }
         }
 
-        EhPillButton {
+        EhStitchButton {
+            Layout.bottomMargin: 14
             enabled: root.ready
-            opacity: enabled ? 1 : 0.45
+            kind: 'wine'
             text: enabled ? qsTr('Next') : qsTr('Next (%1 of 12)').arg(Math.min(root.doneWords, 12))
-            fontSize: 21
-            color: '#5e1a33'
-            textColor: '#ffffff'
-            tileColor: '#d9b25a'
-            outlined: false
+            endIcon: 'next'
             onClicked: root.check()
-            Image {
-                anchors.centerIn: parent
-                source: Qt.resolvedUrl('../../icons/eh_next.svg')
-                sourceSize.width: 30
-                sourceSize.height: 30
-            }
         }
+    }
     }
 }

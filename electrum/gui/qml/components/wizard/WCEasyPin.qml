@@ -1,12 +1,14 @@
 // Easy Heirs (schèi): step 3, choose a 4-digit PIN (twice). Replaces
 // WCWalletPassword. Electrum needs at least 6 characters, so the wallet
 // password is the PIN followed by "00" (owner's decision).
+// "Bottega" (WP6): parchment page, Fraunces title (EhPageTop), brass PIN pad (WP1).
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 import QtQuick.Controls.Material
 
 import "../controls"
+import "../controls/EhStyle.js" as S
 
 WizardComponent {
     id: root
@@ -26,7 +28,7 @@ WizardComponent {
     property string password: ''
     property string chosenPin: ''
 
-    background: Rectangle { color: '#faf7ef' }
+    background: Rectangle { color: S.parch }
     topPadding: 0
     leftPadding: 22
     rightPadding: 22
@@ -114,9 +116,10 @@ WizardComponent {
         Label {
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
-            font.pixelSize: 20
+            font.family: BodyFont ? BodyFont : font.family
+            font.pixelSize: 19
             lineHeight: 1.2
-            color: '#2a2220'
+            color: S.ink
             text: root.phase === 'repeat' ? qsTr('Type the same 4 numbers again.')
                 : root.phase === 'existing' ? qsTr('Type the PIN you already use for your other wallets.')
                 : qsTr('4 numbers that are easy for you to remember. You will need them for big payments and to see the 12 words.')

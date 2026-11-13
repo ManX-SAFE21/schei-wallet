@@ -1,5 +1,7 @@
 // Easy Heirs (schèi): "Le tue 12 parole" — shows the new seed, big and numbered.
 // Replaces WCCreateSeed. No passphrase step (seed_extend = false).
+// "Bottega" (WP6): parchment page, the hints in the warning box, paper word tiles with the
+// number in brass, "I wrote them down" in wine leather with the pen and the arrow.
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
@@ -8,6 +10,7 @@ import QtQuick.Controls.Material
 import org.electrum 1.0
 
 import "../controls"
+import "../controls/EhStyle.js" as S
 
 WizardComponent {
     id: root
@@ -20,7 +23,7 @@ WizardComponent {
 
     property var words: []
 
-    background: Rectangle { color: '#faf7ef' }
+    background: Rectangle { color: S.parch }
     topPadding: 0
     leftPadding: 22
     rightPadding: 22
@@ -35,7 +38,7 @@ WizardComponent {
     component Hint: RowLayout {
         property alias iconSource: hintIcon.source
         property alias text: hintLabel.text
-        property color color: '#2a2220'
+        property color color: S.ink
         property bool strong: false
         Layout.fillWidth: true
         spacing: 10
@@ -52,6 +55,7 @@ WizardComponent {
             wrapMode: Text.WordWrap
             textFormat: Text.StyledText
             color: parent.color
+            font.family: BodyFont ? BodyFont : font.family
             font.pixelSize: 16
             font.bold: parent.strong
             lineHeight: 1.15
@@ -80,15 +84,12 @@ WizardComponent {
             title: qsTr('Your 12 words')
         }
 
-        Rectangle {
-            Layout.fillWidth: true
-            Layout.preferredHeight: hints.implicitHeight + 22
-            radius: 16
-            color: '#fbf0d6'
+        EhInfoBox {
+            kind: 'warn'
+            showIcon: false
             ColumnLayout {
                 id: hints
-                anchors.fill: parent
-                anchors.margins: 11
+                Layout.fillWidth: true
                 spacing: 6
                 Hint {
                     iconSource: Qt.resolvedUrl('../../../icons/eh_paper.svg')
@@ -101,7 +102,7 @@ WizardComponent {
                 Hint {
                     iconSource: Qt.resolvedUrl('../../../icons/eh_shield.svg')
                     text: qsTr('Nobody will ever ask you for the 12 words. Whoever asks is a scammer.')
-                    color: '#5e1a33'
+                    color: S.wine
                     strong: true
                 }
             }
@@ -110,42 +111,50 @@ WizardComponent {
         GridLayout {
             Layout.fillWidth: true
             columns: 2
-            rowSpacing: 7
+            rowSpacing: 8
             columnSpacing: 8
             flow: GridLayout.TopToBottom
             rows: 6
 
             Repeater {
                 model: root.words
-                delegate: Rectangle {
+                delegate: Item {
                     required property int index
                     required property string modelData
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 44
-                    radius: 12
-                    color: '#ffffff'
-                    border.width: 1
-                    border.color: '#ece4d2'
-                    RowLayout {
-                        anchors.fill: parent
-                        anchors.leftMargin: 10
-                        anchors.rightMargin: 8
-                        spacing: 8
-                        Label {
-                            Layout.preferredWidth: 22
-                            horizontalAlignment: Text.AlignRight
-                            text: (index + 1)
-                            color: '#6b5d55'
-                            font.pixelSize: 14
-                        }
-                        Label {
-                            Layout.fillWidth: true
-                            text: modelData
-                            color: '#2a2220'
-                            font.family: FixedFont
-                            font.bold: true
-                            font.pixelSize: 21
-                            elide: Text.ElideRight
+                    Layout.preferredHeight: 50
+                    // paper tile with a hard 2 px shadow
+                    Rectangle { y: 2; width: parent.width; height: 48; radius: 12; color: S.edgeShadow }
+                    Rectangle {
+                        width: parent.width
+                        height: 48
+                        radius: 12
+                        color: S.paper
+                        border.width: 1.5
+                        border.color: S.edge
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.leftMargin: 8
+                            anchors.rightMargin: 8
+                            spacing: 8
+                            Label {
+                                Layout.preferredWidth: 24
+                                horizontalAlignment: Text.AlignRight
+                                text: (index + 1)
+                                color: S.brassRing
+                                font.family: SerifFont ? SerifFont : font.family
+                                font.weight: Font.ExtraBold
+                                font.pixelSize: 17
+                            }
+                            Label {
+                                Layout.fillWidth: true
+                                text: modelData
+                                color: S.ink
+                                font.family: FixedFont
+                                font.bold: true
+                                font.pixelSize: 21
+                                elide: Text.ElideRight
+                            }
                         }
                     }
                 }
@@ -166,21 +175,13 @@ WizardComponent {
 
         Item { Layout.fillHeight: true }
 
-        EhPillButton {
+        EhStitchButton {
             enabled: root.valid
-            opacity: enabled ? 1 : 0.4
+            kind: 'wine'
             text: qsTr('I wrote them down')
-            color: '#5e1a33'
-            textColor: '#ffffff'
-            tileColor: '#d9b25a'
-            outlined: false
+            icon: 'eh_pen_ivory.svg'
+            endIcon: 'next'
             onClicked: wizard.pages.next()
-            Image {
-                anchors.centerIn: parent
-                source: Qt.resolvedUrl('../../../icons/eh_pen.svg')
-                sourceSize.width: 32
-                sourceSize.height: 32
-            }
         }
     }
     }

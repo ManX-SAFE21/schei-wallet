@@ -3,6 +3,8 @@
 // with their number, big suggestions, and our own on-screen keyboard: 7 keys
 // per row in alphabetical order, no phone keyboard (it could remember or send
 // what is typed). Replaces WCHaveSeed for a standard wallet (not cosigners).
+// "Bottega" (WP6): the two choices as level tiles (wine leather = chosen), paper word tiles,
+// paper suggestion keys, the letter keys with the EhKey look, "Next" in wine leather.
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
@@ -11,6 +13,7 @@ import QtQuick.Controls.Material
 import org.electrum 1.0
 
 import "../controls"
+import "../controls/EhStyle.js" as S
 
 WizardComponent {
     id: root
@@ -34,7 +37,7 @@ WizardComponent {
     readonly property int doneWords: typing ? tokens.length - 1 : tokens.length
     readonly property var suggestions: fragment.length >= 1 ? bitcoin.mnemonicsFor(fragment).slice(0, 3) : []
 
-    background: Rectangle { color: '#faf7ef' }
+    background: Rectangle { color: S.parch }
     topPadding: 0
     leftPadding: 16
     rightPadding: 16
@@ -135,45 +138,13 @@ WizardComponent {
         }
 
         // ---- where were the words made ----
-        Repeater {
-            model: [
-                { v: 'electrum', t: qsTr('Made with Schèi or Electrum') },
-                { v: 'bip39', t: qsTr('Made with another wallet') }
-            ]
-            delegate: Rectangle {
-                id: ch
-                required property var modelData
-                readonly property bool on: root.variant === modelData.v
-                Layout.fillWidth: true
-                Layout.preferredHeight: 44
-                radius: 22
-                color: on ? '#fbf3f5' : '#ffffff'
-                border.width: on ? 3 : 2
-                border.color: on ? '#5e1a33' : '#e2d7c1'
-                Row {
-                    anchors.verticalCenter: parent.verticalCenter
-                    x: 12
-                    spacing: 10
-                    Rectangle {
-                        width: 24; height: 24; radius: 12
-                        anchors.verticalCenter: parent.verticalCenter
-                        color: 'transparent'
-                        border.width: 3; border.color: '#5e1a33'
-                        Rectangle { visible: ch.on; anchors.centerIn: parent; width: 12; height: 12; radius: 6; color: '#5e1a33' }
-                    }
-                    Label {
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: ch.modelData.t
-                        color: '#2a2220'
-                        font.pixelSize: 17
-                        font.bold: true
-                    }
-                }
-                TapHandler {
-                    margin: 3
-                    onTapped: { root.variant = ch.modelData.v; root.setText(root.seedText) }
-                }
-            }
+        // two tiles side by side, the chosen one in wine leather with stitching
+        EhSegmented {
+            look: 'level'
+            readonly property var values: ['electrum', 'bip39']
+            model: [qsTr('Made with Schèi or Electrum'), qsTr('Made with another wallet')]
+            currentIndex: root.variant === 'bip39' ? 1 : 0
+            onActivated: (i) => { root.variant = values[i]; root.setText(root.seedText) }
         }
 
         // ---- the words, one by one with their number ----
@@ -182,9 +153,9 @@ WizardComponent {
             Layout.fillHeight: true
             Layout.minimumHeight: 56
             radius: 16
-            color: '#ffffff'
+            color: S.paper
             border.width: 2
-            border.color: root.checked && root.doneWords >= 12 && !root.valid ? '#b0413e' : '#e2d7c1'
+            border.color: root.checked && root.doneWords >= 12 && !root.valid ? S.wine : S.edge
             Flickable {
                 id: wordsFlick
                 anchors.fill: parent
@@ -199,24 +170,42 @@ WizardComponent {
                     spacing: 5
                     Repeater {
                         model: root.tokens
+                        // a word tile (number in brass, word in bold); the word being typed is
+                        // underlined in wine; a word not in the list is rose with a wine border
                         delegate: Rectangle {
                             id: chip
                             required property string modelData
                             required property int index
                             readonly property bool current: root.typing && index === root.tokens.length - 1
                             readonly property bool bad: !current && !root.isWord(modelData)
-                            width: chipRow.implicitWidth + 14
-                            height: 28
-                            radius: current ? 0 : 9
-                            color: current ? 'transparent' : (bad ? '#f6dada' : '#f3ece0')
+                            width: chipRow.implicitWidth + 16
+                            height: 34
+                            radius: current ? 0 : 10
+                            color: current ? 'transparent' : (bad ? S.dangerBg : S.parch)
+                            border.width: current ? 0 : 1.5
+                            border.color: bad ? S.wine : S.edge
                             Row {
                                 id: chipRow
                                 anchors.centerIn: parent
-                                spacing: 3
-                                Label { text: (chip.index + 1); color: '#6b5d55'; font.pixelSize: 12; anchors.verticalCenter: parent.verticalCenter }
-                                Label { text: chip.modelData; color: chip.bad ? '#8a1f1c' : '#2a2220'; font.pixelSize: 16; font.bold: true }
+                                spacing: 4
+                                Label {
+                                    text: (chip.index + 1)
+                                    color: S.brassRing
+                                    font.family: SerifFont ? SerifFont : font.family
+                                    font.weight: Font.ExtraBold
+                                    font.pixelSize: 16
+                                    anchors.verticalCenter: parent.verticalCenter
+                                }
+                                Label {
+                                    text: chip.modelData
+                                    color: chip.bad ? S.wine : S.ink
+                                    font.family: BodyFont ? BodyFont : font.family
+                                    font.pixelSize: 17
+                                    font.bold: true
+                                    anchors.verticalCenter: parent.verticalCenter
+                                }
                             }
-                            Rectangle { visible: chip.current; anchors.bottom: parent.bottom; width: parent.width; height: 3; color: '#5e1a33' }
+                            Rectangle { visible: chip.current; anchors.bottom: parent.bottom; width: parent.width; height: 3; color: S.wine }
                         }
                     }
                 }
@@ -228,63 +217,69 @@ WizardComponent {
                 horizontalAlignment: Text.AlignHCenter
                 wrapMode: Text.WordWrap
                 text: qsTr('tap the letters, then the word')
-                color: '#a89a8e'
-                font.pixelSize: 16
+                color: S.muted
+                font.family: BodyFont ? BodyFont : font.family
+                font.pixelSize: 17
             }
         }
 
-        Label {
+        EhInfoBox {
             visible: root.checked && root.doneWords >= 12 && !root.valid && !root.typing
-            Layout.fillWidth: true
-            wrapMode: Text.WordWrap
-            text: root.hint !== '' ? root.hint : qsTr('These words are not right. Check them one by one.')
-            color: '#8a1f1c'
-            font.pixelSize: 15
-            font.bold: true
+            kind: 'danger'
+            text: '<b>' + (root.hint !== '' ? root.hint : qsTr('These words are not right. Check them one by one.')) + '</b>'
         }
 
         // ---- big suggestions ----
+        // paper keys, 48 high; the first (best) one has a wine border
         RowLayout {
             Layout.fillWidth: true
-            Layout.preferredHeight: 44
+            Layout.preferredHeight: 51
             spacing: 6
             Repeater {
                 model: root.suggestions
-                delegate: Rectangle {
+                delegate: Item {
                     id: sg
                     required property string modelData
                     required property int index
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 44
-                    radius: 22
-                    color: index === 0 ? (st.pressed ? '#3f0f21' : '#5e1a33') : (st.pressed ? '#f3ecdd' : '#ffffff')
-                    border.width: index === 0 ? 0 : 2
-                    border.color: '#5e1a33'
-                    Label {
-                        anchors.centerIn: parent
-                        width: parent.width - 10
-                        horizontalAlignment: Text.AlignHCenter
-                        elide: Text.ElideRight
-                        text: sg.modelData
-                        color: sg.index === 0 ? '#ffffff' : '#3f0f21'
-                        font.pixelSize: 18
-                        font.bold: true
+                    Layout.preferredHeight: 51
+                    Rectangle { visible: !st.pressed; y: 3; width: parent.width; height: parent.height - 3; radius: 16; color: S.edgeShadow }
+                    Rectangle {
+                        y: st.pressed ? 2 : 0
+                        width: parent.width
+                        height: parent.height - 3
+                        radius: 16
+                        color: st.pressed ? S.sand : S.paper
+                        border.width: sg.index === 0 ? 2.5 : 1.5
+                        border.color: sg.index === 0 ? S.wine : S.edge
+                        Label {
+                            anchors.centerIn: parent
+                            width: parent.width - 10
+                            horizontalAlignment: Text.AlignHCenter
+                            elide: Text.ElideRight
+                            text: sg.modelData
+                            color: S.wineDark
+                            font.family: BodyFont ? BodyFont : font.family
+                            font.pixelSize: 18
+                            font.bold: true
+                        }
                     }
                     TapHandler { id: st; onTapped: root.pick(sg.modelData) }
                 }
             }
-            Item { visible: root.suggestions.length === 0; Layout.fillWidth: true; Layout.preferredHeight: 44 }
+            Item { visible: root.suggestions.length === 0; Layout.fillWidth: true; Layout.preferredHeight: 51 }
         }
 
         // ---- the keyboard: 7 keys per row, alphabetical ----
+        // keys with the EhKey look (paper, hard shadow, letter Lexend bold), 48 high (with the shadow)
         Rectangle {
             id: kbd
             Layout.fillWidth: true
             readonly property real keyW: Math.floor((width - 6 - 6 * 4) / 7)
-            readonly property real keyH: 46
+            readonly property real keyH: 48
             Layout.preferredHeight: 4 * keyH + 3 * 6 + 12
             radius: 16
-            color: '#efe6d3'
+            color: S.sand
             Column {
                 anchors.centerIn: parent
                 spacing: 6
@@ -298,32 +293,35 @@ WizardComponent {
                         spacing: 4
                         Repeater {
                             model: krow.modelData.split('')
-                            delegate: Rectangle {
+                            delegate: EhKey {
                                 id: kk
                                 required property string modelData
                                 width: kbd.keyW
                                 height: kbd.keyH
-                                radius: 9
-                                color: kt.pressed ? '#f3ecdd' : '#ffffff'
-                                Rectangle { z: -1; anchors.fill: parent; anchors.topMargin: 2; anchors.bottomMargin: -2; radius: 9; color: '#d6c9b1' }
-                                Label {
-                                    anchors.centerIn: parent
-                                    text: kk.modelData
-                                    color: '#2a2220'
-                                    font.pixelSize: 24
-                                    font.bold: true
-                                }
-                                TapHandler { id: kt; onTapped: root.key(kk.modelData) }
+                                letter: true
+                                fontSize: 22
+                                keyRadius: 10
+                                text: kk.modelData
+                                onActivated: root.key(kk.modelData)
                             }
                         }
-                        // delete key on the last row
-                        Rectangle {
+                        // delete key on the last row (a long press clears everything)
+                        Item {
                             visible: krow.index === 3
                             width: 2 * kbd.keyW + 4
                             height: kbd.keyH
-                            radius: 9
-                            color: bt.pressed ? '#d6c9b1' : '#e2d7c1'
-                            EhBackspaceIcon { anchors.centerIn: parent; width: 38; height: 27 }
+                            Rectangle { visible: !bt.pressed; y: 3; width: parent.width; height: parent.height - 3; radius: 10; color: S.edgeShadow }
+                            Rectangle {
+                                id: delFace
+                                y: bt.pressed ? 2 : 0
+                                width: parent.width
+                                height: parent.height - 3
+                                radius: 10
+                                color: bt.pressed ? Qt.darker(S.sandDel, 1.08) : S.sandDel
+                                border.width: 1.5
+                                border.color: S.edge
+                                EhBackspaceIcon { anchors.centerIn: parent; width: 38; height: 27; ink: S.wine; fill: delFace.color }
+                            }
                             TapHandler { id: bt; onTapped: root.backspace(); onLongPressed: root.setText('') }
                         }
                     }
@@ -331,22 +329,12 @@ WizardComponent {
             }
         }
 
-        EhPillButton {
+        EhStitchButton {
             enabled: root.valid && !root.typing
-            opacity: enabled ? 1 : 0.45
+            kind: 'wine'
             text: enabled ? qsTr('Next') : qsTr('Next (%1 of 12)').arg(Math.min(root.doneWords, 12))
-            fontSize: 21
-            color: '#5e1a33'
-            textColor: '#ffffff'
-            tileColor: '#d9b25a'
-            outlined: false
+            endIcon: 'next'
             onClicked: root.goOn()
-            Image {
-                anchors.centerIn: parent
-                source: Qt.resolvedUrl('../../../icons/eh_next.svg')
-                sourceSize.width: 30
-                sourceSize.height: 30
-            }
         }
     }
     }
