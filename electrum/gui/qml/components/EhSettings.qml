@@ -185,6 +185,13 @@ Item {
                 EhRow { tag: 2; icon: 'eh_phone.svg'; text: qsTr('Sign on another device'); value: qsTr('coming soon'); opacity: 0.5; last: true }
             }
 
+            // owner 13/11: LEARN, at every level (BASE too)
+            Group { text: qsTr('LEARN') }
+            EhSheet {
+                EhRow { icon: 'eh_goldcoin.svg'; iconColor: S.brassRing; text: qsTr('How do bitcoin coins work?'); last: true
+                        onClicked: app.stack.push(Qt.resolvedUrl('EhCoinsHowPage.qml')) }
+            }
+
             // owner 12/11: "back to the initial settings" in every level, at the bottom, with the PIN
             EhSheet {
                 Layout.topMargin: 14

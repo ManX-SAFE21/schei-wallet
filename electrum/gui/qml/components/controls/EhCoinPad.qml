@@ -19,6 +19,9 @@ Item {
     property int cents: 0
     property var counts: ({})
     readonly property bool animate: !app.ehOption('no_anim')
+    // owner 13/11: big notes (3 in a row) at BASE and MEDIO, the page scrolls if needed;
+    // false (ESPERTO) = notes may shrink into one row on short screens
+    property bool bigNotes: true
 
     // owner 12/11: the notes and coins of the chosen currency (euro or US dollar), EhMoney.js
     readonly property string ccy: app.ehCcy()
@@ -35,16 +38,22 @@ Item {
     readonly property real gap: 8
     // short screen (e.g. "Bigger text"): notes in one row and a lower purse
     readonly property real roomFull: height - 176 - 4 * gap
-    readonly property bool compact: roomFull < 0.95 * (2 * noteH(3) + coinKFor(8) * maxC)
+    readonly property bool compact: !bigNotes && roomFull < 0.95 * (2 * noteH(3) + coinKFor(8) * maxC)
     readonly property real purseH: compact ? 150 : 176
-    readonly property real room: height - purseH - 4 * gap
+    // owner 13/11: the purse grows with the rows of chips (none is cut any more)
+    readonly property real purseRealH: Math.max(purseH, 46 + rightCol.implicitHeight + 10)
+    readonly property real room: height - purseRealH - 4 * gap
     function noteH(cols) { return ((width - (cols - 1) * gap) / cols) * pad.maxH / pad.maxW }
     function coinKFor(cols) { return Math.min(2.45, ((width - (cols - 1) * gap) / cols) / (pad.maxC + 1)) }
     readonly property int noteCols: compact ? noteValues.length : 3
     readonly property int coinCols: Math.max(4, coinValues.length)
     readonly property real natNoteH: noteH(noteCols)
     readonly property real natCoinK: coinKFor(coinCols)
-    readonly property real fit: Math.max(0.6, Math.min(1, room / ((compact ? 1 : 2) * natNoteH + natCoinK * maxC)))
+    readonly property real fit: bigNotes ? 1 : Math.max(0.6, Math.min(1, room / ((compact ? 1 : 2) * natNoteH + natCoinK * maxC)))
+    readonly property int noteRows: Math.ceil(noteValues.length / noteCols)
+    // the height it needs: big notes = all of it (the page scrolls), else the smallest
+    implicitHeight: bigNotes ? purseRealH + noteRows * natNoteH + (noteRows - 1) * gap + natCoinK * maxC + 3 * gap
+                             : purseRealH + 3 * gap + 0.6 * (noteH(noteValues.length) + coinKFor(coinCols) * maxC)
     readonly property real noteK: (natNoteH * fit) / pad.maxH  // pixels per mm, notes
     readonly property real coinK: natCoinK * fit             // pixels per mm, coins
 
@@ -54,16 +63,25 @@ Item {
         var e = Math.floor(cents / 100), r = cents % 100
         euroInput = cents === 0 ? '' : (r === 0 ? '' + e : e + ',' + (r < 10 ? '0' : '') + r)
     }
+    // owner 13/11: the pile always sits centred inside its box (it never goes out of it)
     function heapSpot(c) {
         var n = heapModel.count
+        var W = heap.width, H = heap.height
         if (isNote(c)) {
-            var w = Math.round(96 * noteMm[c][0] / pad.maxW), h = Math.round(96 * noteMm[c][1] / pad.maxW)
-            return { x: 10 + (96 - w) / 2 + (n % 3) * 3, y: 54 - Math.min(n, 10) * 3, w: w, h: h, rot: (n % 2 ? -1 : 1) * (4 + n % 5) }
+            // the biggest note fits the box with room for the pile (16 px) and the tilt
+            var wMax = Math.min(W - 22, (H - 30) * pad.maxW / pad.maxH)
+            var w = Math.round(wMax * noteMm[c][0] / pad.maxW), h = Math.round(wMax * noteMm[c][1] / pad.maxW)
+            var up = Math.min(n, 8) * 2
+            return { x: (W - w) / 2 + ((n % 3) - 1) * 3, y: (H - h - 16) / 2 + 16 - up, w: w, h: h,
+                     rot: (n % 2 ? -1 : 1) * (3 + n % 4) }
         }
         var k = 0
         for (var i = 0; i < heapModel.count; i++) if (!isNote(heapModel.get(i).c)) k++
-        var s = Math.round(coinMm[c] * 1.35)
-        return { x: 10 + (k * 37) % 74, y: 12 + (k * 23) % 60, w: s, h: s, rot: 0 }
+        var s = Math.round(Math.min(coinMm[c] * 1.35, H * 0.5))
+        var spots = [[0, 0], [-0.8, -0.7], [0.8, 0.6], [-0.7, 0.8], [0.75, -0.8], [0, -1], [0, 1], [-1, 0], [1, 0]]
+        var sp = spots[k % spots.length]
+        var dx = (W - s) / 2 - 6, dy = (H - s) / 2 - 4
+        return { x: (W - s) / 2 + sp[0] * dx, y: (H - s) / 2 + sp[1] * dy, w: s, h: s, rot: 0 }
     }
     function add(c, src) {
         if (cents + c > 9999999) return
@@ -117,7 +135,7 @@ Item {
             id: purse
             z: 5
             Layout.fillWidth: true
-            Layout.preferredHeight: pad.purseH
+            Layout.preferredHeight: pad.purseRealH
             // "Bottega" (WP1): a paper sheet with a hard shadow (was a wine purse)
             radius: 18
             color: S.paper
@@ -139,7 +157,13 @@ Item {
                 x: 12; y: 30
                 width: 118; height: pad.purseH - 74   // WP1: room for a 16 px hint on two lines under it
                 Rectangle { anchors.fill: parent; radius: 14; color: heapTap.pressed ? S.sand : S.parch; border.width: 1; border.color: S.edgeShadow }
-                TapHandler { id: heapTap; onTapped: pad.removeLast() }
+                // owner 13/11: a tap ON the notes and coins works too: this sits above the pile
+                Item {
+                    z: 1000
+                    anchors.fill: parent
+                    anchors.margins: -6
+                    TapHandler { id: heapTap; onTapped: pad.removeLast() }
+                }
                 Label {
                     visible: heapModel.count > 0
                     anchors.top: parent.bottom
@@ -224,10 +248,10 @@ Item {
                 }
             }
             ColumnLayout {
+                id: rightCol
                 anchors.left: heap.right; anchors.leftMargin: 10
                 anchors.right: parent.right; anchors.rightMargin: 10
                 anchors.top: parent.top; anchors.topMargin: 46
-                anchors.bottom: parent.bottom; anchors.bottomMargin: 8
                 spacing: 2
                 Label {
                     Layout.fillWidth: true
@@ -248,11 +272,10 @@ Item {
                     font.pixelSize: 16
                     elide: Text.ElideRight
                 }
-                Flickable {
+                Item {
                     Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    contentHeight: chips.implicitHeight
-                    clip: true
+                    Layout.topMargin: 2
+                    implicitHeight: chips.implicitHeight
                     Flow {
                         id: chips
                         width: parent.width

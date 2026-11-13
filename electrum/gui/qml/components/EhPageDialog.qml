@@ -25,8 +25,12 @@ ElDialog {
         anchors.fill: parent
         Component.onCompleted: sv.push(dlg.page, dlg.props)
     }
-    onOpened: { app._ehStackOverride = sv; app._ehStackDialog = dlg }
+    // owner 13/11: one can open above another (e.g. a "How ... works" link inside a page that is
+    // already here): closing it gives the stack back to the one below
+    property var _prevStack: null
+    property var _prevDialog: null
+    onOpened: { _prevStack = app._ehStackOverride; _prevDialog = app._ehStackDialog; app._ehStackOverride = sv; app._ehStackDialog = dlg }
     onClosed: {
-        if (app._ehStackOverride === sv) { app._ehStackOverride = null; app._ehStackDialog = null }
+        if (app._ehStackOverride === sv) { app._ehStackOverride = _prevStack; app._ehStackDialog = _prevDialog }
     }
 }

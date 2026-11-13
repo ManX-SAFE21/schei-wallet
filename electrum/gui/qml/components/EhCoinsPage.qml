@@ -53,6 +53,8 @@ Item {
     function showUtxoInfo() {
         app.ehInfoDialog.createObject(app, {
             pageTitle: 'UTXO',
+            linkText: qsTr('How the crucible works'),
+            linkUrl: Qt.resolvedUrl('EhCoinsHowPage.qml'),
             bodyText: qsTr('<b>UTXO</b> is the <b>serial number</b> engraved on the rim of the coin, like the one on a banknote: it tells which payment it comes from. It is not secret and it is not needed to spend the coin.')
                       + '<br><br>' + qsTr('Your coins are protected by the 12 words.')
         }).open()
@@ -359,7 +361,7 @@ Item {
             }
             footer: Item {
                 width: list.width
-                height: botCap.height + (page.showAddresses ? chNote.implicitHeight + 24 : howSheet.implicitHeight + 22)
+                height: botCap.height + (page.showAddresses ? chNote.implicitHeight + 12 : 0) + howSheet.implicitHeight + 22
                 // rounded bottom of the sheet, with its hard shadow
                 Item {
                     id: botCap
@@ -381,10 +383,10 @@ Item {
                     color: S.muted
                     text: qsTr('"Change": when you pay, what is left over from a coin comes back to you on a new address, like the change at the shop.')
                 }
+                // owner 13/11: the same row in the Addresses tab too
                 EhSheet {
                     id: howSheet
-                    visible: !page.showAddresses
-                    y: botCap.height + 14
+                    y: botCap.height + 14 + (page.showAddresses ? chNote.implicitHeight + 12 : 0)
                     width: parent.width
                     EhRow {
                         icon: 'eh_goldcoin.svg'

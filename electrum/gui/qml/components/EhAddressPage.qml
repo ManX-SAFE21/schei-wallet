@@ -229,6 +229,17 @@ Item {
                 }
             }
 
+            // owner 13/11: how the coins work, under the coins
+            EhSheet {
+                EhRow {
+                    icon: 'eh_goldcoin.svg'
+                    iconColor: S.brassRing
+                    text: qsTr('How do the gold coins of digital gold (bitcoin) work?')
+                    last: true
+                    onClicked: app.ehPush(Qt.resolvedUrl('EhCoinsHowPage.qml'))
+                }
+            }
+
             // block the whole address
             EhSheet {
                 topPadding: 12

@@ -28,9 +28,12 @@ Item {
     property bool compact: false
     property real iconSize: 24
     default property alias iconContent: userSlot.data
-    readonly property bool leather: kind !== 'paper'
+    // owner 13/11: a button that cannot be used yet looks "off": flat grey paper, grey stitching
+    // and grey text, no shadow (it was a pale pink, mixed up with the pink warnings)
+    readonly property bool off: !enabled
+    readonly property bool leather: kind !== 'paper' && !off
     readonly property bool pressed: tap.pressed
-    readonly property color ink: leather ? S.ivory : S.wine
+    readonly property color ink: off ? S.offInk : (leather ? S.ivory : S.wine)
 
     signal clicked
 
@@ -39,7 +42,7 @@ Item {
     implicitWidth: content.implicitWidth + 32
     Layout.fillWidth: true
     Layout.preferredHeight: implicitHeight
-    opacity: enabled ? 1 : 0.4
+    opacity: 1
 
     readonly property bool _hasIcon: icon !== '' || userSlot.children.length > 0
     readonly property string _endSrc: endIcon === 'next' ? (leather ? 'eh_arrow_ivory.svg' : 'eh_arrow_wine.svg')
@@ -60,7 +63,7 @@ Item {
         }
     }
     Rectangle {
-        visible: !root.leather
+        visible: !root.leather && !root.off
         x: body.x
         y: body.y + 3
         width: body.width
@@ -74,16 +77,16 @@ Item {
         anchors.fill: parent
         radius: root.compact ? 16 : 20
         border.width: root.leather ? 0 : 1.5
-        border.color: S.edge
+        border.color: root.off ? S.offEdge : S.edge
         readonly property real k: root.pressed ? 1.2 : 1.0
         gradient: Gradient {
-            GradientStop { position: 0.0; color: root.kind === 'wine' ? Qt.darker(S.leatherWine1, body.k)
+            GradientStop { position: 0.0; color: root.off ? S.offBg : root.kind === 'wine' ? Qt.darker(S.leatherWine1, body.k)
                                                : root.kind === 'olive' ? Qt.darker(S.leatherOlive1, body.k)
                                                : (root.pressed ? S.sand : S.paper) }
-            GradientStop { position: 0.7; color: root.kind === 'wine' ? Qt.darker(S.leatherWine2, body.k)
+            GradientStop { position: 0.7; color: root.off ? S.offBg : root.kind === 'wine' ? Qt.darker(S.leatherWine2, body.k)
                                                : root.kind === 'olive' ? Qt.darker('#44521f', body.k)
                                                : (root.pressed ? S.sand : S.paper) }
-            GradientStop { position: 1.0; color: root.kind === 'wine' ? Qt.darker(S.leatherWine3, body.k)
+            GradientStop { position: 1.0; color: root.off ? S.offBg : root.kind === 'wine' ? Qt.darker(S.leatherWine3, body.k)
                                                : root.kind === 'olive' ? Qt.darker(S.leatherOlive2, body.k)
                                                : (root.pressed ? S.sand : S.paper) }
         }
@@ -94,7 +97,7 @@ Item {
         inset: root.compact ? 4 : 5
         radius: body.radius - inset
         lineWidth: 1.6
-        color: root.leather ? S.stitch : S.wine
+        color: root.off ? S.offEdge : (root.leather ? S.stitch : S.wine)
     }
 
     RowLayout {
@@ -113,6 +116,7 @@ Item {
             Image {
                 anchors.centerIn: parent
                 visible: root.icon !== ''
+                opacity: root.off ? 0.35 : 1
                 source: root.icon !== '' ? Qt.resolvedUrl(S.iconPath(root.icon)) : ''
                 sourceSize.width: root.iconSize
                 sourceSize.height: root.iconSize
@@ -140,7 +144,7 @@ Item {
                 Layout.fillWidth: true
                 visible: root.sub !== ''
                 text: root.sub
-                color: root.leather ? '#ffffff' : S.muted
+                color: root.off ? S.offInk : (root.leather ? '#ffffff' : S.muted)
                 font.family: BodyFont ? BodyFont : font.family
                 font.pixelSize: 16
                 horizontalAlignment: (!root._hasIcon && root._endSrc === '') ? Text.AlignHCenter : Text.AlignLeft
@@ -149,6 +153,7 @@ Item {
         }
         Image {
             visible: root._endSrc !== ''
+            opacity: root.off ? 0.35 : 1
             Layout.alignment: Qt.AlignVCenter
             source: root._endSrc !== '' ? Qt.resolvedUrl(S.iconPath(root._endSrc)) : ''
             sourceSize.width: 22

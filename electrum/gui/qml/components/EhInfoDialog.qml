@@ -18,6 +18,9 @@ ElDialog {
     property string bodyText      // rich text, paragraphs separated by <br><br>
     property string tipText       // rich text, green box at the end
     property bool showBlocks: false
+    // owner 13/11: an optional page to open at the bottom ("How the crucible works" ...)
+    property string linkText: ''
+    property url linkUrl
 
     width: parent.width
     height: parent.height
@@ -87,6 +90,16 @@ ElDialog {
                 kind: 'tip'
                 text: dialog.tipText
                 fontSize: 17
+            }
+
+            EhStitchButton {
+                visible: dialog.linkText !== ''
+                Layout.topMargin: 4
+                kind: 'paper'
+                icon: 'eh_goldcoin.svg'
+                endIcon: 'next'
+                text: dialog.linkText
+                onClicked: app.ehOpenPage(dialog.linkUrl)
             }
         }
     }

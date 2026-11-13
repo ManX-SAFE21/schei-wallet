@@ -52,12 +52,20 @@ Rectangle {
             GradientStop { position: 1.0; color: '#aab6bf' }
         }
     }
-    Label {
+    // three small stars, drawn (owner 13/11: the font has no '✦', it showed empty boxes)
+    Row {
         visible: !nt.usd && nt.u > 22
-        x: nt.u * 0.12; anchors.bottom: parent.bottom; anchors.bottomMargin: nt.u * 0.04
-        text: '✦ ✦ ✦'
-        color: '#ffe680'
-        font.pixelSize: Math.max(5, nt.u * 0.13)
+        x: nt.u * 0.14; anchors.bottom: parent.bottom; anchors.bottomMargin: nt.u * 0.1
+        spacing: nt.u * 0.08
+        Repeater {
+            model: 3
+            Rectangle {
+                width: Math.max(3, nt.u * 0.075); height: width
+                rotation: 45
+                antialiasing: true
+                color: '#ffe680'
+            }
+        }
     }
     // ---- dollar: the coloured stripe of the value ----
     Rectangle {

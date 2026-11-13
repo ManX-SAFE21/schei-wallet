@@ -158,7 +158,13 @@ Item {
                     lineHeight: 1.2
                     text: page.grouped(page.txPart) + '<font color="' + S.waitInk + '">' + page.nPart + '</font>'
                 }
-                Body { text: qsTr('The long part is the transaction (the crucible) the coin came out of; "%1" is its order number: the first coin out is :0, the second :1.').arg(page.nPart) }
+                // owner 13/11: the word crucible is a link to its page
+                Body {
+                    textFormat: Text.StyledText
+                    linkColor: S.wine
+                    text: app.ehCrucibleLink(qsTr('The long part is the transaction (the crucible) the coin came out of; "%1" is its order number: the first coin out is :0, the second :1.').arg(page.nPart))
+                    onLinkActivated: app.ehPush(Qt.resolvedUrl('EhCoinsHowPage.qml'))
+                }
                 RowLayout {
                     Layout.fillWidth: true
                     Layout.topMargin: 2
@@ -179,6 +185,16 @@ Item {
                         text: qsTr('Share')
                         onClicked: AppController.doShare(page.outpoint, 'UTXO')
                     }
+                }
+                // owner 13/11: how the crucible works, right under the serial number
+                EhDotLine { Layout.topMargin: 2 }
+                EhRow {
+                    icon: Qt.resolvedUrl('../../icons/eh_crucible.svg')
+                    iconColor: S.brassRing
+                    minHeight: 56
+                    text: qsTr('How the crucible works')
+                    last: true
+                    onClicked: app.ehPush(Qt.resolvedUrl('EhCoinsHowPage.qml'))
                 }
             }
 

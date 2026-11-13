@@ -97,17 +97,16 @@ ElDialog {
                 Layout.fillWidth: true
                 onClicked: root.doReject()
             }
-            // owner 12/11: "how the gold coins work" (the crucible) opens from here
-            Rectangle {
+            // owner 12/11: "how the gold coins work" (the crucible) opens from here;
+            // 13/11: a small stitched paper pill, well visible (was a pale "i")
+            EhStitchButton {
                 Layout.alignment: Qt.AlignVCenter
-                Layout.preferredWidth: 40
-                Layout.preferredHeight: 40
-                radius: 20
-                color: howT.pressed ? S.sand : 'transparent'
-                border.width: 2.5
-                border.color: S.olive
-                Label { anchors.centerIn: parent; text: 'i'; color: S.olive; font.pixelSize: 22; font.bold: true; font.family: 'serif' }
-                TapHandler { id: howT; margin: 8; onTapped: app.ehOpenPage(Qt.resolvedUrl('EhCoinsHowPage.qml')) }
+                Layout.fillWidth: false
+                Layout.preferredWidth: implicitWidth
+                kind: 'paper'
+                compact: true
+                text: qsTr('How it works') + ' ›'
+                onClicked: app.ehOpenPage(Qt.resolvedUrl('EhCoinsHowPage.qml'))
             }
         }
         EhTitle {

@@ -194,6 +194,31 @@ ElDialog {
         finalizer.signAndSend()
     }
 
+    // owner 13/11: the middle of "Check carefully" scrolls between the two slides: a soft
+    // parchment edge at the top / bottom when there is more text there (no hard cut box)
+    Rectangle {
+        parent: midFlick
+        z: 10
+        visible: dialog.phase === 'review' && midFlick.contentY > 1
+        anchors.left: parent.left; anchors.right: parent.right; anchors.top: parent.top
+        height: 22
+        gradient: Gradient {
+            GradientStop { position: 0.0; color: S.parch }
+            GradientStop { position: 1.0; color: 'transparent' }
+        }
+    }
+    Rectangle {
+        parent: midFlick
+        z: 10
+        visible: dialog.phase === 'review' && midFlick.contentY < midFlick.contentHeight - midFlick.height - 1
+        anchors.left: parent.left; anchors.right: parent.right; anchors.bottom: parent.bottom
+        height: 22
+        gradient: Gradient {
+            GradientStop { position: 0.0; color: 'transparent' }
+            GradientStop { position: 1.0; color: S.parch }
+        }
+    }
+
     // ---------- layout ----------
     // every page scrolls (nothing under the phone keys). In "Check carefully" the page fits and
     // does not move: only the middle scrolls, the two slides stay always visible.
@@ -344,8 +369,11 @@ ElDialog {
         EhCoinPad {
             id: coinPad
             visible: dialog.phase === 'amount' && dialog.useCoins
+            // owner 13/11: big notes at BASE and MEDIO (the page scrolls), ESPERTO may shrink them
+            bigNotes: app.ehLevel() !== 'esperto'
             Layout.fillWidth: true
             Layout.fillHeight: true
+            Layout.minimumHeight: visible ? implicitHeight : 0
             onEuroInputChanged: if (dialog.useCoins) dialog.euroInput = euroInput
         }
         EhBackLink {
@@ -484,6 +512,7 @@ ElDialog {
                 id: midFlick
                 Layout.fillWidth: true
                 Layout.fillHeight: true
+                Layout.topMargin: 4        // owner 13/11: the first box no longer starts right under the slide
                 Layout.minimumHeight: 150
                 contentHeight: textCol.implicitHeight + 4
                 clip: true
@@ -573,6 +602,16 @@ ElDialog {
                             text: qsTr('It is the small tip to the "miners" who write your payment on the blockchain.')
                                   + ' <u><font color="' + S.wine + '"><b>' + qsTr('More information') + '</b></font></u>'
                             TapHandler { onTapped: app.ehShowFeeInfo() }
+                        }
+                        // owner 13/11: the general explanation of the coins, here too
+                        EhDotLine {}
+                        EhRow {
+                            icon: 'eh_goldcoin.svg'
+                            iconColor: S.brassRing
+                            minHeight: 56
+                            text: qsTr('How do bitcoin coins work?')
+                            last: true
+                            onClicked: app.ehOpenPage(Qt.resolvedUrl('EhCoinsHowPage.qml'))
                         }
                         // which gold coins the payment melts: chosen by the app, or by hand
                         // (owner 12/11: only with "Gold coins (UTXO)" on in Advanced)
@@ -702,7 +741,7 @@ ElDialog {
                     visible: dialog.needsPin
                     kind: 'warn'
                     icon: 'eh_lock_brass.svg'
-                    text: qsTr('<b>It is a big payment</b> (more than %1). When you have pushed up the bitcoin coin, I will ask you for the PIN.').arg(app.ehBigLimitText())
+                    text: qsTr('<b>It is a big payment</b> (more than %1). When you have pushed the two sliding bitcoin coins to the right, I will ask you for the PIN.').arg(app.ehBigLimitText())
                 }
 
                 Label {
@@ -731,7 +770,7 @@ ElDialog {
                     id: dblL
                     visible: dialog.needsDouble
                     kind: 'danger'
-                    text: '<b>' + qsTr('It is a big amount.') + '</b> ' + qsTr('Push up <b>both coins together</b>, with two fingers.')
+                    text: '<b>' + qsTr('It is a big amount.') + '</b> ' + qsTr('Push <b>both coins to the right together</b>, with two fingers.')
                 }
 
             }

@@ -40,6 +40,10 @@ var red = '#b3261e'            // only "blocked" and real errors
 var bitcoin = '#f7931a'
 var switchOff = '#a8977a'
 var dim = '#80291f1f' // behind popups
+// a button that cannot be used yet (owner 13/11): grey paper, grey stitching, grey text
+var offBg = '#e9e5dc'
+var offEdge = '#c3bbac'
+var offInk = '#8f877b'
 
 // ---- sizes ----
 var margin = 16                // page side margin

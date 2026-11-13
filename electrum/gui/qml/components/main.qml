@@ -819,6 +819,10 @@ ApplicationWindow
         else ehPush(url, props)
     }
     // the coins list: with "advanced privacy" the pockets, else the list of coins and addresses
+    // owner 13/11: the word crucible (crogiuolo / crogiolo) in a text becomes a link to its page
+    function ehCrucibleLink(s) {
+        return s.replace(/(crogiuolo|crogiolo|crucible)/, '<a href="how"><b>$1</b></a>')
+    }
     function ehOpenCoins() {
         ehOpenPage(Qt.resolvedUrl(ehOption('privacy') ? 'EhPocketsPage.qml' : 'EhCoinsPage.qml'))
     }
@@ -830,7 +834,10 @@ ApplicationWindow
             showBlocks: true,
             bodyText: qsTr('About every <b>10 minutes</b> the Bitcoin network writes a new "block" with the payments. When your payment enters a block it has <b>1 confirmation</b>; every block after that adds another one.')
                 + '<br><br>' + qsTr('The more confirmations, the more impossible it is to go back. People moving <b>millions of euro</b> wait for 6 confirmations, about one hour.'),
-            tipText: qsTr('<b>Schèi is a pocket wallet</b>, made for everyday amounts. For these amounts <b>1 confirmation is more than enough</b>: that is why we already show it as "✓ Confirmed".')
+            tipText: qsTr('<b>Schèi is a pocket wallet</b>, made for everyday amounts. For these amounts <b>1 confirmation is more than enough</b>: that is why we already show it as "✓ Confirmed".'),
+            // owner 13/11: the general explanation of the coins, at the bottom
+            linkText: qsTr('How do bitcoin coins work?'),
+            linkUrl: Qt.resolvedUrl('EhCoinsHowPage.qml')
         }).open()
     }
     function ehShowFeeInfo() {
@@ -1039,7 +1046,7 @@ ApplicationWindow
         return [
             { icon: 'qr', word: qsTr('Who to'), title: qsTr('Who to'), text: qsTr('Scan the QR code or paste the address of the person you pay.') },
             { icon: 'coins', word: qsTr('How much'), title: qsTr('How much'), text: qsTr('Choose how much you send.') },
-            { icon: 'eye', word: qsTr('Check'), title: qsTr('Check carefully'), text: qsTr('Look again at amount, cost and address before sending. Then push up the bitcoin coin.') },
+            { icon: 'eye', word: qsTr('Check'), title: qsTr('Check carefully'), text: qsTr('Look again at amount, cost and address before sending. Then push the two bitcoin coins to the right.') },
             { icon: 'send', word: qsTr('Sent'), title: qsTr('Sent'), text: qsTr('The money has left. It arrives after the first confirmation.') }
         ]
     }
