@@ -1,6 +1,8 @@
 // Easy Heirs (schèi): "Collegamento" (advanced settings). Automatic servers or
 // only your own node, and "Passa da Tor" through the Orbot app. Electrum's own
 // network settings (setServerParameters, proxy, probeTor): only the look is ours.
+// "Bottega" look (WP4): status line on a paper sheet, the two choices as radio rows,
+// Tor with the brass switch.
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
@@ -9,13 +11,14 @@ import QtQuick.Controls.Material
 import org.electrum 1.0
 
 import "controls"
+import "controls/EhStyle.js" as S
 
 Item {
     id: page
     property bool ehHideHeader: true
     Material.theme: Material.Light
-    Material.foreground: '#2a2220'
-    Material.accent: '#5e1a33'
+    Material.foreground: S.ink
+    Material.accent: S.wine
 
     readonly property bool myNode: Network.oneServer && !Network.autoConnect
     property bool chooseMyNode: myNode
@@ -62,46 +65,66 @@ Item {
         }
     }
 
-    Rectangle { anchors.fill: parent; color: '#faf7ef' }
-    EhGlow { tone: page.torOn ? 'wine' : 'green'; x: -page.width * 0.3; y: 40; width: page.width * 1.6; height: 380; opacity: 0.7 }
+    Rectangle { anchors.fill: parent; color: S.parch }
 
-    component Opt: Rectangle {
+    // a choice row: 28 px radio ring (wine, brass dot when chosen), title 17 bold, hint 16
+    component Opt: Item {
         id: op
         property bool on: false
         property string title
         property string hint
-        default property alias extra: opExtra.data
+        property bool last: false
         signal picked
         Layout.fillWidth: true
-        Layout.preferredHeight: opCol.implicitHeight + 24
-        radius: 16
-        color: Qt.rgba(1, 1, 1, on ? 0.88 : 0.66)
-        border.width: 2
-        border.color: on ? '#5e1a33' : Qt.rgba(1, 1, 1, 0.9)
-        ColumnLayout {
-            id: opCol
-            x: 12; y: 12
-            width: parent.width - 24
-            spacing: 6
-            RowLayout {
-                spacing: 10
+        Layout.preferredHeight: Math.max(S.rowH, opRow.implicitHeight + 16)
+        Rectangle {
+            anchors.fill: parent
+            anchors.leftMargin: -6; anchors.rightMargin: -6
+            anchors.topMargin: 2; anchors.bottomMargin: 2
+            radius: 10
+            color: S.sand
+            opacity: opTap.pressed ? 0.4 : 0
+        }
+        RowLayout {
+            id: opRow
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.verticalCenter: parent.verticalCenter
+            spacing: 12
+            Rectangle {
+                Layout.preferredWidth: 28; Layout.preferredHeight: 28; radius: 14
+                color: S.paper
+                border.width: 2.5
+                border.color: S.wine
                 Rectangle {
-                    Layout.preferredWidth: 22; Layout.preferredHeight: 22; radius: 11
-                    color: 'transparent'
-                    border.width: 2.5
-                    border.color: op.on ? '#5e1a33' : '#b3a894'
-                    Rectangle { visible: op.on; anchors.fill: parent; anchors.margins: 4; radius: width / 2; color: '#5e1a33' }
-                }
-                ColumnLayout {
-                    Layout.fillWidth: true
-                    spacing: 0
-                    Label { text: op.title; font.pixelSize: 16; font.bold: true }
-                    Label { Layout.fillWidth: true; visible: op.hint !== ''; text: op.hint; font.pixelSize: 13; color: '#6b5d55'; wrapMode: Text.WordWrap }
+                    visible: op.on
+                    anchors.centerIn: parent
+                    width: 16; height: 16; radius: 8
+                    border.width: 1.5
+                    border.color: S.brassRing
+                    gradient: Gradient {
+                        GradientStop { position: 0.0; color: S.brassLight }
+                        GradientStop { position: 0.55; color: S.brass }
+                        GradientStop { position: 1.0; color: S.brassDark }
+                    }
                 }
             }
-            ColumnLayout { id: opExtra; Layout.fillWidth: true; spacing: 6 }
+            ColumnLayout {
+                Layout.fillWidth: true
+                spacing: 2
+                Label { Layout.fillWidth: true; text: op.title; color: S.ink; wrapMode: Text.WordWrap
+                        font.family: BodyFont ? BodyFont : font.family; font.pixelSize: 17; font.bold: true }
+                Label { Layout.fillWidth: true; visible: op.hint !== ''; text: op.hint; color: S.muted; wrapMode: Text.WordWrap
+                        font.family: BodyFont ? BodyFont : font.family; font.pixelSize: 16; lineHeight: 1.05 }
+            }
         }
-        TapHandler { gesturePolicy: TapHandler.WithinBounds; onTapped: op.picked() }
+        EhDotLine {
+            visible: !op.last
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+        }
+        TapHandler { id: opTap; gesturePolicy: TapHandler.WithinBounds; onTapped: op.picked() }
     }
 
     Flickable {
@@ -111,61 +134,60 @@ Item {
         clip: true
         ColumnLayout {
             id: col
-            x: 16
-            width: parent.width - 32
-            spacing: 10
+            x: S.margin
+            width: parent.width - 2 * S.margin
+            spacing: S.gap
 
             EhPageTop { title: ''; Layout.leftMargin: 6; Layout.rightMargin: 6 }
-            Label {
-                Layout.topMargin: -14
+            EhBackLink {
                 text: '‹ ' + qsTr('Advanced')
-                color: '#5e1a33'; font.pixelSize: 17; font.bold: true
-                TapHandler { margin: 10; onTapped: app.stack.pop() }
+                onClicked: app.stack.pop()
             }
-            Label {
-                text: qsTr('Connection')
-                color: '#3f0f21'
-                font.family: TitleFont ? TitleFont : font.family
-                font.weight: Font.Black
-                font.pixelSize: 28
-            }
+            EhTitle { text: qsTr('Connection') }
 
             // state of the connection
-            Rectangle {
-                Layout.fillWidth: true
-                Layout.preferredHeight: stRow.implicitHeight + 24
-                radius: 16
-                gradient: Gradient {
-                    GradientStop { position: 0; color: !Network.isConnected ? '#b3261e' : (page.torOn ? '#6b3fa0' : '#53652a') }
-                    GradientStop { position: 1; color: !Network.isConnected ? '#78140f' : (page.torOn ? '#402468' : '#344016') }
-                }
+            EhSheet {
+                topPadding: 12
+                bottomPadding: 12
                 RowLayout {
                     id: stRow
-                    x: 12; y: 12
-                    width: parent.width - 24
-                    spacing: 10
-                    Image {
-                        visible: page.torOn
-                        source: Qt.resolvedUrl('../../icons/eh_onion.svg')
-                        sourceSize.width: 26; sourceSize.height: 26
-                    }
-                    Rectangle {
-                        visible: !page.torOn
-                        Layout.preferredWidth: 12; Layout.preferredHeight: 12; radius: 6
-                        color: Network.isConnected ? '#bfe07a' : '#ffb4a8'
+                    Layout.fillWidth: true
+                    spacing: 12
+                    Item {
+                        Layout.preferredWidth: 28
+                        Layout.preferredHeight: 28
+                        Layout.alignment: Qt.AlignVCenter
+                        Image {
+                            visible: page.torOn
+                            anchors.centerIn: parent
+                            source: Qt.resolvedUrl('../../icons/eh_onion.svg')
+                            sourceSize.width: 28; sourceSize.height: 28
+                        }
+                        Rectangle {
+                            visible: !page.torOn
+                            anchors.centerIn: parent
+                            width: 16; height: 16; radius: 8
+                            color: Network.isConnected ? S.olive : S.waitInk
+                        }
                     }
                     ColumnLayout {
                         Layout.fillWidth: true
-                        spacing: 1
+                        spacing: 2
                         Label {
-                            color: '#ffffff'; font.pixelSize: 16; font.bold: true
+                            Layout.fillWidth: true
+                            wrapMode: Text.WordWrap
+                            color: Network.isConnected ? S.oliveInk : S.waitInk
+                            font.family: BodyFont ? BodyFont : font.family
+                            font.pixelSize: 17; font.bold: true
                             text: !Network.isConnected ? qsTr('Not connected')
                                 : (page.torOn ? qsTr('Connected through Tor') : (page.myNode ? qsTr('Connected to your node') : qsTr('Connected')))
                         }
                         Label {
                             Layout.fillWidth: true
                             elide: Text.ElideMiddle
-                            color: '#ffffff'; opacity: 0.9; font.pixelSize: 13
+                            color: S.muted
+                            font.family: BodyFont ? BodyFont : font.family
+                            font.pixelSize: 16
                             text: !Network.isConnected ? (page.torOn && page.torFound === 0 ? qsTr('Tor does not answer') : qsTr('trying to connect…'))
                                 : Network.server + ' · ' + qsTr('block %1').arg(Network.height.toLocaleString(app.ehLocale(), 'f', 0))
                         }
@@ -173,139 +195,135 @@ Item {
                 }
             }
 
-            Rectangle {
-                Layout.fillWidth: true
-                Layout.preferredHeight: whyL.implicitHeight + 20
-                radius: 14
-                color: Qt.rgba(0.98, 0.94, 0.84, 0.92)
-                Label {
-                    id: whyL
-                    anchors.fill: parent; anchors.margins: 10
-                    wrapMode: Text.WordWrap
-                    textFormat: Text.StyledText
-                    font.pixelSize: 14
-                    text: qsTr('Schèi connects by itself to the public Electrum servers, to know the balance and to send payments. If you have <b>your own node</b> (for example on Umbrel), you can connect only to that.')
-                }
+            EhInfoBox {
+                kind: 'warn'
+                text: qsTr('Schèi connects by itself to the public Electrum servers, to know the balance and to send payments. If you have <b>your own node</b> (for example on Umbrel), you can connect only to that.')
             }
 
-            Opt {
-                on: !page.chooseMyNode
-                title: qsTr('Automatic') + '  (' + qsTr('recommended') + ')'
-                hint: qsTr('chooses by itself a server that works')
-                onPicked: page.chooseAutomatic()
-            }
-            Opt {
-                on: page.chooseMyNode
-                title: qsTr('Only my node')
-                hint: qsTr('connects only to the server you write')
-                onPicked: { page.chooseMyNode = true; if (nodeField.text === '') nodeField.text = page.myNode ? Network.server : '' }
-                Label { visible: page.chooseMyNode; text: qsTr('SERVER ADDRESS'); font.pixelSize: 12; font.bold: true; color: '#6b5d55' }
-                Rectangle {
+            // automatic or only my node
+            EhSheet {
+                bottomPadding: page.chooseMyNode ? 14 : 0
+                Opt {
+                    on: !page.chooseMyNode
+                    title: qsTr('Automatic') + '  (' + qsTr('recommended') + ')'
+                    hint: qsTr('chooses by itself a server that works')
+                    onPicked: page.chooseAutomatic()
+                }
+                Opt {
+                    on: page.chooseMyNode
+                    last: !page.chooseMyNode
+                    title: qsTr('Only my node')
+                    hint: qsTr('connects only to the server you write')
+                    onPicked: { page.chooseMyNode = true; if (nodeField.text === '') nodeField.text = page.myNode ? Network.server : '' }
+                }
+                ColumnLayout {
                     visible: page.chooseMyNode
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 44
-                    radius: 12
-                    color: '#ffffff'
-                    border.width: 2
-                    border.color: page.nodeError !== '' ? '#b3261e' : '#e8dcc4'
-                    TextInput {
-                        id: nodeField
-                        anchors.fill: parent
-                        anchors.leftMargin: 10
-                        anchors.rightMargin: 10
-                        verticalAlignment: TextInput.AlignVCenter
-                        font.family: FixedFont
-                        font.pixelSize: 14
-                        inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText | Qt.ImhUrlCharactersOnly
-                        clip: true
-                        text: page.myNode ? Network.server : ''
-                        Label {
-                            anchors.verticalCenter: parent.verticalCenter
-                            visible: nodeField.text === '' && !nodeField.activeFocus
-                            text: 'umbrel.local:50002:s'
-                            color: '#b3a894'
+                    spacing: 8
+                    EhCaption { text: qsTr('SERVER ADDRESS'); Layout.topMargin: 6; Layout.bottomMargin: 0 }
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: S.fieldH
+                        radius: 16
+                        color: S.paper
+                        border.width: (nodeField.activeFocus || page.nodeError !== '') ? 2.5 : 2
+                        border.color: page.nodeError !== '' ? S.red : (nodeField.activeFocus ? S.wine : S.edge)
+                        TextInput {
+                            id: nodeField
+                            anchors.fill: parent
+                            anchors.leftMargin: 14
+                            anchors.rightMargin: 14
+                            verticalAlignment: TextInput.AlignVCenter
                             font.family: FixedFont
-                            font.pixelSize: 14
+                            font.pixelSize: 17
+                            color: S.ink
+                            selectionColor: S.highlight
+                            selectedTextColor: S.wineDark
+                            inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText | Qt.ImhUrlCharactersOnly
+                            clip: true
+                            text: page.myNode ? Network.server : ''
+                            Label {
+                                anchors.verticalCenter: parent.verticalCenter
+                                visible: nodeField.text === '' && !nodeField.activeFocus
+                                text: 'umbrel.local:50002:s'
+                                color: S.muted
+                                font.family: FixedFont
+                                font.pixelSize: 17
+                            }
                         }
                     }
-                }
-                Label {
-                    visible: page.nodeError !== ''
-                    Layout.fillWidth: true
-                    wrapMode: Text.WordWrap
-                    text: page.nodeError
-                    color: '#b3261e'; font.pixelSize: 13; font.bold: true
-                }
-                Label {
-                    visible: page.chooseMyNode
-                    Layout.fillWidth: true
-                    wrapMode: Text.WordWrap
-                    textFormat: Text.StyledText
-                    font.pixelSize: 13
-                    color: '#6b5d55'
-                    text: qsTr('You find it in the "Electrs" or "Fulcrum" app of your node. ":s" means protected connection.')
-                          + (page.torOn ? ' ' + qsTr('With Tor you can also write the <b>.onion</b> address of the node: so you connect to your home even from outside, without touching the router.') : '')
-                }
-                EhNextButton {
-                    visible: page.chooseMyNode
-                    Layout.fillWidth: true
-                    text: qsTr('Try and connect')
-                    onClicked: page.connectNode()
+                    EhInfoBox {
+                        visible: page.nodeError !== ''
+                        kind: 'danger'
+                        text: page.nodeError
+                    }
+                    Label {
+                        Layout.fillWidth: true
+                        wrapMode: Text.WordWrap
+                        textFormat: Text.StyledText
+                        font.family: BodyFont ? BodyFont : font.family
+                        font.pixelSize: 16
+                        lineHeight: 1.1
+                        color: S.muted
+                        text: qsTr('You find it in the "Electrs" or "Fulcrum" app of your node. ":s" means protected connection.')
+                              + (page.torOn ? ' ' + qsTr('With Tor you can also write the <b>.onion</b> address of the node: so you connect to your home even from outside, without touching the router.') : '')
+                    }
+                    EhStitchButton {
+                        Layout.topMargin: 4
+                        kind: 'wine'
+                        endIcon: 'next'
+                        text: qsTr('Try and connect')
+                        onClicked: page.connectNode()
+                    }
                 }
             }
 
             // through Tor (Orbot)
-            Rectangle {
-                Layout.fillWidth: true
-                Layout.preferredHeight: torRow.implicitHeight + 24
-                radius: 16
-                color: Qt.rgba(1, 1, 1, 0.75)
-                border.width: 2
-                border.color: page.torOn ? (page.torFound === 0 ? '#e2a49c' : '#b9a3dd') : Qt.rgba(1, 1, 1, 0.9)
-                RowLayout {
-                    id: torRow
-                    x: 12; y: 12
-                    width: parent.width - 24
-                    spacing: 10
-                    Image { source: Qt.resolvedUrl('../../icons/eh_onion.svg'); sourceSize.width: 30; sourceSize.height: 30 }
-                    ColumnLayout {
-                        Layout.fillWidth: true
-                        spacing: 1
-                        Label { text: qsTr('Go through Tor'); font.pixelSize: 16; font.bold: true }
-                        Label {
+            EhSheet {
+                borderColor: page.torOn && page.torFound === 0 ? S.wine : S.edge
+                Item {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: Math.max(S.rowH, torRow.implicitHeight + 16)
+                    RowLayout {
+                        id: torRow
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.verticalCenter: parent.verticalCenter
+                        spacing: 12
+                        EhIconRing { icon: 'eh_onion.svg'; iconSize: 26 }
+                        ColumnLayout {
                             Layout.fillWidth: true
-                            wrapMode: Text.WordWrap
-                            font.pixelSize: 13
-                            font.bold: page.torOn && page.torFound >= 0
-                            color: !page.torOn ? '#6b5d55' : (page.torFound === 1 ? '#45541f' : (page.torFound === 0 ? '#b3261e' : '#6b5d55'))
-                            text: !page.torOn ? qsTr('more private · needs the Orbot app')
-                                : (page.probing ? qsTr('looking for Orbot…')
-                                : (page.torFound === 1 ? '✓ ' + qsTr('Orbot found') : (page.torFound === 0 ? qsTr('Orbot is not on') : qsTr('on'))))
+                            spacing: 2
+                            Label { Layout.fillWidth: true; text: qsTr('Go through Tor'); color: S.ink; wrapMode: Text.WordWrap
+                                    font.family: BodyFont ? BodyFont : font.family; font.pixelSize: 17; font.bold: true }
+                            Label {
+                                Layout.fillWidth: true
+                                wrapMode: Text.WordWrap
+                                font.family: BodyFont ? BodyFont : font.family
+                                font.pixelSize: 16
+                                lineHeight: 1.05
+                                font.bold: page.torOn && page.torFound >= 0
+                                color: !page.torOn ? S.muted : (page.torFound === 1 ? S.oliveInk : (page.torFound === 0 ? S.red : S.muted))
+                                text: !page.torOn ? qsTr('more private · needs the Orbot app')
+                                    : (page.probing ? qsTr('looking for Orbot…')
+                                    : (page.torFound === 1 ? '✓ ' + qsTr('Orbot found') : (page.torFound === 0 ? qsTr('Orbot is not on') : qsTr('on'))))
+                            }
                         }
-                    }
-                    Switch {
-                        checked: page.torOn
-                        onToggled: page.setTor(checked)
+                        EhSwitch {
+                            Layout.rightMargin: -8          // its touch room, not its look
+                            checked: page.torOn
+                            onToggled: page.setTor(checked)
+                        }
                     }
                 }
             }
-            Rectangle {
+            EhInfoBox {
                 visible: page.torOn
-                Layout.fillWidth: true
-                Layout.preferredHeight: torNote.implicitHeight + 20
-                radius: 14
-                color: Qt.rgba(0.98, 0.94, 0.84, 0.95)
-                Label {
-                    id: torNote
-                    anchors.fill: parent; anchors.margins: 10
-                    wrapMode: Text.WordWrap
-                    textFormat: Text.StyledText
-                    font.pixelSize: 14
-                    text: page.torFound === 0
-                          ? qsTr('<b>What to do:</b> open the <b>Orbot</b> app and tap the big button to turn it on. Then come back here: Schèi connects by itself.') + '<br><br>'
-                            + qsTr('If you do not have Orbot, turn off "Go through Tor" and Schèi connects normally again.')
-                          : qsTr('With Tor the connection is a bit slower: a few seconds more when opening and to update the balance.')
-                }
+                kind: 'warn'
+                text: page.torFound === 0
+                      ? qsTr('<b>What to do:</b> open the <b>Orbot</b> app and tap the big button to turn it on. Then come back here: Schèi connects by itself.') + '<br><br>'
+                        + qsTr('If you do not have Orbot, turn off "Go through Tor" and Schèi connects normally again.')
+                      : qsTr('With Tor the connection is a bit slower: a few seconds more when opening and to update the balance.')
             }
         }
     }
