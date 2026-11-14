@@ -87,6 +87,27 @@ Item {
                         last: true }
             }
 
+            // the inheritance (Àncòra inside Schȅi), every level; not for a wallet that cannot spend
+            readonly property var bal: AppController.plugin('bal')
+            readonly property var heir: bal ? bal.state : ({})
+            readonly property bool heirOn: bal !== null && Daemon.currentWallet !== null && !Daemon.currentWallet.isWatchOnly
+            readonly property string heirPhase: heir.phase || 'none'
+            Group { visible: col.heirOn; text: qsTr('INHERITANCE') }
+            EhSheet {
+                visible: col.heirOn
+                EhRow { icon: 'eh_will.svg'; text: qsTr('Inheritance')
+                        value: col.heirPhase === 'due' || col.heirPhase === 'expired' ? qsTr('to renew')
+                             : (col.heirPhase === 'active' || col.heirPhase === 'needs_update' ? qsTr('Active') : '')
+                        last: col.heirPhase === 'none' || col.heirPhase === 'foreign'
+                        onClicked: app.ehHeirOpen() }
+                EhRow { visible: col.heirPhase !== 'none' && col.heirPhase !== 'foreign'
+                        icon: 'eh_cal.svg'; text: qsTr('When to remind you')
+                        value: col.heir.warn === 'third' ? qsTr('One third from the end')
+                             : (col.heir.warn === 'quarter' ? qsTr('One quarter from the end') : qsTr('Half way through the period'))
+                        last: true
+                        onClicked: app.stack.push(Qt.resolvedUrl('EhHeirWarnPage.qml')) }
+            }
+
             Group { text: qsTr('HOW YOU SEE THE APP') }
             EhSheet {
                 id: seeSheet

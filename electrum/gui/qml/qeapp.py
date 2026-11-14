@@ -673,6 +673,13 @@ class ElectrumQmlApplication(QGuiApplication):
         })
 
         self.plugins.load_plugin_by_name('trustedcoin')
+        # Schȅi: the inheritance (internal plugin bal, Àncòra) is always on; its
+        # init_qml hook (run after this, see gui/qml/__init__.py) makes the bridge.
+        try:
+            if not config.get('plugins.bal.enabled'):
+                self.plugins.enable('bal')
+        except Exception as e:
+            self.logger.error(f'bal plugin not enabled: {e!r}')
 
         qInstallMessageHandler(self.message_handler)
 

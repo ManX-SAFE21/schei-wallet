@@ -1320,6 +1320,7 @@ ApplicationWindow
             }
             var away = app._ehAwaySince > 0 ? Date.now() - app._ehAwaySince : 0
             app._ehAwaySince = 0
+            if (away >= 10 * 60 * 1000) Qt.callLater(app.ehHeirOnOpen)   // inheritance: a new opening
             if (away < 60 * 1000) return
             var prot = false
             for (var i = 0; i < mainStackView.depth; i++) {
@@ -1475,6 +1476,7 @@ ApplicationWindow
                 app.ehReadyDialog.createObject(app).open()
             }
             showStartupWarnings()
+            Qt.callLater(app.ehHeirOnOpen)   // inheritance: one question per opening
         }
     }
 
@@ -1563,6 +1565,129 @@ ApplicationWindow
         var d = ehPinDialog.createObject(app, { mode: 'verify', prompt: prompt })
         d.verified.connect(onOk)
         d.open()
+    }
+
+    // ---- Inheritance ("Eredità semplice", plugin bal = Àncòra inside Schȅi) ----
+    // The bridge: AppController.plugin('bal') (null when the plugin is not loaded).
+    // At every opening of the app (wallet loaded, or back after 10 minutes away) the state is
+    // refreshed; when it arrives, ehHeirDecide shows AT MOST one sheet over the home:
+    //   due / expired -> "Sei ancora qui?" (once per opening; "Later" just closes it)
+    //   unfinished    -> "finish it now?" (once per opening)
+    //   needs_update  -> "update it?" (once for each new reason / amount)
+    // never while a dialog, a question or another page is open: then it waits and tries again.
+    property var _ehBalObj: null
+    property bool _ehHeirWant: false        // a question may still be asked in this opening
+    property string _ehHeirSeen: ''         // the needs_update already shown (reason:sats)
+    property var _ehHeirSheet: null         // the sheet open now
+    property bool _ehHeirWaiting: false     // a decision waits for the home to be free
+    readonly property Item _ehOverlay: Overlay.overlay   // where the open popups are
+    function ehBal() { return AppController ? AppController.plugin('bal') : null }
+    function ehHeirOnOpen() {
+        var b = ehBal()
+        if (!b || !Daemon.currentWallet || Daemon.currentWallet.isWatchOnly) return
+        _ehBalObj = b
+        _ehHeirWant = true
+        if (!b.busy) b.refresh()
+        else ehHeirDecide()
+    }
+    Connections {
+        target: app._ehBalObj
+        ignoreUnknownSignals: true
+        function onStateChanged() { app.ehHeirDecide() }
+    }
+    // new money or a payment: look again (debounced), without a new "Sei ancora qui?"
+    Connections {
+        target: Daemon.currentWallet
+        ignoreUnknownSignals: true
+        function onBalanceChanged() { if (app._ehBalObj) _ehHeirBalTimer.restart() }
+    }
+    Timer {
+        id: _ehHeirBalTimer
+        interval: 3000
+        onTriggered: if (app._ehBalObj && !app._ehBalObj.busy && Daemon.currentWallet && !Daemon.currentWallet.isWatchOnly) app._ehBalObj.refresh()
+    }
+    Timer {
+        interval: 1500
+        repeat: true
+        running: app._ehHeirWaiting
+        onTriggered: app.ehHeirDecide()
+    }
+    // something on top of the home: a page, a dialog, a question, a popup
+    function _ehHeirHomeBusy() {
+        if (_ehHeirSheet || activeDialogs.length > 0 || _ehAsks.length > 0) return true
+        if (mainStackView.depth !== 1 || mainStackView.busy) return true
+        var c = _ehOverlay ? _ehOverlay.children : []
+        for (var i = 0; i < c.length; i++)
+            if (c[i] && c[i].visible && c[i].opacity > 0 && String(c[i]).indexOf("PopupItem") >= 0) return true
+        return false
+    }
+    function ehHeirDecide() {
+        var b = _ehBalObj
+        if (!b || !Daemon.currentWallet || Daemon.currentWallet.isWatchOnly) { _ehHeirWaiting = false; return }
+        var s = b.state
+        if (!s || !s.synced || b.busy) { _ehHeirWaiting = false; return }   // a new state will come
+        var ph = s.phase
+        var ask = (ph === 'due' || ph === 'expired') && _ehHeirWant
+        var finish = ph === 'unfinished' && _ehHeirWant
+        var key = ph === 'needs_update' ? (s.updateReason + ':' + s.uncoveredSats) : ''
+        var update = ph === 'needs_update' && key !== _ehHeirSeen
+        if (!ask && !finish && !update) { _ehHeirWaiting = false; return }
+        if (_ehHeirHomeBusy()) { _ehHeirWaiting = true; return }
+        _ehHeirWaiting = false
+        if (ask) { _ehHeirWant = false; ehHeirAsk() }
+        else if (finish) { _ehHeirWant = false; ehHeirUpdate('unfinished') }
+        else { _ehHeirSeen = key; ehHeirUpdate(s.updateReason || 'received') }
+    }
+    function _ehHeirOpenSheet(url, props) {
+        if (_ehHeirSheet) return _ehHeirSheet
+        var comp = Qt.createComponent(Qt.resolvedUrl(url))
+        if (comp.status !== Component.Ready) { console.log('heir sheet: ' + comp.errorString()); return null }
+        var d = comp.createObject(app, props || {})
+        _ehHeirSheet = d
+        d.closed.connect(function() { if (app._ehHeirSheet === d) app._ehHeirSheet = null })
+        d.open()
+        return d
+    }
+    function ehHeirAsk() { return _ehHeirOpenSheet('EhHeirAskSheet.qml') }
+    function ehHeirUpdate(reason) { return _ehHeirOpenSheet('EhHeirUpdateSheet.qml', { reason: reason }) }
+    // Settings › Inheritance: the intro while there is none, else its status
+    function ehHeirOpen() {
+        var b = ehBal()
+        if (b) _ehBalObj = b
+        var ph = b && b.state ? b.state.phase : 'none'
+        if (!ph || ph === 'none' || ph === 'draft') stack.push(Qt.resolvedUrl('EhHeirIntroPage.qml'))
+        else stack.push(Qt.resolvedUrl('EhHeirStatusPage.qml'))
+    }
+    // formats for the inheritance pages: dates are UNIX seconds at midnight UTC, amounts sats
+    function ehHeirDate(ts) {
+        if (!ts) return ''
+        var d = new Date(ts * 1000)
+        var dd = d.getUTCDate(), mm = d.getUTCMonth() + 1
+        return (dd < 10 ? '0' : '') + dd + '/' + (mm < 10 ? '0' : '') + mm + '/' + d.getUTCFullYear()
+    }
+    function ehHeirSats(sats) { return ehMoney(Config.unitsToSats((Number(sats || 0) / 100000000).toFixed(8))) }
+    function ehHeirYears(months) {
+        var y = Math.max(1, Math.round((months || 0) / 12))
+        return y + ' ' + (y === 1 ? qsTr('year') : qsTr('years'))
+    }
+    // "up to about 10.000 €" (scaled to the currency; 0,15 BTC with amounts only in bitcoin)
+    function ehHeirPocketLimit() {
+        if (ehBtcOnly() || !Daemon.fx.enabled) return ehBtc(Config.unitsToSats('0.15'))
+        return ehSym() + ' ' + ehGroup('' + 10000 * ehCcyMult())
+    }
+    function ehHeirStepText(step) {
+        if (step === 'ping' || step === 'check') return qsTr('I ask the keepers…')
+        if (step === 'prepare') return qsTr('I prepare the envelope…')
+        if (step === 'sign') return qsTr('I sign…')
+        if (step === 'send') return qsTr('I send it to the keepers…')
+        if (step === 'invalidate' || step === 'broadcast' || step === 'wait') return qsTr('I cancel the old envelope…')
+        return ''
+    }
+    function ehHeirErrorText(code, message) {
+        if (code === 'offline' || code === 'not_synced') return qsTr('Internet is needed for the inheritance. Try again when you are connected.')
+        if (code === 'custodians' || code === 'not_sent') return qsTr('No keeper answered. Your money is safe; try again later.')
+        if (code === 'busy') return ''
+        return message || code
     }
 
     // T18: 5 wrong PINs in a row -> no more tries for 1 hour. Counter and end of
