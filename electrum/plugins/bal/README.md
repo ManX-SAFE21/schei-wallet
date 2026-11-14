@@ -1,0 +1,24 @@
+# Àncòra
+Àncòra Electrum Plugin
+
+*Àncora per te, ancòra per loro.* Pre-signed, time-locked
+backup transactions, optionally kept by independent will-executor servers:
+while you keep refreshing them nothing happens; if you stop, from the date you
+chose they send your bitcoin to the people you chose.
+
+Designed by Safe21 (https://safe21.io). Based on Bitcoin After Life (BAL) by
+Svatantrya — MIT licence (see `LICENSE`).
+
+## Key behaviours
+
+- **Anticipate / postpone safety**: changing the delivery time of an
+  already-signed will is handled safely. Postponing a signed/sent will first
+  asks you to invalidate the old transaction on-chain (so a will-executor can
+  never broadcast the earlier-locktime transaction and execute the inheritance
+  too early), then lets you rebuild and re-send the new one via the
+  **Prepare** button on the **WILL** tab.
+- **"Status" column**: the will transaction list shows, for each
+  will-executor's copy, where that will-executor stands (for example whether
+  it confirmed it holds the transaction), with a tooltip giving the details.
+
+See the top-level [`README.md`](../README.md) for installation and testing.
