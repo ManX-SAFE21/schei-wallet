@@ -128,7 +128,7 @@ Item {
                 Label {
                     Layout.fillWidth: true
                     horizontalAlignment: Text.AlignHCenter
-                    text: qsTr('%1 days').arg(page.st.daysToWarn || 0)
+                    text: (page.st.daysToWarn || 0) === 1 ? qsTr('1 day') : qsTr('%1 days').arg(page.st.daysToWarn || 0)
                     color: S.wineDark
                     font.family: SerifFont ? SerifFont : font.family
                     font.weight: Font.ExtraBold

@@ -48,6 +48,16 @@ EhPageTop {
             return qsTr('The total must be 100%.')
         case 'address':
             return qsTr('This is not a bitcoin address.')
+        case 'not_synced':
+            return qsTr('Schȅi is still updating. Try again in a little while.')
+        case 'no_heirs':
+            return qsTr('First add at least one person.')
+        case 'needs_renew':
+            return qsTr('First the inheritance must be renewed.')
+        case 'not_sent':
+            return qsTr('The envelope is ready but no keeper took it. Try again in a little while.')
+        case 'internal':
+            return qsTr('Something did not work. Your money is safe; try again later.')
         }
         return message || code
     }

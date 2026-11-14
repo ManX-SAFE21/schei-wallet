@@ -1,4 +1,4 @@
-// Easy Heirs (schȅi): "Sei ancora qui? 🙂" (inheritance, screen 7). From the day of the
+// Easy Heirs (schȅi): "Sei ancora qui?" (inheritance, screen 7). From the day of the
 // reminder (phase due) and after the delivery date (phase expired) it opens over the home once
 // per opening of the app (main.qml ehHeirDecide); the Status page opens it with "Renew now".
 // "Yes, renew" asks the PIN, then bal.renew(); "Later" just closes.
@@ -35,7 +35,7 @@ EhBottomSheet {
     }
 
     EhTitle {
-        text: qsTr('Are you still here? 🙂')
+        text: qsTr('Are you still here?')
         fontSize: 28
         Layout.bottomMargin: 0
     }

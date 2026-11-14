@@ -1560,10 +1560,13 @@ ApplicationWindow
         }
     }
 
-    // PIN pad, then onOk() if the PIN is right (advanced settings...)
-    function ehAskPin(prompt, onOk) {
+    // PIN pad, then onOk() if the PIN is right (advanced settings...); the optional onCancel()
+    // runs when the pad closes without the right PIN (Cancel, back key, any other close)
+    function ehAskPin(prompt, onOk, onCancel) {
         var d = ehPinDialog.createObject(app, { mode: 'verify', prompt: prompt })
-        d.verified.connect(onOk)
+        var ok = false
+        d.verified.connect(function() { ok = true; onOk() })
+        if (onCancel) d.closed.connect(function() { if (!ok) onCancel() })
         d.open()
     }
 
@@ -1684,8 +1687,13 @@ ApplicationWindow
         return ''
     }
     function ehHeirErrorText(code, message) {
-        if (code === 'offline' || code === 'not_synced') return qsTr('Internet is needed for the inheritance. Try again when you are connected.')
-        if (code === 'custodians' || code === 'not_sent') return qsTr('No keeper answered. Your money is safe; try again later.')
+        if (code === 'offline') return qsTr('Internet is needed for the inheritance. Try again when you are connected.')
+        if (code === 'custodians') return qsTr('No keeper answered. Your money is safe; try again later.')
+        if (code === 'not_synced') return qsTr('Schȅi is still updating. Try again in a little while.')
+        if (code === 'no_heirs') return qsTr('First add at least one person.')
+        if (code === 'needs_renew') return qsTr('First the inheritance must be renewed.')
+        if (code === 'not_sent') return qsTr('The envelope is ready but no keeper took it. Try again in a little while.')
+        if (code === 'internal') return qsTr('Something did not work. Your money is safe; try again later.')
         if (code === 'busy') return ''
         return message || code
     }

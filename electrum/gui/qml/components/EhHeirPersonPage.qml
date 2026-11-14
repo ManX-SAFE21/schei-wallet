@@ -36,6 +36,14 @@ Item {
     property string error: ''
     property int percent: 0
     property bool other: false
+    // an error appears at the bottom of the page: scroll so that it is in view
+    // (after the layout has placed the error box)
+    onErrorChanged: if (error !== '') errorScroll.restart()
+    Timer {
+        id: errorScroll
+        interval: 80
+        onTriggered: flick.contentY = Math.max(0, flick.contentHeight - flick.height)
+    }
 
     Rectangle { anchors.fill: parent; color: S.parch }
 
@@ -51,6 +59,15 @@ Item {
         percent = p
         other = fixed.indexOf(p) < 0
         if (other && p > 0) otherField.text = '' + p
+    }
+
+    // another heir already has this name (trimmed, any case): saving it is refused
+    function nameTaken(n) {
+        var k = n.trim().toLowerCase()
+        var h = (st && st.heirs) ? st.heirs : []
+        for (var i = 0; i < h.length; i++)
+            if (h[i].name !== oldName && ('' + h[i].name).trim().toLowerCase() === k) return true
+        return false
     }
 
     function addrOf(s) { return s.trim().replace(/^bitcoin:/i, '').split('?')[0] }
@@ -363,6 +380,10 @@ Item {
             text: qsTr('Save')
             enabled: page.canSave
             onClicked: {
+                if (page.nameTaken(nameField.text)) {
+                    page.error = qsTr('There is already a person with this name.')
+                    return
+                }
                 page.error = ''
                 page.bal.heirSave(page.oldName, nameField.text.trim(), page.address, page.percent)
             }

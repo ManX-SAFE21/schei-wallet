@@ -296,7 +296,8 @@ Item {
             Layout.preferredHeight: 70
             Layout.bottomMargin: 6
             enabled: page.rv !== null && !page.busy && page.error === ''
-            onReached: app.ehAskPin(qsTr('Type the PIN to confirm the inheritance'), function() { page.bal.confirm() })
+            onReached: app.ehAskPin(qsTr('Type the PIN to confirm the inheritance'), function() { page.bal.confirm() },
+                                    function() { slide.reset() })   // PIN cancelled: the coin goes back at once
         }
     }
 }
