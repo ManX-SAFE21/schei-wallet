@@ -104,9 +104,9 @@ Item {
             EhCaption { text: qsTr('How it works'); Layout.topMargin: 2; Layout.bottomMargin: -6 }
             EhSheet {
                 Step { n: 1; text: qsTr('Choose <b>who</b> receives and how much.') }
-                Step { n: 2; text: qsTr('Choose <b>in how long</b>: for example 2 years.') }
-                Step { n: 3; text: qsTr('Half way Schȅi asks you: <b>"Are you still here?"</b> You say yes, and everything starts again.') }
-                Step { n: 4; last: true; text: qsTr('If you no longer answer, on the date the heirs receive.') }
+                Step { n: 2; text: qsTr('Choose <b>how long from now</b>: for example 2 years.') }
+                Step { n: 3; text: qsTr('When the delivery gets close, Schȅi asks you: <b>"Are you still here?"</b> You say yes, and the time starts again from the beginning.') }
+                Step { n: 4; last: true; text: qsTr('If you no longer answer, on the delivery date the heirs receive.') }
             }
             EhInfoBox {
                 kind: 'tip'

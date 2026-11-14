@@ -214,7 +214,7 @@ Item {
                 Layout.rightMargin: 4
                 wrapMode: Text.WordWrap
                 textFormat: Text.StyledText
-                text: qsTr('The <b>keepers</b> (Will Executor) are servers that keep the sealed envelope and send it on the date. We use %1: if one switches off there is the other.').arg(page.okKeepers())
+                text: qsTr('The <b>keepers</b> (Will Executor) are servers that keep the sealed envelope and send it on the delivery date. We use %1: if one switches off there is the other.').arg(page.okKeepers())
                 color: S.muted
                 font.family: BodyFont ? BodyFont : font.family
                 font.pixelSize: 15

@@ -47,13 +47,13 @@ Item {
                 topPadding: 14
                 bottomPadding: 14
                 spacing: 12
-                Para { text: qsTr('Schȅi prepares a sealed envelope with your bitcoin for the people you chose. Two keepers (Will Executor) hold it: computers that are always on and send it only on the delivery date. Before that date nobody can send it.') }
+                Para { text: qsTr('Schȅi prepares a <b>sealed envelope</b> with your bitcoin for the people you chose. Several keepers (Will Executor) each hold a copy: computers that are always on and send it only on the delivery date. Before that date nobody can send it: even if someone tried, the Bitcoin nodes would refuse it.') }
                 EhDotLine { Layout.fillWidth: true }
-                Para { text: qsTr('You choose in how long: 1, 2, 3 or 5 years. From half the period, every time you open Schȅi it asks you: <b>"Are you still here?"</b> If you say yes, the inheritance starts again from today. The renewal costs a small network fee and joins all the coins into one.') }
+                Para { text: qsTr('You choose how long from now to deliver the inheritance: 1, 2, 3 or 5 years (we suggest 2). When the delivery gets close, every time you open Schȅi it asks you: <b>"Are you still here?"</b> An example: if you chose 2 years, the question starts when 1 year is left. If you say yes, the time starts again from the beginning: 2 more whole years from that day. If you choose "Later", it asks you again the next time you open Schȅi: no alerts arrive on the phone, so open it now and then. The renewal costs a small network fee and joins all the coins into one. In Settings › "When to remind you" you can make the question start later: when a third or a quarter of the period is left.') }
                 EhDotLine { Layout.fillWidth: true }
-                Para { text: qsTr('Your money stays yours: you receive and pay as always. If new money arrives or you make a payment, Schȅi asks you to update the envelope: the PIN is enough and it costs nothing.') }
+                Para { text: qsTr('<b>Your money stays yours</b>: you receive and pay as always. If new money arrives or you make a payment, Schȅi asks you to update the envelope. The PIN is enough and you pay nothing.') }
                 EhDotLine { Layout.fillWidth: true }
-                Para { text: qsTr('If you no longer answer, on the date the keepers send the envelope and the heirs receive the bitcoin. Only then is a keeper paid, from the envelope. It is made for pocket amounts: for big sums use Àncòra on the computer.') }
+                Para { text: qsTr('If you no longer answer, on the delivery date you chose the keepers send the envelope and the heirs receive the bitcoin. Only then is one keeper paid, with a small part of the envelope. Schȅi is made for <b>pocket amounts</b>: for big sums use Àncòra (the plugin for the Electrum wallet) on the computer.') }
             }
         }
     }
