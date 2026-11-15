@@ -83,7 +83,7 @@ Item {
                 RowSw { visible: col.lv >= 1; tag: 1; icon: 'eh_wallet.svg'; text: qsTr('Manage more wallets'); note: qsTr('up to 7, each with its own colour'); key: 'multi'
                         locked: Daemon.availableWallets.rowCount() > 1
                         lockedHint: qsTr('you have %1 wallets: it stays on, so you see them all').arg(Daemon.availableWallets.rowCount()) }
-                RowSw { visible: col.lv >= 1; tag: 1; icon: 'eh_eye.svg'; text: qsTr('View and receive only'); note: qsTr('a wallet without the 12 words: see the balance and receive, no spending'); key: 'watch'
+                RowSw { visible: col.lv >= 1; tag: 1; icon: 'eh_eye.svg'; text: qsTr('View and receive only'); note: qsTr('a wallet without the 12 words (SEED): see the balance and receive, no spending'); key: 'watch'
                         last: true }
             }
 
@@ -98,14 +98,22 @@ Item {
                 EhRow { icon: 'eh_will.svg'; text: qsTr('Inheritance')
                         value: col.heirPhase === 'due' || col.heirPhase === 'expired' ? qsTr('to renew')
                              : (col.heirPhase === 'active' || col.heirPhase === 'needs_update' ? qsTr('Active') : '')
-                        last: col.heirPhase === 'none' || col.heirPhase === 'foreign'
                         onClicked: app.ehHeirOpen() }
                 EhRow { visible: col.heirPhase !== 'none' && col.heirPhase !== 'foreign'
                         icon: 'eh_cal.svg'; text: qsTr('When to remind you')
                         value: col.heir.warn === 'third' ? qsTr('One third from the end')
                              : (col.heir.warn === 'quarter' ? qsTr('One quarter from the end') : qsTr('Half way through the period'))
-                        last: true
                         onClicked: app.stack.push(Qt.resolvedUrl('EhHeirWarnPage.qml')) }
+                // owner 15/11 (point 4c): 3 (default), 5, 7 … 19 keepers
+                EhRow { visible: col.heirPhase !== 'foreign'
+                        icon: 'eh_shield_olive.svg'; iconColor: S.olive; text: qsTr('How many keepers')
+                        hint: qsTr('more keepers, safer')
+                        value: (col.heir.keepersWanted || 3) === 3 ? qsTr('%1 (default)').arg(3) : '' + col.heir.keepersWanted
+                        onClicked: app._ehHeirOpenSheet('EhHeirKeepersSheet.qml') }
+                // owner 15/11 (point 8): "How it works" also while the inheritance is active
+                EhRow { icon: 'eh_info.svg'; text: qsTr('How it works')
+                        last: true
+                        onClicked: app.stack.push(Qt.resolvedUrl('EhHeirHowPage.qml')) }
             }
 
             Group { text: qsTr('HOW YOU SEE THE APP') }
@@ -185,7 +193,7 @@ Item {
 
             Group { text: qsTr('SECURITY') }
             EhSheet {
-                EhRow { icon: 'eh_key_wine.svg'; text: qsTr('See the 12 words again'); lock: true; onClicked: app.ehShowSeed() }
+                EhRow { icon: 'eh_key_wine.svg'; text: qsTr('See the 12 words (SEED) again'); lock: true; onClicked: app.ehShowSeed() }
                 EhRow { icon: 'eh_dots.svg'; text: qsTr('Change PIN'); lock: true; last: true; onClicked: app.ehChangePin() }
             }
 
@@ -222,7 +230,7 @@ Item {
                             var d = Qt.createComponent(Qt.resolvedUrl('EhAskDialog.qml')).createObject(app, {
                                 text: qsTr('Are you sure?'),
                                 detail: qsTr('All the settings go back to the standard ones and the level goes back to BASE.') + '\n\n'
-                                        + qsTr('Your money, the wallets, the 12 words, the PIN, the name and the language do not change.')
+                                        + qsTr('Your money, the wallets, the 12 words (SEED), the PIN, the name and the language do not change.')
                             })
                             d.accepted.connect(function() { app.ehResetAndCheck() })
                             d.open()

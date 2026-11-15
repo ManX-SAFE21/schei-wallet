@@ -571,7 +571,7 @@ Item {
                 // third review: a wallet "only to look at" has no keys, it cannot pay
                 app.ehInfoDialog.createObject(app, {
                     pageTitle: qsTr('This wallet can only look'),
-                    bodyText: qsTr('It shows the balance, but it does not have the keys to pay. Open a wallet with its 12 words to pay.')
+                    bodyText: qsTr('It shows the balance, but it does not have the keys to pay. Open a wallet with its 12 words (SEED) to pay.')
                 }).open()
                 return
             }

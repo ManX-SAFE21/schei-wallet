@@ -73,13 +73,13 @@ ElDialog {
             }
             EhInfoBox {
                 kind: 'warn'
-                text: qsTr('To get it back you need <b>your 12 words</b>, the ones you wrote on the paper when you created the wallet.')
+                text: qsTr('To get it back you need <b>your 12 words</b> (SEED), the ones you wrote on the paper when you created the wallet.')
                 fontSize: 17
             }
             Item { Layout.preferredHeight: 4 }
             EhStitchButton {
                 kind: 'wine'
-                text: qsTr('Put back the 12 words')
+                text: qsTr('Put back the 12 words (SEED)')
                 icon: 'eh_pen_ivory.svg'
                 endIcon: 'next'
                 onClicked: { dialog.restoreChosen(); dialog.doAccept() }

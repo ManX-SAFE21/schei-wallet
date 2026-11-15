@@ -4,6 +4,8 @@
 // then bal.confirm() signs and sends the envelope to the keepers; on success the stack goes
 // back to its first page and the status page (EhHeirStatusPage, WP-C) opens.
 // A keepers' cost above 20% of the balance is only a warning (owner 2026-11-14, point 5).
+// Owner 15/11: the keepers' cost "from X to Y" with an "i" (EhHeirFeeSheet, point 4b); the
+// keepers' sentence counts those that answered against the number chosen (points 3, 4c).
 // "Bottega" look as the preview anteprima/eredita-semplice.html, screen 5.
 import QtQuick
 import QtQuick.Layouts
@@ -31,11 +33,36 @@ Item {
 
     function day(t) { return t > 0 ? Qt.formatDate(new Date(t * 1000), 'dd/MM/yyyy') : '…' }
     function okKeepers() {
-        if (!rv || !rv.custodians) return 2
+        if (!rv || !rv.custodians) return 0
         var n = 0
         for (var i = 0; i < rv.custodians.length; i++) if (rv.custodians[i].ok) n++
         return n
     }
+    // owner 15/11 (points 3, 4c): the keepers that answered against the number chosen
+    function keepersText() {
+        var t = qsTr('The <b>keepers</b> (Will Executor) are servers that keep the sealed envelope and send it on the delivery date.')
+        if (!rv) return t
+        var n = okKeepers(), w = rv.custodiansWanted || st.keepersWanted || 3
+        if (n <= 1) return t + ' ' + qsTr('We use 1: for now there are no others.')
+        if (n === 2 && n < w) return t + ' ' + qsTr('We use 2 of the %1 chosen: if one switches off there is the other.').arg(w)
+        if (n < w) return t + ' ' + qsTr('We use %1 of the %2 chosen: if one switches off there are the others.').arg(n).arg(w)
+        return t + ' ' + qsTr('We use %1: if one switches off there are the others.').arg(n)
+    }
+    // owner 15/11 (point 4b): "from X to Y" (each keeper its price), one figure when equal
+    function keepersFee() {
+        if (!rv) return '…'
+        var hi = rv.custodianFeeMaxSats !== undefined ? rv.custodianFeeMaxSats : rv.custodianFeeSats
+        if (rv.custodianFeeMaxSats === undefined && rv.custodianFeeMinSats === undefined) return app.ehMoney(hi)
+        var lo = rv.custodianFeeMinSats !== undefined ? rv.custodianFeeMinSats : hi
+        var a = app.ehMoney(lo), b = app.ehMoney(hi)
+        // no break inside an amount, and the word before the second amount stays with it:
+        // "from 0,58 €" / "to 0,61 €"
+        if (a === b) return b
+        return qsTr('from %1 to %2').arg(a.replace(/ /g, '\u00a0')).arg('@@')
+                .replace(/ ([^ ]+) @@/, ' $1\u00a0@@').replace('@@', b.replace(/ /g, '\u00a0'))
+    }
+    readonly property bool feeRange: rv !== null && rv.custodianFeeMinSats !== undefined
+                                     && app.ehMoney(rv.custodianFeeMinSats) !== app.ehMoney(rv.custodianFeeMaxSats)
 
     function startReview() {
         if (!bal) return
@@ -85,6 +112,9 @@ Item {
         property bool about: false
         property color figColor: S.wineDark
         property bool last: false
+        property real figSize: 19
+        property bool info: false            // an "i" after the key that opens an explanation
+        signal infoTapped
         Layout.fillWidth: true
         implicitHeight: Math.max(41, kvRow.implicitHeight + 10)
         Layout.preferredHeight: implicitHeight
@@ -105,6 +135,15 @@ Item {
                 font.pixelSize: 16
                 wrapMode: Text.WordWrap
             }
+            Image {
+                visible: kv.info
+                Layout.alignment: Qt.AlignVCenter
+                source: Qt.resolvedUrl('../../icons/eh_info_brass.svg')
+                sourceSize.width: 24
+                sourceSize.height: 24
+                opacity: infoTap.pressed ? 0.6 : 1
+                TapHandler { id: infoTap; margin: 10; onTapped: kv.infoTapped() }
+            }
             Label {
                 visible: kv.about && kv.value !== '…'
                 text: qsTr('about')
@@ -113,11 +152,15 @@ Item {
                 font.pixelSize: 14
             }
             Label {
+                // a long value ("from X to Y") goes on two lines on the right
+                Layout.maximumWidth: kv.width * 0.56
+                horizontalAlignment: Text.AlignRight
+                wrapMode: Text.WordWrap
                 text: kv.value
                 color: kv.figure ? kv.figColor : S.ink
                 font.family: kv.figure ? (SerifFont ? SerifFont : font.family) : (BodyFont ? BodyFont : font.family)
                 font.weight: kv.figure ? Font.ExtraBold : Font.Bold
-                font.pixelSize: kv.figure ? 19 : 16
+                font.pixelSize: kv.figure ? kv.figSize : 16
             }
         }
         EhDotLine {
@@ -197,8 +240,11 @@ Item {
                 Kv {
                     key: qsTr('To the keepers, only at the delivery')
                     figure: true
-                    about: true
-                    value: page.rv ? app.ehMoney(page.rv.custodianFeeSats) : '…'
+                    about: !page.feeRange
+                    figSize: page.feeRange ? 17 : 19
+                    info: true
+                    value: page.keepersFee()
+                    onInfoTapped: app._ehHeirOpenSheet('EhHeirFeeSheet.qml')
                 }
                 Kv {
                     key: qsTr('Every time you renew')
@@ -214,7 +260,7 @@ Item {
                 Layout.rightMargin: 4
                 wrapMode: Text.WordWrap
                 textFormat: Text.StyledText
-                text: qsTr('The <b>keepers</b> (Will Executor) are servers that keep the sealed envelope and send it on the delivery date. We use %1: if one switches off there is the other.').arg(page.okKeepers())
+                text: page.keepersText()
                 color: S.muted
                 font.family: BodyFont ? BodyFont : font.family
                 font.pixelSize: 15

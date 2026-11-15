@@ -112,7 +112,7 @@ WizardComponent {
             icon: root.done ? 'eh_check.svg' : 'eh_cross.svg'
             fontSize: 17
             text: root.done
-                ? qsTr('Perfect! Your paper is correct: all 12 words, in the right order.')
+                ? qsTr('Perfect! Your paper is correct: all 12 words (SEED), in the right order.')
                 : qsTr('Number %1 is not "%2". Look carefully at your paper.').arg(root.position + 1).arg(root.wrongWord)
         }
 
@@ -240,7 +240,7 @@ WizardComponent {
             font.family: BodyFont ? BodyFont : font.family
             font.pixelSize: 17
             font.bold: true
-            text: qsTr("Can't find the word?") + ' <u>' + qsTr('Review the 12 words') + '</u>'
+            text: qsTr("Can't find the word?") + ' <u>' + qsTr('Review the 12 words (SEED)') + '</u>'
             opacity: revTap.pressed ? 0.6 : 1
             TapHandler { id: revTap; onTapped: wizard.pages.prev() }
         }

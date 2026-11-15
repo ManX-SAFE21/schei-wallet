@@ -904,7 +904,7 @@ ApplicationWindow
         if (to === 'base')
             return '• ' + qsTr('The standard settings come back: the extra options turn off, the PIN for big payments is on.')
                  + '\n• ' + qsTr('The rows for more choices are hidden.')
-                 + '\n• ' + qsTr('Your money, the 12 words and the PIN do not change.')
+                 + '\n• ' + qsTr('Your money, the 12 words (SEED) and the PIN do not change.')
         if (to === 'medio')
             return '• ' + qsTr('You write the amounts in %1 or in bitcoin').arg(ehCcyName())
                  + '\n• ' + qsTr('In Receive you can ask a precise amount')
@@ -1596,7 +1596,29 @@ ApplicationWindow
     Connections {
         target: app._ehBalObj
         ignoreUnknownSignals: true
-        function onStateChanged() { app.ehHeirDecide() }
+        function onStateChanged() { app.ehHeirDecide(); app._ehHeirDropNext() }
+        function onBusyChanged() { app._ehHeirDropNext() }
+        function onFailed(op, code, message) { if (op === 'heirDelete' && code !== 'busy') app._ehHeirDropHeirs = false }
+    }
+    // "Cancel the inheritance" + "delete the heirs too", but the wallet did not see the
+    // cancellation yet (not_synced): the heirs are deleted one by one when the phase is draft
+    property bool _ehHeirDropHeirs: false
+    function ehHeirDropHeirsLater() {
+        var b = ehBal()
+        if (!b) return
+        _ehBalObj = b
+        _ehHeirDropHeirs = true
+        _ehHeirDropNext()
+    }
+    function _ehHeirDropNext() {
+        var b = _ehBalObj
+        if (!_ehHeirDropHeirs || !b || b.busy) return
+        var s = b.state
+        if (!s || s.phase === 'none') { _ehHeirDropHeirs = false; return }
+        if (s.phase !== 'draft') return              // not seen yet: wait
+        var h = s.heirs || []
+        if (h.length === 0) { _ehHeirDropHeirs = false; return }
+        b.heirDelete(h[0].name)
     }
     // new money or a payment: look again (debounced), without a new "Sei ancora qui?"
     Connections {

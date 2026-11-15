@@ -56,7 +56,7 @@ Item {
             linkText: qsTr('How the crucible works'),
             linkUrl: Qt.resolvedUrl('EhCoinsHowPage.qml'),
             bodyText: qsTr('<b>UTXO</b> is the <b>serial number</b> engraved on the rim of the coin, like the one on a banknote: it tells which payment it comes from. It is not secret and it is not needed to spend the coin.')
-                      + '<br><br>' + qsTr('Your coins are protected by the 12 words.')
+                      + '<br><br>' + qsTr('Your coins are protected by the 12 words (SEED).')
         }).open()
     }
 

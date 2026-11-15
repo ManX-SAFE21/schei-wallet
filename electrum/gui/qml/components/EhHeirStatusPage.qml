@@ -2,6 +2,10 @@
 // qui?", the heirs with their share, the keepers (Will Executor) holding the envelope; "Renew
 // now" opens the same question as the home (EhHeirAskSheet), "Change heirs or period" the
 // wizard (WP-B). An inheritance made with Àncòra on the computer (phase foreign): read only.
+// Owner 15/11 (points 4, 4d, 7, 8): the keepers' row and its warning follow custodians.status
+// (ok / some / one / none / invalid, preview anteprima/custode-spento/proposta.html cases A-D),
+// with "Replace the keeper" (EhHeirReplaceSheet); at the bottom "How it works" and
+// "Cancel the inheritance" (EhHeirCancelSheet).
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
@@ -24,6 +28,71 @@ Item {
     readonly property bool toRenew: phase === 'due' || phase === 'expired'
     readonly property bool toUpdate: phase === 'needs_update' || phase === 'unfinished'
     readonly property var cust: st.custodians || ({ ok: 0, total: 0 })
+    readonly property bool ehHeirStatus: true       // EhHeirCancelSheet pops this page when done
+    // the keepers: ok (all answer) | some (2 or more, not all) | one | none | invalid (none for days)
+    readonly property string kst: foreign ? '' : (cust.status || '')
+    readonly property int lost: Math.max(0, (cust.total || 0) - (cust.ok || 0))
+    readonly property bool keepersBad: kst === 'none' || kst === 'invalid'
+    readonly property bool keepersAlarm: kst === 'some' || kst === 'one' || keepersBad
+    // the badge: red (no keeper), yellow (one keeper), else green / "to renew"
+    readonly property string badgeKind: keepersBad ? 'red' : (kst === 'one' ? 'yellow' : (toRenew ? 'renew' : 'green'))
+    readonly property bool canCancel: !foreign && ['active', 'due', 'needs_update', 'expired'].indexOf(phase) >= 0
+
+    function keeperHint() {
+        if (kst === 'some') return lost === 1 ? qsTr('envelope safe, one does not answer') : qsTr('envelope safe, %1 do not answer').arg(lost)
+        if (kst === 'one') return (cust.total || 0) > 1 ? qsTr('only one is left') : qsTr('envelope safe')
+        if (kst === 'none') return qsTr('nobody answers')
+        if (kst === 'invalid') return qsTr('nobody answers for days')
+        return qsTr('envelope safe')
+    }
+    function keeperWarn() {
+        var other = cust.ok || 0
+        if (kst === 'some')
+            return (lost === 1 ? qsTr('<b>One keeper does not answer.</b>') : qsTr('<b>%1 keepers do not answer.</b>').arg(lost)) + ' '
+                 + (lost === 1 ? qsTr('The other %1 have the envelope: the inheritance works. You can replace it with another keeper.').arg(other)
+                               : qsTr('The other %1 have the envelope: the inheritance works. You can replace them with other keepers.').arg(other))
+        if (kst === 'one') {
+            if ((cust.total || 0) <= 1) return qsTr('<b>You have only one keeper with the envelope.</b> To be safe, send it to other keepers.')
+            return (lost === 1 ? qsTr('<b>One keeper does not answer.</b>') : lost === 2 ? qsTr('<b>Two keepers do not answer.</b>')
+                               : qsTr('<b>%1 keepers do not answer.</b>').arg(lost)) + ' '
+                 + qsTr('Only one is left with the envelope. To be safe, send it to other keepers.')
+        }
+        if (kst === 'none') return qsTr('<b>Today no keeper answers.</b> If they do not come back, the envelope will not reach the heirs. Your money is safe: send it to other keepers.')
+        if (kst === 'invalid') return qsTr('<b>For days no keeper has answered.</b> So the envelope will not reach the heirs: the inheritance is not valid. Your money is safe: send it to other keepers.')
+        return ''
+    }
+
+    // a link in wine, underlined (as "Later" of EhHeirAskSheet)
+    component LinkLine: Item {
+        id: lk
+        property string text
+        property color color: S.wine
+        signal clicked
+        Layout.fillWidth: true
+        Layout.preferredHeight: 36
+        Label {
+            id: lkText
+            anchors.centerIn: parent
+            width: Math.min(implicitWidth, lk.width)
+            horizontalAlignment: Text.AlignHCenter
+            text: lk.text
+            color: lk.color
+            font.family: BodyFont ? BodyFont : font.family
+            font.pixelSize: 16
+            font.bold: true
+            elide: Text.ElideRight
+            opacity: !lk.enabled ? 0.35 : (lkTap.pressed ? 0.6 : 1)
+        }
+        Rectangle {
+            x: lkText.x
+            y: lkText.y + lkText.height + 1
+            width: lkText.width
+            height: 2
+            color: lk.color
+            opacity: lkText.opacity
+        }
+        TapHandler { id: lkTap; margin: 8; onTapped: lk.clicked() }
+    }
 
     Component.onCompleted: if (bal && !bal.busy && !foreign) bal.checkCustodians()
 
@@ -66,6 +135,8 @@ Item {
                         font.family: SerifFont ? SerifFont : font.family
                         font.weight: Font.ExtraBold
                         font.pixelSize: 30
+                        fontSizeMode: Text.HorizontalFit     // a long badge ("✕ Not valid") at 360 px
+                        minimumPixelSize: 22
                         elide: Text.ElideRight
                     }
                     Rectangle {
@@ -74,23 +145,25 @@ Item {
                         implicitWidth: badgeRow.implicitWidth + 20
                         implicitHeight: 30
                         radius: 12
-                        color: page.toRenew ? S.ivory : S.tipBg
+                        color: page.badgeKind === 'red' ? S.dangerBg : (page.badgeKind === 'yellow' ? '#fbefc4' : (page.badgeKind === 'renew' ? S.ivory : S.tipBg))
                         border.width: 1.5
-                        border.color: page.toRenew ? S.gold : S.tipEdge
+                        border.color: page.badgeKind === 'red' ? '#d99aa8' : (page.badgeKind === 'yellow' ? '#e2c46a' : (page.badgeKind === 'renew' ? S.gold : S.tipEdge))
                         Row {
                             id: badgeRow
                             anchors.centerIn: parent
                             spacing: 6
                             Label {
-                                visible: !page.toRenew
-                                text: '✓'
-                                color: S.oliveInk
+                                visible: page.badgeKind !== 'renew'
+                                text: page.badgeKind === 'red' ? '✕' : (page.badgeKind === 'yellow' ? '⚠' : '✓')
+                                color: badgeText.color
                                 font.pixelSize: 16
                                 font.bold: true
                             }
                             Label {
-                                text: page.toRenew ? qsTr('to renew') : qsTr('Active')
-                                color: page.toRenew ? S.waitInk : S.oliveInk
+                                id: badgeText
+                                text: page.kst === 'invalid' ? qsTr('Not valid') : page.kst === 'none' ? qsTr('At risk')
+                                    : page.toRenew ? qsTr('to renew') : qsTr('Active')
+                                color: page.badgeKind === 'red' ? S.wine : (page.badgeKind === 'yellow' ? '#7a5a00' : (page.badgeKind === 'renew' ? S.waitInk : S.oliveInk))
                                 font.family: BodyFont ? BodyFont : font.family
                                 font.pixelSize: 16
                                 font.bold: true
@@ -167,20 +240,51 @@ Item {
                 }
                 EhRow {
                     visible: !page.foreign
-                    icon: 'eh_shield_olive.svg'
-                    iconColor: S.olive
+                    icon: page.keepersBad ? 'eh_shield.svg' : 'eh_shield_olive.svg'
+                    iconColor: page.keepersBad ? S.wine : S.olive
                     text: qsTr('Keepers')
-                    hint: qsTr('envelope safe')
+                    hint: page.keeperHint()
                     chevron: false
                     last: true
                     Label {
-                        text: (page.cust.ok > 0 ? '✓ ' : '') + qsTr('%1 of %2 ok').arg(page.cust.ok || 0).arg(page.cust.total || 0)
-                        color: page.cust.ok > 0 ? S.oliveInk : S.wine
+                        text: page.keepersBad ? qsTr('%1 out of %2').arg(page.cust.ok || 0).arg(page.cust.total || 0)
+                            : (page.kst === 'ok' || page.kst === '' ? (page.cust.ok > 0 ? '✓ ' : '') : '')
+                              + qsTr('%1 of %2 ok').arg(page.cust.ok || 0).arg(page.cust.total || 0)
+                        color: page.keepersBad || page.cust.ok <= 0 ? S.wine : (page.kst === 'one' ? '#8a6400' : S.oliveInk)
                         font.family: BodyFont ? BodyFont : font.family
                         font.pixelSize: 16
                         font.bold: true
                     }
                 }
+            }
+
+            // a keeper that does not answer: what it means, and the button to send the envelope to another
+            EhInfoBox {
+                visible: page.keepersAlarm
+                Layout.topMargin: 2
+                kind: page.keepersBad ? 'danger' : 'warn'
+                icon: page.kst === 'some' ? 'eh_info_brass.svg' : 'eh_warn.svg'
+                text: page.keeperWarn()
+            }
+            EhStitchButton {
+                visible: page.keepersAlarm
+                kind: 'wine'
+                icon: 'eh_lock_white.svg'
+                text: page.kst === 'some' ? qsTr('Replace the keeper') : qsTr('Send the envelope to other keepers')
+                enabled: !(page.bal && page.bal.busy)
+                onClicked: app._ehHeirOpenSheet('EhHeirReplaceSheet.qml')
+            }
+            Label {
+                visible: page.keepersAlarm
+                Layout.fillWidth: true
+                Layout.topMargin: -6
+                horizontalAlignment: Text.AlignHCenter
+                wrapMode: Text.WordWrap
+                font.family: BodyFont ? BodyFont : font.family
+                font.pixelSize: 14
+                color: S.muted
+                text: page.kst === 'some' ? qsTr('Free · the PIN is enough · not urgent')
+                    : page.keepersBad ? qsTr('Free · the PIN is enough. If it finds none, try again later.') : qsTr('Free · the PIN is enough')
             }
 
             // while a job runs (e.g. the keepers' check): one line with the step
@@ -222,6 +326,19 @@ Item {
                 text: qsTr('Change heirs or period')
                 enabled: !(page.bal && page.bal.busy)
                 onClicked: app.stack.push(Qt.resolvedUrl('EhHeirWhoPage.qml'))
+            }
+            LinkLine {
+                Layout.topMargin: 2
+                text: qsTr('How it works')
+                onClicked: app.stack.push(Qt.resolvedUrl('EhHeirHowPage.qml'))
+            }
+            LinkLine {
+                visible: page.canCancel
+                Layout.topMargin: -6
+                text: qsTr('Cancel the inheritance')
+                color: S.muted
+                enabled: !(page.bal && page.bal.busy)
+                onClicked: app._ehHeirOpenSheet('EhHeirCancelSheet.qml')
             }
         }
     }

@@ -134,7 +134,7 @@ WizardComponent {
         EhPageTop {
             Layout.leftMargin: 6
             Layout.rightMargin: 6
-            title: qsTr('Write your 12 words')
+            title: qsTr('Write your 12 words (SEED)')
         }
 
         // ---- where were the words made ----

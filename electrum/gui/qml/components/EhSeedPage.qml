@@ -36,10 +36,10 @@ Item {
             text: '‹ ' + qsTr('Advanced')   // it opens from the advanced settings
             onClicked: app.stack.pop()
         }
-        EhTitle { text: qsTr('Your 12 words') }
+        EhTitle { text: qsTr('Your 12 words (SEED)') }
         EhInfoBox {
             kind: 'danger'
-            text: '<b>' + qsTr('Nobody will ever ask you for the 12 words. Whoever asks is a scammer.') + '</b>'
+            text: '<b>' + qsTr('Nobody will ever ask you for the 12 words (SEED). Whoever asks is a scammer.') + '</b>'
         }
         GridLayout {
             Layout.fillWidth: true

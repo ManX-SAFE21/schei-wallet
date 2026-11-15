@@ -81,7 +81,7 @@ WizardComponent {
 
         EhPageTop {
             step: qsTr('STEP %1 OF %2').arg(1).arg(3)
-            title: qsTr('Your 12 words')
+            title: qsTr('Your 12 words (SEED)')
         }
 
         EhInfoBox {
@@ -101,7 +101,7 @@ WizardComponent {
                 }
                 Hint {
                     iconSource: Qt.resolvedUrl('../../../icons/eh_shield.svg')
-                    text: qsTr('Nobody will ever ask you for the 12 words. Whoever asks is a scammer.')
+                    text: qsTr('Nobody will ever ask you for the 12 words (SEED). Whoever asks is a scammer.')
                     color: S.wine
                     strong: true
                 }

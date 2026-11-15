@@ -73,7 +73,7 @@ ElDialog {
         EhTitle { text: qsTr('Forgot the PIN?') }
         Label {
             Layout.fillWidth: true
-            text: qsTr('Write the <b>12 words</b> of this wallet, the ones on the paper. If they are right, you choose a new PIN.')
+            text: qsTr('Write the <b>12 words</b> (SEED) of this wallet, the ones on the paper. If they are right, you choose a new PIN.')
             textFormat: Text.StyledText
             wrapMode: Text.WordWrap
             color: S.ink

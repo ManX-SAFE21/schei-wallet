@@ -150,6 +150,7 @@ Item {
             EhCaption {
                 visible: page.heirs.length > 0
                 text: qsTr('Your heirs')
+                tail: qsTr('(or backup wallet)')     // owner 15/11, point 5
                 Layout.topMargin: 0
                 Layout.bottomMargin: -4
             }
