@@ -174,7 +174,7 @@ Item {
                 // on the card); the crucible is the "i" there
                 RowSw { tag: 1; icon: 'eh_goldcoin.svg'; text: qsTr('Gold coins (UTXO)'); key: 'utxo'
                         last: !app.ehOption('utxo')
-                        note: app.ehOption('utxo') ? qsTr('you find them in the payment ("Coins used") and in "blocked ›" on the wallet card')
+                        note: app.ehOption('utxo') ? qsTr('you find them in the payment ("Coins used") and in "blocked ›" on the wallet')
                                                    : qsTr('choose which coins to spend, block coins and addresses') }
                 RowSw { visible: app.ehOption('utxo'); tag: 1; icon: 'eh_privacy.svg'; text: qsTr('Advanced privacy'); note: qsTr('pockets, origin of the coins and warnings'); key: 'privacy'
                         last: !app.ehOption('privacy') }
