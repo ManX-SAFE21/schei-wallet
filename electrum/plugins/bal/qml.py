@@ -127,6 +127,41 @@ def _fee_of(we):
     return int((we or {}).get('base_fee') or 0)
 
 
+def _welist_order(wes):
+    """Sort key of a keeper's url: its place in the public list (welist), best first.
+
+    Owner 15/11 (P5): the price is never the criterion; the welist already
+    puts the best keepers first. ``welist_rank`` is stored by
+    ``bal_willexecutors_download``; a keeper not in the last download goes
+    after the listed ones (sorted() is stable: their order stays).
+    """
+    def key(url):
+        rank = ((wes or {}).get(url) or {}).get('welist_rank')
+        return (0, rank) if isinstance(rank, int) else (1, 0)
+    return key
+
+
+def _check_times(checks, url, now):
+    """``(checkedAt, downDays)`` of a keeper from the stored checks (P1).
+
+    ``checkedAt``: the time of the last check that asked it (0: never);
+    ``downDays``: whole days since the first check of the run of checks it
+    has not answered, up to the last one (0 when it answered the last one).
+    """
+    seen = [c for c in checks or [] if url in (c.get('urls') or {})]
+    if not seen:
+        return 0, 0
+    last = int(seen[-1].get('t') or 0)
+    if seen[-1]['urls'][url]:
+        return last, 0
+    first = last
+    for c in reversed(seen):
+        if c['urls'][url]:
+            break
+        first = int(c.get('t') or 0)
+    return last, max(0, (now - first) // DAY)
+
+
 def _is_keeper_url(url, we):
     """A usable entry of the keepers' list (the welist adds ``status``/``url`` keys); no Tor."""
     return isinstance(we, dict) and str(url).startswith('http') and '.onion' not in str(url)
@@ -617,8 +652,9 @@ class QEBal(PluginQObject):
         The fixed pair first (added and selected when missing), then the
         other keepers selected now (a keeper chosen before, e.g. by
         :meth:`replaceKeeper`, is kept), all pinged. If fewer than wanted
-        answer, the welist is downloaded and the cheapest answering ones
-        (no .onion) are selected up to the number wanted. Fewer answering
+        answer, the welist is downloaded and the answering ones (no .onion)
+        are selected in the order of the welist (owner P5: never by price)
+        up to the number wanted. Fewer answering
         than wanted is fine (one is enough to deliver): all those that
         answer are used. A selected keeper that does not answer is
         deselected (the next review selects the pair again). Returns
@@ -639,7 +675,7 @@ class QEBal(PluginQObject):
         wes = self._cmd('bal_willexecutors_list') or {}
         ok = [u for u in KEEPERS if (pings.get(u) or {}).get('ok')]
         ok += sorted((u for u in others if (pings.get(u) or {}).get('ok')),
-                     key=lambda u: _fee_of(wes.get(u)))
+                     key=_welist_order(wes))
         if len(ok) < wanted:
             try:
                 self._cmd('bal_willexecutors_download')
@@ -651,7 +687,7 @@ class QEBal(PluginQObject):
                 pings2 = self._cmd('bal_willexecutors_ping', extra) or {}
                 wes = self._cmd('bal_willexecutors_list') or {}
                 good = sorted((u for u in extra if (pings2.get(u) or {}).get('ok')),
-                              key=lambda u: _fee_of(wes.get(u)))
+                              key=_welist_order(wes))
                 for u in good[:wanted - len(ok)]:
                     self._cmd('bal_willexecutors_select', u)
                     ok.append(u)
@@ -853,8 +889,9 @@ class QEBal(PluginQObject):
         """Point 4d «Sostituisci il custode», step 1: the keepers of the public list that answer.
 
         Returns ``{candidates: [{url, name, feeSats, ok, used}], pick}``:
-        ``used`` = selected now or holding the will; ``pick`` = the cheapest
-        free one that answers. None free: ``failed('custodians')``.
+        ``used`` = selected now or holding the will; the rows and ``pick``
+        follow the order of the welist (owner P5: never by price): ``pick`` =
+        the first free one that answers. None free: ``failed('custodians')``.
         """
         wallet = self._local.wallet
         self._need_network(wallet)
@@ -871,11 +908,12 @@ class QEBal(PluginQObject):
         wes = self._cmd('bal_willexecutors_list') or {}
         rows = [{'url': u, 'name': u.split('://')[-1], 'feeSats': _fee_of(wes.get(u)),
                  'ok': bool((pings.get(u) or {}).get('ok')), 'used': u in used} for u in urls]
-        rows.sort(key=lambda r: (not r['used'], r['feeSats'], r['url']))
+        order = _welist_order(wes)
+        rows.sort(key=lambda r: (not r['used'], order(r['url'])))
         free = [r for r in rows if r['ok'] and not r['used']]
         if not free:
             raise _Fail('custodians', 'No other keeper is free now.')
-        return {'candidates': rows, 'pick': min(free, key=lambda r: r['feeSats'])['url']}
+        return {'candidates': rows, 'pick': free[0]['url']}
 
     def _job_replace_keeper(self, url):
         """Point 4d step 2: the keepers that do not answer out, ``url`` in, the will sent again.
@@ -1078,16 +1116,17 @@ class QEBal(PluginQObject):
                 st = it.get('status') or {}
                 c = by_url.setdefault(url, {
                     'url': url, 'name': url.split('://')[-1], 'feeSats': _fee_of(wes.get(url)),
-                    'sent': False, 'checked': False, 'ok': False})
+                    'sent': False, 'checked': False, 'ok': False, 'checkedAt': 0, 'downDays': 0})
                 c['sent'] = c['sent'] or bool(st.get('PUSHED'))
                 c['checked'] = c['checked'] or (bool(st.get('CHECKED')) and not st.get('CHECK_FAIL'))
             cust = list(by_url.values())
             for c in cust:
                 # a keeper holding its copy is fine until a check says it does not answer
                 c['ok'] = c['sent'] and bool(last.get(c['url'], True))
+                c['checkedAt'], c['downDays'] = _check_times(checks, c['url'], now)
         else:
             cust = [{'url': u, 'name': u.split('://')[-1], 'feeSats': _fee_of(we),
-                     'sent': False, 'checked': False, 'ok': False}
+                     'sent': False, 'checked': False, 'ok': False, 'checkedAt': 0, 'downDays': 0}
                     for u, we in wes.items() if isinstance(we, dict) and we.get('selected')]
         ok = sum(1 for c in cust if c['ok'])
         s['custodians'] = {'wanted': wanted, 'ok': ok, 'total': len(cust), 'list': cust,

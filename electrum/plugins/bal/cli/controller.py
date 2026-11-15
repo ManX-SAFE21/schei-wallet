@@ -2872,6 +2872,18 @@ class BalController(BalSettingsController):
         """Download the will-executor list and merge it into the local one."""
         result = self._fetch_will_executors_list()
         if result:
+            # Schȅi (owner 15/11, P5): keepers are taken in the order of the welist,
+            # which puts the best first. The local list loses that order (entries
+            # already known keep their place, the config file is saved with sorted
+            # keys), so every downloaded entry keeps its place in the welist.
+            rank = 0
+            for url, we in result.items():
+                if isinstance(we, dict) and url not in ("status", "url"):
+                    we["welist_rank"] = rank
+                    rank += 1
+            for url, we in self.willexecutors.items():
+                if url not in result and isinstance(we, dict):
+                    we.pop("welist_rank", None)
             self.willexecutors.update(result)
             Willexecutors.save(self.plugin, self.willexecutors)
         return {"downloaded": len(result), "total": len(self.willexecutors)}

@@ -1,7 +1,8 @@
 // Easy Heirs (schȅi): "Replace the keeper" (owner 15/11, point 4d; preview
 // anteprima/custode-spento/sostituisci.html). Opened by the Status page when a keeper does not
 // answer. bal.findKeeper() looks in the public list for a keeper that answers and is not used
-// yet (the cheapest is picked); the PIN, then bal.replaceKeeper(url) sends the new keeper its
+// yet (the first of the public list is picked, owner P5: never by price); the PIN, then
+// bal.replaceKeeper(url) sends the new keeper its
 // copy of the envelope. Free; the delivery date does not change. None free: a short sheet.
 import QtQuick
 import QtQuick.Layouts
@@ -38,11 +39,9 @@ EhBottomSheet {
         for (var i = 0; i < candidates.length; i++) if (candidates[i].url === pick) return candidates[i].name
         return ''
     }
-    readonly property int cheapest: {
-        var m = -1
-        for (var i = 0; i < fresh.length; i++)
-            if (fresh[i].ok && (m < 0 || fresh[i].feeSats < m)) m = fresh[i].feeSats
-        return m
+    readonly property string firstUrl: {       // the first of the list that answers (P5)
+        for (var i = 0; i < fresh.length; i++) if (fresh[i].ok) return fresh[i].url
+        return ''
     }
 
     function find() {
@@ -139,7 +138,7 @@ EhBottomSheet {
                     font.family: BodyFont ? BodyFont : font.family
                     font.pixelSize: 14
                     text: !kl.k ? '' : kl.k.used ? (kl.k.ok ? qsTr('already yours') : qsTr('the one switched off'))
-                        : app.ehHeirSats(kl.k.feeSats) + (kl.k.ok && kl.k.feeSats === root.cheapest ? ' · ' + qsTr('the cheapest') : '')
+                        : app.ehHeirSats(kl.k.feeSats) + (kl.k.url === root.firstUrl ? ' · ' + qsTr('the first of the list') : '')
                 }
             }
             Label {

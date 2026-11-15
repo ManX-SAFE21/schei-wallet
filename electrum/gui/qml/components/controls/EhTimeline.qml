@@ -1,6 +1,8 @@
 // Easy Heirs (schȅi), "Bottega": the inheritance dates on a line (screen 4 "In how long?"):
 // a paper track (olive up to the reminder, gold after it), three dots (olive today, brass the
 // reminder, wine the delivery) and under each one a bold word and its date.
+// Owner 15/11 (P3, preview anteprima/icone-date.html A): a white line icon in each dot,
+// a man in good health (today), a heart with its beat (the reminder), a truck (the delivery).
 // The same parts as the steps bar. Times are UNIX seconds.
 //   EhTimeline { start: s.now; mid: warnAt; end: delivery }
 import QtQuick
@@ -18,10 +20,13 @@ Item {
     property string midWord: qsTr('Reminder')
     property string endWord: qsTr('Delivery')
     property string dateFormat: 'dd/MM/yyyy'
+    property string startIcon: 'eh_tl_today.svg'
+    property string midIcon: 'eh_tl_warn.svg'
+    property string endIcon: 'eh_tl_delivery.svg'
 
     // where the reminder sits on the line, 0..1
     readonly property real fraction: end > start ? Math.max(0, Math.min(1, (mid - start) / (end - start))) : 0.5
-    readonly property real dot: 28
+    readonly property real dot: 40
 
     function day(t) { return t > 0 ? Qt.formatDate(new Date(t * 1000), root.dateFormat) : '…' }
 
@@ -32,8 +37,8 @@ Item {
     // the track
     Rectangle {
         id: track
-        x: 14
-        width: root.width - 28
+        x: root.dot / 2
+        width: root.width - root.dot
         y: root.dot / 2 - height / 2
         height: 8
         radius: 4
@@ -62,6 +67,7 @@ Item {
         id: d
         property color fill: S.olive
         property bool brass: false
+        property string icon: ''
         width: root.dot
         height: root.dot
         Rectangle {        // the thin edge ring outside
@@ -81,6 +87,13 @@ Item {
                 color: d.fill
                 gradient: d.brass ? brassG : null
             }
+            Image {
+                visible: d.icon !== ''
+                anchors.centerIn: parent
+                source: d.icon !== '' ? Qt.resolvedUrl('../../../icons/' + d.icon) : ''
+                sourceSize.width: 22
+                sourceSize.height: 22
+            }
         }
         Gradient {
             id: brassG
@@ -90,9 +103,9 @@ Item {
         }
     }
 
-    Dot { x: 0; y: 0; fill: S.olive }
-    Dot { x: (root.width - root.dot) * root.fraction; y: 0; brass: true }
-    Dot { x: root.width - root.dot; y: 0; fill: S.wine }
+    Dot { x: 0; y: 0; fill: S.olive; icon: root.startIcon }
+    Dot { x: (root.width - root.dot) * root.fraction; y: 0; brass: true; icon: root.midIcon }
+    Dot { x: root.width - root.dot; y: 0; fill: S.wine; icon: root.endIcon }
 
     component Word: Label {
         property string word

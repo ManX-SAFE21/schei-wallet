@@ -6,6 +6,9 @@
 // (ok / some / one / none / invalid, preview anteprima/custode-spento/proposta.html cases A-D),
 // with "Replace the keeper" (EhHeirReplaceSheet); at the bottom "How it works" and
 // "Cancel the inheritance" (EhHeirCancelSheet).
+// Owner 15/11 (P1): a tap on the "Keepers" row opens the list of the keepers
+// (EhHeirKeeperListSheet). P4: "Renew now" only from the day of the reminder (phase due /
+// expired): before it, renewing would not move the delivery and would cost a fee.
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
@@ -37,6 +40,18 @@ Item {
     // the badge: red (no keeper), yellow (one keeper), else green / "to renew"
     readonly property string badgeKind: keepersBad ? 'red' : (kst === 'one' ? 'yellow' : (toRenew ? 'renew' : 'green'))
     readonly property bool canCancel: !foreign && ['active', 'due', 'needs_update', 'expired'].indexOf(phase) >= 0
+
+    // P1: the keepers' list (not through app._ehHeirOpenSheet: its "Replace the keeper" opens
+    // EhHeirReplaceSheet that way, while this one closes)
+    property var keeperList: null
+    function openKeepers() {
+        if (keeperList) return
+        var comp = Qt.createComponent(Qt.resolvedUrl('EhHeirKeeperListSheet.qml'))
+        if (comp.status !== Component.Ready) { console.log('keepers sheet: ' + comp.errorString()); return }
+        keeperList = comp.createObject(app)
+        keeperList.closed.connect(function() { page.keeperList = null })
+        keeperList.open()
+    }
 
     function keeperHint() {
         if (kst === 'some') return lost === 1 ? qsTr('envelope safe, one does not answer') : qsTr('envelope safe, %1 do not answer').arg(lost)
@@ -244,8 +259,9 @@ Item {
                     iconColor: page.keepersBad ? S.wine : S.olive
                     text: qsTr('Keepers')
                     hint: page.keeperHint()
-                    chevron: false
+                    chevron: (page.cust.total || 0) > 0
                     last: true
+                    onClicked: if ((page.cust.total || 0) > 0) page.openKeepers()
                     Label {
                         text: page.keepersBad ? qsTr('%1 out of %2').arg(page.cust.ok || 0).arg(page.cust.total || 0)
                             : (page.kst === 'ok' || page.kst === '' ? (page.cust.ok > 0 ? '✓ ' : '') : '')
@@ -312,7 +328,7 @@ Item {
                 onClicked: app.ehHeirUpdate(page.phase === 'unfinished' ? 'unfinished' : (page.st.updateReason || 'received'))
             }
             EhStitchButton {
-                visible: !page.foreign && !page.toUpdate
+                visible: !page.foreign && !page.toUpdate && page.toRenew
                 kind: 'olive'
                 icon: 'eh_refresh_white.svg'
                 text: qsTr('Renew now')

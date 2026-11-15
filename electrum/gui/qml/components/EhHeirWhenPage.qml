@@ -3,6 +3,10 @@
 // on a line: today, the renewal reminder, the delivery. The dates here are only for the eye
 // (from state.now, the period and state.warn); Next calls bal.setPeriod(months) and goes on
 // to "All right?" (EhHeirCheckPage) when the bridge answers.
+// Owner 15/11 (P2, preview anteprima/custode-spento/elenco-custodi.html): with a will already
+// in force the line shows its TRUE dates (state.now / warnAt / delivery, "Your current
+// inheritance"), not dates counted from today with the new period: that one starts from the
+// next renewal, as the green box says.
 // "Bottega" look as the preview anteprima/eredita-semplice.html, screen 4.
 import QtQuick
 import QtQuick.Layouts
@@ -27,7 +31,10 @@ Item {
     readonly property var parts: ({ half: 2, third: 3, quarter: 4 })
     readonly property real monthDays: 30.4375
 
-    property int months: st && st.months && choices.indexOf(st.months) >= 0 ? st.months : 24
+    // the period shown: the one chosen for the next renewal (pendingMonths), else the one in force
+    readonly property int savedMonths: st && st.pendingMonths && choices.indexOf(st.pendingMonths) >= 0
+                                       ? st.pendingMonths : (st && st.months ? st.months : 0)
+    property int months: choices.indexOf(savedMonths) >= 0 ? savedMonths : 24
     property string error: ''
     // a will is already in force: the new period counts from the next renewal (F10)
     readonly property bool inForce: st && ['active', 'due', 'needs_update', 'unfinished', 'expired'].indexOf(st.phase) >= 0
@@ -39,9 +46,12 @@ Item {
         var d = new Date(t * 1000)
         return Math.floor(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + m, d.getUTCDate()) / 1000)
     }
-    readonly property real delivery: addMonths(now, months)
-    readonly property int warnDays: Math.round(months * monthDays / (parts[st && st.warn ? st.warn : 'half'] || 2))
-    readonly property real warnAt: delivery - warnDays * 86400
+    // with a will in force: its own dates (P2); else counted from today with the period picked
+    readonly property bool realDates: inForce && (st.delivery || 0) > 0 && (st.warnAt || 0) > 0
+    readonly property real delivery: realDates ? st.delivery : addMonths(now, months)
+    readonly property int warnDays: realDates ? Math.round((st.delivery - st.warnAt) / 86400)
+                                              : Math.round(months * monthDays / (parts[st && st.warn ? st.warn : 'half'] || 2))
+    readonly property real warnAt: realDates ? st.warnAt : delivery - warnDays * 86400
     readonly property int warnMonths: Math.round(warnDays / monthDays)
     function day(t) { return Qt.formatDate(new Date(t * 1000), 'dd/MM/yyyy') }
 
@@ -109,7 +119,11 @@ Item {
                 onActivated: (i) => { if (!page.busy) { page.months = page.choices[i]; page.error = '' } }
             }
 
-            EhCaption { text: qsTr('The dates'); Layout.topMargin: 6; Layout.bottomMargin: -4 }
+            EhCaption {
+                text: page.realDates ? qsTr('Your current inheritance') : qsTr('The dates')
+                Layout.topMargin: 6
+                Layout.bottomMargin: -4
+            }
             EhSheet {
                 bottomPadding: 12
                 EhTimeline {
@@ -139,7 +153,8 @@ Item {
             EhInfoBox {
                 visible: page.periodChanged
                 kind: 'tip'
-                text: qsTr('The new period counts from the next renewal.')
+                text: qsTr('Your current inheritance <b>does not change</b>: the delivery stays on <b>%1</b>.<br>The new period of <b>%2</b> starts from the next renewal: when you say «Yes, I am still here», the delivery will be %2 after that day.')
+                      .arg(page.day(page.st.delivery || 0)).arg(app.ehHeirYears(page.months))
             }
             EhInfoBox {
                 visible: page.error !== ''
