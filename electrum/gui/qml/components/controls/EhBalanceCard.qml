@@ -22,9 +22,23 @@ Rectangle {
     readonly property bool fixedRows: root.strapLeft
     readonly property bool showFrozen: root.frozenSats > 0 && !root.watch
     readonly property bool showArriving: root.arrivingSats > 0 && !root.covered
-    // the width the pills have: the card's text column minus the cash button (from the card, not
-    // from the pills' own column, so the layout cannot loop)
-    readonly property real pillsRoom: Math.max(60, homeBox.width - (root.cashRoom ? 60 : 0))
+    // the width the pills have: the card's text column minus the EREDITÀ icon at the bottom right
+    // (from the card, not from the pills' own column, so the layout cannot loop)
+    readonly property real pillsRoom: Math.max(60, homeBox.width - (root.heirShown ? 80 : 0))
+    // owner 15/11 (points 6c-6g, home-reale.html): the inheritance on the card, bottom right:
+    // the light logo + "EREDITÀ" and a dot (green active, yellow to look at, red not valid);
+    // not made yet: faint logo + "DA FARE", no dot. Not for a wallet that cannot spend.
+    readonly property var heirBal: AppController ? AppController.plugin('bal') : null
+    readonly property var heirState: root.heirBal && root.heirBal.state ? root.heirBal.state : ({})
+    readonly property bool heirShown: root.fixedRows && root.showGear && !!root.heirBal && !root.watch
+                                      && Daemon.currentWallet !== null
+    readonly property string heirPhase: root.heirState.phase || ''
+    readonly property bool heirOff: root.heirPhase === 'none' || root.heirPhase === 'draft'
+    readonly property string heirKeepers: root.heirState.custodians ? (root.heirState.custodians.status || '') : ''
+    readonly property string heirDot: root.heirOff || root.heirPhase === '' ? ''
+        : (root.heirPhase === 'expired' || root.heirKeepers === 'none' || root.heirKeepers === 'invalid') ? 'bad'
+        : (root.heirKeepers === 'one' || ['due', 'needs_update', 'unfinished'].indexOf(root.heirPhase) >= 0) ? 'warn'
+        : (root.heirPhase === 'active' ? 'ok' : '')
     property bool hasMoney: false
     property real frozenSats: 0         // coins blocked in "Le tue monete d'oro"
     property real arrivingSats: 0       // received, not confirmed yet (gold pill)
@@ -94,18 +108,36 @@ Rectangle {
         property bool lock: false
         property bool wait: false        // Bottega: hourglass drawn in front (no emoji)
         property real maxW: 9999
+        // owner 15/11 (point 6, home-carta-v2.html): never a cut figure. When the pill does not fit,
+        // first the text gets smaller (15 -> 13), then the words go and only the figure (shortText)
+        // stays, whole, next to the hourglass
+        property string shortText: ''
+        // last resort, when even the figure alone does not fit at 10 px: e.g. only '›' next to the
+        // padlock (the figure is left out, never cut)
+        property string tinyText: ''
         // home (owner 13/11, home-ritocchi.html): one row of pills under the bitcoin line, 28 high
         readonly property bool big: root.bottega
         // Bottega: the text gets a little smaller when the pill is narrow (from the text and the
         // room given by the card, not from the layout: no loop)
         readonly property real fs0: root.bottega ? 15 : 13
-        TextMetrics { id: plTm; font.pixelSize: pl.fs0; font.bold: true; text: pl.text }
-        readonly property real fs: root.bottega ? Math.max(10, Math.min(fs0, fs0 * (maxW - ic - 19) / Math.max(1, plTm.advanceWidth)))
-                                                : fs0
-        readonly property real ic: (lock || wait) ? (root.bottega ? (big ? 21 : 18) : 16) : 0
+        readonly property real fsMin: shortText !== '' ? 13 : 10
+        // the preview's chip: 12 px each side, hourglass 14 px, 6 px to the text
+        readonly property real pad: root.bottega ? (wait ? 24 : 19) : 16
+        readonly property real room: maxW - ic - pad
+        TextMetrics { id: plTm; font.family: plL.font.family; font.pixelSize: pl.fs0; font.bold: true; text: pl.text }
+        TextMetrics { id: plTs; font.family: plL.font.family; font.pixelSize: pl.fs0; font.bold: true; text: pl.shortText }
+        readonly property bool useShort: root.bottega && shortText !== '' && plTm.advanceWidth * fsMin / fs0 > room
+        readonly property real w0: Math.max(1, useShort ? plTs.advanceWidth : plTm.advanceWidth)
+        readonly property bool useTiny: useShort && tinyText !== '' && plTs.advanceWidth * 10 / fs0 > room
+        // whole pixels (font.pixelSize is an int: a rounded-up size would not fit any more);
+        // only the figure alone may go under 13, so that it is never cut
+        readonly property int fs: root.bottega ? (useTiny ? fs0 : Math.max(useShort ? 10 : fsMin, Math.min(fs0, Math.floor(fs0 * room / w0)))) : fs0
+        readonly property real ic: (lock || wait) ? (root.bottega ? (wait ? 20 : 21) : 16) : 0
         height: root.bottega ? 28 : 24
+        // the text as drawn, at its real size
+        TextMetrics { id: plTf; font.family: plL.font.family; font.pixelSize: pl.fs; font.bold: true; text: plL.text }
         // natural text width (implicitWidth does not follow the width set below: no loop)
-        width: Math.max(30, Math.min(plTm.advanceWidth * fs / fs0 + ic + (root.bottega ? 19 : 16), maxW))
+        width: Math.max(30, Math.min(Math.ceil(plTf.advanceWidth) + 1 + ic + pad, maxW))
         clip: true
         radius: height / 2
         color: fill
@@ -114,12 +146,14 @@ Rectangle {
         Row {
             id: plRow
             anchors.centerIn: parent
-            spacing: 4
+            spacing: root.bottega && pl.wait ? 6 : 4
             Image { visible: pl.lock || pl.wait; anchors.verticalCenter: parent.verticalCenter
                     source: Qt.resolvedUrl(pl.wait ? '../../../icons/eh_wait_wine.svg' : (root.bottega ? '../../../icons/eh_lock.svg' : '../../../icons/eh_lock_white.svg'))
-                    sourceSize.width: pl.ic - 4; sourceSize.height: pl.ic - 4 }
-            Label { id: plL; anchors.verticalCenter: parent.verticalCenter; font.pixelSize: pl.fs; font.bold: true; color: pl.ink; text: pl.text
-                    width: Math.max(0, Math.min(implicitWidth, pl.width - (root.bottega ? 19 : 16) - pl.ic)); elide: Text.ElideRight }
+                    readonly property real s: root.bottega && pl.wait ? 14 : pl.ic - 4
+                    width: s; height: s; sourceSize.width: s * 3; sourceSize.height: s * 3 }
+            Label { id: plL; anchors.verticalCenter: parent.verticalCenter; font.pixelSize: pl.fs; font.bold: true; color: pl.ink
+                    text: pl.useTiny ? pl.tinyText : (pl.useShort ? pl.shortText : pl.text)
+                    width: Math.max(0, Math.min(implicitWidth, pl.width - pl.pad - pl.ic)); elide: Text.ElideRight }
         }
     }
     Timer { id: coverTimer; interval: 20000; onTriggered: root.revealed = false }
@@ -462,8 +496,8 @@ Rectangle {
 
     // home card (owner 13/11, preview home-ritocchi.html): on top the key, the name and the status
     // (narrow card of "more wallets": the status under the name); the big amount; under it the
-    // bitcoin line and the pills (arriving / blocked); the brass cash button on the right, centred
-    // on the bitcoin line and the pills. One fixed height, no empty area.
+    // bitcoin line and the pills (arriving / blocked); the stamped banknote bottom left, the
+    // inheritance bottom right (owner 15/11). One fixed height, no empty area.
     readonly property string body: BodyFont ? BodyFont : app.font.family
     readonly property color statusInk: Network.isConnected ? (root.watch ? '#45541f' : '#d6eca0') : (root.watch ? '#7a4a12' : '#ffd88a')
     readonly property string statusText: Network.isConnected ? '● ' + qsTr('Up to date') : '● ' + qsTr('Not connected')
@@ -545,9 +579,11 @@ Rectangle {
             y: top0 + Math.max(0, Math.round((parent.height - top0 - height) / 2))
             spacing: 0
             Label {
-                // the big amount; smaller when long (it must not run under the cash button)
-                width: parent.width - (root.cashRoom ? 56 : 0)
+                // the big amount has the whole row (owner 15/11); smaller only when it does not fit.
+                // 5 px higher, as in home-reale.html: a long amount stays clear of the EREDITÀ dot
+                width: parent.width
                 height: 52
+                transform: Translate { y: -5 }
                 verticalAlignment: Text.AlignVCenter
                 text: root.euroText !== '' ? root.euroText : root.btcText
                 color: root.watch ? root.baseColor : (root.bottega ? '#fbeccb' : '#ffffff')
@@ -559,10 +595,12 @@ Rectangle {
             }
             Item {
                 width: parent.width
-                height: Math.max(hLeft.height, root.cashRoom ? 52 : 0)
+                // always the room of the bitcoin line + the pills: the amount does not move when a
+                // pill comes or goes
+                height: 52
                 Column {
                     id: hLeft
-                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.top: parent.top
                     width: root.pillsRoom
                     spacing: 4
                     Label {
@@ -585,12 +623,14 @@ Rectangle {
                         Pill {
                             id: arrPill
                             visible: root.showArriving
-                            maxW: hPills.both ? (root.pillsRoom - 4) / 2 : root.pillsRoom
+                            // with "blocked" too: the money arriving first, the padlock pill keeps at least 50
+                            maxW: hPills.both ? root.pillsRoom - 4 - 50 : root.pillsRoom
                             fill: root.bottega ? '#fbeccb' : '#d9b25a'
                             ink: '#3f0f21'
                             wait: true
                             text: hPills.both ? app.ehMoney(root.satsAmount(root.arrivingSats))
                                               : qsTr('arriving %1').arg(app.ehMoney(root.satsAmount(root.arrivingSats)))
+                            shortText: app.ehMoney(root.satsAmount(root.arrivingSats))
                         }
                         Pill {
                             visible: root.showFrozen
@@ -602,46 +642,114 @@ Rectangle {
                             lock: true
                             text: (hPills.both ? app.ehMoney(root.satsAmount(root.frozenSats))
                                                : qsTr('blocked %1').arg(app.ehMoney(root.satsAmount(root.frozenSats)))) + ' ›'
+                            shortText: app.ehMoney(root.satsAmount(root.frozenSats)) + ' ›'
+                            tinyText: '›'
                             // the blocked coins open with a tap (no PIN)
                             TapHandler { id: blTap2; margin: 8; gesturePolicy: TapHandler.WithinBounds; onTapped: app.ehOpenCoins() }
                         }
                     }
                 }
-                // expert option "banknotes and coins": the round brass button with the banknotes
-                Rectangle {
-                    id: cashBtn2
-                    visible: root.cashRoom
-                    opacity: root.showCash ? 1 : 0
-                    enabled: root.showCash
-                    anchors.right: parent.right
-                    anchors.verticalCenter: parent.verticalCenter
-                    width: 52
-                    height: 52
-                    radius: 26
-                    color: cashTap2.pressed ? Qt.rgba(1, 1, 1, 0.38) : Qt.rgba(1, 1, 1, 0.18)
-                    border.width: 2
-                    border.color: root.bottega ? '#8a6a1c' : '#c8961e'
-                    Rectangle {
-                        visible: root.bottega
-                        anchors.fill: parent
-                        anchors.margins: 2
-                        radius: width / 2
-                        gradient: Gradient {
-                            GradientStop { position: 0.0; color: cashTap2.pressed ? '#e6cf8a' : '#f8e3a2' }
-                            GradientStop { position: 0.6; color: '#d9b25a' }
-                            GradientStop { position: 1.0; color: '#b58d32' }
-                        }
-                    }
-                    Image {
-                        anchors.centerIn: parent
-                        source: Qt.resolvedUrl(root.bottega ? '../../../icons/eh_cash_wine.svg' : '../../../icons/eh_cash.svg')
-                        sourceSize.width: root.bottega ? 30 : 34
-                        sourceSize.height: root.bottega ? 30 : 34
-                    }
-                    TapHandler { id: cashTap2; margin: 6; gesturePolicy: TapHandler.WithinBounds; onTapped: app.stack.push(Qt.resolvedUrl('../EhCashPage.qml')) }
-                }
             }
         }
+    }
+
+    // expert option "banknotes and coins" (owner 15/11, points 6e-6g, home-reale.html «A secco»):
+    // no brass button any more; a banknote dry-stamped into the leather, on the left under the
+    // strap. Pressed: the leather gets darker and the drawing sinks 1 px.
+    Item {
+        id: noteBtn
+        visible: root.fixedRows && root.showGear && root.cashRoom
+        opacity: root.showCash ? 1 : 0
+        enabled: root.showCash
+        z: 1
+        x: 14
+        y: root.height - height - 10
+        width: 66
+        height: 48
+        Image {
+            anchors.fill: parent
+            visible: noteTap.pressed
+            source: Qt.resolvedUrl('../../../icons/eh_note_press.svg')
+            sourceSize.width: 198
+            sourceSize.height: 144
+        }
+        Image {
+            x: 2
+            y: 4
+            width: 62
+            height: 39.5
+            visible: !noteTap.pressed
+            source: Qt.resolvedUrl('../../../icons/eh_note_stamp.svg')
+            sourceSize.width: 186
+            sourceSize.height: 119
+        }
+        Image {
+            x: 2
+            y: 5
+            width: 62
+            height: 39.5
+            visible: noteTap.pressed
+            source: Qt.resolvedUrl('../../../icons/eh_note_stamp_pressed.svg')
+            sourceSize.width: 186
+            sourceSize.height: 119
+        }
+        TapHandler { id: noteTap; gesturePolicy: TapHandler.WithinBounds; onTapped: app.stack.push(Qt.resolvedUrl('../EhCashPage.qml')) }
+    }
+
+    // the inheritance: logo + "EREDITÀ" / "DA FARE" + status dot, bottom right (76 x 72 to tap)
+    Item {
+        id: heirBtn
+        visible: root.heirShown
+        z: 3
+        x: root.width - width - 14
+        y: root.height - height - 12
+        width: 76
+        height: 72
+        opacity: heirTap.pressed ? 0.75 : 1
+        Column {
+            anchors.centerIn: parent
+            spacing: 3
+            Image {
+                anchors.horizontalCenter: parent.horizontalCenter
+                width: 50
+                height: 52
+                opacity: root.heirOff ? 0.42 : 1
+                source: Qt.resolvedUrl('../../../icons/eh_bal_logo_cream.svg')
+                sourceSize.width: 150
+                sourceSize.height: 156
+            }
+            Label {
+                anchors.horizontalCenter: parent.horizontalCenter
+                width: Math.min(implicitWidth, heirBtn.width)
+                horizontalAlignment: Text.AlignHCenter
+                text: root.heirOff ? qsTr('TO DO') : qsTr('INHERITANCE')
+                color: root.heirOff ? '#d4a536' : '#fbeccb'
+                font.family: TitleFont ? TitleFont : root.body
+                font.weight: Font.Black
+                font.pixelSize: 13
+                font.letterSpacing: 0.75
+                fontSizeMode: Text.HorizontalFit
+                minimumPixelSize: 9
+            }
+        }
+        // the dot, with a ring of the dark leather round it
+        Rectangle {
+            visible: root.heirDot !== ''
+            x: heirBtn.width - 3 - 18 - 2.5
+            y: -2.5
+            width: 23
+            height: 23
+            radius: 11.5
+            color: '#3f0f21'
+            Rectangle {
+                anchors.centerIn: parent
+                width: 18
+                height: 18
+                radius: 9
+                color: root.heirDot === 'ok' ? '#a9c84f' : (root.heirDot === 'warn' ? '#f4c430' : '#e5533d')
+            }
+        }
+        TapHandler { id: heirTap; gesturePolicy: TapHandler.WithinBounds; onTapped: app.ehHeirOpen() }
     }
 
     // tap on the card (not on its buttons) shows or covers the balance

@@ -762,6 +762,7 @@ STRINGS = {
         # 14/11 inheritance pages (Eredità semplice, Schȅi + Àncòra)
         'Inheritance': 'Eredità',
         'INHERITANCE': 'EREDITÀ',
+        'TO DO': 'DA FARE',
         'If one day you are no longer here, your bitcoin go <b>by themselves</b> to the people you choose.': 'Se un giorno non ci sei più, i tuoi bitcoin vanno <b>da soli</b> alle persone che scegli tu.',
         'Choose <b>who</b> receives and how much.': 'Scegli <b>chi</b> riceve e quanto.',
         'Choose <b>how long from now</b>: for example 2 years.': 'Scegli <b>fra quanto tempo</b>: per esempio 2 anni.',
@@ -1680,6 +1681,7 @@ STRINGS = {
         # 14/11 inheritance pages (Eredità semplice, Schȅi + Àncòra)
         'Inheritance': 'Eredità',
         'INHERITANCE': 'EREDITÀ',
+        'TO DO': 'DA FAR',
         'If one day you are no longer here, your bitcoin go <b>by themselves</b> to the people you choose.': 'Se un dì no te ghe si più, i to bitcoin i va <b>da soli</b> a le persone che te sielzi ti.',
         'Choose <b>who</b> receives and how much.': 'Sielzi <b>chi</b> che riceve e quanto.',
         'Choose <b>how long from now</b>: for example 2 years.': 'Sielzi <b>fra quanto tempo</b>: par esempio 2 ani.',
