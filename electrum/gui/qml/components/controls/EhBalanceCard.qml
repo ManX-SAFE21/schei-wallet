@@ -732,20 +732,21 @@ Rectangle {
                 minimumPixelSize: 9
             }
         }
-        // the dot, with a ring of the dark leather round it
+        // the dot, with a ring of the dark leather round it: low on the right, above the last
+        // letter of EREDITÀ, clear of the logo's leaf and circle (owner 15/11)
         Rectangle {
             visible: root.heirDot !== ''
-            x: heirBtn.width - 3 - 18 - 2.5
-            y: -2.5
-            width: 23
-            height: 23
-            radius: 11.5
+            x: heirBtn.width - 15
+            y: 31
+            width: 20
+            height: 20
+            radius: 10
             color: '#3f0f21'
             Rectangle {
                 anchors.centerIn: parent
-                width: 18
-                height: 18
-                radius: 9
+                width: 15
+                height: 15
+                radius: 7.5
                 color: root.heirDot === 'ok' ? '#a9c84f' : (root.heirDot === 'warn' ? '#f4c430' : '#e5533d')
             }
         }
