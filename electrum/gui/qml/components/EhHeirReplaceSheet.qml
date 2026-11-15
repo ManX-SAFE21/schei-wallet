@@ -1,9 +1,10 @@
-// Easy Heirs (schȅi): "Replace the keeper" (owner 15/11, point 4d; preview
-// anteprima/custode-spento/sostituisci.html). Opened by the Status page when a keeper does not
-// answer. bal.findKeeper() looks in the public list for a keeper that answers and is not used
-// yet (the first of the public list is picked, owner P5: never by price); the PIN, then
-// bal.replaceKeeper(url) sends the new keeper its
-// copy of the envelope. Free; the delivery date does not change. None free: a short sheet.
+// Easy Heirs (schȅi): "Replace the ones that do not answer" (owner 15/11, points 4d, P6; preview
+// anteprima/custode-spento/sostituisci.html). Opened by the Status page when too few keepers
+// answer. bal.findKeeper() looks in the public list for as many keepers as do not answer
+// (`need`), that answer and are not used yet (`picks`: the first ones of the public list, owner
+// P5: never by price); the PIN once, then bal.replaceKeepers(picks) makes the envelope again
+// ONCE and sends every new keeper its copy. Free; the delivery date does not change. Fewer
+// found than needed: those found ("I found 1 new keeper out of 2"). None free: a short sheet.
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
@@ -17,12 +18,15 @@ EhBottomSheet {
     readonly property var st: bal ? bal.state : ({})
     property string stage: 'find'              // find | pick | done | none | error
     property var candidates: []
-    property string pick: ''                   // url of the keeper chosen
-    property var result: ({})                  // replaceKeeper's answer
+    property var picks: []                     // urls of the new keepers chosen
+    property int need: 1                       // how many do not answer (how many to find)
+    property var result: ({})                  // replaceKeepers' answer
     property string error: ''
     property bool _mine: false
 
     closable: !(bal && bal.busy && _mine)
+    // the keepers that do not answer now (the title while looking)
+    readonly property int lostNow: st.custodians ? Math.max(0, (st.custodians.total || 0) - (st.custodians.ok || 0)) : 0
     onClosed: destroy()
 
     readonly property var fresh: {             // the keepers not used yet
@@ -30,14 +34,34 @@ EhBottomSheet {
         for (var i = 0; i < candidates.length; i++) if (!candidates[i].used) r.push(candidates[i])
         return r
     }
-    readonly property string deadName: {       // the keeper that does not answer
+    readonly property var deadNames: {         // the keepers that do not answer
+        var r = []
         for (var i = 0; i < candidates.length; i++)
-            if (candidates[i].used && !candidates[i].ok) return candidates[i].name
-        return ''
+            if (candidates[i].used && !candidates[i].ok) r.push(candidates[i].name)
+        return r
     }
-    readonly property string pickName: {
-        for (var i = 0; i < candidates.length; i++) if (candidates[i].url === pick) return candidates[i].name
-        return ''
+    readonly property var pickNames: {         // the new ones, in the order of the list
+        var r = []
+        for (var i = 0; i < candidates.length; i++)
+            if (picks.indexOf(candidates[i].url) >= 0) r.push(candidates[i].name)
+        return r
+    }
+    // "<b>A</b>", "<b>A</b> e <b>B</b>", "<b>A</b>, <b>B</b> e <b>C</b>"
+    function names(list) {
+        var b = []
+        for (var i = 0; i < list.length; i++) b.push('<b>' + list[i] + '</b>')
+        if (b.length <= 1) return b.join('')
+        return qsTr('%1 and %2').arg(b.slice(0, -1).join(', ')).arg(b[b.length - 1])
+    }
+    // a tap on a free keeper that answers: in or out (at most `need`; when full, it takes the
+    // place of the last one chosen)
+    function toggle(url) {
+        var p = picks.slice()
+        var i = p.indexOf(url)
+        if (i >= 0) { if (p.length > 1) p.splice(i, 1) }
+        else if (p.length < need) p.push(url)
+        else p[p.length - 1] = url
+        picks = p
     }
     readonly property string firstUrl: {       // the first of the list that answers (P5)
         for (var i = 0; i < fresh.length; i++) if (fresh[i].ok) return fresh[i].url
@@ -66,16 +90,17 @@ EhBottomSheet {
             if (op === 'findKeeper') {
                 root._mine = false
                 root.candidates = result.candidates || []
-                root.pick = result.pick || ''
+                root.need = Math.max(1, result.need || 1)
+                root.picks = result.picks || (result.pick ? [result.pick] : [])
                 root.stage = 'pick'
-            } else if (op === 'replaceKeeper') {
+            } else if (op === 'replaceKeepers') {
                 root._mine = false
                 root.result = result
                 root.stage = 'done'
             }
         }
         function onFailed(op, code, message) {
-            if (op !== 'findKeeper' && op !== 'replaceKeeper') return
+            if (op !== 'findKeeper' && op !== 'replaceKeepers') return
             if (code === 'busy') return
             root._mine = false
             if (op === 'findKeeper' && code === 'custodians') { root.stage = 'none'; return }
@@ -163,7 +188,7 @@ EhBottomSheet {
     // ---- 1: looking in the public list
     EhTitle {
         visible: root.stage === 'find' || root.stage === 'error'
-        text: qsTr('I look for a new keeper…')
+        text: root.lostNow > 1 ? qsTr('I look for %1 new keepers…').arg(root.lostNow) : qsTr('I look for a new keeper…')
         fontSize: 26
         Layout.bottomMargin: 0
     }
@@ -198,7 +223,10 @@ EhBottomSheet {
     // ---- 2: found, confirm with the PIN
     EhTitle {
         visible: root.stage === 'pick'
-        text: qsTr('I found a keeper')
+        text: root.picks.length < root.need
+              ? (root.picks.length === 1 ? qsTr('I found 1 new keeper out of %1').arg(root.need)
+                                         : qsTr('I found %1 new keepers out of %2').arg(root.picks.length).arg(root.need))
+              : root.picks.length > 1 ? qsTr('I found %1 keepers').arg(root.picks.length) : qsTr('I found a keeper')
         fontSize: 26
         Layout.bottomMargin: 0
     }
@@ -210,17 +238,19 @@ EhBottomSheet {
                 required property var modelData
                 required property int index
                 k: modelData
-                chosen: modelData.url === root.pick
+                chosen: root.picks.indexOf(modelData.url) >= 0
                 last: index === root.fresh.length - 1
-                onTapped: if (modelData.ok && !(root.bal && root.bal.busy)) root.pick = modelData.url
+                onTapped: if (modelData.ok && !(root.bal && root.bal.busy)) root.toggle(modelData.url)
             }
         }
     }
     Para {
         visible: root.stage === 'pick'
-        text: (root.deadName !== ''
-               ? qsTr('Instead of <b>%1</b> I put <b>%2</b> and send it its copy of the envelope. The delivery stays on <b>%3</b>.').arg(root.deadName).arg(root.pickName)
-               : qsTr('I add <b>%1</b> and send it its copy of the envelope. The delivery stays on <b>%2</b>.').arg(root.pickName))
+        text: (root.deadNames.length === 0
+               ? qsTr('I add <b>%1</b> and send it its copy of the envelope. The delivery stays on <b>%2</b>.').arg(root.pickNames.join(', '))
+               : root.pickNames.length > 1
+               ? qsTr('Instead of %1 I put %2 and send each one its copy of the envelope. The delivery stays on <b>%3</b>.').arg(root.names(root.deadNames)).arg(root.names(root.pickNames))
+               : qsTr('Instead of %1 I put %2 and send it its copy of the envelope. The delivery stays on <b>%3</b>.').arg(root.names(root.deadNames)).arg(root.names(root.pickNames)))
                   .arg(app.ehHeirDate(root.st.delivery))
               + ' <b>' + qsTr('Today you pay nothing.') + '</b>'
     }
@@ -245,12 +275,13 @@ EhBottomSheet {
         kind: 'wine'
         icon: 'eh_lock_white.svg'
         text: qsTr('Send the envelope with the PIN')
-        enabled: root.pick !== '' && !(root.bal && root.bal.busy)
-        onClicked: app.ehAskPin(qsTr('Type the PIN to send the envelope to the new keeper'), function() {
+        enabled: root.picks.length > 0 && !(root.bal && root.bal.busy)
+        onClicked: app.ehAskPin(root.picks.length > 1 ? qsTr('Type the PIN to send the envelope to the new keepers')
+                                                      : qsTr('Type the PIN to send the envelope to the new keeper'), function() {
             if (!root.bal) return
             root.error = ''
             root._mine = true
-            root.bal.replaceKeeper(root.pick)
+            root.bal.replaceKeepers(root.picks)
         })
     }
     EhStitchButton {
@@ -279,7 +310,7 @@ EhBottomSheet {
     }
     EhTitle {
         visible: root.stage === 'done'
-        text: qsTr('Keeper replaced')
+        text: (root.result.added || 1) > 1 ? qsTr('Keepers replaced') : qsTr('Keeper replaced')
         fontSize: 26
         Layout.bottomMargin: 0
     }

@@ -22,7 +22,7 @@ Rules of the bridge (plan "pagine eredità", section 1):
 * the signing password never passes through QML: ``_cmd`` hands
   ``Commands._run`` the getter ``wallet.get_unlocked_password`` (the wallet is
   unlocked when it is loaded, as for a normal Send). The PIN is asked by the
-  pages before ``confirm()``, ``renew()``, ``update()``, ``replaceKeeper()``
+  pages before ``confirm()``, ``renew()``, ``update()``, ``replaceKeepers()``
   and ``cancelWill()``;
 * ``bal_save_history`` is turned OFF at start: Schȅi must not save the will
   transactions as wallet-local transactions (the coins would look spent).
@@ -167,9 +167,13 @@ def _is_keeper_url(url, we):
     return isinstance(we, dict) and str(url).startswith('http') and '.onion' not in str(url)
 
 
-def keeper_health(ok, total, checks):
-    """``ok | some | one | none | invalid`` (point 4d), '' without keepers.
+def keeper_health(ok, total, checks, wanted=KEEPERS_DEFAULT):
+    """``ok | some | low | none | invalid`` (points 4d, P6), '' without keepers.
 
+    ``wanted`` = the keepers chosen (W: 3, 5 … 19). Owner P6: ask for new
+    keepers only when those answering go below W - 1 (no rule on time):
+    ``ok`` all answer; ``some`` at least W - 1 answer (quiet, nothing to
+    do); ``low`` 1 … W - 2 answer (replace them); ``none`` nobody.
     ``checks`` is the stored list of ``{t, ok, total}`` (oldest first).
     ``invalid``: no keeper answered at the last ``INVALID_CHECKS`` checks
     or more, the first of them at least ``INVALID_DAYS`` days before the
@@ -186,11 +190,11 @@ def keeper_health(ok, total, checks):
         if len(run) >= INVALID_CHECKS and run[0] - run[-1] >= INVALID_DAYS * DAY:
             return 'invalid'
         return 'none'
-    if ok == 1:
-        return 'one'
     if ok >= total:
         return 'ok'
-    return 'some'
+    if ok >= int(wanted or KEEPERS_DEFAULT) - 1:
+        return 'some'
+    return 'low'
 
 
 def _newest(items):
@@ -208,7 +212,7 @@ def _in_use(items, wes):
     """The will items of the keepers in use: those still selected.
 
     A keeper taken out (it stopped answering: :meth:`QEBal._keepers`,
-    :meth:`QEBal.replaceKeeper`) may still hold a valid copy; it is no
+    :meth:`QEBal.replaceKeepers`) may still hold a valid copy; it is no
     longer counted. When no holder is selected at all (e.g. a review just
     failed with every keeper down) every holder is counted.
     """
@@ -259,7 +263,7 @@ class QEBal(PluginQObject):
     ``refresh``, ``heirSave``, ``heirDelete``, ``setPeriod``, ``setWarn``,
     ``review``, ``confirm``, ``renew``, ``update``, ``checkCustodians``;
     owner 15/11 (points 4, 4c, 4d, 7): ``setKeepers``, ``findKeeper``,
-    ``replaceKeeper``, ``cancelWill``.
+    ``replaceKeepers`` (P6: all the keepers that do not answer in one go), ``cancelWill``.
     """
 
     stepChanged = pyqtSignal()
@@ -635,9 +639,10 @@ class QEBal(PluginQObject):
     def findKeeper(self):
         self._start('findKeeper', self._job_find_keeper)
 
-    @pyqtSlot(str)
-    def replaceKeeper(self, url):
-        self._start('replaceKeeper', lambda: self._job_replace_keeper(url))
+    @pyqtSlot('QVariantList')
+    def replaceKeepers(self, urls):
+        urls = [str(u) for u in (urls or [])]
+        self._start('replaceKeepers', lambda: self._job_replace_keepers(urls))
 
     @pyqtSlot(bool)
     def cancelWill(self, deleteHeirs):
@@ -651,7 +656,7 @@ class QEBal(PluginQObject):
 
         The fixed pair first (added and selected when missing), then the
         other keepers selected now (a keeper chosen before, e.g. by
-        :meth:`replaceKeeper`, is kept), all pinged. If fewer than wanted
+        :meth:`replaceKeepers`, is kept), all pinged. If fewer than wanted
         answer, the welist is downloaded and the answering ones (no .onion)
         are selected in the order of the welist (owner P5: never by price)
         up to the number wanted. Fewer answering
@@ -883,18 +888,24 @@ class QEBal(PluginQObject):
         checks = self._load_checks(wallet)
         if urls:
             checks = self._add_check(wallet, ok, len(urls), urls)
-        return {'ok': ok, 'total': len(urls), 'status': keeper_health(ok, len(urls), checks)}
+        return {'ok': ok, 'total': len(urls),
+                'status': keeper_health(ok, len(urls), checks, self._keepers_wanted())}
 
     def _job_find_keeper(self):
-        """Point 4d «Sostituisci il custode», step 1: the keepers of the public list that answer.
+        """Points 4d, P6 «Sostituisci quelli che non rispondono», step 1: new keepers.
 
-        Returns ``{candidates: [{url, name, feeSats, ok, used}], pick}``:
-        ``used`` = selected now or holding the will; the rows and ``pick``
-        follow the order of the welist (owner P5: never by price): ``pick`` =
-        the first free one that answers. None free: ``failed('custodians')``.
+        Returns ``{candidates: [{url, name, feeSats, ok, used}], picks, need,
+        pick}``: ``need`` = the keepers of the will in force that do not
+        answer (at least 1); ``picks`` = the first ``need`` free ones that
+        answer (``pick`` = the first of them). ``used`` = selected now or
+        holding the will; the rows and ``picks`` follow the order of the
+        welist (owner P5: never by price). Fewer free than needed: the ones
+        found. None free: ``failed('custodians')``.
         """
         wallet = self._local.wallet
         self._need_network(wallet)
+        cust = self._read_state(wallet).get('custodians') or {}
+        need = max(1, int(cust.get('total') or 0) - int(cust.get('ok') or 0))
         self._step_to('ping')
         try:
             self._cmd('bal_willexecutors_download')
@@ -913,14 +924,17 @@ class QEBal(PluginQObject):
         free = [r for r in rows if r['ok'] and not r['used']]
         if not free:
             raise _Fail('custodians', 'No other keeper is free now.')
-        return {'candidates': rows, 'pick': free[0]['url']}
+        picks = [r['url'] for r in free[:need]]
+        return {'candidates': rows, 'picks': picks, 'need': need, 'pick': picks[0]}
 
-    def _job_replace_keeper(self, url):
-        """Point 4d step 2: the keepers that do not answer out, ``url`` in, the will sent again.
+    def _job_replace_keepers(self, urls):
+        """Points 4d, P6 step 2: the keepers that do not answer out, ``urls`` in, ONE new will.
 
-        Like an update (free, the delivery one day earlier): the keeper that
-        does not answer keeps its older copy (one day later), so the new
-        copies are valid first. The PIN is asked by the page before.
+        All the new keepers in one go: one prepare, one signature (one PIN,
+        asked by the page before), one sending; the delivery stays the same
+        (the core adds a copy for every new keeper). A new keeper that does
+        not answer now is left out; none answering: ``failed('custodians')``.
+        Returns ``{delivery, ok, total, added}``.
         """
         wallet = self._local.wallet
         self._need_network(wallet)
@@ -929,19 +943,23 @@ class QEBal(PluginQObject):
             raise _Fail('needs_renew', 'The inheritance must be renewed.')
         if phase not in ('active', 'needs_update', 'unfinished'):
             raise _Fail('user', 'There is no inheritance in force.')
+        new = list(dict.fromkeys(u for u in urls or [] if u))
+        if not new:
+            raise _Fail('user', 'No keeper chosen.')
         self._step_to('ping')
         wes = self._cmd('bal_willexecutors_list') or {}
-        if not _is_keeper_url(url, wes.get(url)):
+        if any(not _is_keeper_url(u, wes.get(u)) for u in new):
             raise _Fail('user', 'This keeper is not in the list.')
-        selected = [u for u, we in wes.items()
-                    if u != url and isinstance(we, dict) and we.get('selected')]
-        pings = self._cmd('bal_willexecutors_ping', selected + [url]) or {}
-        if not (pings.get(url) or {}).get('ok'):
+        selected = [u for u, we in wes.items() if isinstance(we, dict) and we.get('selected')]
+        pings = self._cmd('bal_willexecutors_ping', list(dict.fromkeys(selected + new))) or {}
+        new = [u for u in new if (pings.get(u) or {}).get('ok')]
+        if not new:
             raise _Fail('custodians', 'This keeper does not answer.')
         for u in selected:
             if not (pings.get(u) or {}).get('ok'):
                 self._cmd('bal_willexecutors_select', u, value=False)
-        self._cmd('bal_willexecutors_select', url)
+        for u in new:
+            self._cmd('bal_willexecutors_select', u)
         self._prepare()
         self._sign_and_send()
         wes = self._cmd('bal_willexecutors_list') or {}
@@ -950,7 +968,8 @@ class QEBal(PluginQObject):
         for it in _in_use(_newest(live), wes):
             if it.get('willexecutor'):
                 held[it['willexecutor']] = held.get(it['willexecutor'], False)                     or bool((it.get('status') or {}).get('PUSHED'))
-        return {'delivery': self._min_locktime(live), 'ok': sum(held.values()), 'total': len(held)}
+        return {'delivery': self._min_locktime(live), 'ok': sum(held.values()), 'total': len(held),
+                'added': len(new)}
 
     def _wait_seen(self, wallet, txid, timeout=WAIT_INVALIDATION):
         """Wait until the wallet has ``txid`` in the mempool or mined (F4)."""
@@ -1130,7 +1149,7 @@ class QEBal(PluginQObject):
                     for u, we in wes.items() if isinstance(we, dict) and we.get('selected')]
         ok = sum(1 for c in cust if c['ok'])
         s['custodians'] = {'wanted': wanted, 'ok': ok, 'total': len(cust), 'list': cust,
-                           'status': keeper_health(ok, len(cust), checks) if live else ''}
+                           'status': keeper_health(ok, len(cust), checks, wanted) if live else ''}
         _rows, fee_min, fee_max, miner_fee = self._split(newest, heirs, coins)
         renew = self._renew_estimate(len(coins), show)
         s['fees'] = {'custodianSats': fee_max, 'custodianMinSats': fee_min,

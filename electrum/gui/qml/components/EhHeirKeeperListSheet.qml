@@ -2,7 +2,8 @@
 // anteprima/custode-spento/elenco-custodi.html). Opened by tapping the "Keepers" row of the
 // Status page: who holds the envelope (state.custodians.list), what each one takes at the
 // delivery and when it was checked, or for how many days it has not answered. Fewer keepers
-// than chosen: a note. One that does not answer: "Replace the keeper" (EhHeirReplaceSheet).
+// than chosen: a note. Too few answer (P6 'low', or none): "Replace the ones that do not
+// answer" (EhHeirReplaceSheet); 'some' (at least the chosen minus 1 answer) only shows the row.
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
@@ -125,10 +126,10 @@ EhBottomSheet {
             : qsTr('We use %1 keepers of the %2 chosen: on this network there are no others.').arg(root.total).arg(root.wanted)
     }
     EhStitchButton {
-        visible: root.lost > 0
+        visible: root.lost > 0 && ['low', 'none', 'invalid'].indexOf(root.kst) >= 0
         kind: 'wine'
         icon: 'eh_lock_white.svg'
-        text: root.kst === 'some' ? qsTr('Replace the keeper') : qsTr('Send the envelope to other keepers')
+        text: root.kst === 'low' ? qsTr('Replace the ones that do not answer') : qsTr('Send the envelope to other keepers')
         enabled: !(root.bal && root.bal.busy)
         onClicked: { root.close(); app._ehHeirOpenSheet('EhHeirReplaceSheet.qml') }
     }

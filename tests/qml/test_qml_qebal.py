@@ -106,7 +106,8 @@ def test_slots_never_block_the_gui_thread(plugins, qapp, monkeypatch):
                        ('setPeriod', (24,)), ('setWarn', ('half',)), ('heirDelete', ('x',)),
                        ('heirSave', ('', 'a', 'b', 50)), ('checkCustodians', ()),
                        ('setKeepers', (5,)), ('findKeeper', ()),
-                       ('replaceKeeper', ('https://we.example',)), ('cancelWill', (True,))):
+                       ('replaceKeepers', (['https://we.example', 'https://we2.example'],)),
+                       ('cancelWill', (True,))):
         t = time.monotonic()
         getattr(bal, slot)(*args)
         assert time.monotonic() - t < 0.05
@@ -134,7 +135,14 @@ def test_keepers_choice_and_health_rule():
         KEEPERS_CHOICES, KEEPERS_DEFAULT, INVALID_CHECKS, INVALID_DAYS, DAY, keeper_health)
     assert KEEPERS_DEFAULT == 3 and KEEPERS_CHOICES == (3, 5, 7, 9, 11, 13, 15, 17, 19)
     assert keeper_health(0, 0, []) == ''
-    assert [keeper_health(n, 3, []) for n in (3, 2, 1, 0)] == ['ok', 'some', 'one', 'none']
+    assert [keeper_health(n, 3, []) for n in (3, 2, 1, 0)] == ['ok', 'some', 'low', 'none']
+    # owner P6: quiet down to W - 1 answering, then 'low' (replace them), 0 = 'none'
+    assert [keeper_health(n, 3, [], 3) for n in (3, 2, 1, 0)] == ['ok', 'some', 'low', 'none']
+    assert [keeper_health(n, 5, [], 5) for n in (5, 4, 3, 1, 0)] == ['ok', 'some', 'low', 'low', 'none']
+    assert [keeper_health(n, 7, [], 7) for n in (7, 6, 5, 1, 0)] == ['ok', 'some', 'low', 'low', 'none']
+    # fewer in use than wanted (testnet4: 2 of 3): all answering is 'ok', 1 of 2 asks
+    assert [keeper_health(n, 2, [], 3) for n in (2, 1, 0)] == ['ok', 'low', 'none']
+    assert keeper_health(4, 5, [], 7) == 'low' and keeper_health(6, 7, [], 7) == 'some'
     zero = [{'t': i * INVALID_DAYS * DAY // (INVALID_CHECKS - 1), 'ok': 0}
             for i in range(INVALID_CHECKS)]
     assert keeper_health(0, 3, zero) == 'invalid'

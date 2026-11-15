@@ -37,7 +37,7 @@ Rectangle {
     readonly property string heirKeepers: root.heirState.custodians ? (root.heirState.custodians.status || '') : ''
     readonly property string heirDot: root.heirOff || root.heirPhase === '' ? ''
         : (root.heirPhase === 'expired' || root.heirKeepers === 'none' || root.heirKeepers === 'invalid') ? 'bad'
-        : (root.heirKeepers === 'one' || ['due', 'needs_update', 'unfinished'].indexOf(root.heirPhase) >= 0) ? 'warn'
+        : (root.heirKeepers === 'low' || ['due', 'needs_update', 'unfinished'].indexOf(root.heirPhase) >= 0) ? 'warn'
         : (root.heirPhase === 'active' ? 'ok' : '')
     property bool hasMoney: false
     property real frozenSats: 0         // coins blocked in "Le tue monete d'oro"
