@@ -104,7 +104,9 @@ def test_slots_never_block_the_gui_thread(plugins, qapp, monkeypatch):
     assert bal.busy is True
     for slot, args in (('review', ()), ('confirm', ()), ('renew', ()), ('update', ()),
                        ('setPeriod', (24,)), ('setWarn', ('half',)), ('heirDelete', ('x',)),
-                       ('heirSave', ('', 'a', 'b', 50)), ('checkCustodians', ())):
+                       ('heirSave', ('', 'a', 'b', 50)), ('checkCustodians', ()),
+                       ('setKeepers', (5,)), ('findKeeper', ()),
+                       ('replaceKeeper', ('https://we.example',)), ('cancelWill', (True,))):
         t = time.monotonic()
         getattr(bal, slot)(*args)
         assert time.monotonic() - t < 0.05
@@ -125,3 +127,29 @@ def test_warn_days_rule():
     assert warn_days(12, 'half') == 183 and warn_days(60, 'half') == 913
     assert _days('-365d') == 365 and _days('1y') == 0 and _days(None) == 0
     assert _percent('60%') == 60 and _percent('12.5%') is None and _percent('15000') is None
+
+
+def test_keepers_choice_and_health_rule():
+    from electrum.plugins.bal.qml import (
+        KEEPERS_CHOICES, KEEPERS_DEFAULT, INVALID_CHECKS, INVALID_DAYS, DAY, keeper_health)
+    assert KEEPERS_DEFAULT == 3 and KEEPERS_CHOICES == (3, 5, 7, 9, 11, 13, 15, 17, 19)
+    assert keeper_health(0, 0, []) == ''
+    assert [keeper_health(n, 3, []) for n in (3, 2, 1, 0)] == ['ok', 'some', 'one', 'none']
+    zero = [{'t': i * INVALID_DAYS * DAY // (INVALID_CHECKS - 1), 'ok': 0}
+            for i in range(INVALID_CHECKS)]
+    assert keeper_health(0, 3, zero) == 'invalid'
+    assert keeper_health(0, 3, zero[:-1]) == 'none'
+    assert keeper_health(0, 3, zero[:1] + [{'t': DAY, 'ok': 2}] + zero[1:]) == 'none'
+
+
+def test_fee_range_of_the_copies():
+    """Owner 4b: every keeper's copy has its own fee: min and max over the copies."""
+    from electrum.plugins.bal.qml import QEBal, _in_use, _newest
+    items = [{'txid': 'a', 'locktime': 10, 'willexecutor': 'k1'},
+             {'txid': 'b', 'locktime': 10, 'willexecutor': 'k2'},
+             {'txid': 'c', 'locktime': 11, 'willexecutor': 'k3'}]
+    assert [it['txid'] for it in _newest(items)] == ['a', 'b']
+    wes = {'k1': {'selected': True}, 'k2': {'selected': False}}
+    assert [it['txid'] for it in _in_use(_newest(items), wes)] == ['a']
+    assert [it['txid'] for it in _in_use(_newest(items), {})] == ['a', 'b']
+    assert QEBal._split(None, [], {'Marco': ['x', '100%']}, {})[1:] == (0, 0, 0)

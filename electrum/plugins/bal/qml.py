@@ -22,7 +22,8 @@ Rules of the bridge (plan "pagine eredità", section 1):
 * the signing password never passes through QML: ``_cmd`` hands
   ``Commands._run`` the getter ``wallet.get_unlocked_password`` (the wallet is
   unlocked when it is loaded, as for a normal Send). The PIN is asked by the
-  pages before ``confirm()``, ``renew()`` and ``update()``;
+  pages before ``confirm()``, ``renew()``, ``update()``, ``replaceKeeper()``
+  and ``cancelWill()``;
 * ``bal_save_history`` is turned OFF at start: Schȅi must not save the will
   transactions as wallet-local transactions (the coins would look spent).
 
@@ -30,6 +31,8 @@ Schȅi ships the plugin as an internal plugin (electrum/plugins/bal), so a
 normal relative import is enough here (no zip loading on Android).
 """
 
+import asyncio
+import json
 import threading
 import time
 import traceback
@@ -57,8 +60,20 @@ WARN_FRACTIONS = {'half': 2, 'third': 3, 'quarter': 4}
 WARN_DEFAULT = 'half'
 #: The config key of the "when to remind you" choice (app-wide).
 WARN_KEY = 'eh_heir_warn'
-#: The two keepers (will-executors) Schȅi uses, on every chain (owner, plan 1.5 / 9.4).
+#: The two keepers (will-executors) Schȅi always tries first, on every chain (owner, plan 1.5 / 9.4).
 KEEPERS = ('https://we.bitcoin-after.life', 'https://we.safe21.io')
+#: How many keepers to use (owner 15/11, point 4c): 3 by default, an odd number up to 19.
+KEEPERS_KEY = 'eh_heir_keepers'
+KEEPERS_DEFAULT = 3
+KEEPERS_CHOICES = tuple(range(3, 20, 2))
+#: Wallet db keys of the bridge (not will data): the keepers' check results
+#: (point 4d) and the txid of the cancellation of the will (point 7).
+CHECKS_KEY = 'eh_heir_keeper_checks'
+CHECKS_KEEP = 60
+CANCEL_KEY = 'eh_heir_cancel_txid'
+#: "Non valida" (point 4d): no keeper answered at any check for this long, at least this many checks.
+INVALID_DAYS = 7
+INVALID_CHECKS = 3
 #: Above this share of the balance the keepers' cost is shown as a warning (owner 9.5: never blocks).
 FEE_WARN_SHARE = 0.20
 #: How long renew() waits for the wallet to see its invalidation, seconds.
@@ -108,6 +123,65 @@ def _days(threshold):
     return 0
 
 
+def _fee_of(we):
+    return int((we or {}).get('base_fee') or 0)
+
+
+def _is_keeper_url(url, we):
+    """A usable entry of the keepers' list (the welist adds ``status``/``url`` keys); no Tor."""
+    return isinstance(we, dict) and str(url).startswith('http') and '.onion' not in str(url)
+
+
+def keeper_health(ok, total, checks):
+    """``ok | some | one | none | invalid`` (point 4d), '' without keepers.
+
+    ``checks`` is the stored list of ``{t, ok, total}`` (oldest first).
+    ``invalid``: no keeper answered at the last ``INVALID_CHECKS`` checks
+    or more, the first of them at least ``INVALID_DAYS`` days before the
+    last one (a check made while the phone was offline is never stored).
+    """
+    if not total:
+        return ''
+    if ok <= 0:
+        run = []
+        for c in reversed(checks or []):
+            if int(c.get('ok') or 0) > 0:
+                break
+            run.append(int(c.get('t') or 0))
+        if len(run) >= INVALID_CHECKS and run[0] - run[-1] >= INVALID_DAYS * DAY:
+            return 'invalid'
+        return 'none'
+    if ok == 1:
+        return 'one'
+    if ok >= total:
+        return 'ok'
+    return 'some'
+
+
+def _newest(items):
+    """The will items of the newest copies: those with the earliest delivery.
+
+    An update or a keeper's replacement makes new copies one day earlier;
+    the older ones (e.g. the copy of a keeper that stopped answering) may
+    still spend coins of the wallet, but are no longer the will in force.
+    """
+    first = min((it['locktime'] for it in items if it.get('locktime')), default=0)
+    return [it for it in items if not first or it.get('locktime') == first]
+
+
+def _in_use(items, wes):
+    """The will items of the keepers in use: those still selected.
+
+    A keeper taken out (it stopped answering: :meth:`QEBal._keepers`,
+    :meth:`QEBal.replaceKeeper`) may still hold a valid copy; it is no
+    longer counted. When no holder is selected at all (e.g. a review just
+    failed with every keeper down) every holder is counted.
+    """
+    chosen = [it for it in items
+              if ((wes or {}).get(it.get('willexecutor')) or {}).get('selected')]
+    return chosen or list(items)
+
+
 def _inputs(raw):
     """The ``"txid:n"`` coins a will transaction spends."""
     try:
@@ -132,9 +206,11 @@ def _empty_state():
         'delivery': 0, 'warn': WARN_DEFAULT, 'warnDays': 0, 'warnAt': 0,
         'daysToWarn': 0, 'monthsToDelivery': 0, 'newDelivery': 0, 'now': int(time.time()),
         'balanceSats': 0,
-        'custodians': {'ok': 0, 'total': 0, 'list': []},
+        'keepersWanted': KEEPERS_DEFAULT, 'keepersChoices': list(KEEPERS_CHOICES),
+        'custodians': {'wanted': KEEPERS_DEFAULT, 'ok': 0, 'total': 0, 'list': [], 'status': ''},
         'updateReason': '', 'uncoveredSats': 0,
-        'fees': {'custodianSats': 0, 'minerSats': 0, 'renewSats': 0},
+        'fees': {'custodianSats': 0, 'custodianMinSats': 0, 'custodianMaxSats': 0,
+                 'minerSats': 0, 'renewSats': 0, 'cancelSats': 0},
         'detail': '',
     }
 
@@ -146,7 +222,9 @@ class QEBal(PluginQObject):
     ``busy``, ``step``, ``state``, ``lastCommand``, ``commandLog``; signals
     ``done(op, result)`` and ``failed(op, code, message)``; slots
     ``refresh``, ``heirSave``, ``heirDelete``, ``setPeriod``, ``setWarn``,
-    ``review``, ``confirm``, ``renew``, ``update``, ``checkCustodians``.
+    ``review``, ``confirm``, ``renew``, ``update``, ``checkCustodians``;
+    owner 15/11 (points 4, 4c, 4d, 7): ``setKeepers``, ``findKeeper``,
+    ``replaceKeeper``, ``cancelWill``.
     """
 
     stepChanged = pyqtSignal()
@@ -210,7 +288,8 @@ class QEBal(PluginQObject):
         """Run the Electrum command ``name`` on the job's wallet (worker thread).
 
         The ONLY place where the bridge changes or reads heirs / will data
-        (besides the read-only spender label of :meth:`_spender_label`).
+        (besides the read-only spender label of :meth:`_spender_label`; the
+        bridge's own records ``CHECKS_KEY`` / ``CANCEL_KEY`` are not will data).
         The password is never passed: ``Commands._run`` asks the getter
         ``wallet.get_unlocked_password`` only for a signing command on a
         wallet with a password. Records ``lastCommand`` / ``commandLog``
@@ -344,6 +423,66 @@ class QEBal(PluginQObject):
         value = self.plugin.config.get(WARN_KEY, WARN_DEFAULT)
         return value if value in WARN_FRACTIONS else WARN_DEFAULT
 
+    def _keepers_wanted(self):
+        try:
+            value = int(self.plugin.config.get(KEEPERS_KEY, KEEPERS_DEFAULT))
+        except (TypeError, ValueError):
+            return KEEPERS_DEFAULT
+        return value if value in KEEPERS_CHOICES else KEEPERS_DEFAULT
+
+    def _online_now(self):
+        """True when the phone really reaches the internet now (point 4d).
+
+        Connected to the Electrum server, and (when there is a live session)
+        the server answers a ``server.ping``. Asked before a check where no
+        keeper answered is counted: offline, the check says nothing about them.
+        """
+        network = self._network()
+        if network is None or not network.is_connected():
+            return False
+        session = getattr(getattr(network, 'interface', None), 'session', None)
+        if session is None:
+            return True
+        try:
+            fut = asyncio.run_coroutine_threadsafe(
+                asyncio.wait_for(session.send_request('server.ping'), 10), util.get_asyncio_loop())
+            fut.result(12)
+            return True
+        except Exception as e:
+            _logger.info('server.ping failed: %r', e)
+            return False
+
+    # the bridge's own records in the wallet db (no will data: those go through _cmd)
+    @staticmethod
+    def _load_checks(wallet):
+        try:
+            return [c for c in json.loads(wallet.db.get(CHECKS_KEY) or '[]') if isinstance(c, dict)]
+        except Exception:
+            return []
+
+    @staticmethod
+    def _db_put(wallet, key, value):
+        """Write one record and save the wallet file.
+
+        The save runs on the asyncio loop thread, as for the ``bal_*``
+        commands: Electrum refuses to write the db from a daemon thread
+        (the worker is one).
+        """
+        wallet.db.put(key, value)
+
+        async def save():
+            wallet.save_db()
+        try:
+            asyncio.run_coroutine_threadsafe(save(), util.get_asyncio_loop()).result(20)
+        except Exception as e:
+            _logger.info('save_db failed: %r', e)
+
+    def _add_check(self, wallet, ok, total, urls):
+        checks = self._load_checks(wallet)
+        checks.append({'t': int(time.time()), 'ok': int(ok), 'total': int(total), 'urls': urls})
+        self._db_put(wallet, CHECKS_KEY, json.dumps(checks[-CHECKS_KEEP:]))
+        return checks
+
     # ------------------------------------------------------------------ #
     # Slots
     # ------------------------------------------------------------------ #
@@ -446,32 +585,46 @@ class QEBal(PluginQObject):
 
     @pyqtSlot()
     def checkCustodians(self):
+        self._start('checkCustodians', self._job_check)
+
+    @pyqtSlot(int)
+    def setKeepers(self, n):
         def job():
-            self._need_network(self._local.wallet)
-            self._step_to('check')
-            out = self._cmd('bal_will_check_executor') or {}
-            live = {it['txid'] for it in self._live_items(self._local.wallet)}
-            urls = {}
-            for wid, v in out.items():
-                if wid in live and v.get('url'):
-                    ok = bool(v.get('checked')) and not v.get('check_fail')
-                    urls[v['url']] = urls.get(v['url'], False) or ok
-            return {'ok': sum(1 for v in urls.values() if v), 'total': len(urls)}
-        self._start('checkCustodians', job)
+            if int(n) not in KEEPERS_CHOICES:
+                raise _Fail('user', 'The keepers must be 3, 5, 7 … 19.')
+            self.plugin.config.set_key(KEEPERS_KEY, int(n), save=True)
+            return {'keepersWanted': int(n)}
+        self._start('setKeepers', job)
+
+    @pyqtSlot()
+    def findKeeper(self):
+        self._start('findKeeper', self._job_find_keeper)
+
+    @pyqtSlot(str)
+    def replaceKeeper(self, url):
+        self._start('replaceKeeper', lambda: self._job_replace_keeper(url))
+
+    @pyqtSlot(bool)
+    def cancelWill(self, deleteHeirs):
+        self._start('cancelWill', lambda: self._job_cancel(bool(deleteHeirs)))
 
     # ------------------------------------------------------------------ #
     # The jobs with several commands
     # ------------------------------------------------------------------ #
     def _keepers(self):
-        """Make sure the keepers are selected and answer (plan 1.5).
+        """Make sure ``keepersWanted`` keepers are selected and answer (plan 1.5, owner 4c).
 
-        The fixed pair first (added and selected when missing), pinged; if
-        fewer than 2 answer, the welist is downloaded and the cheapest
-        answering ones (no .onion) are selected up to 2. A selected keeper
-        that does not answer is deselected (the next review selects the
-        pair again). Returns ``[{url, name, ok, feeSats}]``; none answering
-        raises ``custodians``.
+        The fixed pair first (added and selected when missing), then the
+        other keepers selected now (a keeper chosen before, e.g. by
+        :meth:`replaceKeeper`, is kept), all pinged. If fewer than wanted
+        answer, the welist is downloaded and the cheapest answering ones
+        (no .onion) are selected up to the number wanted. Fewer answering
+        than wanted is fine (one is enough to deliver): all those that
+        answer are used. A selected keeper that does not answer is
+        deselected (the next review selects the pair again). Returns
+        ``[{url, name, ok, feeSats}]``; none answering raises ``custodians``.
         """
+        wanted = self._keepers_wanted()
         self._step_to('ping')
         wes = self._cmd('bal_willexecutors_list') or {}
         for url in KEEPERS:
@@ -479,31 +632,38 @@ class QEBal(PluginQObject):
                 self._cmd('bal_willexecutors_add', url)
             if not (wes.get(url) or {}).get('selected'):
                 self._cmd('bal_willexecutors_select', url)
-        pings = self._cmd('bal_willexecutors_ping', list(KEEPERS)) or {}
+        others = [u for u, we in wes.items()
+                  if u not in KEEPERS and _is_keeper_url(u, we) and we.get('selected')]
+        first = list(KEEPERS) + others
+        pings = self._cmd('bal_willexecutors_ping', first) or {}
+        wes = self._cmd('bal_willexecutors_list') or {}
         ok = [u for u in KEEPERS if (pings.get(u) or {}).get('ok')]
-        if len(ok) < 2:
+        ok += sorted((u for u in others if (pings.get(u) or {}).get('ok')),
+                     key=lambda u: _fee_of(wes.get(u)))
+        if len(ok) < wanted:
             try:
                 self._cmd('bal_willexecutors_download')
             except Exception as e:
                 _logger.info('welist download failed: %r', e)
             wes = self._cmd('bal_willexecutors_list') or {}
-            extra = [u for u in wes if u not in KEEPERS and '.onion' not in u]
+            extra = [u for u, we in wes.items() if u not in first and _is_keeper_url(u, we)]
             if extra:
                 pings2 = self._cmd('bal_willexecutors_ping', extra) or {}
                 wes = self._cmd('bal_willexecutors_list') or {}
                 good = sorted((u for u in extra if (pings2.get(u) or {}).get('ok')),
-                              key=lambda u: int(wes[u].get('base_fee') or 0))
-                for u in good[:2 - len(ok)]:
+                              key=lambda u: _fee_of(wes.get(u)))
+                for u in good[:wanted - len(ok)]:
                     self._cmd('bal_willexecutors_select', u)
                     ok.append(u)
+        ok = ok[:wanted]
         wes = self._cmd('bal_willexecutors_list') or {}
         for u, we in wes.items():
-            if we.get('selected') and u not in ok:
+            if isinstance(we, dict) and we.get('selected') and u not in ok:
                 self._cmd('bal_willexecutors_select', u, value=False)
         if not ok:
             raise _Fail('custodians', 'No keeper answered.')
         return [{'url': u, 'name': u.split('://')[-1], 'ok': True,
-                 'feeSats': int(wes[u].get('base_fee') or 0)} for u in ok]
+                 'feeSats': _fee_of(wes.get(u))} for u in ok]
 
     def _prepare(self):
         self._step_to('prepare')
@@ -529,13 +689,23 @@ class QEBal(PluginQObject):
         urls = [u for u in out if not u.startswith('_')]
         failed = out.get('_failed') or {}
         if urls:
-            return len([u for u in urls if u not in failed]), len(urls)
+            sent = len([u for u in urls if u not in failed])
+            if sent:
+                self._new_copies_sent()
+            return sent, len(urls)
         # nothing left to send: count the keepers already holding the will
         held = {it['willexecutor'] for it in self._live_items(self._local.wallet)
                 if it.get('willexecutor') and (it.get('status') or {}).get('PUSHED')}
         if not held:
             raise _Fail('not_sent', 'No keeper took the envelope.')
         return len(held), len(held)
+
+    def _new_copies_sent(self):
+        """New copies are with the keepers: the old check results and a cancellation no longer apply."""
+        wallet = self._local.wallet
+        for key in (CHECKS_KEY, CANCEL_KEY):
+            if wallet.db.get(key) is not None:
+                self._db_put(wallet, key, None)
 
     def _job_review(self):
         wallet = self._local.wallet
@@ -550,22 +720,26 @@ class QEBal(PluginQObject):
         coins = self._coins(wallet)
         balance = sum(coins.values())
         items = self._live_items(wallet, coins=coins)
-        heir_rows, keeper_fee, miner_fee = self._split(items, heirs, coins)
+        heir_rows, fee_min, fee_max, miner_fee = self._split(_newest(items), heirs, coins)
         show = self._cmd('bal_delivery_show')
         delivery_ = self._min_locktime(items) or int(show.get('locktime') or 0)
         days = _days(show.get('threshold'))
         return {
             'result': out.get('result'),
             'heirs': heir_rows,
-            'custodianFeeSats': keeper_fee,
+            # owner 4b: each keeper's copy has its own fee; one only is paid
+            'custodianFeeSats': fee_max,
+            'custodianFeeMinSats': fee_min,
+            'custodianFeeMaxSats': fee_max,
             'minerFeeSats': miner_fee,
             'renewFeeSats': self._renew_estimate(len(coins), show),
             'balanceSats': balance,
             # owner 9.5: a warning only, never a refusal
-            'feeWarning': bool(balance and keeper_fee > balance * FEE_WARN_SHARE),
+            'feeWarning': bool(balance and fee_max > balance * FEE_WARN_SHARE),
             'delivery': delivery_,
             'warnAt': delivery_ - days * DAY,
             'custodians': keepers,
+            'custodiansWanted': self._keepers_wanted(),
         }
 
     def _job_update(self):
@@ -588,30 +762,157 @@ class QEBal(PluginQObject):
         """
         wallet = self._local.wallet
         self._need_network(wallet)
-        fee = 0
-        self._step_to('invalidate')
-        inv = self._cmd('bal_will_invalidate') or {}
-        if inv.get('tx'):
-            coins = self._coins(wallet)
-            signed = self._cmd('signtransaction', inv['tx'])
-            if not signed:
-                raise _Fail('user', 'The wallet is locked.')
-            tx = tx_from_any(signed)
-            fee = sum(coins.get(i.prevout.to_str(), 0) for i in tx.inputs()) \
-                - sum(o.value for o in tx.outputs())
-            self._step_to('broadcast')
-            try:
-                txid = self._cmd('broadcast', signed)
-            except Exception as e:
-                raise _Fail('offline', str(e)) from None
-            self._step_to('wait')
-            if not self._wait_seen(wallet, txid or tx.txid()):
-                raise _Fail('not_synced', 'The renewal was sent: it is finished the next time.')
+        inv = self._invalidate(wallet)
+        if inv and not inv['seen']:
+            raise _Fail('not_synced', 'The renewal was sent: it is finished the next time.')
         self._keepers()
         self._prepare()
         sent, total = self._sign_and_send()
         return {'delivery': self._min_locktime(self._live_items(wallet)), 'sent': sent,
-                'total': total, 'feeSats': max(0, int(fee))}
+                'total': total, 'feeSats': inv['feeSats'] if inv else 0}
+
+    def _invalidate(self, wallet, on_sent=None):
+        """``bal_will_invalidate`` + ``signtransaction`` + ``broadcast``, then wait (F4).
+
+        Returns ``None`` when there is nothing to invalidate, else
+        ``{txid, feeSats, seen}`` (``seen``: the wallet has the transaction).
+        ``on_sent(txid)`` is called right after the broadcast.
+        """
+        self._step_to('invalidate')
+        inv = self._cmd('bal_will_invalidate') or {}
+        if not inv.get('tx'):
+            return None
+        coins = self._coins(wallet)
+        signed = self._cmd('signtransaction', inv['tx'])
+        if not signed:
+            raise _Fail('user', 'The wallet is locked.')
+        tx = tx_from_any(signed)
+        fee = sum(coins.get(i.prevout.to_str(), 0) for i in tx.inputs()) \
+            - sum(o.value for o in tx.outputs())
+        self._step_to('broadcast')
+        try:
+            txid = self._cmd('broadcast', signed) or tx.txid()
+        except Exception as e:
+            raise _Fail('offline', str(e)) from None
+        if on_sent is not None:
+            on_sent(txid)
+        self._step_to('wait')
+        return {'txid': txid, 'feeSats': max(0, int(fee)), 'seen': self._wait_seen(wallet, txid)}
+
+    def _job_cancel(self, delete_heirs):
+        """Point 7: invalidate the will on the blockchain; then, if asked, delete every heir.
+
+        The txid of the cancellation is kept in the wallet db, so the state
+        reads ``draft`` (heirs kept) and not ``unfinished`` (a renewal cut
+        in half, which spends the coins the same way).
+        """
+        wallet = self._local.wallet
+        self._need_network(wallet)
+        inv = self._invalidate(wallet, on_sent=lambda txid: self._db_put(wallet, CANCEL_KEY, txid))
+        if inv is None:
+            raise _Fail('user', 'There is no inheritance to cancel.')
+        if not inv['seen']:
+            # the heirs stay: until the wallet sees the cancellation the will looks in force
+            raise _Fail('not_synced', 'The cancellation was sent: the wallet sees it soon.')
+        if delete_heirs:
+            names = list((self._cmd('bal_heirs_list') or {}).keys())
+            if names:
+                self._cmd('bal_heirs_delete', names)
+        return {'feeSats': inv['feeSats'], 'txid': inv['txid']}
+
+    def _job_check(self):
+        """Ask the keepers whether they hold their copy; store the result (point 4d).
+
+        A check where no keeper answered is stored only when the phone is
+        really online (:meth:`_online_now`); offline it fails ``offline``
+        and counts for nothing.
+        """
+        wallet = self._local.wallet
+        self._need_network(wallet)
+        self._step_to('check')
+        out = self._cmd('bal_will_check_executor') or {}
+        wes = self._cmd('bal_willexecutors_list') or {}
+        live = {it['txid']: it for it in _in_use(_newest(self._live_items(wallet)), wes)}
+        urls = {}
+        for it in live.values():
+            if it.get('willexecutor') and (it.get('status') or {}).get('PUSHED'):
+                urls.setdefault(it['willexecutor'], False)
+        for wid, v in out.items():
+            if wid in live and v.get('url') in urls:
+                ok = bool(v.get('checked')) and not v.get('check_fail')
+                urls[v['url']] = urls[v['url']] or ok
+        ok = sum(1 for v in urls.values() if v)
+        if not ok and not self._online_now():
+            raise _Fail('offline', 'Internet is needed for the inheritance.')
+        checks = self._load_checks(wallet)
+        if urls:
+            checks = self._add_check(wallet, ok, len(urls), urls)
+        return {'ok': ok, 'total': len(urls), 'status': keeper_health(ok, len(urls), checks)}
+
+    def _job_find_keeper(self):
+        """Point 4d «Sostituisci il custode», step 1: the keepers of the public list that answer.
+
+        Returns ``{candidates: [{url, name, feeSats, ok, used}], pick}``:
+        ``used`` = selected now or holding the will; ``pick`` = the cheapest
+        free one that answers. None free: ``failed('custodians')``.
+        """
+        wallet = self._local.wallet
+        self._need_network(wallet)
+        self._step_to('ping')
+        try:
+            self._cmd('bal_willexecutors_download')
+        except Exception as e:
+            _logger.info('welist download failed: %r', e)
+        wes = self._cmd('bal_willexecutors_list') or {}
+        used = {u for u, we in wes.items() if isinstance(we, dict) and we.get('selected')}
+        used.update(it['willexecutor'] for it in self._live_items(wallet) if it.get('willexecutor'))
+        urls = [u for u, we in wes.items() if _is_keeper_url(u, we)]
+        pings = (self._cmd('bal_willexecutors_ping', urls) or {}) if urls else {}
+        wes = self._cmd('bal_willexecutors_list') or {}
+        rows = [{'url': u, 'name': u.split('://')[-1], 'feeSats': _fee_of(wes.get(u)),
+                 'ok': bool((pings.get(u) or {}).get('ok')), 'used': u in used} for u in urls]
+        rows.sort(key=lambda r: (not r['used'], r['feeSats'], r['url']))
+        free = [r for r in rows if r['ok'] and not r['used']]
+        if not free:
+            raise _Fail('custodians', 'No other keeper is free now.')
+        return {'candidates': rows, 'pick': min(free, key=lambda r: r['feeSats'])['url']}
+
+    def _job_replace_keeper(self, url):
+        """Point 4d step 2: the keepers that do not answer out, ``url`` in, the will sent again.
+
+        Like an update (free, the delivery one day earlier): the keeper that
+        does not answer keeps its older copy (one day later), so the new
+        copies are valid first. The PIN is asked by the page before.
+        """
+        wallet = self._local.wallet
+        self._need_network(wallet)
+        phase = self._read_state(wallet).get('phase')
+        if phase in ('due', 'expired'):
+            raise _Fail('needs_renew', 'The inheritance must be renewed.')
+        if phase not in ('active', 'needs_update', 'unfinished'):
+            raise _Fail('user', 'There is no inheritance in force.')
+        self._step_to('ping')
+        wes = self._cmd('bal_willexecutors_list') or {}
+        if not _is_keeper_url(url, wes.get(url)):
+            raise _Fail('user', 'This keeper is not in the list.')
+        selected = [u for u, we in wes.items()
+                    if u != url and isinstance(we, dict) and we.get('selected')]
+        pings = self._cmd('bal_willexecutors_ping', selected + [url]) or {}
+        if not (pings.get(url) or {}).get('ok'):
+            raise _Fail('custodians', 'This keeper does not answer.')
+        for u in selected:
+            if not (pings.get(u) or {}).get('ok'):
+                self._cmd('bal_willexecutors_select', u, value=False)
+        self._cmd('bal_willexecutors_select', url)
+        self._prepare()
+        self._sign_and_send()
+        wes = self._cmd('bal_willexecutors_list') or {}
+        live = self._live_items(wallet)
+        held = {}
+        for it in _in_use(_newest(live), wes):
+            if it.get('willexecutor'):
+                held[it['willexecutor']] = held.get(it['willexecutor'], False)                     or bool((it.get('status') or {}).get('PUSHED'))
+        return {'delivery': self._min_locktime(live), 'ok': sum(held.values()), 'total': len(held)}
 
     def _wait_seen(self, wallet, txid, timeout=WAIT_INVALIDATION):
         """Wait until the wallet has ``txid`` in the mempool or mined (F4)."""
@@ -654,22 +955,32 @@ class QEBal(PluginQObject):
         return int(min((it['locktime'] for it in items if it.get('locktime')), default=0))
 
     def _split(self, items, heirs, coins):
-        """Heir sats, keeper fee and miner fee of one copy of the will."""
+        """Heir sats and miner fee of the first copy; min and max keeper fee of all copies.
+
+        Owner 4b: every keeper holds its own copy, with its own fee output
+        (the outputs that go to no heir); one copy only is executed. A
+        keeper with several copies counts with its highest fee.
+        """
         if not items:
             rows = [{'name': n, 'percent': _percent(v[1]) or 0, 'sats': 0} for n, v in heirs.items()]
-            return rows, 0, 0
-        tx = tx_from_any(items[0]['tx'])
-        outs = {}
-        for o in tx.outputs():
-            outs[o.address] = outs.get(o.address, 0) + o.value
-        rows = []
-        heir_addrs = set()
-        for n, v in heirs.items():
-            heir_addrs.add(v[0])
-            rows.append({'name': n, 'percent': _percent(v[1]) or 0, 'sats': int(outs.get(v[0], 0))})
-        keeper = sum(val for a, val in outs.items() if a not in heir_addrs)
-        miner = sum(coins.get(i, 0) for i in _inputs(items[0]['tx'])) - sum(outs.values())
-        return rows, int(keeper), int(max(0, miner))
+            return rows, 0, 0, 0
+        heir_addrs = {v[0] for v in heirs.values()}
+        by_keeper = {}
+        first_outs = None
+        for it in items:
+            outs = {}
+            for o in tx_from_any(it['tx']).outputs():
+                outs[o.address] = outs.get(o.address, 0) + o.value
+            if first_outs is None:
+                first_outs = outs
+            fee = sum(val for a, val in outs.items() if a not in heir_addrs)
+            key = it.get('willexecutor') or ''
+            by_keeper[key] = max(by_keeper.get(key, 0), int(fee))
+        rows = [{'name': n, 'percent': _percent(v[1]) or 0, 'sats': int(first_outs.get(v[0], 0))}
+                for n, v in heirs.items()]
+        miner = sum(coins.get(i, 0) for i in _inputs(items[0]['tx'])) - sum(first_outs.values())
+        fees = list(by_keeper.values())
+        return rows, min(fees), max(fees), int(max(0, miner))
 
     def _renew_estimate(self, n_inputs, show):
         """The miner fee of a renewal (its invalidation), estimated (plan 1.4)."""
@@ -687,10 +998,15 @@ class QEBal(PluginQObject):
         return int(round(vbytes * rate))
 
     @staticmethod
-    def _spender_label(wallet, outpoint):
-        """The label of the transaction that spent ``outpoint`` ('' if none). Read only."""
+    def _spender_txid(wallet, outpoint):
+        """The txid of the transaction that spent ``outpoint`` (None if none). Read only."""
         txid, n = outpoint.split(':')
-        spender = wallet.db.get_spent_outpoint(txid, int(n))
+        return wallet.db.get_spent_outpoint(txid, int(n))
+
+    @classmethod
+    def _spender_label(cls, wallet, outpoint):
+        """The label of the transaction that spent ``outpoint`` ('' if none). Read only."""
+        spender = cls._spender_txid(wallet, outpoint)
         return (wallet.get_label_for_txid(spender) or '') if spender else ''
 
     def _read_state(self, wallet):
@@ -747,28 +1063,40 @@ class QEBal(PluginQObject):
         if period:
             s['newDelivery'] = int(delivery_mod.add_months(delivery_mod.utc_midnight(now), period))
 
-        # keepers: those holding the will in force, else the selected ones
+        # keepers: those holding the newest copies of the will in force, else the selected ones
+        wanted = self._keepers_wanted()
+        s['keepersWanted'] = wanted
+        newest = _in_use(_newest(live), wes)
+        checks = self._load_checks(wallet) if live else []
+        last = (checks[-1].get('urls') or {}) if checks else {}
         if live:
             by_url = {}
-            for it in live:
+            for it in newest:
                 url = it.get('willexecutor')
                 if not url:
                     continue
                 st = it.get('status') or {}
                 c = by_url.setdefault(url, {
-                    'url': url, 'name': url.split('://')[-1],
-                    'feeSats': int((wes.get(url) or {}).get('base_fee') or 0),
-                    'sent': False, 'checked': False})
+                    'url': url, 'name': url.split('://')[-1], 'feeSats': _fee_of(wes.get(url)),
+                    'sent': False, 'checked': False, 'ok': False})
                 c['sent'] = c['sent'] or bool(st.get('PUSHED'))
                 c['checked'] = c['checked'] or (bool(st.get('CHECKED')) and not st.get('CHECK_FAIL'))
             cust = list(by_url.values())
+            for c in cust:
+                # a keeper holding its copy is fine until a check says it does not answer
+                c['ok'] = c['sent'] and bool(last.get(c['url'], True))
         else:
-            cust = [{'url': u, 'name': u.split('://')[-1], 'feeSats': int(we.get('base_fee') or 0),
-                     'sent': False, 'checked': False} for u, we in wes.items() if we.get('selected')]
-        s['custodians'] = {'ok': sum(1 for c in cust if c['sent']), 'total': len(cust), 'list': cust}
-        _rows, keeper_fee, miner_fee = self._split(live, heirs, coins)
-        s['fees'] = {'custodianSats': keeper_fee, 'minerSats': miner_fee,
-                     'renewSats': self._renew_estimate(len(coins), show)}
+            cust = [{'url': u, 'name': u.split('://')[-1], 'feeSats': _fee_of(we),
+                     'sent': False, 'checked': False, 'ok': False}
+                    for u, we in wes.items() if isinstance(we, dict) and we.get('selected')]
+        ok = sum(1 for c in cust if c['ok'])
+        s['custodians'] = {'wanted': wanted, 'ok': ok, 'total': len(cust), 'list': cust,
+                           'status': keeper_health(ok, len(cust), checks) if live else ''}
+        _rows, fee_min, fee_max, miner_fee = self._split(newest, heirs, coins)
+        renew = self._renew_estimate(len(coins), show)
+        s['fees'] = {'custodianSats': fee_max, 'custodianMinSats': fee_min,
+                     'custodianMaxSats': fee_max, 'minerSats': miner_fee,
+                     'renewSats': renew, 'cancelSats': renew}
 
         covered = set()
         for it in live:
@@ -805,9 +1133,12 @@ class QEBal(PluginQObject):
         elif stale and rows:
             # the coins of the will were spent: by its invalidation (a renewal
             # not finished, plan 8.9) or by a payment (to be updated)
-            labels = {self._spender_label(wallet, i)
-                      for it in stale for i in _inputs(it['tx']) if i not in coins}
-            if INVALIDATION_LABEL in labels:
+            spent = [i for it in stale for i in _inputs(it['tx']) if i not in coins]
+            cancel = wallet.db.get(CANCEL_KEY)
+            labels = {self._spender_label(wallet, i) for i in spent}
+            if cancel and cancel in {self._spender_txid(wallet, i) for i in spent}:
+                phase = 'draft'      # point 7: cancelled on purpose, the heirs kept
+            elif INVALIDATION_LABEL in labels:
                 phase, s['updateReason'] = 'unfinished', 'unfinished'
             else:
                 phase, s['updateReason'] = 'needs_update', 'spent'
