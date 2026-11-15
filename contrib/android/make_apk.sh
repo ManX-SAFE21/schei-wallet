@@ -65,6 +65,19 @@ if [ "$SCHEI_TESTNET4" = "1" ] ; then
     info "building Schèi testnet4 ($APP_PACKAGE_DOMAIN)"
 fi
 
+# Schȅi Eredità testnet4 (owner 14/11): the inheritance branch as a THIRD app, next to the real
+# Schȅi and to "Schȅi testnet4" (which holds the owner's test wallet: never reuse its package).
+# The package name makes the app start on testnet4 (simple_config, io.safe21.easyheirs.eredita.<chain>.electrum).
+if [ "$SCHEI_EREDITA4" = "1" ] ; then
+    export APP_PACKAGE_DOMAIN=io.safe21.easyheirs.eredita.testnet4
+    export APP_TITLE="Schȅi Eredità testnet4"
+    ICONS=/home/user/wspace/electrum/electrum/gui/icons
+    export APP_ICON_FILENAME=$ICONS/eh_icon_test_legacy.png
+    export APP_ICON_ADAPTIVE_FOREGROUND_FILENAME=$ICONS/eh_icon_test_foreground.png
+    export APP_ICON_ADAPTIVE_BACKGROUND_FILENAME=$ICONS/eh_icon_test_background.png
+    info "building Schȅi Eredità testnet4 ($APP_PACKAGE_DOMAIN)"
+fi
+
 if [ $CI ]; then
     # override log level specified in buildozer.spec to "debug":
     export BUILDOZER_LOG_LEVEL=2
