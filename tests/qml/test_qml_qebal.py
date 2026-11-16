@@ -161,3 +161,17 @@ def test_fee_range_of_the_copies():
     assert [it['txid'] for it in _in_use(_newest(items), wes)] == ['a']
     assert [it['txid'] for it in _in_use(_newest(items), {})] == ['a', 'b']
     assert QEBal._split(None, [], {'Marco': ['x', '100%']}, {})[1:] == (0, 0, 0)
+
+
+def test_months_of_the_will_in_force():
+    """Owner 16/11 (Q2): the period of the will in force, from period_start to its delivery."""
+    from electrum.plugins.bal.core import delivery
+    from electrum.plugins.bal.qml import DAY, _months_in_force
+    start = delivery.utc_midnight(1_794_700_000)
+    show = {"period_start": {"locktime": start}}
+    for months in (12, 24, 36, 60):
+        x = delivery.add_months(start, months)
+        assert _months_in_force(x, show) == months
+        assert _months_in_force(x - DAY, show) == months      # an update one day earlier
+    assert _months_in_force(0, show) == 0
+    assert _months_in_force(start + 400 * DAY, {}) == 0

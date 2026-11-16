@@ -18,8 +18,9 @@ Item {
 
     readonly property var bal: AppController.plugin('bal')
     readonly property var st: bal ? bal.state : ({})
-    // the example uses the period of the inheritance (2 years when none is set yet)
-    readonly property int months: (st.months || 0) > 0 ? st.months : 24
+    // the example uses the period of the inheritance in force (owner 16/11), else the one
+    // chosen (2 years when none is set yet)
+    readonly property int months: (st.monthsInForce || 0) > 0 ? st.monthsInForce : ((st.months || 0) > 0 ? st.months : 24)
     property string choice: st.warn || 'half'
     property string error: ''
 

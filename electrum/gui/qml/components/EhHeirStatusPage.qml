@@ -10,6 +10,8 @@
 // Owner 15/11 (P1): a tap on the "Keepers" row opens the list of the keepers
 // (EhHeirKeeperListSheet). P4: "Renew now" only from the day of the reminder (phase due /
 // expired): before it, renewing would not move the delivery and would cost a fee.
+// Owner 16/11 (Q1): the box of the dates shows the delivery big ("Inheritance delivery")
+// and "Are you still here?" small above it, in every phase with a will (also "to renew").
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
@@ -191,42 +193,87 @@ Item {
                 text: qsTr('This inheritance was made with Àncòra on the computer: change it there.')
             }
 
-            // countdown (from the day of the reminder the badge says "to renew" instead)
+            // the dates (owner 16/11, Q1, preview anteprima/riquadro-date.html variant A): on top,
+            // small, "Are you still here?" in N days · on <reminder>; under the dotted line the
+            // DELIVERY, big, with how far it is ("in 2 years"). From the day of the reminder (due)
+            // the top line says "to renew · from <reminder>"; past the delivery (expired)
+            // the line under the date says it has passed.
             EhSheet {
-                visible: !page.foreign && !page.toRenew && (page.st.months || 0) > 0
+                visible: !page.foreign && (page.st.months || 0) > 0 && (page.st.delivery || 0) > 0
                 topPadding: 12
                 bottomPadding: 12
                 spacing: 2
                 Label {
                     Layout.fillWidth: true
                     horizontalAlignment: Text.AlignHCenter
-                    text: qsTr('"Are you still here?" in')
+                    text: qsTr('"Are you still here?"')
                     color: S.olive
                     font.family: BodyFont ? BodyFont : font.family
-                    font.pixelSize: 15
+                    font.pixelSize: 14
                     font.bold: true
-                    font.letterSpacing: 0.5
+                    font.letterSpacing: 0.8
+                    font.capitalization: Font.AllUppercase
+                    wrapMode: Text.WordWrap
+                }
+                RowLayout {
+                    id: warnLine
+                    Layout.alignment: Qt.AlignHCenter
+                    Layout.topMargin: 2
+                    spacing: 6
+                    Label {
+                        id: warnCount
+                        text: page.toRenew ? qsTr('to renew')
+                            : (page.st.daysToWarn || 0) <= 0 ? qsTr('today')
+                            : (page.st.daysToWarn === 1 ? qsTr('in 1 day') : qsTr('in %1 days').arg(page.st.daysToWarn))
+                        color: S.wine
+                        font.family: BodyFont ? BodyFont : font.family
+                        font.pixelSize: 21
+                        font.bold: true
+                    }
+                    Label {
+                        Layout.alignment: Qt.AlignBaseline
+                        Layout.maximumWidth: Math.max(40, col.width - 40 - warnCount.implicitWidth - 6)
+                        text: '· ' + (page.toRenew ? qsTr('from %1') : qsTr('on %1')).arg(app.ehHeirDate(page.st.warnAt))
+                        color: S.muted
+                        font.family: BodyFont ? BodyFont : font.family
+                        font.pixelSize: 16
+                        elide: Text.ElideRight
+                    }
+                }
+                EhDotLine { Layout.fillWidth: true; Layout.topMargin: 10; Layout.bottomMargin: 10 }
+                Label {
+                    Layout.fillWidth: true
+                    horizontalAlignment: Text.AlignHCenter
+                    text: qsTr('Inheritance delivery')
+                    color: S.wine
+                    font.family: BodyFont ? BodyFont : font.family
+                    font.pixelSize: 14
+                    font.bold: true
+                    font.letterSpacing: 0.8
                     font.capitalization: Font.AllUppercase
                     wrapMode: Text.WordWrap
                 }
                 Label {
                     Layout.fillWidth: true
+                    Layout.topMargin: 2
                     horizontalAlignment: Text.AlignHCenter
-                    text: (page.st.daysToWarn || 0) === 1 ? qsTr('1 day') : qsTr('%1 days').arg(page.st.daysToWarn || 0)
+                    text: app.ehHeirDate(page.st.delivery)
                     color: S.wineDark
                     font.family: SerifFont ? SerifFont : font.family
                     font.weight: Font.ExtraBold
-                    font.pixelSize: 48
+                    font.pixelSize: 44
                     fontSizeMode: Text.HorizontalFit
                     minimumPixelSize: 30
                 }
                 Label {
                     Layout.fillWidth: true
                     horizontalAlignment: Text.AlignHCenter
-                    text: qsTr('on %1 · delivery on %2').arg(app.ehHeirDate(page.st.warnAt)).arg(app.ehHeirDate(page.st.delivery))
-                    color: S.muted
+                    text: page.phase === 'expired' ? qsTr('the date has passed')
+                                                   : app.ehHeirIn(page.st.delivery, page.st.now)
+                    color: page.phase === 'expired' ? S.wine : S.muted
                     font.family: BodyFont ? BodyFont : font.family
                     font.pixelSize: 16
+                    font.bold: page.phase === 'expired'
                     wrapMode: Text.WordWrap
                 }
             }

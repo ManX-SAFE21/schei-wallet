@@ -286,7 +286,8 @@ async def delivery_set(
     of the prepared will. ``--months N`` changes the period of a wallet in
     the period form (see ``bal_delivery_form``): with no will in force the
     delivery date becomes today + N months, otherwise N applies at the next
-    renewal. ``--check_alive_days N`` sets the Check Alive to N days before
+    renewal (with ``--confirm_earlier true`` a period ending earlier than
+    the will in force applies from today: a free update). ``--check_alive_days N`` sets the Check Alive to N days before
     the delivery date (1 to 3650; shown as ``threshold`` ``-Nd``): the day
     from which the renewal is asked; the will in force stays valid. Returns
     the settings as ``bal_delivery_show``, with a ``message``.
@@ -294,7 +295,7 @@ async def delivery_set(
     arg:str:date:The new delivery date, YYYY-MM-DD (00:00 UTC) or a UNIX timestamp.
     arg:int:fee:The new fee rate in sat/vByte (1 to 10000).
     arg:bool:keep:true keeps the date of the prepared will (answers the "which date?" question).
-    arg:bool:confirm_earlier:true confirms a date earlier than the will in force.
+    arg:bool:confirm_earlier:true confirms a date (or a period from today) earlier than the will in force.
     arg:int:months:The new period in calendar months, 1 to 240 (period form only).
     arg:int:check_alive_days:The Check Alive in days before the delivery date, 1 to 3650.
     """

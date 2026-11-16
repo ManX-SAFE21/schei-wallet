@@ -6,6 +6,10 @@
 // A keepers' cost above 20% of the balance is only a warning (owner 2026-11-14, point 5).
 // Owner 15/11: the keepers' cost "from X to Y" with an "i" (EhHeirFeeSheet, point 4b); the
 // keepers' sentence counts those that answered against the number chosen (points 3, 4c).
+// Owner 16/11 (Q2): with a will in force and a new period, review().change says what
+// confirm() does: 'renew' (the delivery moves later: invalidation on the blockchain, its cost
+// shown here as "Today you pay", BEFORE the PIN) or 'update' (earlier: free). Heirs changed in
+// the same pass go into that one operation.
 // "Bottega" look as the preview anteprima/eredita-semplice.html, screen 5.
 import QtQuick
 import QtQuick.Layouts
@@ -60,6 +64,14 @@ Item {
         if (a === b) return b
         return qsTr('from %1 to %2').arg(a.replace(/ /g, '\u00a0')).arg('@@')
                 .replace(/ ([^ ]+) @@/, ' $1\u00a0@@').replace('@@', b.replace(/ /g, '\u00a0'))
+    }
+    // owner 16/11 (Q2): what the confirmation does with the will in force
+    readonly property string change: rv && rv.change ? rv.change : ''
+    readonly property bool renewing: change === 'renew'
+    function pinText() {
+        if (renewing) return qsTr('Type the PIN to renew the inheritance')
+        if (change === 'update') return qsTr('Type the PIN to update the inheritance')
+        return qsTr('Type the PIN to confirm the inheritance')
     }
     readonly property bool feeRange: rv !== null && rv.custodianFeeMinSats !== undefined
                                      && app.ehMoney(rv.custodianFeeMinSats) !== app.ehMoney(rv.custodianFeeMaxSats)
@@ -205,6 +217,18 @@ Item {
 
             EhTitle { text: qsTr('All right?') }
 
+            // owner 16/11 (Q2): the delivery in force and the new one, a renewal or a free update
+            EhInfoBox {
+                visible: page.renewing || page.change === 'update'
+                kind: page.renewing ? 'warn' : 'tip'
+                text: page.renewing
+                      ? qsTr('The delivery moves from <b>%1</b> to <b>%2</b>: it is a <b>renewal</b>. Schȅi cancels the envelope of now on the bitcoin network (it costs about <b>%3</b>) and joins all the coins into one.')
+                        .arg(app.ehHeirDate(page.rv ? page.rv.inForceDelivery : 0)).arg(app.ehHeirDate(page.rv ? page.rv.delivery : 0))
+                        .arg(app.ehMoney(page.rv ? page.rv.changeFeeSats : 0).replace(/ /g, '\u00a0'))
+                      : qsTr('The delivery moves from <b>%1</b> to <b>%2</b>: it is a <b>free update</b>.')
+                        .arg(app.ehHeirDate(page.rv ? page.rv.inForceDelivery : 0)).arg(app.ehHeirDate(page.rv ? page.rv.delivery : 0))
+            }
+
             EhSheet {
                 Repeater {
                     // before the answer: the heirs of the state, amounts "…"
@@ -234,8 +258,9 @@ Item {
                 Kv {
                     key: qsTr('Today you pay')
                     figure: true
-                    figColor: S.oliveInk
-                    value: page.rv ? app.ehMoney(0) : '…'
+                    about: page.renewing
+                    figColor: page.renewing ? S.wineDark : S.oliveInk
+                    value: page.rv ? app.ehMoney(page.renewing ? (page.rv.changeFeeSats || 0) : 0) : '…'
                 }
                 Kv {
                     key: qsTr('To the keepers, only at the delivery')
@@ -295,7 +320,7 @@ Item {
                     if (page.failedOp === 'confirm') {
                         page.error = ''
                         page.failedOp = ''
-                        app.ehAskPin(qsTr('Type the PIN to confirm the inheritance'), function() { page.bal.confirm() })
+                        app.ehAskPin(page.pinText(), function() { page.bal.confirm() })
                     } else {
                         page.startReview()
                     }
@@ -329,7 +354,7 @@ Item {
             Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter
             wrapMode: Text.WordWrap
-            text: qsTr('To confirm push the coin to the right.')
+            text: page.renewing ? qsTr('To renew push the coin to the right.') : qsTr('To confirm push the coin to the right.')
             color: S.ink
             font.family: BodyFont ? BodyFont : font.family
             font.pixelSize: 16
@@ -342,7 +367,7 @@ Item {
             Layout.preferredHeight: 70
             Layout.bottomMargin: 6
             enabled: page.rv !== null && !page.busy && page.error === ''
-            onReached: app.ehAskPin(qsTr('Type the PIN to confirm the inheritance'), function() { page.bal.confirm() },
+            onReached: app.ehAskPin(page.pinText(), function() { page.bal.confirm() },
                                     function() { slide.reset() })   // PIN cancelled: the coin goes back at once
         }
     }

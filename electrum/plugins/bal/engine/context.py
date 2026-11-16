@@ -1453,7 +1453,8 @@ def _advanced(host):
         return False
 
 
-def set_delivery(host, form=None, date=None, months=None, now=None):
+def set_delivery(host, form=None, date=None, months=None, now=None,
+                 earlier_than=None):
     """The one validated write of the delivery form (#127).
 
     ``form``: :data:`bal.core.delivery.FORM_FIXED` or ``FORM_PERIOD``
@@ -1471,7 +1472,12 @@ def set_delivery(host, form=None, date=None, months=None, now=None):
       will in force (the form not locked) also ``period_start`` = today and
       ``locktime`` = today + N months (:func:`bal.core.delivery.period_values`).
       With a will in force only N is stored: it applies at the next renewal
-      (owner decision 2, no fee now).
+      (owner decision 2, no fee now). Schȅi (owner 16/11): with
+      ``earlier_than`` = the delivery of the will in force, when today + N
+      months is EARLIER than it, the period applies from today at once
+      (``period_start`` = today, ``locktime`` = today + N): the next build
+      is a free update, which may only anticipate the delivery. A later
+      date is never applied here: it needs the paid invalidation (renewal).
 
     ``ValueError`` (English) for a bad or missing value, nothing written;
     ``DeliverySettingsUnavailable`` while the settings are display-only.
@@ -1526,6 +1532,11 @@ def set_delivery(host, form=None, date=None, months=None, now=None):
         dates = None
         if not locked:
             dates = delivery.period_values(now, n)
+        elif earlier_than is not None:
+            anticipated = delivery.period_values(now, n)
+            if anticipated["locktime"] < earlier_than:
+                dates = anticipated
+        if dates is not None:
             values["period_start"] = dates["period_start"]
         delivery.write_values(d, delivery.validate_values(values))
         if dates is not None:

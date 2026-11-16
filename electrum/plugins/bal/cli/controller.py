@@ -1686,7 +1686,8 @@ class BalController(BalSettingsController):
         ``months`` (#127, the period form only): the new period N, 1..240
         calendar months; with no will in force the delivery date becomes
         today + N months, with a will in force N applies at the next
-        renewal (no fee now). The period form has no date: ``date`` is
+        renewal (no fee now); with ``confirm_earlier`` too, a period ending
+        earlier than the will in force applies from today (free update). The period form has no date: ``date`` is
         refused there (see ``bal_delivery_form``). With a table of the
         deliveries (#169) the date is delivery 1's: at least 28 days before
         delivery 2 (:meth:`_check_table_gap`).
@@ -1796,8 +1797,26 @@ class BalController(BalSettingsController):
         for field, value in changes.items():
             context.set_will_setting(self, field, value)
         if months is not None:
-            result = context.set_delivery(self, months=months, now=time.time())
-            if result["applied"]:
+            # Schȅi (owner 16/11): with --confirm_earlier true and a will in
+            # force, a period that ends EARLIER than it applies from today
+            # (a free update); a later one still waits for the renewal.
+            result = context.set_delivery(
+                self, months=months, now=time.time(),
+                earlier_than=in_force if confirm_earlier else None,
+            )
+            if result["applied"] and in_force is not None:
+                messages.append(
+                    _(
+                        "Period of {} from today: the delivery date is {}, "
+                        "earlier than the will in force ({}). Run "
+                        "bal_will_prepare to update the will (no fee)."
+                    ).format(
+                        _months_words(result["period_months"]),
+                        context.utc_day_text(result["locktime"]),
+                        context.utc_day_text(in_force),
+                    )
+                )
+            elif result["applied"]:
                 messages.append(
                     _("Period of {}: the delivery date is {}.").format(
                         _months_words(result["period_months"]),

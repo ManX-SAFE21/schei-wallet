@@ -4,9 +4,12 @@
 // (from state.now, the period and state.warn); Next calls bal.setPeriod(months) and goes on
 // to "All right?" (EhHeirCheckPage) when the bridge answers.
 // Owner 15/11 (P2, preview anteprima/custode-spento/elenco-custodi.html): with a will already
-// in force the line shows its TRUE dates (state.now / warnAt / delivery, "Your current
-// inheritance"), not dates counted from today with the new period: that one starts from the
-// next renewal, as the green box says.
+// in force and its own period the line shows its TRUE dates (state.now / warnAt / delivery,
+// "Your current inheritance").
+// Owner 16/11 (Q2): a new period applies FROM TODAY. With a will in force and another period
+// picked, the line shows the NEW dates ("The new dates") and the green box says the delivery
+// in force and the new one: later = a renewal (it costs about state.fees.renewSats), earlier =
+// a free update. "All right?" then renews or updates (bal.confirm(), review().change).
 // "Bottega" look as the preview anteprima/eredita-semplice.html, screen 4.
 import QtQuick
 import QtQuick.Layouts
@@ -31,14 +34,13 @@ Item {
     readonly property var parts: ({ half: 2, third: 3, quarter: 4 })
     readonly property real monthDays: 30.4375
 
-    // the period shown: the one chosen for the next renewal (pendingMonths), else the one in force
-    readonly property int savedMonths: st && st.pendingMonths && choices.indexOf(st.pendingMonths) >= 0
-                                       ? st.pendingMonths : (st && st.months ? st.months : 0)
+    // a will is already in force: the period picked applies from today (owner 16/11, Q2)
+    readonly property bool inForce: st && ['active', 'due', 'needs_update', 'unfinished', 'expired'].indexOf(st.phase) >= 0
+    readonly property bool toRenew: st && (st.phase === 'due' || st.phase === 'expired')
+    // the period shown first: the one of the will in force, else the one stored
+    readonly property int savedMonths: inForce && st.monthsInForce ? st.monthsInForce : (st && st.months ? st.months : 0)
     property int months: choices.indexOf(savedMonths) >= 0 ? savedMonths : 24
     property string error: ''
-    // a will is already in force: the new period counts from the next renewal (F10)
-    readonly property bool inForce: st && ['active', 'due', 'needs_update', 'unfinished', 'expired'].indexOf(st.phase) >= 0
-    readonly property bool periodChanged: inForce && st.months > 0 && months !== st.months
 
     // the dates (UNIX seconds), as the bridge computes them
     readonly property real now: st && st.now ? st.now : Math.floor(Date.now() / 1000)
@@ -46,9 +48,17 @@ Item {
         var d = new Date(t * 1000)
         return Math.floor(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + m, d.getUTCDate()) / 1000)
     }
-    // with a will in force: its own dates (P2); else counted from today with the period picked
-    readonly property bool realDates: inForce && (st.delivery || 0) > 0 && (st.warnAt || 0) > 0
-    readonly property real delivery: realDates ? st.delivery : addMonths(now, months)
+    // the delivery in force and the new one (today + the period picked, as the bridge's review)
+    readonly property real oldDelivery: inForce ? (st.delivery || 0) : 0
+    readonly property real newDelivery: addMonths(now, months)
+    // as the bridge's _period_change: another period (or, from the reminder on, any period)
+    readonly property bool periodChanged: inForce && oldDelivery > 0 && (st.monthsInForce || 0) > 0
+                                          && (months !== st.monthsInForce || toRenew)
+                                          && newDelivery !== oldDelivery
+    readonly property bool later: periodChanged && newDelivery > oldDelivery
+    // with a will in force and its own period: its own dates (P2); else counted from today
+    readonly property bool realDates: inForce && !periodChanged && (st.delivery || 0) > 0 && (st.warnAt || 0) > 0
+    readonly property real delivery: realDates ? st.delivery : newDelivery
     readonly property int warnDays: realDates ? Math.round((st.delivery - st.warnAt) / 86400)
                                               : Math.round(months * monthDays / (parts[st && st.warn ? st.warn : 'half'] || 2))
     readonly property real warnAt: realDates ? st.warnAt : delivery - warnDays * 86400
@@ -119,8 +129,25 @@ Item {
                 onActivated: (i) => { if (!page.busy) { page.months = page.choices[i]; page.error = '' } }
             }
 
+            EhInfoBox {
+                visible: page.periodChanged
+                Layout.topMargin: 4
+                kind: 'tip'
+                // owner 16/11 (Q2, approved texts): the delivery in force, the new one, the cost;
+                // right under the choice, so it is seen without scrolling
+                text: page.later
+                      ? qsTr('Your current inheritance has its delivery on <b>%1</b>.<br>If you go on, the delivery becomes <b>%2</b> (%3 from today). It costs about <b>%4</b>.')
+                        .arg(app.ehHeirDate(page.oldDelivery)).arg(app.ehHeirDate(page.newDelivery))
+                        .arg(app.ehHeirYears(page.months))
+                        .arg(app.ehHeirSats(page.st.fees ? page.st.fees.renewSats : 0).replace(/ /g, ' '))
+                      : qsTr('Your current inheritance has its delivery on <b>%1</b>.<br>If you go on, the delivery becomes <b>%2</b> (%3 from today). <b>It costs nothing: it is a free update.</b>')
+                        .arg(app.ehHeirDate(page.oldDelivery)).arg(app.ehHeirDate(page.newDelivery))
+                        .arg(app.ehHeirYears(page.months))
+            }
+
             EhCaption {
-                text: page.realDates ? qsTr('Your current inheritance') : qsTr('The dates')
+                text: page.realDates ? qsTr('Your current inheritance')
+                                     : (page.periodChanged ? qsTr('The new dates') : qsTr('The dates'))
                 Layout.topMargin: 6
                 Layout.bottomMargin: -4
             }
@@ -150,12 +177,6 @@ Item {
                 }
             }
 
-            EhInfoBox {
-                visible: page.periodChanged
-                kind: 'tip'
-                text: qsTr('Your current inheritance <b>does not change</b>: the delivery stays on <b>%1</b>.<br>The new period of <b>%2</b> starts from the next renewal: when you say «Yes, I am still here», the delivery will be %2 after that day.')
-                      .arg(page.day(page.st.delivery || 0)).arg(app.ehHeirYears(page.months))
-            }
             EhInfoBox {
                 visible: page.error !== ''
                 kind: 'danger'

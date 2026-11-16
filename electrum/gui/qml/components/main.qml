@@ -1695,6 +1695,17 @@ ApplicationWindow
         var y = Math.max(1, Math.round((months || 0) / 12))
         return y + ' ' + (y === 1 ? qsTr('year') : qsTr('years'))
     }
+    // owner 16/11 (Q1): how far a date is from now, as people say it: "in 2 years",
+    // "in 18 months", "in 40 days" (days below 60, months below 2 years unless whole years)
+    function ehHeirIn(ts, now) {
+        var days = Math.round(((ts || 0) - (now || Math.floor(Date.now() / 1000))) / 86400)
+        if (days <= 0) return qsTr('today')
+        if (days < 60) return days === 1 ? qsTr('in 1 day') : qsTr('in %1 days').arg(days)
+        var m = Math.round(days / 30.4375)
+        if (m < 12 || (m < 24 && m % 12 !== 0)) return qsTr('in %1 months').arg(m)
+        var y = Math.round(m / 12)
+        return y === 1 ? qsTr('in 1 year') : qsTr('in %1 years').arg(y)
+    }
     // "up to about 10.000 €" (scaled to the currency; 0,15 BTC with amounts only in bitcoin)
     function ehHeirPocketLimit() {
         if (ehBtcOnly() || !Daemon.fx.enabled) return ehBtc(Config.unitsToSats('0.15'))

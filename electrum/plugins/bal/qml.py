@@ -221,6 +221,19 @@ def _in_use(items, wes):
     return chosen or list(items)
 
 
+def _months_in_force(delivery_, show):
+    """The period (months) the will in force was made with, 0 when unknown.
+
+    From ``period_start`` (the day the period started) to the delivery of
+    the will in force; an update one day earlier (owner 9.2) rounds to the
+    same months.
+    """
+    start = int(((show or {}).get('period_start') or {}).get('locktime') or 0)
+    if not delivery_ or not start or delivery_ <= start:
+        return 0
+    return int(round((delivery_ - start) / DAY / MONTH_DAYS))
+
+
 def _inputs(raw):
     """The ``"txid:n"`` coins a will transaction spends."""
     try:
@@ -241,7 +254,7 @@ class _Fail(Exception):
 def _empty_state():
     return {
         'available': False, 'online': False, 'synced': False, 'phase': 'none',
-        'heirs': [], 'total': 0, 'months': 0, 'pendingMonths': 0,
+        'heirs': [], 'total': 0, 'months': 0, 'monthsInForce': 0,
         'delivery': 0, 'warn': WARN_DEFAULT, 'warnDays': 0, 'warnAt': 0,
         'daysToWarn': 0, 'monthsToDelivery': 0, 'newDelivery': 0, 'now': int(time.time()),
         'balanceSats': 0,
@@ -582,9 +595,16 @@ class QEBal(PluginQObject):
             else:
                 out = self._cmd('bal_delivery_set', months=int(months))
                 applied = not out.get('will_in_force')
+            change, _m, _x, y = self._period_change(self._local.wallet)
+            if change in ('renew', 'update'):
+                # owner 16/11 (Q2): it applies from today, at the confirmation (renewal or
+                # free update); until then the will in force and its reminder stay as they are
+                days = warn_days(int(months), self._warn_choice())
+                return {'applied': False, 'change': change, 'delivery': y, 'warnAt': y - days * DAY}
             days = self._set_check_alive(int(months), self._warn_choice())
             delivery_ = self._shown_delivery(self._cmd('bal_delivery_show'))
-            return {'applied': bool(applied), 'delivery': delivery_, 'warnAt': delivery_ - days * DAY}
+            return {'applied': bool(applied), 'change': change, 'delivery': delivery_,
+                    'warnAt': delivery_ - days * DAY}
         self._start('setPeriod', job)
 
     @pyqtSlot(str)
@@ -594,11 +614,14 @@ class QEBal(PluginQObject):
                 raise _Fail('user', 'not a reminder choice: %s' % fraction)
             self.plugin.config.set_key(WARN_KEY, fraction, save=True)
             show = self._cmd('bal_delivery_show')
-            months = int(show.get('period_months') or 0)
+            delivery_ = self._shown_delivery(show)
+            # the reminder of the will in force: counted on ITS period (a new period
+            # chosen and not confirmed yet does not move it, owner 16/11)
+            months = (_months_in_force(delivery_, show) if show.get('will_in_force') else 0) \
+                or int(show.get('period_months') or 0)
             if not months:
                 return {'warnDays': 0, 'warnAt': 0}
             days = self._set_check_alive(months, fraction)
-            delivery_ = self._shown_delivery(show)
             return {'warnDays': days, 'warnAt': delivery_ - days * DAY}
         self._start('setWarn', job)
 
@@ -608,11 +631,7 @@ class QEBal(PluginQObject):
 
     @pyqtSlot()
     def confirm(self):
-        def job():
-            self._need_network(self._local.wallet)
-            sent, total = self._sign_and_send()
-            return {'sent': sent, 'total': total}
-        self._start('confirm', job)
+        self._start('confirm', self._job_confirm)
 
     @pyqtSlot()
     def renew(self):
@@ -748,6 +767,71 @@ class QEBal(PluginQObject):
             if wallet.db.get(key) is not None:
                 self._db_put(wallet, key, None)
 
+    def _period_change(self, wallet):
+        """What the period chosen does to the will in force (owner 16/11, Q2).
+
+        Returns ``(change, months, x, y)``: ``x`` the delivery of the will in
+        force (signed or sent), ``y`` today (00:00 UTC) + the period chosen
+        (``months``, stored by :meth:`setPeriod`). The new period applies FROM
+        TODAY: ``renew`` when ``y`` is later than ``x`` (invalidate the will
+        in force, paid, then the new will), ``update`` when it is earlier
+        (a free update, which may only anticipate), ``none`` when the period
+        is the one of the will in force (nothing special: e.g. only the heirs
+        changed), ``new`` when no will is in force.
+        """
+        from .core import delivery as delivery_mod
+        show = self._cmd('bal_delivery_show') or {}
+        months = int(show.get('period_months') or 0)
+        # the will in force: signed or sent copies whose coins are all still here, also
+        # when a review has just rebuilt them (new heirs: the old ones are no longer VALID)
+        coins = self._coins(wallet)
+        held = []
+        for it in self._items():
+            st = it.get('status') or {}
+            ins = _inputs(it['tx']) if it.get('tx') else []
+            if ((st.get('PUSHED') or st.get('COMPLETE')) and not st.get('INVALIDATED')
+                    and ins and all(i in coins for i in ins)):
+                held.append(it)
+        if not held or not months or show.get('form') != 'period':
+            return 'new', months, 0, 0
+        x = self._min_locktime(held)
+        now = int(time.time())
+        y = int(delivery_mod.add_months(delivery_mod.utc_midnight(now), months))
+        # from the day of the reminder an update is refused: only a renewal goes on
+        due = now >= x - _days(show.get('threshold')) * DAY
+        in_force = _months_in_force(x, show)
+        if not due and (not in_force or in_force == months):
+            return 'none', months, x, x
+        if y > x:
+            return 'renew', months, x, y
+        if y < x:
+            return 'update', months, x, y
+        return 'none', months, x, y
+
+    def _job_confirm(self):
+        """Sign and send the will reviewed; with a new period, renew or update (owner 16/11).
+
+        ``renew``: :meth:`_job_renew` (invalidation, then the new will from
+        today); ``update``: the period from today (``bal_delivery_set
+        --months N --confirm_earlier true``), a new prepare, sign and send.
+        Heirs changed in the same pass go into that one operation.
+        """
+        wallet = self._local.wallet
+        self._need_network(wallet)
+        change, months, _x, _y = self._period_change(wallet)
+        if change == 'renew':
+            return dict(self._job_renew(), change=change)
+        if change == 'update':
+            self._cmd('bal_delivery_set', months=months, confirm_earlier=True)
+            self._set_check_alive(months, self._warn_choice())
+            self._keepers()
+            self._prepare()
+        sent, total = self._sign_and_send()
+        out = {'sent': sent, 'total': total, 'change': change}
+        if change == 'update':
+            out['delivery'] = self._min_locktime(self._live_items(wallet))
+        return out
+
     def _job_review(self):
         wallet = self._local.wallet
         self._need_network(wallet)
@@ -756,24 +840,40 @@ class QEBal(PluginQObject):
             raise _Fail('no_heirs', 'Add at least one person.')
         if sum(_percent(v[1]) or 0 for v in heirs.values()) != 100:
             raise _Fail('percent', 'The total must be 100%.')
+        change, months, x, y = self._period_change(wallet)
         keepers = self._keepers()
-        out = self._prepare()
+        show = self._cmd('bal_delivery_show')
         coins = self._coins(wallet)
         balance = sum(coins.values())
-        items = self._live_items(wallet, coins=coins)
-        heir_rows, fee_min, fee_max, miner_fee = self._split(_newest(items), heirs, coins)
-        show = self._cmd('bal_delivery_show')
-        delivery_ = self._min_locktime(items) or int(show.get('locktime') or 0)
+        renew_fee = self._renew_estimate(len(coins), show)
+        if change == 'renew':
+            # nothing is prepared now: the will in force is still there (from the day of
+            # the reminder its prepare is refused); renew() prepares after the invalidation
+            out = {'result': 'estimate'}
+            heir_rows, fee_min, fee_max, miner_fee = self._estimate(heirs, keepers, balance - renew_fee, show)
+        else:
+            out = self._prepare()
+            items = self._live_items(wallet, coins=coins)
+            heir_rows, fee_min, fee_max, miner_fee = self._split(_newest(items), heirs, coins)
+        delivery_ = self._min_locktime(self._live_items(wallet, coins=coins)) or int(show.get('locktime') or 0)
         days = _days(show.get('threshold'))
+        if change in ('renew', 'update'):
+            # the new period applies from today (owner 16/11), with its own reminder
+            delivery_ = y
+            days = warn_days(months, self._warn_choice())
         return {
             'result': out.get('result'),
+            # owner 16/11 (Q2): new | none | renew (paid now: changeFeeSats) | update (free)
+            'change': change,
+            'inForceDelivery': x,
+            'changeFeeSats': renew_fee if change == 'renew' else 0,
             'heirs': heir_rows,
             # owner 4b: each keeper's copy has its own fee; one only is paid
             'custodianFeeSats': fee_max,
             'custodianFeeMinSats': fee_min,
             'custodianFeeMaxSats': fee_max,
             'minerFeeSats': miner_fee,
-            'renewFeeSats': self._renew_estimate(len(coins), show),
+            'renewFeeSats': renew_fee,
             'balanceSats': balance,
             # owner 9.5: a warning only, never a refusal
             'feeWarning': bool(balance and fee_max > balance * FEE_WARN_SHARE),
@@ -806,6 +906,10 @@ class QEBal(PluginQObject):
         inv = self._invalidate(wallet)
         if inv and not inv['seen']:
             raise _Fail('not_synced', 'The renewal was sent: it is finished the next time.')
+        months = int((self._cmd('bal_delivery_show') or {}).get('period_months') or 0)
+        if months:
+            # the new will's reminder, counted on the period stored (owner 16/11, Q2)
+            self._set_check_alive(months, self._warn_choice())
         self._keepers()
         self._prepare()
         sent, total = self._sign_and_send()
@@ -1039,6 +1143,16 @@ class QEBal(PluginQObject):
         fees = list(by_keeper.values())
         return rows, min(fees), max(fees), int(max(0, miner))
 
+    def _estimate(self, heirs, keepers, balance, show):
+        """Heir sats and fees of a will not prepared yet (a renewal: one coin after the invalidation)."""
+        fees = [int(k.get('feeSats') or 0) for k in keepers] or [0]
+        vbytes = 11 + 68 + 31 * (len(heirs) + 1)
+        miner = int(round(vbytes * float(show.get('baltx_fees') or 1)))
+        left = max(0, int(balance) - miner - max(fees))
+        rows = [{'name': n, 'percent': _percent(v[1]) or 0,
+                 'sats': left * (_percent(v[1]) or 0) // 100} for n, v in heirs.items()]
+        return rows, min(fees), max(fees), miner
+
     def _renew_estimate(self, n_inputs, show):
         """The miner fee of a renewal (its invalidation), estimated (plan 1.4)."""
         vbytes = 11 + 68 * max(1, n_inputs) + 31
@@ -1102,14 +1216,10 @@ class QEBal(PluginQObject):
         if live and show.get('form') != 'period':
             foreign = True
         period = int(show.get('period_months') or 0)
-        months = period
-        start = int((show.get('period_start') or {}).get('locktime') or 0)
-        if live and period and start:
-            # F10: a new period chosen with a will in force applies at the renewal
-            in_force = int(round((delivery_ - start) / DAY / MONTH_DAYS))
-            if in_force and in_force != period:
-                months, s['pendingMonths'] = in_force, period
-        s['months'] = months
+        # owner 16/11 (Q2): the period chosen applies from today (renewal or free
+        # update, at the confirmation); monthsInForce = the period of the will in force
+        s['months'] = period
+        s['monthsInForce'] = _months_in_force(delivery_, show) if live else 0
         s['delivery'] = delivery_ or int(show.get('locktime') or 0)
         days = _days(show.get('threshold'))
         s['warnDays'] = days
