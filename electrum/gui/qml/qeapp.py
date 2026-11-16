@@ -487,6 +487,10 @@ class QEAppController(BaseCrashReporter, QObject):
             return
         if self.config.GUI_QML_ALWAYS_ALLOW_SCREENSHOTS:
             return
+        # owner 16/11: the testnet4 app must allow screenshots and screen videos also on the
+        # seed / PIN pages (for presentations of the wallet); test coins have no value
+        if constants.net.TESTNET:
+            return
         if self._secureWindow != secure:
             jpythonActivity.setSecureWindow(secure)
             self._secureWindow = secure
