@@ -68,7 +68,7 @@ Item {
                             Layout.preferredWidth: 1
                             spacing: 2
                             EhCoin { Layout.alignment: Qt.AlignHCenter; c: 200; Layout.preferredWidth: 36; Layout.preferredHeight: 36 }
-                            Label { Layout.fillWidth: true; horizontalAlignment: Text.AlignHCenter; wrapMode: Text.WordWrap; font.pixelSize: 16
+                            Label { Layout.fillWidth: true; horizontalAlignment: Text.AlignHCenter; wrapMode: Text.WordWrap; font.pixelSize: app.ehFsText
                                     font.family: BodyFont ? BodyFont : font.family; color: S.ink
                                     textFormat: Text.StyledText; text: '<b>' + qsTr('Euro') + '</b><br>' + qsTr('fixed value, written on it') }
                         }
@@ -77,7 +77,7 @@ Item {
                             Layout.preferredWidth: 1
                             spacing: 2
                             Image { Layout.alignment: Qt.AlignHCenter; source: Qt.resolvedUrl('../../icons/eh_goldcoin.svg'); sourceSize.width: 44; sourceSize.height: 44 }
-                            Label { Layout.fillWidth: true; horizontalAlignment: Text.AlignHCenter; wrapMode: Text.WordWrap; font.pixelSize: 16
+                            Label { Layout.fillWidth: true; horizontalAlignment: Text.AlignHCenter; wrapMode: Text.WordWrap; font.pixelSize: app.ehFsText
                                     font.family: BodyFont ? BodyFont : font.family; color: S.ink
                                     textFormat: Text.StyledText; text: '<b>' + qsTr('Digital gold (bitcoin)') + '</b><br>' + qsTr('variable value: what is inside') }
                         }
@@ -88,7 +88,7 @@ Item {
                         wrapMode: Text.WordWrap
                         textFormat: Text.StyledText
                         font.family: BodyFont ? BodyFont : font.family
-                        font.pixelSize: 16
+                        font.pixelSize: app.ehFsText
                         lineHeight: 1.1
                         color: S.ink
                         text: qsTr('Euro coins have their value printed on them (1 €, 2 €, 50 c) and do not change. Digital gold coins do not: each one is worth what is inside, every time a different amount, and they can be <b>melted</b> to make smaller ones or joined into a bigger one.')
@@ -127,19 +127,19 @@ Item {
                     x: 8; y: 118
                     width: 70
                     Image { anchors.horizontalCenter: parent.horizontalCenter; source: Qt.resolvedUrl('../../icons/eh_rx_olive.svg'); sourceSize.width: 36; sourceSize.height: 36 }
-                    Label { anchors.horizontalCenter: parent.horizontalCenter; text: qsTr('you'); font.family: BodyFont ? BodyFont : font.family; font.pixelSize: 16; font.bold: true; color: S.wineDark }
+                    Label { anchors.horizontalCenter: parent.horizontalCenter; text: qsTr('you'); font.family: BodyFont ? BodyFont : font.family; font.pixelSize: app.ehFsText; font.bold: true; color: S.wineDark }
                 }
                 Column {
                     x: scene.width - 82; y: 118
                     width: 76
                     Image { anchors.horizontalCenter: parent.horizontalCenter; source: Qt.resolvedUrl('../../icons/eh_home_wine.svg'); sourceSize.width: 32; sourceSize.height: 32 }
-                    Label { anchors.horizontalCenter: parent.horizontalCenter; text: qsTr('who receives'); font.family: BodyFont ? BodyFont : font.family; font.pixelSize: 16; font.bold: true; color: S.wineDark }
+                    Label { anchors.horizontalCenter: parent.horizontalCenter; text: qsTr('who receives'); font.family: BodyFont ? BodyFont : font.family; font.pixelSize: app.ehFsText; font.bold: true; color: S.wineDark }
                 }
                 Column {
                     x: scene.width - 82; y: 40
                     width: 70
                     Image { anchors.horizontalCenter: parent.horizontalCenter; source: Qt.resolvedUrl('../../icons/eh_pick.svg'); sourceSize.width: 28; sourceSize.height: 28 }
-                    Label { anchors.horizontalCenter: parent.horizontalCenter; text: qsTr('miner'); font.family: BodyFont ? BodyFont : font.family; font.pixelSize: 16; font.bold: true; color: S.waitInk }
+                    Label { anchors.horizontalCenter: parent.horizontalCenter; text: qsTr('miner'); font.family: BodyFont ? BodyFont : font.family; font.pixelSize: app.ehFsText; font.bold: true; color: S.waitInk }
                 }
 
                 // crucible: flames behind, pot, glow in front
@@ -170,7 +170,7 @@ Item {
                     color: page.tagBg
                     border.width: 1
                     border.color: S.edge
-                    Label { id: ctagL; anchors.centerIn: parent; textFormat: Text.StyledText; font.family: BodyFont ? BodyFont : font.family; font.pixelSize: 16; font.bold: true; color: S.wineDark
+                    Label { id: ctagL; anchors.centerIn: parent; textFormat: Text.StyledText; font.family: BodyFont ? BodyFont : font.family; font.pixelSize: app.ehFsText; font.bold: true; color: S.wineDark
                             width: Math.min(implicitWidth, scene.width - 56); wrapMode: Text.WordWrap; horizontalAlignment: Text.AlignHCenter
                             text: qsTr('the <b>crucible</b> = the transaction on the blockchain') }
                 }
@@ -250,7 +250,7 @@ Item {
                             horizontalAlignment: Text.AlignHCenter
                             textFormat: Text.StyledText
                             font.family: BodyFont ? BodyFont : font.family
-                            font.pixelSize: 16
+                            font.pixelSize: app.ehFsText
                             color: S.ink
                             text: modelData.txt
                         }
@@ -271,7 +271,7 @@ Item {
                 wrapMode: Text.WordWrap
                 textFormat: Text.StyledText
                 font.family: BodyFont ? BodyFont : font.family
-                font.pixelSize: 16
+                font.pixelSize: app.ehFsText
                 color: S.muted
                 text: qsTr('The change arrives on one of your <b>change addresses</b>: you find it in "Addresses", in the group "Change".')
             }

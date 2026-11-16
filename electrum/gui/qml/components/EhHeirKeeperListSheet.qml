@@ -45,14 +45,14 @@ EhBottomSheet {
     EhTitle {
         text: qsTr('Your keepers')
         icon: 'eh_shield_olive.svg'
-        fontSize: 26
+        fontSize: app.ehFsBox
         Layout.bottomMargin: 0
     }
     Label {
         Layout.fillWidth: true
         wrapMode: Text.WordWrap
         font.family: BodyFont ? BodyFont : font.family
-        font.pixelSize: 16
+        font.pixelSize: app.ehFsText
         lineHeight: 1.15
         color: S.ink
         text: qsTr('They have a copy of the sealed envelope and send it on the delivery date. One is enough.')
@@ -83,7 +83,7 @@ EhBottomSheet {
                             elide: Text.ElideRight
                             color: S.ink
                             font.family: BodyFont ? BodyFont : font.family
-                            font.pixelSize: 16
+                            font.pixelSize: app.ehFsText
                             font.bold: true
                         }
                         Label {
@@ -91,7 +91,7 @@ EhBottomSheet {
                                 : !kr.modelData.sent ? '✕ ' + qsTr('no envelope') : '✕ ' + qsTr('does not answer')
                             color: kr.modelData.ok ? S.oliveInk : S.wine
                             font.family: BodyFont ? BodyFont : font.family
-                            font.pixelSize: 14
+                            font.pixelSize: app.ehFsSmall
                             font.bold: true
                         }
                     }
@@ -100,7 +100,7 @@ EhBottomSheet {
                         wrapMode: Text.WordWrap
                         color: S.muted
                         font.family: BodyFont ? BodyFont : font.family
-                        font.pixelSize: 14
+                        font.pixelSize: app.ehFsSmall
                         text: root.subText(kr.modelData)
                     }
                 }
@@ -120,7 +120,7 @@ EhBottomSheet {
         horizontalAlignment: Text.AlignHCenter
         wrapMode: Text.WordWrap
         font.family: BodyFont ? BodyFont : font.family
-        font.pixelSize: 14
+        font.pixelSize: app.ehFsSmall
         color: S.muted
         text: root.total === 1 ? qsTr('We use 1 keeper of the %1 chosen: on this network there are no others.').arg(root.wanted)
             : qsTr('We use %1 keepers of the %2 chosen: on this network there are no others.').arg(root.total).arg(root.wanted)

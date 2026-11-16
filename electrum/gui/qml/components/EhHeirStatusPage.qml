@@ -91,7 +91,7 @@ Item {
             text: lk.text
             color: lk.color
             font.family: BodyFont ? BodyFont : font.family
-            font.pixelSize: 16
+            font.pixelSize: app.ehFsText
             font.bold: true
             elide: Text.ElideRight
             opacity: !lk.enabled ? 0.35 : (lkTap.pressed ? 0.6 : 1)
@@ -147,7 +147,7 @@ Item {
                         color: S.wine
                         font.family: SerifFont ? SerifFont : font.family
                         font.weight: Font.ExtraBold
-                        font.pixelSize: 30
+                        font.pixelSize: app.ehFsBox
                         fontSizeMode: Text.HorizontalFit     // a long badge ("✕ Not valid") at 360 px
                         minimumPixelSize: 22
                         elide: Text.ElideRight
@@ -169,7 +169,7 @@ Item {
                                 visible: page.badgeKind !== 'renew'
                                 text: page.badgeKind === 'red' ? '✕' : (page.badgeKind === 'yellow' ? '⚠' : '✓')
                                 color: badgeText.color
-                                font.pixelSize: 16
+                                font.pixelSize: app.ehFsText
                                 font.bold: true
                             }
                             Label {
@@ -178,7 +178,7 @@ Item {
                                     : page.toRenew ? qsTr('to renew') : qsTr('Active')
                                 color: page.badgeKind === 'red' ? S.wine : (page.badgeKind === 'yellow' ? '#7a5a00' : (page.badgeKind === 'renew' ? S.waitInk : S.oliveInk))
                                 font.family: BodyFont ? BodyFont : font.family
-                                font.pixelSize: 16
+                                font.pixelSize: app.ehFsText
                                 font.bold: true
                             }
                         }
@@ -209,7 +209,7 @@ Item {
                     text: qsTr('"Are you still here?"')
                     color: S.olive
                     font.family: BodyFont ? BodyFont : font.family
-                    font.pixelSize: 14
+                    font.pixelSize: app.ehFsSmall
                     font.bold: true
                     font.letterSpacing: 0.8
                     font.capitalization: Font.AllUppercase
@@ -227,7 +227,7 @@ Item {
                             : (page.st.daysToWarn === 1 ? qsTr('in 1 day') : qsTr('in %1 days').arg(page.st.daysToWarn))
                         color: S.wine
                         font.family: BodyFont ? BodyFont : font.family
-                        font.pixelSize: 21
+                        font.pixelSize: app.ehFsStrong
                         font.bold: true
                     }
                     Label {
@@ -236,7 +236,7 @@ Item {
                         text: '· ' + (page.toRenew ? qsTr('from %1') : qsTr('on %1')).arg(app.ehHeirDate(page.st.warnAt))
                         color: S.muted
                         font.family: BodyFont ? BodyFont : font.family
-                        font.pixelSize: 16
+                        font.pixelSize: app.ehFsText
                         elide: Text.ElideRight
                     }
                 }
@@ -247,7 +247,7 @@ Item {
                     text: qsTr('Inheritance delivery')
                     color: S.wine
                     font.family: BodyFont ? BodyFont : font.family
-                    font.pixelSize: 14
+                    font.pixelSize: app.ehFsSmall
                     font.bold: true
                     font.letterSpacing: 0.8
                     font.capitalization: Font.AllUppercase
@@ -261,7 +261,7 @@ Item {
                     color: S.wineDark
                     font.family: SerifFont ? SerifFont : font.family
                     font.weight: Font.ExtraBold
-                    font.pixelSize: 44
+                    font.pixelSize: app.ehFsFigure
                     fontSizeMode: Text.HorizontalFit
                     minimumPixelSize: 30
                 }
@@ -272,7 +272,7 @@ Item {
                                                    : app.ehHeirIn(page.st.delivery, page.st.now)
                     color: page.phase === 'expired' ? S.wine : S.muted
                     font.family: BodyFont ? BodyFont : font.family
-                    font.pixelSize: 16
+                    font.pixelSize: app.ehFsText
                     font.bold: page.phase === 'expired'
                     wrapMode: Text.WordWrap
                 }
@@ -292,7 +292,7 @@ Item {
                             color: S.oliveInk
                             font.family: SerifFont ? SerifFont : font.family
                             font.weight: Font.ExtraBold
-                            font.pixelSize: 22
+                            font.pixelSize: app.ehFsStrong
                         }
                     }
                 }
@@ -311,7 +311,7 @@ Item {
                               + qsTr('%1 of %2 ok').arg(page.cust.ok || 0).arg(page.cust.total || 0)
                         color: page.keepersBad || page.cust.ok <= 0 ? S.wine : (page.kst === 'low' ? '#8a6400' : S.oliveInk)
                         font.family: BodyFont ? BodyFont : font.family
-                        font.pixelSize: 16
+                        font.pixelSize: app.ehFsText
                         font.bold: true
                     }
                 }
@@ -341,7 +341,7 @@ Item {
                 horizontalAlignment: Text.AlignHCenter
                 wrapMode: Text.WordWrap
                 font.family: BodyFont ? BodyFont : font.family
-                font.pixelSize: 14
+                font.pixelSize: app.ehFsSmall
                 color: S.muted
                 text: page.keepersBad ? qsTr('Free · the PIN is enough. If it finds none, try again later.') : qsTr('Free · the PIN is enough')
             }
@@ -353,7 +353,7 @@ Item {
                 horizontalAlignment: Text.AlignHCenter
                 wrapMode: Text.WordWrap
                 font.family: BodyFont ? BodyFont : font.family
-                font.pixelSize: 16
+                font.pixelSize: app.ehFsText
                 color: S.muted
                 text: page.bal ? app.ehHeirStepText(page.bal.step) : ''
             }

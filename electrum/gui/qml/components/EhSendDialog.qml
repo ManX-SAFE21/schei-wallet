@@ -109,7 +109,7 @@ ElDialog {
             text: qsTr('STEP %1 OF %2').arg(1).arg(3)
             visible: false   // the steps bar at the top says it now
             color: S.olive
-            font.pixelSize: 16
+            font.pixelSize: app.ehFsText
             font.bold: true
         }
 
@@ -121,7 +121,7 @@ ElDialog {
         Label {
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
-            font.pixelSize: 18
+            font.pixelSize: app.ehFsText
             color: S.ink
             text: qsTr('Scan the bitcoin QR code of the person you have to pay.')
             visible: root.pasted === ''
@@ -151,7 +151,7 @@ ElDialog {
                 anchors.centerIn: parent
                 text: qsTr('the camera is already on')
                 color: '#ffffff'
-                font.pixelSize: 16
+                font.pixelSize: app.ehFsText
             }
             // owner 13/11: a viewfinder, so it is clear where to put the code and how to turn it
             Item {
@@ -257,7 +257,7 @@ ElDialog {
                     text: qsTr('Put the QR code inside the frame')
                     color: '#ffffff'
                     font.family: BodyFont ? BodyFont : font.family
-                    font.pixelSize: 16
+                    font.pixelSize: app.ehFsText
                     font.bold: true
                     style: Text.Raised
                     styleColor: Qt.rgba(0, 0, 0, 0.8)
@@ -285,7 +285,7 @@ ElDialog {
                 Layout.fillWidth: true
                 text: qsTr('YOU PASTED THIS ADDRESS')
                 color: S.wine
-                font.pixelSize: 16
+                font.pixelSize: app.ehFsText
                 font.bold: true
                 font.letterSpacing: 0.5
                 wrapMode: Text.WordWrap
@@ -301,7 +301,7 @@ ElDialog {
                                         Math.max(1, Math.floor((width + pFm.averageCharacterWidth) / (pFm.averageCharacterWidth * 5))))
                 font.family: FixedFont
                 font.bold: true
-                font.pixelSize: 18
+                font.pixelSize: app.ehFsText
                 lineHeight: 1.25
                 color: S.ink
                 FontMetrics { id: pFm; font: pAddr.font }
@@ -333,7 +333,7 @@ ElDialog {
             horizontalAlignment: Text.AlignHCenter
             text: qsTr('This is not a bitcoin address. Copy it again and retry.')
             color: S.red
-            font.pixelSize: 16
+            font.pixelSize: app.ehFsText
             font.bold: true
         }
 

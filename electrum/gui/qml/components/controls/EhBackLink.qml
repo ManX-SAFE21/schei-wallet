@@ -27,7 +27,7 @@ Item {
         text: root.text
         color: root.color
         font.family: BodyFont ? BodyFont : font.family
-        font.pixelSize: 17
+        font.pixelSize: app.ehFsText
         font.bold: true
         opacity: tap.pressed ? 0.6 : 1
     }

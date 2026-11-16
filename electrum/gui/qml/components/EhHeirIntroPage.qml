@@ -49,7 +49,7 @@ Item {
                     color: S.wine
                     font.family: SerifFont ? SerifFont : font.family
                     font.weight: Font.ExtraBold
-                    font.pixelSize: 20
+                    font.pixelSize: app.ehFsStrong
                 }
             }
             Label {
@@ -59,7 +59,7 @@ Item {
                 wrapMode: Text.WordWrap
                 color: S.ink
                 font.family: BodyFont ? BodyFont : font.family
-                font.pixelSize: 16
+                font.pixelSize: app.ehFsText
                 lineHeight: 1.1
             }
         }
@@ -97,7 +97,7 @@ Item {
                 wrapMode: Text.WordWrap
                 color: S.ink
                 font.family: BodyFont ? BodyFont : font.family
-                font.pixelSize: 16
+                font.pixelSize: app.ehFsText
                 lineHeight: 1.1
             }
 

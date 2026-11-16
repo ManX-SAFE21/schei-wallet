@@ -101,7 +101,7 @@ Item {
         textFormat: Text.StyledText
         color: S.ivory
         font.family: BodyFont ? BodyFont : font.family
-        font.pixelSize: 16
+        font.pixelSize: app.ehFsText
         font.bold: true
         elide: Text.ElideRight
         width: Math.min(implicitWidth, slot.width - 70)

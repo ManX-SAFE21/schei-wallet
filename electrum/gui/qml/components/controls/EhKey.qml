@@ -17,7 +17,7 @@ Item {
     property bool isDelete: false
     property bool letter: false
     property bool fireOnPress: false
-    property real fontSize: letter ? 20 : 34
+    property real fontSize: letter ? app.ehFsStrong : app.ehFsTitle
     property real keyRadius: 18
     readonly property bool down: tap.pressed
     signal activated

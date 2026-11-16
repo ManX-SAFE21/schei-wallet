@@ -81,7 +81,7 @@ Item {
                 text: kvl.k
                 color: S.muted
                 font.family: BodyFont ? BodyFont : font.family
-                font.pixelSize: 16
+                font.pixelSize: app.ehFsText
                 lineHeight: 1.1
                 wrapMode: Text.WordWrap
             }
@@ -96,7 +96,7 @@ Item {
                     text: kvl.v
                     color: kvl.vc
                     font.family: BodyFont ? BodyFont : font.family
-                    font.pixelSize: 17
+                    font.pixelSize: app.ehFsText
                     font.bold: true
                     horizontalAlignment: Text.AlignRight
                     wrapMode: Text.WordWrap
@@ -107,7 +107,7 @@ Item {
                     text: kvl.sub
                     color: S.muted
                     font.family: BodyFont ? BodyFont : font.family
-                    font.pixelSize: 16
+                    font.pixelSize: app.ehFsText
                 }
             }
         }
@@ -123,7 +123,7 @@ Item {
             Layout.fillWidth: true
             color: S.muted
             font.family: BodyFont ? BodyFont : font.family
-            font.pixelSize: 16
+            font.pixelSize: app.ehFsText
             font.bold: true
             font.letterSpacing: 0.4
             wrapMode: Text.WordWrap
@@ -167,8 +167,8 @@ Item {
             readonly property string rest: sgn !== '' ? amount.substring(1) : amount
             readonly property color ink: page.incoming ? S.oliveInk : S.wine
             // long bitcoin amounts: smaller, so they stay on one line (from the text: no layout loop)
-            TextMetrics { id: heroTm; font.family: SerifFont ? SerifFont : font.family; font.weight: Font.ExtraBold; font.pixelSize: 42; text: hero.rest }
-            readonly property real size: Math.max(24, Math.min(42, 42 * (col.width - 34) / Math.max(1, heroTm.advanceWidth)))
+            TextMetrics { id: heroTm; font.family: SerifFont ? SerifFont : font.family; font.weight: Font.ExtraBold; font.pixelSize: app.ehFsFigure; text: hero.rest }
+            readonly property real size: Math.max(24, Math.min(app.ehFsFigure, app.ehFsFigure * (col.width - 34) / Math.max(1, heroTm.advanceWidth)))
             Row {
                 id: heroRow
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -197,7 +197,7 @@ Item {
             text: app.ehBtc(tx.amount).replace('-', '') + ' · ' + (page.incoming ? qsTr('received') : qsTr('sent'))
             color: S.muted
             font.family: BodyFont ? BodyFont : font.family
-            font.pixelSize: 16
+            font.pixelSize: app.ehFsText
         }
 
         // personal note (owner 12/11: taller, the grey hint stays inside, Save button while writing)
@@ -238,7 +238,7 @@ Item {
                         rightPadding: 0
                         verticalAlignment: TextInput.AlignVCenter
                         font.family: BodyFont ? BodyFont : font.family
-                        font.pixelSize: 18
+                        font.pixelSize: app.ehFsText
                         font.weight: text !== '' ? Font.DemiBold : Font.Normal
                         color: S.ink
                         background: null
@@ -251,7 +251,7 @@ Item {
                             text: qsTr('Add a note…')
                             color: S.muted
                             font.family: BodyFont ? BodyFont : font.family
-                            font.pixelSize: 17
+                            font.pixelSize: app.ehFsText
                         }
                     }
                     EhStitchButton {
@@ -273,7 +273,7 @@ Item {
             text: '✓ ' + qsTr('Note saved')
             color: S.olive
             font.family: BodyFont ? BodyFont : font.family
-            font.pixelSize: 16
+            font.pixelSize: app.ehFsText
             font.bold: true
         }
 
@@ -320,7 +320,7 @@ Item {
                 color: S.ink
                 font.family: FixedFont
                 font.bold: true
-                font.pixelSize: 17
+                font.pixelSize: app.ehFsText
                 lineHeight: 1.2
                 wrapMode: Text.WrapAnywhere
             }
@@ -341,7 +341,7 @@ Item {
                 text: page.txid
                 color: S.wineDark
                 font.family: FixedFont
-                font.pixelSize: 14
+                font.pixelSize: app.ehFsSmall
                 lineHeight: 1.15
             }
             RowLayout {

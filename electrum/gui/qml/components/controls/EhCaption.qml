@@ -26,7 +26,7 @@ ColumnLayout {
         text: root.tail === '' ? root.text : root.text.toLocaleUpperCase() + ' ' + root.tail
         color: root.color
         font.family: BodyFont ? BodyFont : font.family
-        font.pixelSize: 16
+        font.pixelSize: app.ehFsText
         font.bold: true
         font.letterSpacing: 0.5
         font.capitalization: root.tail === '' ? Font.AllUppercase : Font.MixedCase

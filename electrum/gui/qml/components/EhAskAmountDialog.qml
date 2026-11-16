@@ -79,7 +79,7 @@ ElDialog {
             color: S.wineDark
             font.family: SerifFont ? SerifFont : font.family
             font.weight: Font.ExtraBold
-            font.pixelSize: 50
+            font.pixelSize: app.ehFsFigure
             fontSizeMode: Text.HorizontalFit
             minimumPixelSize: 22
         }
@@ -88,7 +88,7 @@ ElDialog {
             Layout.alignment: Qt.AlignHCenter
             text: qsTr('about %1').arg(app.ehBtc(dialog.amount()))
             color: S.muted
-            font.pixelSize: 16
+            font.pixelSize: app.ehFsText
         }
         EhCoinPad {
             visible: dialog.coinsMode

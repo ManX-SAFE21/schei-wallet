@@ -53,7 +53,7 @@ EhBottomSheet {
             wrapMode: Text.WordWrap
             textFormat: Text.StyledText
             font.family: BodyFont ? BodyFont : font.family
-            font.pixelSize: 17
+            font.pixelSize: app.ehFsText
             lineHeight: 1.15
             color: S.ink
             text: root.reason === 'received'
@@ -71,7 +71,7 @@ EhBottomSheet {
         horizontalAlignment: Text.AlignHCenter
         wrapMode: Text.WordWrap
         font.family: BodyFont ? BodyFont : font.family
-        font.pixelSize: 17
+        font.pixelSize: app.ehFsText
         font.bold: true
         color: S.wine
         text: root.bal ? app.ehHeirStepText(root.bal.step) : ''

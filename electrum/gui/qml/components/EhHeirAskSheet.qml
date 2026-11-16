@@ -36,7 +36,7 @@ EhBottomSheet {
 
     EhTitle {
         text: qsTr('Are you still here?')
-        fontSize: 28
+        fontSize: app.ehFsBox
         Layout.bottomMargin: 0
     }
     Label {
@@ -44,7 +44,7 @@ EhBottomSheet {
         wrapMode: Text.WordWrap
         textFormat: Text.StyledText
         font.family: BodyFont ? BodyFont : font.family
-        font.pixelSize: 16
+        font.pixelSize: app.ehFsText
         lineHeight: 1.15
         color: S.ink
         text: qsTr('<b>%1 months</b> to the delivery. If you renew, the inheritance starts again from today for %2: delivery on <b>%3</b>.')
@@ -60,7 +60,7 @@ EhBottomSheet {
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
             font.family: BodyFont ? BodyFont : font.family
-            font.pixelSize: 16
+            font.pixelSize: app.ehFsText
             lineHeight: 1.15
             color: S.ink
             text: qsTr('When you renew, Schȅi joins all the coins into one.')
@@ -74,7 +74,7 @@ EhBottomSheet {
         horizontalAlignment: Text.AlignHCenter
         wrapMode: Text.WordWrap
         font.family: BodyFont ? BodyFont : font.family
-        font.pixelSize: 17
+        font.pixelSize: app.ehFsText
         font.bold: true
         color: S.wine
         text: root.bal ? app.ehHeirStepText(root.bal.step) : ''
@@ -120,7 +120,7 @@ EhBottomSheet {
                 text: qsTr('Later')
                 color: S.wine
                 font.family: BodyFont ? BodyFont : font.family
-                font.pixelSize: 17
+                font.pixelSize: app.ehFsText
                 font.bold: true
                 opacity: laterTap.pressed ? 0.6 : 1
             }
@@ -139,7 +139,7 @@ EhBottomSheet {
             horizontalAlignment: Text.AlignHCenter
             wrapMode: Text.WordWrap
             font.family: BodyFont ? BodyFont : font.family
-            font.pixelSize: 15
+            font.pixelSize: app.ehFsText
             color: S.muted
             text: qsTr('I ask you again next time you open Schȅi')
         }

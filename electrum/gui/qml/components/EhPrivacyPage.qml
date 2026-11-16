@@ -91,7 +91,7 @@ Item {
                 text: cr.name
                 color: cr.muted ? S.muted : S.ink
                 font.family: BodyFont ? BodyFont : font.family
-                font.pixelSize: 17
+                font.pixelSize: app.ehFsText
                 font.bold: true
             }
             Label {
@@ -99,7 +99,7 @@ Item {
                 text: cr.side
                 color: S.muted
                 font.family: BodyFont ? BodyFont : font.family
-                font.pixelSize: 16
+                font.pixelSize: app.ehFsText
             }
             Image {
                 visible: cr.pen
@@ -221,7 +221,7 @@ Item {
                     wrapMode: Text.WordWrap
                     text: page.edit && page.edit.id === '' ? qsTr('New category') : qsTr('Change the category')
                     font.family: BodyFont ? BodyFont : font.family
-                    font.pixelSize: 17; font.bold: true; color: S.wineDark
+                    font.pixelSize: app.ehFsText; font.bold: true; color: S.wineDark
                 }
                 Rectangle {
                     Layout.fillWidth: true
@@ -237,7 +237,7 @@ Item {
                         anchors.rightMargin: 14
                         verticalAlignment: TextInput.AlignVCenter
                         font.family: BodyFont ? BodyFont : font.family
-                        font.pixelSize: 18
+                        font.pixelSize: app.ehFsText
                         color: S.ink
                         selectionColor: S.highlight
                         selectedTextColor: S.wineDark
@@ -246,7 +246,7 @@ Item {
                         text: page.edit ? page.edit.name : ''
                         Label { anchors.verticalCenter: parent.verticalCenter; visible: nameIn.text === '' && !nameIn.activeFocus
                                 text: qsTr('name, for example: shop'); color: S.muted
-                                font.family: BodyFont ? BodyFont : font.family; font.pixelSize: 17 }
+                                font.family: BodyFont ? BodyFont : font.family; font.pixelSize: app.ehFsText }
                     }
                 }
                 Flow {
@@ -296,7 +296,7 @@ Item {
                     Layout.fillWidth: true
                     wrapMode: Text.WordWrap
                     font.family: BodyFont ? BodyFont : font.family
-                    font.pixelSize: 16; lineHeight: 1.1; color: S.muted
+                    font.pixelSize: app.ehFsText; lineHeight: 1.1; color: S.muted
                     text: qsTr('If you delete it, its coins go back to "I do not know".')
                 }
             }

@@ -62,11 +62,11 @@ Item {
                                 Layout.preferredWidth: 24; horizontalAlignment: Text.AlignRight
                                 text: index + 1; color: S.brassRing
                                 font.family: SerifFont ? SerifFont : font.family
-                                font.weight: Font.ExtraBold; font.pixelSize: 17
+                                font.weight: Font.ExtraBold; font.pixelSize: app.ehFsText
                             }
                             Label {
                                 Layout.fillWidth: true; text: modelData; color: S.ink
-                                font.family: FixedFont; font.bold: true; font.pixelSize: 21
+                                font.family: FixedFont; font.bold: true; font.pixelSize: app.ehFsStrong
                                 elide: Text.ElideRight
                             }
                         }

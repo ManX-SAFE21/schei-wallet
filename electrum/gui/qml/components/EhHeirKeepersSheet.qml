@@ -28,7 +28,7 @@ EhBottomSheet {
     EhTitle {
         text: qsTr('How many keepers?')
         icon: 'eh_shield_olive.svg'
-        fontSize: 26
+        fontSize: app.ehFsBox
         Layout.bottomMargin: 0
     }
     Label {
@@ -36,7 +36,7 @@ EhBottomSheet {
         wrapMode: Text.WordWrap
         textFormat: Text.StyledText
         font.family: BodyFont ? BodyFont : font.family
-        font.pixelSize: 16
+        font.pixelSize: app.ehFsText
         lineHeight: 1.15
         color: S.ink
         text: qsTr('The envelope goes to several keepers: if one switches off, the others send it. More keepers is safer; at the delivery only one is paid. The new number counts from the next envelope (update or renewal).')
@@ -64,7 +64,7 @@ EhBottomSheet {
                     color: chip.on ? S.ivory : S.wine
                     font.family: SerifFont ? SerifFont : font.family
                     font.weight: Font.ExtraBold
-                    font.pixelSize: 22
+                    font.pixelSize: app.ehFsStrong
                 }
                 TapHandler {
                     id: chipTap
@@ -78,7 +78,7 @@ EhBottomSheet {
         Layout.fillWidth: true
         horizontalAlignment: Text.AlignHCenter
         font.family: BodyFont ? BodyFont : font.family
-        font.pixelSize: 14
+        font.pixelSize: app.ehFsSmall
         color: S.muted
         text: qsTr('%1 (default)').arg(3)
     }

@@ -69,13 +69,13 @@ ElDialog {
         color: S.wineDark
         font.family: SerifFont ? SerifFont : font.family
         font.weight: Font.ExtraBold
-        font.pixelSize: 22
+        font.pixelSize: app.ehFsStrong
     }
     component Key: Label {
         Layout.fillWidth: true
         color: S.muted
         font.family: BodyFont ? BodyFont : font.family
-        font.pixelSize: 17
+        font.pixelSize: app.ehFsText
         wrapMode: Text.WordWrap
     }
 
@@ -149,7 +149,7 @@ ElDialog {
                 wrapMode: Text.WordWrap
                 textFormat: Text.StyledText
                 font.family: BodyFont ? BodyFont : font.family
-                font.pixelSize: 16
+                font.pixelSize: app.ehFsText
                 color: S.ink
                 text: root.enough ? qsTr('The change, <b>%1</b>, comes back to you as a new coin.').arg(app.ehMoney(root.satsAmount(root.chosenSats - root.needSats))) : ''
             }
@@ -229,7 +229,7 @@ ElDialog {
                             GradientStop { position: 0.55; color: d.on ? S.brass : S.paper }
                             GradientStop { position: 1.0; color: d.on ? S.brassDark : S.paper }
                         }
-                        Label { anchors.centerIn: parent; visible: d.on; text: '✓'; color: S.wineDark; font.pixelSize: 20; font.bold: true }
+                        Label { anchors.centerIn: parent; visible: d.on; text: '✓'; color: S.wineDark; font.pixelSize: app.ehFsStrong; font.bold: true }
                     }
                     Image {
                         readonly property int sats: d.model.amount ? d.model.amount.satsInt : 0
@@ -246,14 +246,14 @@ ElDialog {
                             color: S.wineDark
                             font.family: SerifFont ? SerifFont : font.family
                             font.weight: Font.ExtraBold
-                            font.pixelSize: 21
+                            font.pixelSize: app.ehFsStrong
                             wrapMode: Text.WrapAnywhere
                         }
                         Label {
                             Layout.fillWidth: true
                             elide: Text.ElideRight
                             font.family: BodyFont ? BodyFont : font.family
-                            font.pixelSize: 16
+                            font.pixelSize: app.ehFsText
                             font.italic: true
                             color: d.model.label ? S.wine : S.muted
                             text: d.model.label ? d.model.label : qsTr('no note')
@@ -268,7 +268,7 @@ ElDialog {
             horizontalAlignment: Text.AlignHCenter
             wrapMode: Text.WordWrap
             font.family: BodyFont ? BodyFont : font.family
-            font.pixelSize: 16
+            font.pixelSize: app.ehFsText
             color: S.muted
             text: qsTr('Blocked coins do not appear here.')
         }
@@ -289,7 +289,7 @@ ElDialog {
                     text: qsTr('Block coins and addresses') + ' ›'
                     color: S.wine
                     font.family: BodyFont ? BodyFont : font.family
-                    font.pixelSize: 17
+                    font.pixelSize: app.ehFsText
                     font.bold: true
                     Rectangle { y: parent.height + 1; width: parent.width; height: 2; color: S.wine }
                 }

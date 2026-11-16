@@ -144,7 +144,7 @@ Item {
                       : kv.key
                 color: S.ink
                 font.family: BodyFont ? BodyFont : font.family
-                font.pixelSize: 16
+                font.pixelSize: app.ehFsText
                 wrapMode: Text.WordWrap
             }
             Image {
@@ -161,7 +161,7 @@ Item {
                 text: qsTr('about')
                 color: S.muted
                 font.family: BodyFont ? BodyFont : font.family
-                font.pixelSize: 14
+                font.pixelSize: app.ehFsSmall
             }
             Label {
                 // a long value ("from X to Y") goes on two lines on the right
@@ -172,7 +172,7 @@ Item {
                 color: kv.figure ? kv.figColor : S.ink
                 font.family: kv.figure ? (SerifFont ? SerifFont : font.family) : (BodyFont ? BodyFont : font.family)
                 font.weight: kv.figure ? Font.ExtraBold : Font.Bold
-                font.pixelSize: kv.figure ? kv.figSize : 16
+                font.pixelSize: kv.figure ? kv.figSize : app.ehFsText
             }
         }
         EhDotLine {
@@ -288,7 +288,7 @@ Item {
                 text: page.keepersText()
                 color: S.muted
                 font.family: BodyFont ? BodyFont : font.family
-                font.pixelSize: 15
+                font.pixelSize: app.ehFsText
                 lineHeight: 1.1
             }
         }
@@ -344,7 +344,7 @@ Item {
                 text: top.stepText(page.bal ? page.bal.step : '')
                 color: S.muted
                 font.family: BodyFont ? BodyFont : font.family
-                font.pixelSize: 16
+                font.pixelSize: app.ehFsText
                 font.bold: true
             }
         }
@@ -357,7 +357,7 @@ Item {
             text: page.renewing ? qsTr('To renew push the coin to the right.') : qsTr('To confirm push the coin to the right.')
             color: S.ink
             font.family: BodyFont ? BodyFont : font.family
-            font.pixelSize: 16
+            font.pixelSize: app.ehFsText
             font.bold: true
         }
         EhSlideH {

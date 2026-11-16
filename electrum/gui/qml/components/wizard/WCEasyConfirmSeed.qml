@@ -101,7 +101,7 @@ WizardComponent {
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
             font.family: BodyFont ? BodyFont : font.family
-            font.pixelSize: 17
+            font.pixelSize: app.ehFsText
             lineHeight: 1.15
             color: S.ink
             text: qsTr('Look at your paper and tap the words in the right order: first number 1, then number 2…')
@@ -110,7 +110,7 @@ WizardComponent {
             visible: root.done || root.wrongIndex >= 0
             kind: root.done ? 'tip' : 'danger'
             icon: root.done ? 'eh_check.svg' : 'eh_cross.svg'
-            fontSize: 17
+            fontSize: app.ehFsText
             text: root.done
                 ? qsTr('Perfect! Your paper is correct: all 12 words (SEED), in the right order.')
                 : qsTr('Number %1 is not "%2". Look carefully at your paper.').arg(root.position + 1).arg(root.wrongWord)
@@ -145,7 +145,7 @@ WizardComponent {
                             text: index + 1
                             font.family: SerifFont ? SerifFont : font.family
                             font.weight: Font.ExtraBold
-                            font.pixelSize: 16
+                            font.pixelSize: app.ehFsText
                             color: S.brassRing
                         }
                         Label {
@@ -153,7 +153,7 @@ WizardComponent {
                             text: filled ? root.seedWords[index] : (current ? '?' : '')
                             font.family: FixedFont
                             font.bold: true
-                            font.pixelSize: 16
+                            font.pixelSize: app.ehFsText
                             color: filled ? S.oliveInk : S.ink
                             elide: Text.ElideRight
                         }
@@ -205,7 +205,7 @@ WizardComponent {
                             text: wb.modelData.word
                             font.family: FixedFont
                             font.bold: true
-                            font.pixelSize: 19
+                            font.pixelSize: app.ehFsStrong
                             color: S.wineDark
                         }
                     }
@@ -238,7 +238,7 @@ WizardComponent {
             textFormat: Text.StyledText
             color: S.wine
             font.family: BodyFont ? BodyFont : font.family
-            font.pixelSize: 17
+            font.pixelSize: app.ehFsText
             font.bold: true
             text: qsTr("Can't find the word?") + ' <u>' + qsTr('Review the 12 words (SEED)') + '</u>'
             opacity: revTap.pressed ? 0.6 : 1

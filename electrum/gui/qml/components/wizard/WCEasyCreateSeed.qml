@@ -56,7 +56,7 @@ WizardComponent {
             textFormat: Text.StyledText
             color: parent.color
             font.family: BodyFont ? BodyFont : font.family
-            font.pixelSize: 16
+            font.pixelSize: app.ehFsText
             font.bold: parent.strong
             lineHeight: 1.15
         }
@@ -144,7 +144,7 @@ WizardComponent {
                                 color: S.brassRing
                                 font.family: SerifFont ? SerifFont : font.family
                                 font.weight: Font.ExtraBold
-                                font.pixelSize: 17
+                                font.pixelSize: app.ehFsText
                             }
                             Label {
                                 Layout.fillWidth: true
@@ -152,7 +152,7 @@ WizardComponent {
                                 color: S.ink
                                 font.family: FixedFont
                                 font.bold: true
-                                font.pixelSize: 21
+                                font.pixelSize: app.ehFsStrong
                                 elide: Text.ElideRight
                             }
                         }

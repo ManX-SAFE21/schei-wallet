@@ -238,14 +238,14 @@ Item {
                 Layout.fillWidth: true
                 spacing: 0
                 Label { Layout.fillWidth: true; text: page.money(tl.coin.sats)
-                        font.family: BodyFont ? BodyFont : font.family; font.pixelSize: 16; font.bold: true; color: S.ink
+                        font.family: BodyFont ? BodyFont : font.family; font.pixelSize: app.ehFsText; font.bold: true; color: S.ink
                         wrapMode: Text.WordWrap; lineHeight: 1.0 }
                 RowLayout {
                     Layout.fillWidth: true
                     spacing: 4
                     Rectangle { visible: tl.cat.id !== ''; Layout.preferredWidth: 12; Layout.preferredHeight: 12; radius: 6; color: tl.cat.color }
                     Label { Layout.fillWidth: true; elide: Text.ElideRight
-                            font.family: BodyFont ? BodyFont : font.family; font.pixelSize: 16
+                            font.family: BodyFont ? BodyFont : font.family; font.pixelSize: app.ehFsText
                             font.bold: tl.cat.id !== ''
                             font.italic: tl.cat.id === '' && tl.coin.label !== ''
                             color: tl.cat.id !== '' ? tl.cat.color : (tl.coin.label !== '' ? S.wine : S.muted)
@@ -265,7 +265,7 @@ Item {
                         source: page.coinIcon(tl.coin.sats); sourceSize.width: 96; sourceSize.height: 96 }
             }
             Label { Layout.fillWidth: true; horizontalAlignment: Text.AlignHCenter; text: page.money(tl.coin.sats)
-                    font.family: BodyFont ? BodyFont : font.family; font.pixelSize: 13; font.bold: true; color: S.ink
+                    font.family: BodyFont ? BodyFont : font.family; font.pixelSize: app.ehFsSmall; font.bold: true; color: S.ink
                     fontSizeMode: Text.HorizontalFit; minimumPixelSize: 9 }
         }
         Rectangle {
@@ -338,19 +338,19 @@ Item {
                     anchors.right: parent.right
                     anchors.verticalCenter: parent.verticalCenter
                     spacing: 6
-                    Label { text: pk.folded ? '▸' : '▾'; color: pk.ink; font.pixelSize: 18 }
+                    Label { text: pk.folded ? '▸' : '▾'; color: pk.ink; font.pixelSize: app.ehFsText }
                     Image { visible: pk.which === 'aside'; source: Qt.resolvedUrl('../../icons/eh_lock.svg'); sourceSize.width: 18; sourceSize.height: 18 }
                     ColumnLayout {
                         Layout.fillWidth: true
                         spacing: 0
                         Label { Layout.fillWidth: true; text: pk.which === 'spend' ? qsTr('To spend') : qsTr('Set aside'); color: pk.ink
-                                font.family: BodyFont ? BodyFont : font.family; font.pixelSize: 17; font.bold: true
+                                font.family: BodyFont ? BodyFont : font.family; font.pixelSize: app.ehFsText; font.bold: true
                                 font.letterSpacing: 0.5; font.capitalization: Font.AllUppercase; wrapMode: Text.WordWrap }
                         Label { Layout.fillWidth: true; text: pk.d.count === 1 ? qsTr('1 coin') : qsTr('%1 coins').arg(pk.d.count); color: S.muted
-                                font.family: BodyFont ? BodyFont : font.family; font.pixelSize: 16 }
+                                font.family: BodyFont ? BodyFont : font.family; font.pixelSize: app.ehFsText }
                     }
                     Label { text: page.money(pk.d.sats); color: pk.ink
-                            font.family: SerifFont ? SerifFont : font.family; font.weight: Font.ExtraBold; font.pixelSize: 21 }
+                            font.family: SerifFont ? SerifFont : font.family; font.weight: Font.ExtraBold; font.pixelSize: app.ehFsStrong }
                 }
                 MouseArea { anchors.fill: parent; onClicked: { var f = page.fold; f[pk.which] = !f[pk.which]; page.fold = f; page.rev++ } }
             }
@@ -362,7 +362,7 @@ Item {
                 horizontalAlignment: Text.AlignHCenter
                 text: qsTr('no coins here')
                 color: S.muted
-                font.family: BodyFont ? BodyFont : font.family; font.pixelSize: 16
+                font.family: BodyFont ? BodyFont : font.family; font.pixelSize: app.ehFsText
             }
             // the "sacchetti": dashed brass frame
             Repeater {
@@ -398,9 +398,9 @@ Item {
                                     Layout.fillWidth: true
                                     spacing: 0
                                     Label { Layout.fillWidth: true; elide: Text.ElideRight; text: page.shortAddr(gr.modelData.address)
-                                            color: S.ink; font.family: FixedFont; font.pixelSize: 16; font.bold: true }
+                                            color: S.ink; font.family: FixedFont; font.pixelSize: app.ehFsText; font.bold: true }
                                     Label { Layout.fillWidth: true; wrapMode: Text.WordWrap; color: S.muted
-                                            font.family: BodyFont ? BodyFont : font.family; font.pixelSize: 16
+                                            font.family: BodyFont ? BodyFont : font.family; font.pixelSize: app.ehFsText
                                             text: (gr.modelData.coins.length === gr.modelData.n ? gr.modelData.n : qsTr('%1 of %2').arg(gr.modelData.coins.length).arg(gr.modelData.n))
                                                   + ' · ' + page.money(gr.modelData.sats) }
                                 }
@@ -435,7 +435,7 @@ Item {
                                 visible: page.compact && gr.modelData.blocked
                                 anchors.right: parent.right; anchors.verticalCenter: parent.verticalCenter
                                 width: 28; horizontalAlignment: Text.AlignHCenter
-                                text: gr.shut ? '▸' : '▾'; color: S.wine; font.pixelSize: 20
+                                text: gr.shut ? '▸' : '▾'; color: S.wine; font.pixelSize: app.ehFsStrong
                                 MouseArea { anchors.fill: parent; anchors.margins: -10
                                             onClicked: { var o = page.openAddr; o[gr.modelData.address] = !(o[gr.modelData.address] === true); page.openAddr = o; page.rev++ } }
                             }
@@ -453,7 +453,7 @@ Item {
                             wrapMode: Text.WordWrap
                             text: qsTr('address blocked: also the coins that will arrive here')
                             color: S.wine
-                            font.family: BodyFont ? BodyFont : font.family; font.pixelSize: 16
+                            font.family: BodyFont ? BodyFont : font.family; font.pixelSize: app.ehFsText
                         }
                     }
                 }
@@ -491,7 +491,7 @@ Item {
                 color: 'transparent'
                 border.width: 2.5
                 border.color: S.olive
-                Label { anchors.centerIn: parent; text: 'i'; color: S.olive; font.pixelSize: 20; font.bold: true; font.family: 'serif' }
+                Label { anchors.centerIn: parent; text: 'i'; color: S.olive; font.pixelSize: app.ehFsStrong; font.bold: true; font.family: 'serif' }
                 MouseArea { anchors.fill: parent; anchors.margins: -8; onClicked: page.showHelp() }
             }
         }
@@ -502,7 +502,7 @@ Item {
             wrapMode: Text.WordWrap
             textFormat: Text.StyledText
             font.family: BodyFont ? BodyFont : font.family
-            font.pixelSize: 16
+            font.pixelSize: app.ehFsText
             color: S.muted
             text: {
                 page.rev
@@ -548,7 +548,7 @@ Item {
                             spacing: 6
                             Rectangle { visible: fc.modelData.id !== '*'; Layout.preferredWidth: 12; Layout.preferredHeight: 12; radius: 6; color: fc.modelData.color }
                             Label { text: fc.modelData.name + (fc.modelData.n >= 0 ? ' ' + fc.modelData.n : '')
-                                    font.family: BodyFont ? BodyFont : font.family; font.pixelSize: 16; font.bold: true; color: fc.modelData.color }
+                                    font.family: BodyFont ? BodyFont : font.family; font.pixelSize: app.ehFsText; font.bold: true; color: fc.modelData.color }
                         }
                         MouseArea { anchors.fill: parent; onClicked: { page.filter = fc.modelData.id; page.sel = ({}); page.selRev++; page.rev++ } }
                     }
@@ -574,7 +574,7 @@ Item {
                     horizontalAlignment: Text.AlignHCenter
                     wrapMode: Text.WordWrap
                     color: S.muted
-                    font.family: BodyFont ? BodyFont : font.family; font.pixelSize: 17
+                    font.family: BodyFont ? BodyFont : font.family; font.pixelSize: app.ehFsText
                     text: qsTr('No coins yet: they arrive when someone sends you bitcoin.')
                 }
                 // T20 step 4: a strange small coin arrived
@@ -616,7 +616,7 @@ Item {
                 Layout.fillWidth: true
                 wrapMode: Text.WordWrap
                 text: qsTr('Where do they come from?')
-                font.family: BodyFont ? BodyFont : font.family; font.pixelSize: 17; font.bold: true; color: S.wineDark
+                font.family: BodyFont ? BodyFont : font.family; font.pixelSize: app.ehFsText; font.bold: true; color: S.wineDark
             }
             Flow {
                 Layout.fillWidth: true
@@ -635,7 +635,7 @@ Item {
                             anchors.centerIn: parent
                             spacing: 6
                             Rectangle { Layout.preferredWidth: 12; Layout.preferredHeight: 12; radius: 6; color: cc.modelData.color }
-                            Label { text: cc.modelData.name; font.family: BodyFont ? BodyFont : font.family; font.pixelSize: 16; font.bold: true; color: cc.modelData.color }
+                            Label { text: cc.modelData.name; font.family: BodyFont ? BodyFont : font.family; font.pixelSize: app.ehFsText; font.bold: true; color: cc.modelData.color }
                         }
                         MouseArea { id: ccMa; anchors.fill: parent; onClicked: page.setOrigin(page.picked, cc.modelData.id) }
                     }
@@ -706,7 +706,7 @@ Item {
             visible: page.dragList.length > 1
             anchors.right: parent.right; anchors.top: parent.top; anchors.margins: -6
             width: 28; height: 28; radius: 14; color: S.wine
-            Label { anchors.centerIn: parent; text: page.dragList.length; color: S.ivory; font.pixelSize: 16; font.bold: true }
+            Label { anchors.centerIn: parent; text: page.dragList.length; color: S.ivory; font.pixelSize: app.ehFsText; font.bold: true }
         }
     }
 }

@@ -85,7 +85,7 @@ Item {
                     text: ch.text
                     color: S.ink
                     font.family: BodyFont ? BodyFont : font.family
-                    font.pixelSize: 17
+                    font.pixelSize: app.ehFsText
                     font.bold: true
                     lineHeight: 1.1
                     wrapMode: Text.WordWrap
@@ -96,7 +96,7 @@ Item {
                     text: ch.hint
                     color: S.muted
                     font.family: BodyFont ? BodyFont : font.family
-                    font.pixelSize: 16
+                    font.pixelSize: app.ehFsText
                     wrapMode: Text.WordWrap
                 }
             }
@@ -107,7 +107,7 @@ Item {
                 text: qsTr('%1 months before').arg(Math.round(page.months / ch.div))
                 color: S.muted
                 font.family: BodyFont ? BodyFont : font.family
-                font.pixelSize: 16
+                font.pixelSize: app.ehFsText
                 font.weight: Font.DemiBold
             }
         }
@@ -144,7 +144,7 @@ Item {
                 wrapMode: Text.WordWrap
                 color: S.ink
                 font.family: BodyFont ? BodyFont : font.family
-                font.pixelSize: 16
+                font.pixelSize: app.ehFsText
                 lineHeight: 1.1
             }
 

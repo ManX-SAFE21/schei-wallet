@@ -89,7 +89,7 @@ Item {
                     text: hr.heir.name
                     color: S.ink
                     font.family: BodyFont ? BodyFont : font.family
-                    font.pixelSize: 17
+                    font.pixelSize: app.ehFsText
                     font.bold: true
                     elide: Text.ElideRight
                 }
@@ -104,7 +104,7 @@ Item {
                     color: S.muted
                     font.family: FixedFont
                     font.bold: true
-                    font.pixelSize: 15
+                    font.pixelSize: app.ehFsText
                     elide: Text.ElideRight
                 }
             }
@@ -113,13 +113,13 @@ Item {
                 color: S.oliveInk
                 font.family: SerifFont ? SerifFont : font.family
                 font.weight: Font.ExtraBold
-                font.pixelSize: 24
+                font.pixelSize: app.ehFsStrong
             }
             Label {
                 text: '›'
                 color: S.wine
                 font.family: BodyFont ? BodyFont : font.family
-                font.pixelSize: 30
+                font.pixelSize: app.ehFsBox
                 font.bold: true
             }
         }
@@ -207,7 +207,7 @@ Item {
                             text: '<b>' + qsTr('Total') + '</b> <font color="' + S.muted + '" size="2">· ' + qsTr('at most 5 people') + '</font>'
                             color: S.ink
                             font.family: BodyFont ? BodyFont : font.family
-                            font.pixelSize: 16
+                            font.pixelSize: app.ehFsText
                             wrapMode: Text.WordWrap
                         }
                         Label {
@@ -215,7 +215,7 @@ Item {
                             color: page.total === 100 ? S.oliveInk : S.wine
                             font.family: SerifFont ? SerifFont : font.family
                             font.weight: Font.ExtraBold
-                            font.pixelSize: 24
+                            font.pixelSize: app.ehFsStrong
                         }
                     }
                 }
@@ -264,7 +264,7 @@ Item {
                 text: top.stepText(page.bal ? page.bal.step : '')
                 color: S.muted
                 font.family: BodyFont ? BodyFont : font.family
-                font.pixelSize: 16
+                font.pixelSize: app.ehFsText
                 font.bold: true
             }
         }

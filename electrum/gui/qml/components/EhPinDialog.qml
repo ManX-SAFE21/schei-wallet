@@ -88,7 +88,7 @@ ElDialog {
             anchors.centerIn: parent
             color: S.wine
             font.family: BodyFont ? BodyFont : font.family
-            font.pixelSize: 17
+            font.pixelSize: app.ehFsText
             font.bold: true
             opacity: lkTap.pressed ? 0.6 : 1
         }
@@ -163,7 +163,7 @@ ElDialog {
             wrapMode: Text.WordWrap
             font.family: SerifFont ? SerifFont : font.family
             font.weight: Font.ExtraBold
-            font.pixelSize: 26
+            font.pixelSize: app.ehFsBox
             color: S.wine
             text: root.prompt !== '' ? root.prompt : qsTr('Type your PIN')
         }

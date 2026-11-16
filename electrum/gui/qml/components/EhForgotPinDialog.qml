@@ -78,7 +78,7 @@ ElDialog {
             wrapMode: Text.WordWrap
             color: S.ink
             font.family: BodyFont ? BodyFont : font.family
-            font.pixelSize: 17
+            font.pixelSize: app.ehFsText
             lineHeight: 1.15
         }
 
@@ -128,14 +128,14 @@ ElDialog {
                                     color: S.brassRing
                                     font.family: SerifFont ? SerifFont : font.family
                                     font.weight: Font.ExtraBold
-                                    font.pixelSize: 16
+                                    font.pixelSize: app.ehFsText
                                     anchors.verticalCenter: parent.verticalCenter
                                 }
                                 Label {
                                     text: chip.modelData
                                     color: chip.bad ? S.wine : S.ink
                                     font.family: BodyFont ? BodyFont : font.family
-                                    font.pixelSize: 17
+                                    font.pixelSize: app.ehFsText
                                     font.bold: true
                                     anchors.verticalCenter: parent.verticalCenter
                                 }
@@ -154,7 +154,7 @@ ElDialog {
                 text: qsTr('tap the letters, then the word')
                 color: S.muted
                 font.family: BodyFont ? BodyFont : font.family
-                font.pixelSize: 17
+                font.pixelSize: app.ehFsText
             }
         }
 
@@ -195,7 +195,7 @@ ElDialog {
                             text: sg.modelData
                             color: S.wineDark
                             font.family: BodyFont ? BodyFont : font.family
-                            font.pixelSize: 18
+                            font.pixelSize: app.ehFsText
                             font.bold: true
                         }
                     }
@@ -234,7 +234,7 @@ ElDialog {
                                 width: kbd.keyW
                                 height: kbd.keyH
                                 letter: true
-                                fontSize: 22
+                                fontSize: app.ehFsStrong
                                 keyRadius: 10
                                 text: kk.modelData
                                 onActivated: root.key(kk.modelData)

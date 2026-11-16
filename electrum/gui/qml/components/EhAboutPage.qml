@@ -23,7 +23,7 @@ Item {
         textFormat: Text.StyledText
         color: S.ink
         font.family: BodyFont ? BodyFont : font.family
-        font.pixelSize: 16
+        font.pixelSize: app.ehFsText
         lineHeight: 1.1
     }
 
@@ -54,7 +54,7 @@ Item {
                 text: 'Bitcoin Wallet · ' + qsTr('version %1').arg('1.0') + ' (Electrum ' + BUILD.electrum_version + ')'
                 color: S.muted
                 font.family: BodyFont ? BodyFont : font.family
-                font.pixelSize: 16
+                font.pixelSize: app.ehFsText
             }
             EhInfoBox {
                 kind: 'warn'

@@ -114,7 +114,7 @@ Item {
         text: '<b><font color="' + S.ink + '">' + word + '</font></b><br>' + date
         color: S.muted
         font.family: BodyFont ? BodyFont : font.family
-        font.pixelSize: 15
+        font.pixelSize: app.ehFsText
         lineHeight: 1.1
     }
 

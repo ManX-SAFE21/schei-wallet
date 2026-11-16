@@ -126,7 +126,7 @@ ColumnLayout {
                 ColumnLayout {
                     anchors.fill: parent
                     anchors.margins: 18
-                    Label { text: app.ehWalletNameFor(d.model.name || ""); color: '#ffffff'; font.pixelSize: 17; font.bold: true }
+                    Label { text: app.ehWalletNameFor(d.model.name || ""); color: '#ffffff'; font.pixelSize: app.ehFsText; font.bold: true }
                     // the balance seen the last time this wallet was open
                     Label {
                         visible: text !== ''
@@ -134,10 +134,10 @@ ColumnLayout {
                         color: '#ffffff'
                         font.family: TitleFont ? TitleFont : font.family
                         font.weight: Font.Black
-                        font.pixelSize: 28
+                        font.pixelSize: app.ehFsBox
                     }
                     Item { Layout.fillHeight: true }
-                    Label { text: qsTr('tap to open it'); color: '#ffffff'; opacity: 0.8; font.pixelSize: 14 }
+                    Label { text: qsTr('tap to open it'); color: '#ffffff'; opacity: 0.8; font.pixelSize: app.ehFsSmall }
                 }
                 TapHandler { enabled: !d.isAdd; onTapped: { list.currentIndex = d.index; Daemon.loadWallet(d.model.path) } }
             }
@@ -166,7 +166,7 @@ ColumnLayout {
                     anchors.verticalCenter: parent.verticalCenter
                     text: '+'
                     color: '#5e1a33'
-                    font.pixelSize: 30
+                    font.pixelSize: app.ehFsBox
                     font.bold: true
                 }
                 ColumnLayout {
@@ -177,10 +177,10 @@ ColumnLayout {
                         Layout.preferredWidth: 56
                         Layout.preferredHeight: 56
                         EhGlow { tone: 'gold'; anchors.fill: parent; anchors.margins: -10; z: 0 }
-                        Label { anchors.centerIn: parent; text: '+'; font.pixelSize: 34; font.bold: true; color: '#5e1a33' }
+                        Label { anchors.centerIn: parent; text: '+'; font.pixelSize: app.ehFsTitle; font.bold: true; color: '#5e1a33' }
                     }
-                    Label { Layout.alignment: Qt.AlignHCenter; text: qsTr('Add wallet'); font.pixelSize: 17; font.bold: true; color: '#5e1a33' }
-                    Label { Layout.alignment: Qt.AlignHCenter; text: qsTr('%1 of %2').arg(root.count).arg(root.maxWallets); font.pixelSize: 13; color: '#6b5d55' }
+                    Label { Layout.alignment: Qt.AlignHCenter; text: qsTr('Add wallet'); font.pixelSize: app.ehFsText; font.bold: true; color: '#5e1a33' }
+                    Label { Layout.alignment: Qt.AlignHCenter; text: qsTr('%1 of %2').arg(root.count).arg(root.maxWallets); font.pixelSize: app.ehFsSmall; color: '#6b5d55' }
                 }
                 TapHandler {
                     id: addTap
@@ -244,7 +244,7 @@ ColumnLayout {
                     visible: modelData.add
                     anchors.verticalCenter: parent.verticalCenter
                     text: '+'
-                    font.pixelSize: 15
+                    font.pixelSize: app.ehFsText
                     font.bold: true
                     color: '#5e1a33'
                     opacity: parent.on ? 1 : 0.6

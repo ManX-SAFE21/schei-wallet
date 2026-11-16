@@ -114,7 +114,7 @@ EhBottomSheet {
         wrapMode: Text.WordWrap
         textFormat: Text.StyledText
         font.family: BodyFont ? BodyFont : font.family
-        font.pixelSize: 16
+        font.pixelSize: app.ehFsText
         lineHeight: 1.15
         color: S.ink
     }
@@ -153,7 +153,7 @@ EhBottomSheet {
                     elide: Text.ElideRight
                     color: S.ink
                     font.family: BodyFont ? BodyFont : font.family
-                    font.pixelSize: 16
+                    font.pixelSize: app.ehFsText
                     font.bold: true
                 }
                 Label {
@@ -161,7 +161,7 @@ EhBottomSheet {
                     wrapMode: Text.WordWrap
                     color: S.muted
                     font.family: BodyFont ? BodyFont : font.family
-                    font.pixelSize: 14
+                    font.pixelSize: app.ehFsSmall
                     text: !kl.k ? '' : kl.k.used ? (kl.k.ok ? qsTr('already yours') : qsTr('the one switched off'))
                         : app.ehHeirSats(kl.k.feeSats) + (kl.k.url === root.firstUrl ? ' · ' + qsTr('the first of the list') : '')
                 }
@@ -171,7 +171,7 @@ EhBottomSheet {
                     : !kl.k.ok ? '✕ ' + qsTr('does not answer') : '✓ ' + (kl.chosen ? qsTr('chosen') : qsTr('answers'))
                 color: !kl.k ? S.ink : kl.k.used && kl.k.ok ? S.offInk : (kl.k.ok ? S.oliveInk : S.wine)
                 font.family: BodyFont ? BodyFont : font.family
-                font.pixelSize: 14
+                font.pixelSize: app.ehFsSmall
                 font.bold: true
             }
         }
@@ -189,7 +189,7 @@ EhBottomSheet {
     EhTitle {
         visible: root.stage === 'find' || root.stage === 'error'
         text: root.lostNow > 1 ? qsTr('I look for %1 new keepers…').arg(root.lostNow) : qsTr('I look for a new keeper…')
-        fontSize: 26
+        fontSize: app.ehFsBox
         Layout.bottomMargin: 0
     }
     Para {
@@ -205,7 +205,7 @@ EhBottomSheet {
             text: root.bal && root.bal.busy ? app.ehHeirStepText(root.bal.step) || qsTr('I ask the keepers…') : qsTr('I ask the keepers…')
             color: S.muted
             font.family: BodyFont ? BodyFont : font.family
-            font.pixelSize: 16
+            font.pixelSize: app.ehFsText
             font.bold: true
         }
     }
@@ -215,7 +215,7 @@ EhBottomSheet {
         horizontalAlignment: Text.AlignHCenter
         wrapMode: Text.WordWrap
         font.family: BodyFont ? BodyFont : font.family
-        font.pixelSize: 14
+        font.pixelSize: app.ehFsSmall
         color: S.muted
         text: qsTr('It takes a few seconds. I skip the .onion (Tor) addresses.')
     }
@@ -227,7 +227,7 @@ EhBottomSheet {
               ? (root.picks.length === 1 ? qsTr('I found 1 new keeper out of %1').arg(root.need)
                                          : qsTr('I found %1 new keepers out of %2').arg(root.picks.length).arg(root.need))
               : root.picks.length > 1 ? qsTr('I found %1 keepers').arg(root.picks.length) : qsTr('I found a keeper')
-        fontSize: 26
+        fontSize: app.ehFsBox
         Layout.bottomMargin: 0
     }
     EhSheet {
@@ -260,7 +260,7 @@ EhBottomSheet {
         horizontalAlignment: Text.AlignHCenter
         wrapMode: Text.WordWrap
         font.family: BodyFont ? BodyFont : font.family
-        font.pixelSize: 17
+        font.pixelSize: app.ehFsText
         font.bold: true
         color: S.wine
         text: root.bal ? app.ehHeirStepText(root.bal.step) : ''
@@ -311,7 +311,7 @@ EhBottomSheet {
     EhTitle {
         visible: root.stage === 'done'
         text: (root.result.added || 1) > 1 ? qsTr('Keepers replaced') : qsTr('Keeper replaced')
-        fontSize: 26
+        fontSize: app.ehFsBox
         Layout.bottomMargin: 0
     }
     Para {
@@ -334,7 +334,7 @@ EhBottomSheet {
     EhTitle {
         visible: root.stage === 'none'
         text: qsTr('No free keeper')
-        fontSize: 26
+        fontSize: app.ehFsBox
         Layout.bottomMargin: 0
     }
     Para {

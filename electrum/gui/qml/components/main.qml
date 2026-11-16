@@ -26,6 +26,16 @@ ApplicationWindow
     // Android keys; AppController measures it once the window is laid out (owner 16/11, Galaxy A15)
     readonly property int navigationBarHeight: AppController ? AppController.navigationBarHeight : 0
 
+    // Schȅi text sizes (owner 16/11): only these 6, used by every Schȅi page. Measured on a
+    // 412 dp phone (Pixel 7); narrower phones get up to 10% smaller, never under 13.
+    readonly property real ehFs: Math.max(0.9, Math.min(1.0, width / 412))
+    readonly property int ehFsSmall: Math.max(13, Math.round(13 * ehFs))   // label, note
+    readonly property int ehFsText: Math.max(13, Math.round(15 * ehFs))    // text
+    readonly property int ehFsStrong: Math.max(13, Math.round(18 * ehFs))  // text in evidence
+    readonly property int ehFsBox: Math.round(26 * ehFs)                   // box title
+    readonly property int ehFsTitle: Math.round(32 * ehFs)                 // page title
+    readonly property int ehFsFigure: Math.round(42 * ehFs)                // big figure
+
     // dimensions ignored on android
     width: 480
     height: 800

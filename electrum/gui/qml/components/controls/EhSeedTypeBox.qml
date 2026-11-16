@@ -33,7 +33,7 @@ Rectangle {
             wrapMode: Text.WordWrap
             text: root.review ? qsTr('KIND') : qsTr('WRITE THIS TOO, UNDER THE WORDS')
             font.family: BodyFont ? BodyFont : font.family
-            font.pixelSize: 16
+            font.pixelSize: app.ehFsText
             font.bold: true
             font.letterSpacing: 0.5
             color: S.waitInk
@@ -45,14 +45,14 @@ Rectangle {
             color: S.wineDark
             font.family: FixedFont
             font.bold: true
-            font.pixelSize: 18
+            font.pixelSize: app.ehFsText
         }
         Label {
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
             textFormat: Text.StyledText
             font.family: BodyFont ? BodyFont : font.family
-            font.pixelSize: 16
+            font.pixelSize: app.ehFsText
             lineHeight: 1.1
             color: S.ink
             text: root.review

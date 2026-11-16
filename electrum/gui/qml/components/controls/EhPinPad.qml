@@ -89,7 +89,7 @@ ColumnLayout {
         text: root.checking ? qsTr('Checking…') : root.message
         color: root.checking ? S.olive : (root.messageBad ? S.wine : S.muted)
         font.family: BodyFont ? BodyFont : font.family
-        font.pixelSize: 17
+        font.pixelSize: app.ehFsText
         font.bold: root.messageBad || root.checking
         wrapMode: Text.WordWrap
     }

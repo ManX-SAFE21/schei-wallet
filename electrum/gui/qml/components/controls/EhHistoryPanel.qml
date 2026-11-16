@@ -61,7 +61,7 @@ Item {
                 text: qsTr('Movements')
                 font.family: root.serif
                 font.weight: Font.ExtraBold
-                font.pixelSize: 24
+                font.pixelSize: app.ehFsStrong
                 color: '#5e1a33'
             }
             // a small stitched button (owner rule: every button has its stitching)
@@ -83,7 +83,7 @@ Item {
                     anchors.centerIn: parent
                     text: qsTr('See all') + ' ›'
                     font.family: root.body
-                    font.pixelSize: 16
+                    font.pixelSize: app.ehFsText
                     font.bold: true
                     color: '#fbeccb'
                 }
@@ -108,7 +108,7 @@ Item {
             textFormat: Text.StyledText
             color: '#5a4c44'
             font.family: root.body
-            font.pixelSize: 16
+            font.pixelSize: app.ehFsText
             text: '<b>' + qsTr('No movements yet.') + '</b><br>' + (app.ehOption('buttons') ? qsTr('Tap RECEIVE to get your first bitcoin.') : qsTr('Pull the coin down to receive your first bitcoin.'))
         }
 
@@ -150,8 +150,8 @@ Item {
                 readonly property string sgn: '+−-'.indexOf(main.charAt(0)) >= 0 ? main.charAt(0) : ''
                 readonly property string rest: sgn !== '' ? main.substring(1) : main
                 // only bitcoin: the size that fits the line (from the text, not from the layout: no loop)
-                TextMetrics { id: tm; font.family: root.serif; font.weight: Font.ExtraBold; font.pixelSize: 19; text: row.rest }
-                readonly property real btcSize: Math.max(12, Math.min(19, 19 * (width - 48 - 14) / Math.max(1, tm.advanceWidth)))
+                TextMetrics { id: tm; font.family: root.serif; font.weight: Font.ExtraBold; font.pixelSize: app.ehFsStrong; text: row.rest }
+                readonly property real btcSize: Math.max(12, Math.min(app.ehFsStrong, app.ehFsStrong * (width - 48 - 14) / Math.max(1, tm.advanceWidth)))
 
                 Dotted {
                     visible: row.index < list.count - 1
@@ -183,13 +183,13 @@ Item {
                     Row {
                         anchors.right: parent.right
                         spacing: 1
-                        Label { anchors.baseline: amtL.baseline; text: row.sgn; font.family: root.body; font.bold: true; font.pixelSize: 21; color: row.ink }
+                        Label { anchors.baseline: amtL.baseline; text: row.sgn; font.family: root.body; font.bold: true; font.pixelSize: app.ehFsStrong; color: row.ink }
                         Label {
                             id: amtL
                             text: row.rest
                             font.family: root.serif
                             font.weight: Font.ExtraBold
-                            font.pixelSize: 21
+                            font.pixelSize: app.ehFsStrong
                             color: row.ink
                         }
                     }
@@ -198,7 +198,7 @@ Item {
                         anchors.right: parent.right
                         text: app.ehBtc(row.model.value).replace('-', '')
                         font.family: root.body
-                        font.pixelSize: 13
+                        font.pixelSize: app.ehFsSmall
                         color: '#5a4c44'
                     }
                 }
@@ -234,7 +234,7 @@ Item {
                             elide: Text.ElideRight
                             text: row.note !== '' ? row.note : row.what
                             font.family: root.body
-                            font.pixelSize: 16
+                            font.pixelSize: app.ehFsText
                             font.bold: true
                             color: row.note !== '' ? '#5e1a33' : '#2a2220'
                         }
@@ -252,7 +252,7 @@ Item {
                                 anchors.verticalCenter: parent.verticalCenter
                                 text: row.when
                                 font.family: root.body
-                                font.pixelSize: 16
+                                font.pixelSize: app.ehFsText
                                 color: '#5a4c44'
                             }
                             Rectangle {
@@ -266,7 +266,7 @@ Item {
                                 color: '#fbf0d6'
                                 border.width: 1
                                 border.color: '#ecd49a'
-                                Label { id: pl1; anchors.centerIn: parent; text: qsTr('unconf.'); font.family: root.body; font.pixelSize: 13; font.bold: true; color: '#7a4a12' }
+                                Label { id: pl1; anchors.centerIn: parent; text: qsTr('unconf.'); font.family: root.body; font.pixelSize: app.ehFsSmall; font.bold: true; color: '#7a4a12' }
                             }
                         }
                     }
@@ -277,7 +277,7 @@ Item {
                         elide: Text.ElideRight
                         text: row.when
                         font.family: root.body
-                        font.pixelSize: 16
+                        font.pixelSize: app.ehFsText
                         color: '#5a4c44'
                     }
                     Rectangle {
@@ -289,7 +289,7 @@ Item {
                         border.width: 1
                         border.color: '#ecd49a'
                         Label { id: pl2; anchors.centerIn: parent; width: Math.min(implicitWidth, parent.width - 8); elide: Text.ElideRight
-                                text: qsTr('waiting'); font.family: root.body; font.pixelSize: 14; font.bold: true; color: '#7a4a12' }
+                                text: qsTr('waiting'); font.family: root.body; font.pixelSize: app.ehFsSmall; font.bold: true; color: '#7a4a12' }
                     }
                     // only bitcoin: 8 decimals, on its own line on the right (it does not fit next to the words)
                     Item {

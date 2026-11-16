@@ -114,7 +114,7 @@ Item {
                 text: qsTr('If you never renew, when do the heirs receive?')
                 color: S.ink
                 font.family: BodyFont ? BodyFont : font.family
-                font.pixelSize: 16
+                font.pixelSize: app.ehFsText
             }
 
             EhSegmented {
@@ -172,7 +172,7 @@ Item {
                           .arg(page.day(page.warnAt)).arg(page.warnMonths)
                     color: S.ink
                     font.family: BodyFont ? BodyFont : font.family
-                    font.pixelSize: 16
+                    font.pixelSize: app.ehFsText
                     lineHeight: 1.1
                 }
             }
@@ -206,7 +206,7 @@ Item {
                 text: top.stepText(page.bal ? page.bal.step : '')
                 color: S.muted
                 font.family: BodyFont ? BodyFont : font.family
-                font.pixelSize: 16
+                font.pixelSize: app.ehFsText
                 font.bold: true
             }
         }

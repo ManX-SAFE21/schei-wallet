@@ -81,7 +81,7 @@ Rectangle {
             color: root.watch ? root.baseColor : '#ffffff'
             font.family: TitleFont ? TitleFont : font.family
             font.weight: Font.Black
-            font.pixelSize: 42
+            font.pixelSize: app.ehFsFigure
         }
         ShaderEffectSource {
             id: pass1
@@ -280,7 +280,7 @@ Rectangle {
                 Layout.fillWidth: true
                 text: root.previewName !== '' ? root.previewName : app.ehWalletName()
                 color: root.watch ? root.baseColor : '#ffffff'
-                font.pixelSize: 15
+                font.pixelSize: app.ehFsText
                 elide: Text.ElideRight
             }
             Rectangle {
@@ -342,7 +342,7 @@ Rectangle {
             visible: !root.watch && root.compact
             Layout.preferredHeight: 22     // as the "watch only" tag (20 + 2): same card height
             verticalAlignment: Text.AlignVCenter
-            font.pixelSize: root.bottega ? 14 : 12
+            font.pixelSize: root.bottega ? app.ehFsSmall : 12
             font.bold: true
             color: Network.isConnected ? (root.bottega ? '#d6eca0' : '#cfe3a0') : '#ffd88a'
             text: Network.isConnected ? '● ' + qsTr('Up to date') : '● ' + qsTr('Not connected')
@@ -366,7 +366,7 @@ Rectangle {
                 color: root.watch ? root.baseColor : '#ffffff'
                 font.family: TitleFont ? TitleFont : font.family
                 font.weight: Font.Black
-                font.pixelSize: 42
+                font.pixelSize: app.ehFsFigure
             }
             Blurred { anchors.verticalCenter: parent.verticalCenter; text: parent.parts[1]; k: 5 }
             Blurred { anchors.verticalCenter: parent.verticalCenter; text: parent.parts[2]; k: 11 }
@@ -382,7 +382,7 @@ Rectangle {
             color: root.watch ? root.baseColor : (root.bottega ? '#fbeccb' : '#ffffff')
             font.family: root.bottega ? root.serif : (TitleFont ? TitleFont : font.family)
             font.weight: root.bottega ? Font.ExtraBold : Font.Black
-            font.pixelSize: 42
+            font.pixelSize: app.ehFsFigure
             fontSizeMode: Text.HorizontalFit
             minimumPixelSize: 14     // review 2026-11-11: 26 was too big for the narrow home card
             clip: true
@@ -395,7 +395,7 @@ Rectangle {
             text: root.euroText === '' ? ' ' : (root.covered ? qsTr('tap to see') : root.btcText)
             color: root.watch ? '#6b5d55' : '#ffffff'
             opacity: root.bottega ? 1 : 0.85
-            font.pixelSize: root.bottega ? 16 : 15
+            font.pixelSize: root.bottega ? app.ehFsText : app.ehFsText
             font.bold: root.covered
             elide: Text.ElideRight
         }
@@ -514,7 +514,7 @@ Rectangle {
         readonly property real topShift: root.showGear ? 68 : 0
         // name and status on one line only when both fit whole; otherwise the status goes under
         readonly property bool statusBelow: root.compact || (hName.implicitWidth + hStatusW.implicitWidth + 22 + 14 > hTop.width)
-        TextMetrics { id: hStatusW; font.family: root.body; font.pixelSize: 15; font.bold: true; text: root.statusText }
+        TextMetrics { id: hStatusW; font.family: root.body; font.pixelSize: app.ehFsText; font.bold: true; text: root.statusText }
         RowLayout {
             id: hTop
             x: -homeBox.topShift
@@ -534,7 +534,7 @@ Rectangle {
                 text: root.previewName !== '' ? root.previewName : app.ehWalletName()
                 color: root.watch ? root.baseColor : '#ffffff'
                 font.family: root.body
-                font.pixelSize: 16
+                font.pixelSize: app.ehFsText
                 elide: Text.ElideRight
             }
             Label {
@@ -543,7 +543,7 @@ Rectangle {
                 text: root.statusText
                 color: root.statusInk
                 font.family: root.body
-                font.pixelSize: 15
+                font.pixelSize: app.ehFsText
                 font.bold: true
             }
         }
@@ -558,7 +558,7 @@ Rectangle {
             text: root.statusText
             color: root.statusInk
             font.family: root.body
-            font.pixelSize: 15
+            font.pixelSize: app.ehFsText
             font.bold: true
         }
         Rectangle {
@@ -569,7 +569,7 @@ Rectangle {
             width: hWatch2.implicitWidth + 14
             radius: 6
             color: root.tint(root.baseColor, 0.85)
-            Label { id: hWatch2; anchors.centerIn: parent; text: qsTr('WATCH ONLY'); color: '#ffffff'; font.pixelSize: 13; font.bold: true }
+            Label { id: hWatch2; anchors.centerIn: parent; text: qsTr('WATCH ONLY'); color: '#ffffff'; font.pixelSize: app.ehFsSmall; font.bold: true }
         }
 
         Column {
@@ -589,7 +589,7 @@ Rectangle {
                 color: root.watch ? root.baseColor : (root.bottega ? '#fbeccb' : '#ffffff')
                 font.family: root.serif
                 font.weight: Font.ExtraBold
-                font.pixelSize: 44
+                font.pixelSize: app.ehFsFigure
                 fontSizeMode: Text.HorizontalFit
                 minimumPixelSize: 14
             }
@@ -611,7 +611,7 @@ Rectangle {
                         text: root.btcText
                         color: root.watch ? '#6b5d55' : '#ffffff'
                         font.family: root.body
-                        font.pixelSize: 16
+                        font.pixelSize: app.ehFsText
                         elide: Text.ElideRight
                     }
                     Row {
@@ -726,7 +726,7 @@ Rectangle {
                 color: root.heirOff ? '#d4a536' : '#fbeccb'
                 font.family: TitleFont ? TitleFont : root.body
                 font.weight: Font.Black
-                font.pixelSize: 13
+                font.pixelSize: app.ehFsSmall
                 font.letterSpacing: 0.75
                 fontSizeMode: Text.HorizontalFit
                 minimumPixelSize: 9

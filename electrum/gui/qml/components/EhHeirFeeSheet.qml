@@ -15,7 +15,7 @@ EhBottomSheet {
     EhTitle {
         text: qsTr('What the keepers take')
         icon: 'eh_shield_olive.svg'
-        fontSize: 26
+        fontSize: app.ehFsBox
         Layout.bottomMargin: 0
     }
     Repeater {
@@ -27,7 +27,7 @@ EhBottomSheet {
             wrapMode: Text.WordWrap
             textFormat: Text.StyledText
             font.family: BodyFont ? BodyFont : font.family
-            font.pixelSize: 16
+            font.pixelSize: app.ehFsText
             lineHeight: 1.15
             color: S.ink
             text: modelData

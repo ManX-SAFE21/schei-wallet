@@ -81,7 +81,7 @@ Item {
             id: chL
             anchors.centerIn: parent
             font.family: BodyFont ? BodyFont : font.family
-            font.pixelSize: 17
+            font.pixelSize: app.ehFsText
             font.bold: true
             color: ch.on ? S.ivory : S.ink
         }
@@ -129,7 +129,7 @@ Item {
                 wrapMode: Text.WordWrap
                 textFormat: Text.StyledText
                 font.family: BodyFont ? BodyFont : font.family
-                font.pixelSize: 16
+                font.pixelSize: app.ehFsText
                 lineHeight: 1.1
                 color: S.muted
                 text: qsTr('green = used · grey = empty · gold = money that is <b>after</b> many empty ones')
@@ -173,7 +173,7 @@ Item {
                         inputMethodHints: Qt.ImhDigitsOnly
                         validator: IntValidator { bottom: 1; top: 5000 }
                         font.family: BodyFont ? BodyFont : font.family
-                        font.pixelSize: 17
+                        font.pixelSize: app.ehFsText
                         font.bold: true
                         color: parent.other ? S.ivory : S.ink
                         onEditingFinished: if (text !== '') page.choose(parseInt(text))
@@ -182,7 +182,7 @@ Item {
                             visible: otherF.text === '' && !otherF.activeFocus
                             text: qsTr('other amount…')
                             font.family: BodyFont ? BodyFont : font.family
-                            font.pixelSize: 17; color: S.muted
+                            font.pixelSize: app.ehFsText; color: S.muted
                         }
                     }
                 }
@@ -192,7 +192,7 @@ Item {
                 Layout.leftMargin: 4
                 wrapMode: Text.WordWrap
                 font.family: BodyFont ? BodyFont : font.family
-                font.pixelSize: 16
+                font.pixelSize: app.ehFsText
                 lineHeight: 1.1
                 color: S.muted
                 text: qsTr('It does not change your money and costs nothing. The further it looks, the more time it takes to update the balance. If it is not needed, leave 20.')

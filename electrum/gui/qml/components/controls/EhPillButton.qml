@@ -20,7 +20,7 @@ Item {
     property color textColor: '#2a2220'
     property color tileColor: '#efe6d3'
     property bool outlined: true             // thin beige ring (for light buttons)
-    property real fontSize: 25
+    property real fontSize: app.ehFsBox
     default property alias tileContent: holder.data
 
     signal clicked

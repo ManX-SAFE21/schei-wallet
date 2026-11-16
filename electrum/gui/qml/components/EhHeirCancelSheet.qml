@@ -62,7 +62,7 @@ EhBottomSheet {
         wrapMode: Text.WordWrap
         textFormat: Text.StyledText
         font.family: BodyFont ? BodyFont : font.family
-        font.pixelSize: 16
+        font.pixelSize: app.ehFsText
         lineHeight: 1.15
         color: S.ink
     }
@@ -71,7 +71,7 @@ EhBottomSheet {
     EhTitle {
         visible: root.stage === 'confirm'
         text: qsTr('Cancel the inheritance')
-        fontSize: 26
+        fontSize: app.ehFsBox
         Layout.bottomMargin: 0
     }
     Para {
@@ -102,7 +102,7 @@ EhBottomSheet {
     EhTitle {
         visible: root.stage === 'heirs'
         text: qsTr('Do you also want to delete the heirs?')
-        fontSize: 26
+        fontSize: app.ehFsBox
         Layout.bottomMargin: 0
     }
     Para {
@@ -115,7 +115,7 @@ EhBottomSheet {
         horizontalAlignment: Text.AlignHCenter
         wrapMode: Text.WordWrap
         font.family: BodyFont ? BodyFont : font.family
-        font.pixelSize: 17
+        font.pixelSize: app.ehFsText
         font.bold: true
         color: S.wine
         text: root.bal ? app.ehHeirStepText(root.bal.step) : ''
@@ -159,7 +159,7 @@ EhBottomSheet {
     EhTitle {
         visible: root.stage === 'done'
         text: qsTr('Inheritance cancelled')
-        fontSize: 26
+        fontSize: app.ehFsBox
         Layout.bottomMargin: 0
     }
     Para {

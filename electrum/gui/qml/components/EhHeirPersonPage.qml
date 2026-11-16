@@ -201,7 +201,7 @@ Item {
                         background: null
                         color: S.ink
                         font.family: BodyFont ? BodyFont : font.family
-                        font.pixelSize: 18
+                        font.pixelSize: app.ehFsText
                         font.bold: true
                         maximumLength: 24
                         inputMethodHints: Qt.ImhNoPredictiveText
@@ -226,7 +226,7 @@ Item {
                                             Math.max(1, Math.floor((col.width - 24 + aFm.averageCharacterWidth) / (aFm.averageCharacterWidth * 5))))
                     font.family: FixedFont
                     font.bold: true
-                    font.pixelSize: 16
+                    font.pixelSize: app.ehFsText
                     lineHeight: 1.3
                     color: S.ink
                     FontMetrics { id: aFm; font: addrL.font }
@@ -283,7 +283,7 @@ Item {
                 text: qsTr('You find it in their wallet, under "Receive".')
                 color: S.muted
                 font.family: BodyFont ? BodyFont : font.family
-                font.pixelSize: 15
+                font.pixelSize: app.ehFsText
             }
 
             EhCaption {
@@ -346,7 +346,7 @@ Item {
                                     color: page.tooHigh ? S.red : S.wineDark
                                     font.family: SerifFont ? SerifFont : font.family
                                     font.weight: Font.ExtraBold
-                                    font.pixelSize: 30
+                                    font.pixelSize: app.ehFsBox
                                     fontSizeMode: Text.HorizontalFit
                                     minimumPixelSize: 18
                                 }
@@ -362,14 +362,14 @@ Item {
                             text: qsTr('Remaining')
                             color: S.muted
                             font.family: BodyFont ? BodyFont : font.family
-                            font.pixelSize: 15
+                            font.pixelSize: app.ehFsText
                         }
                         Label {
                             Layout.alignment: Qt.AlignRight
                             text: Share.remaining(page.maxP, page.percent) + '%'
                             color: S.oliveInk
                             font.family: BodyFont ? BodyFont : font.family
-                            font.pixelSize: 19
+                            font.pixelSize: app.ehFsStrong
                             font.bold: true
                         }
                     }
@@ -456,7 +456,7 @@ Item {
                             text: modelData + '%'
                             color: S.muted
                             font.family: BodyFont ? BodyFont : font.family
-                            font.pixelSize: 13
+                            font.pixelSize: app.ehFsSmall
                         }
                     }
                 }
@@ -479,7 +479,7 @@ Item {
                                   .arg('<b>' + page.others + '%</b>').arg('<b>' + page.maxP + '%</b>')
                     color: bad ? S.wine : S.muted
                     font.family: BodyFont ? BodyFont : font.family
-                    font.pixelSize: 15
+                    font.pixelSize: app.ehFsText
                     font.bold: bad
                 }
             }
@@ -498,7 +498,7 @@ Item {
                         implicitHeight: 52
                         text: modelData === 'ok' ? '✓' : modelData
                         letter: modelData === 'ok'
-                        fontSize: modelData === 'ok' ? 26 : 34
+                        fontSize: modelData === 'ok' ? app.ehFsBox : app.ehFsTitle
                         isDelete: modelData === 'del'
                         onActivated: page.press(modelData)
                     }
@@ -543,7 +543,7 @@ Item {
                 text: top.stepText(page.bal ? page.bal.step : '')
                 color: S.muted
                 font.family: BodyFont ? BodyFont : font.family
-                font.pixelSize: 16
+                font.pixelSize: app.ehFsText
                 font.bold: true
             }
         }

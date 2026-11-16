@@ -77,7 +77,7 @@ Item {
                         textFormat: Text.StyledText
                         color: S.ink
                         font.family: BodyFont ? BodyFont : font.family
-                        font.pixelSize: 16
+                        font.pixelSize: app.ehFsText
                         lineHeight: 1.15
                         text: qsTr('Every address is a "pocket" of the wallet and can hold <b>more coins</b>. If you block an address, the app uses none of its coins.')
                     }
@@ -87,7 +87,7 @@ Item {
                         color: 'transparent'
                         border.width: 2.5
                         border.color: S.brassRing
-                        Label { anchors.centerIn: parent; text: 'i'; color: S.brassRing; font.pixelSize: 20; font.bold: true; font.family: 'serif' }
+                        Label { anchors.centerIn: parent; text: 'i'; color: S.brassRing; font.pixelSize: app.ehFsStrong; font.bold: true; font.family: 'serif' }
                         MouseArea { anchors.fill: parent; anchors.margins: -8; onClicked: page.showBlockInfo() }
                     }
                 }
@@ -146,7 +146,7 @@ Item {
                                                 wrapMode: Text.WordWrap
                                                 textFormat: Text.RichText
                                                 font.family: FixedFont
-                                                font.pixelSize: 17
+                                                font.pixelSize: app.ehFsText
                                                 font.bold: true
                                                 color: S.ink
                                                 text: page.shortAddr(ad.modelData.address)
@@ -156,7 +156,7 @@ Item {
                                                 text: app.ehMoney(page.satsAmount(ad.modelData.sats))
                                                 font.family: SerifFont ? SerifFont : font.family
                                                 font.weight: Font.ExtraBold
-                                                font.pixelSize: 21
+                                                font.pixelSize: app.ehFsStrong
                                                 color: ad.modelData.held ? S.red : S.wineDark
                                                 wrapMode: Text.WrapAnywhere
                                             }
@@ -166,13 +166,13 @@ Item {
                                                 elide: Text.ElideRight
                                                 text: ad.modelData.label
                                                 font.family: BodyFont ? BodyFont : font.family
-                                                font.pixelSize: 16; font.italic: true; color: S.wine
+                                                font.pixelSize: app.ehFsText; font.italic: true; color: S.wine
                                             }
                                             Label {
                                                 Layout.fillWidth: true
                                                 wrapMode: Text.WordWrap
                                                 font.family: BodyFont ? BodyFont : font.family
-                                                font.pixelSize: 16
+                                                font.pixelSize: app.ehFsText
                                                 color: S.muted
                                                 text: ad.modelData['new'] ? qsTr('empty · new')
                                                       : (ad.modelData.coins.length === 0 ? qsTr('empty · used')
@@ -244,14 +244,14 @@ Item {
                                                     Layout.fillWidth: true
                                                     text: app.ehMoney(page.satsAmount(cr.modelData.sats))
                                                     font.family: BodyFont ? BodyFont : font.family
-                                                    font.pixelSize: 17; font.bold: true; color: S.ink
+                                                    font.pixelSize: app.ehFsText; font.bold: true; color: S.ink
                                                     wrapMode: Text.WrapAnywhere
                                                 }
                                                 Label {
                                                     Layout.fillWidth: true
                                                     wrapMode: Text.WordWrap
                                                     font.family: BodyFont ? BodyFont : font.family
-                                                    font.pixelSize: 16
+                                                    font.pixelSize: app.ehFsText
                                                     color: S.muted
                                                     text: ad.modelData.held ? qsTr('blocked (with the address)')
                                                           : (cr.modelData.held ? qsTr('blocked') : 'UTXO ' + page.shortUtxo(cr.modelData.outpoint))

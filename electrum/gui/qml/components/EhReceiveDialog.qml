@@ -122,7 +122,7 @@ ElDialog {
                     Layout.fillWidth: true
                     text: qsTr('You are asking %1').arg(app.ehMoney(request.amount))
                     color: S.oliveInk
-                    font.pixelSize: 17
+                    font.pixelSize: app.ehFsText
                     font.bold: true
                     elide: Text.ElideRight
                 }
@@ -131,7 +131,7 @@ ElDialog {
                     Layout.preferredHeight: 30
                     radius: 15
                     color: infoTap.pressed ? '#5d6f2a' : S.olive
-                    Label { anchors.centerIn: parent; text: 'i'; color: '#ffffff'; font.pixelSize: 18; font.bold: true; font.family: SerifFont ? SerifFont : 'serif' }
+                    Label { anchors.centerIn: parent; text: 'i'; color: '#ffffff'; font.pixelSize: app.ehFsText; font.bold: true; font.family: SerifFont ? SerifFont : 'serif' }
                 }
             }
             TapHandler { id: infoTap; onTapped: dialog.showAmountInfo() }
@@ -141,7 +141,7 @@ ElDialog {
             visible: !dialog.arrived
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
-            font.pixelSize: 17
+            font.pixelSize: app.ehFsText
             color: S.ink
             text: qsTr('Have the person sending you bitcoin scan this QR code.')
         }
@@ -190,7 +190,7 @@ ElDialog {
                 Layout.fillWidth: true
                 text: qsTr('YOUR BITCOIN ADDRESS')
                 color: S.olive
-                font.pixelSize: 16
+                font.pixelSize: app.ehFsText
                 font.bold: true
                 font.letterSpacing: 0.5
                 wrapMode: Text.WordWrap
@@ -205,7 +205,7 @@ ElDialog {
                 text: app.ehAddressRich(dialog._address, S.wineDark, S.highlight)
                 font.family: FixedFont
                 font.bold: true
-                font.pixelSize: 18
+                font.pixelSize: app.ehFsText
                 color: S.ink
                 lineHeight: 1.2
                 TapHandler { onTapped: app.ehZoomAddress(dialog._address, true) }
@@ -223,7 +223,7 @@ ElDialog {
                     Label {
                         Layout.fillWidth: true
                         text: qsTr('tap the address to enlarge')
-                        font.pixelSize: 16
+                        font.pixelSize: app.ehFsText
                         font.bold: true
                         color: S.muted
                         wrapMode: Text.WordWrap
@@ -306,7 +306,7 @@ ElDialog {
                 text: qsTr('You received')
                 font.family: SerifFont ? SerifFont : font.family
                 font.weight: Font.ExtraBold
-                font.pixelSize: 26
+                font.pixelSize: app.ehFsBox
                 color: S.oliveInk
             }
             Label {
@@ -316,7 +316,7 @@ ElDialog {
                 visible: text !== ''
                 font.family: SerifFont ? SerifFont : font.family
                 font.weight: Font.ExtraBold
-                font.pixelSize: 44
+                font.pixelSize: app.ehFsFigure
                 fontSizeMode: Text.HorizontalFit
                 minimumPixelSize: 24
                 color: S.oliveInk
@@ -324,13 +324,13 @@ ElDialog {
             Label {
                 Layout.alignment: Qt.AlignHCenter
                 text: dialog.shownAmount.isEmpty || app.ehEuro(dialog.shownAmount) === '' ? '' : app.ehBtc(dialog.shownAmount)
-                font.pixelSize: 16
+                font.pixelSize: app.ehFsText
                 color: S.muted
             }
             EhInfoBox {
                 id: waitText
                 kind: 'warn'
-                fontSize: 17
+                fontSize: app.ehFsText
                 text: ('<b>' + qsTr('Arriving.') + '</b> ' + qsTr('The payment has left. To be safe you need to wait for <b>at least one confirmation</b>: usually about ten minutes, sometimes more. Meanwhile have a chat or a glass of wine 🍷 in company.'))
                       .replace('🍷', '<img src="' + Qt.resolvedUrl('../../icons/eh_wine.svg') + '" width="18" height="25">')
             }

@@ -18,7 +18,7 @@ Rectangle {
     property string text: ''
     property string icon: kind === 'danger' ? 'eh_warn.svg' : (kind === 'tip' ? 'eh_info_olive.svg' : 'eh_info_brass.svg')
     property bool showIcon: true
-    property real fontSize: 16
+    property real fontSize: app.ehFsText
     property int horizontalAlignment: Text.AlignLeft
     default property alias content: extra.data
     readonly property color ink: kind === 'danger' ? S.wineDark : (kind === 'tip' ? S.oliveInk : S.ink)
@@ -54,7 +54,7 @@ Rectangle {
                 text: root.title
                 color: root.kind === 'tip' ? S.oliveInk : S.wine
                 font.family: BodyFont ? BodyFont : font.family
-                font.pixelSize: 17
+                font.pixelSize: app.ehFsText
                 font.bold: true
                 horizontalAlignment: root.horizontalAlignment
                 wrapMode: Text.WordWrap

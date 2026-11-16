@@ -24,7 +24,7 @@ Item {
         wrapMode: Text.WordWrap
         color: S.ink
         font.family: BodyFont ? BodyFont : font.family
-        font.pixelSize: 16
+        font.pixelSize: app.ehFsText
         lineHeight: 1.15
     }
 

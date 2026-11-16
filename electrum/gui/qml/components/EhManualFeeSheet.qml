@@ -76,7 +76,7 @@ EhBottomSheet {
 
     EhTitle {
         text: qsTr('How much to pay the miner?')
-        fontSize: root.tight ? 22 : 24
+        fontSize: root.tight ? app.ehFsStrong : app.ehFsStrong
         Layout.bottomMargin: 0
     }
     // while the keypad is open the explanation and the link step aside (the keys need the room)
@@ -129,7 +129,7 @@ EhBottomSheet {
                     text: qsTr('Look on mempool.space')
                     color: S.wine
                     font.family: BodyFont ? BodyFont : font.family
-                    font.pixelSize: 18
+                    font.pixelSize: app.ehFsText
                     font.bold: true
                     wrapMode: Text.WordWrap
                 }
@@ -138,7 +138,7 @@ EhBottomSheet {
                     text: qsTr('Take the number of «Medium priority»')
                     color: S.muted
                     font.family: BodyFont ? BodyFont : font.family
-                    font.pixelSize: 16
+                    font.pixelSize: app.ehFsText
                     wrapMode: Text.WordWrap
                 }
             }
@@ -157,7 +157,7 @@ EhBottomSheet {
     Label {
         text: qsTr('FEE')
         color: S.oliveInk
-        font.pixelSize: 14
+        font.pixelSize: app.ehFsSmall
         font.bold: true
         font.letterSpacing: 1
         Layout.topMargin: 0
@@ -186,7 +186,7 @@ EhBottomSheet {
                     radius: 14
                     color: minusTap.pressed ? S.sand : '#efe3c3'
                     opacity: root.rateNum <= 0.1 ? 0.4 : 1
-                    Label { anchors.centerIn: parent; text: '−'; font.pixelSize: 30; font.bold: true; color: S.wine }
+                    Label { anchors.centerIn: parent; text: '−'; font.pixelSize: app.ehFsBox; font.bold: true; color: S.wine }
                     TapHandler { id: minusTap; onTapped: root.step(false) }
                 }
                 Item {
@@ -201,7 +201,7 @@ EhBottomSheet {
                         color: S.wineDark
                         font.family: SerifFont ? SerifFont : font.family
                         font.weight: Font.ExtraBold
-                        font.pixelSize: 30
+                        font.pixelSize: app.ehFsBox
                         fontSizeMode: Text.HorizontalFit
                         minimumPixelSize: 18
                     }
@@ -213,14 +213,14 @@ EhBottomSheet {
                     Layout.fillHeight: true
                     radius: 14
                     color: plusTap.pressed ? S.sand : '#efe3c3'
-                    Label { anchors.centerIn: parent; text: '+'; font.pixelSize: 30; font.bold: true; color: S.wine }
+                    Label { anchors.centerIn: parent; text: '+'; font.pixelSize: app.ehFsBox; font.bold: true; color: S.wine }
                     TapHandler { id: plusTap; onTapped: root.step(true) }
                 }
             }
         }
         Label {
             text: 'sat/vB'
-            font.pixelSize: 16
+            font.pixelSize: app.ehFsText
             font.bold: true
             color: S.muted
         }
@@ -259,7 +259,7 @@ EhBottomSheet {
                 width: parent.width
                 wrapMode: Text.WordWrap
                 textFormat: Text.StyledText
-                font.pixelSize: 16
+                font.pixelSize: app.ehFsText
                 color: S.ink
                 text: qsTr('This sending costs about %1').arg('<b>' + root.costText() + '</b>')
             }
@@ -268,7 +268,7 @@ EhBottomSheet {
                 visible: root.slowNote
                 width: parent.width
                 wrapMode: Text.WordWrap
-                font.pixelSize: 16
+                font.pixelSize: app.ehFsText
                 color: S.waitInk
                 text: qsTr('Under 1 sat/vB it can take a long time to arrive.')
             }

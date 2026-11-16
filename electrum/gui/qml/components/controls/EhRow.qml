@@ -68,7 +68,7 @@ Item {
                 text: root.text
                 color: S.ink
                 font.family: BodyFont ? BodyFont : font.family
-                font.pixelSize: 17
+                font.pixelSize: app.ehFsText
                 font.bold: true
                 lineHeight: 1.1
                 wrapMode: Text.WordWrap
@@ -80,7 +80,7 @@ Item {
                 text: root.hint
                 color: S.muted
                 font.family: BodyFont ? BodyFont : font.family
-                font.pixelSize: 16
+                font.pixelSize: app.ehFsText
                 lineHeight: 1.1
                 wrapMode: Text.WordWrap
             }
@@ -94,7 +94,7 @@ Item {
             text: root.value
             color: S.muted
             font.family: BodyFont ? BodyFont : font.family
-            font.pixelSize: 16
+            font.pixelSize: app.ehFsText
             font.weight: Font.DemiBold
             elide: Text.ElideRight
         }
@@ -122,7 +122,7 @@ Item {
             text: '›'
             color: S.wine
             font.family: BodyFont ? BodyFont : font.family
-            font.pixelSize: 30
+            font.pixelSize: app.ehFsBox
             font.bold: true
         }
     }

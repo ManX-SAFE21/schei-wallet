@@ -117,7 +117,7 @@ WizardComponent {
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
             font.family: BodyFont ? BodyFont : font.family
-            font.pixelSize: 19
+            font.pixelSize: app.ehFsStrong
             lineHeight: 1.2
             color: S.ink
             text: root.phase === 'repeat' ? qsTr('Type the same 4 numbers again.')

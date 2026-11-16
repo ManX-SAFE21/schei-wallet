@@ -76,7 +76,7 @@ Item {
                 anchors.fill: parent; anchors.leftMargin: 14; anchors.rightMargin: 14
                 verticalAlignment: TextInput.AlignVCenter
                 font.family: BodyFont ? BodyFont : font.family
-                font.pixelSize: 18
+                font.pixelSize: app.ehFsText
                 color: S.ink
                 selectionColor: S.highlight
                 selectedTextColor: S.wineDark
@@ -85,7 +85,7 @@ Item {
                 text: page.shownName(ed.site)
                 Label { anchors.verticalCenter: parent.verticalCenter; visible: nIn.text === '' && !nIn.activeFocus
                         text: qsTr('for example: my Umbrel'); color: S.muted
-                        font.family: BodyFont ? BodyFont : font.family; font.pixelSize: 17 }
+                        font.family: BodyFont ? BodyFont : font.family; font.pixelSize: app.ehFsText }
             }
         }
         EhCaption { text: qsTr('ADDRESS'); Layout.topMargin: 4; Layout.bottomMargin: 0 }
@@ -97,7 +97,7 @@ Item {
                 anchors.fill: parent; anchors.leftMargin: 14; anchors.rightMargin: 14
                 verticalAlignment: TextInput.AlignVCenter
                 font.family: FixedFont
-                font.pixelSize: 17
+                font.pixelSize: app.ehFsText
                 color: S.ink
                 selectionColor: S.highlight
                 selectedTextColor: S.wineDark
@@ -106,7 +106,7 @@ Item {
                 text: ed.site.url
                 Component.onCompleted: cursorPosition = 0      // show the start of a long address
                 Label { anchors.verticalCenter: parent.verticalCenter; visible: uIn.text === '' && !uIn.activeFocus
-                        text: 'http://umbrel.local:3006'; color: S.muted; font.family: FixedFont; font.pixelSize: 17 }
+                        text: 'http://umbrel.local:3006'; color: S.muted; font.family: FixedFont; font.pixelSize: app.ehFsText }
             }
         }
         EhInfoBox {
@@ -171,7 +171,7 @@ Item {
                 Layout.fillWidth: true
                 wrapMode: Text.WordWrap
                 font.family: BodyFont ? BodyFont : font.family
-                font.pixelSize: 16
+                font.pixelSize: app.ehFsText
                 lineHeight: 1.1
                 color: S.muted
                 text: qsTr('Tap a site to choose it. The pencil changes its name and address.')
@@ -223,7 +223,7 @@ Item {
                                             text: page.shownName(sr.modelData)
                                             color: S.ink
                                             font.family: BodyFont ? BodyFont : font.family
-                                            font.pixelSize: 17
+                                            font.pixelSize: app.ehFsText
                                             font.bold: true
                                         }
                                         Rectangle {
@@ -235,7 +235,7 @@ Item {
                                             border.color: S.olive
                                             Label { id: recL; anchors.centerIn: parent; text: qsTr('recommended')
                                                     font.family: BodyFont ? BodyFont : font.family
-                                                    font.pixelSize: 16; font.bold: true; color: S.oliveInk }
+                                                    font.pixelSize: app.ehFsText; font.bold: true; color: S.oliveInk }
                                         }
                                     }
                                     Label {
@@ -245,7 +245,7 @@ Item {
                                         elide: Text.ElideRight
                                         lineHeight: 1.05
                                         font.family: BodyFont ? BodyFont : font.family
-                                        font.pixelSize: 16
+                                        font.pixelSize: app.ehFsText
                                         color: S.muted
                                         text: sr.modelData.id === 'mine' && sr.modelData.url === ''
                                               ? qsTr('for example Umbrel: write the address of your mempool')
@@ -301,12 +301,12 @@ Item {
                 text: '<b>' + qsTr('Privacy.') + '</b> ' + qsTr('The site you open sees which movement you are looking at and where you connect from.')
                 Label {
                     Layout.fillWidth: true; wrapMode: Text.WordWrap; textFormat: Text.StyledText
-                    font.family: BodyFont ? BodyFont : font.family; font.pixelSize: 16; lineHeight: 1.15; color: S.ink
+                    font.family: BodyFont ? BodyFont : font.family; font.pixelSize: app.ehFsText; lineHeight: 1.15; color: S.ink
                     text: '• ' + qsTr('With <b>your node</b> nobody knows it: everything stays at your home.')
                 }
                 Label {
                     Layout.fillWidth: true; wrapMode: Text.WordWrap; textFormat: Text.StyledText
-                    font.family: BodyFont ? BodyFont : font.family; font.pixelSize: 16; lineHeight: 1.15; color: S.ink
+                    font.family: BodyFont ? BodyFont : font.family; font.pixelSize: app.ehFsText; lineHeight: 1.15; color: S.ink
                     text: '• ' + qsTr('With a public site you can protect yourself with a <b>VPN</b> or with <b>Tor</b> (Orbot or Tor Browser app): the site sees the movement, but does not know who you are.')
                 }
             }

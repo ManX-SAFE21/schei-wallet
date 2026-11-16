@@ -90,7 +90,7 @@ WizardComponent {
                 text: qsTr('Welcome')
                 color: S.wine
                 font.family: SerifFont ? SerifFont : font.family
-                font.pixelSize: 34
+                font.pixelSize: app.ehFsTitle
                 font.weight: Font.ExtraBold
                 wrapMode: Text.WordWrap
             }
@@ -102,7 +102,7 @@ WizardComponent {
                 text: qsTr('This is your Bitcoin wallet.')
                 color: S.ink
                 font.family: BodyFont ? BodyFont : font.family
-                font.pixelSize: 22
+                font.pixelSize: app.ehFsStrong
                 lineHeight: 1.25
                 wrapMode: Text.WordWrap
             }
