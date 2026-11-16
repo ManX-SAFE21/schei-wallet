@@ -1,8 +1,13 @@
 // Easy Heirs (schȅi): inheritance wizard, screen 3 "New person" (still step 1 of 4).
-// Name, bitcoin address (QR or paste, never typed) and the share: 25 / 40 / 50 % or another
-// number 1-100 (the default is what is left to reach 100). Save = bal.heirSave(); when an
-// existing heir is opened (oldName set) also "Remove this person" = bal.heirDelete().
-// "Bottega" look as the preview anteprima/eredita-semplice.html, screen 3.
+// Name, bitcoin address (QR or paste, never typed) and the share (owner Q7, 16/11, preview
+// anteprima/slider-percentuale-esempi.html): a slider 0-100 % in steps of 5 with a brass knob;
+// the part the OTHER heirs already have is grey at the right end and cannot be reached
+// (max = 100 - others; editing an heir its own old share is free again). The number box above
+// (pen ✎) opens the keypad: any whole number 1-100 (33 too) is kept, the slider goes near it.
+// Over the max: red box, Save off. Nothing left: grey slider at 0, Save off. A new heir starts
+// from what is left (the first one from 0). Rules in controls/EhShare.js (tests/qml).
+// Save = bal.heirSave(); when an existing heir is opened (oldName set) also "Remove this
+// person" = bal.heirDelete(). "Bottega" look as the preview anteprima/eredita-semplice.html.
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
@@ -12,6 +17,7 @@ import org.electrum 1.0
 
 import "controls"
 import "controls/EhStyle.js" as S
+import "controls/EhShare.js" as Share
 
 Item {
     id: page
@@ -29,13 +35,53 @@ Item {
     readonly property var bal: AppController.plugin('bal')
     readonly property var st: bal ? bal.state : ({})
     readonly property bool busy: bal ? bal.busy : false
-    readonly property var fixed: [25, 40, 50]
 
     property string address: oldAddress
     property string addrError: ''
     property string error: ''
     property int percent: 0
-    property bool other: false
+    // the share: what the others have, the most this heir can have, what is typed on the keypad
+    readonly property int others: Share.othersTotal(st && st.heirs ? st.heirs : [], oldName)
+    readonly property int maxP: Share.maxFor(others)
+    readonly property bool nothingLeft: maxP <= 0
+    readonly property bool tooHigh: !nothingLeft && percent > maxP
+    property string typed: ''
+    property bool padOpen: false
+    // the knob never goes into the grey part: a number typed over the max leaves it at the max
+    onPercentChanged: if (!slider.pressed) slider.value = Math.min(percent, maxP)
+    // the share is under the fold on a phone: bring it into view when the address is chosen,
+    // when an heir is opened to be changed and when nothing is left (Save off: say why)
+    onAddressChanged: if (address !== '') shareScroll.restart()
+    Timer {
+        id: shareScroll
+        interval: 120
+        onTriggered: {
+            var want = shareSheet.y + shareSheet.height + 12 - flick.height
+            if (want > flick.contentY) flick.contentY = Math.min(want, Math.max(0, flick.contentHeight - flick.height))
+        }
+    }
+    // the keypad: the typed number is kept as it is (33), the slider goes near it
+    function press(k) {
+        if (k === 'ok') { padOpen = false; return }
+        typed = Share.press(typed, k)
+        percent = Share.typedValue(typed)
+        error = ''
+    }
+    function togglePad() {
+        if (nothingLeft || busy) return
+        typed = ''
+        padOpen = !padOpen
+        if (padOpen) padScroll.restart()
+    }
+    Timer {      // the keypad opened: scroll so that its last row is in view
+        id: padScroll
+        interval: 80
+        onTriggered: {
+            var p = pad.mapToItem(col, 0, 0)
+            var want = p.y + pad.height + 10 - flick.height
+            if (want > flick.contentY) flick.contentY = Math.min(want, Math.max(0, flick.contentHeight - flick.height))
+        }
+    }
     // an error appears at the bottom of the page: scroll so that it is in view
     // (after the layout has placed the error box)
     onErrorChanged: if (error !== '') errorScroll.restart()
@@ -47,18 +93,11 @@ Item {
 
     Rectangle { anchors.fill: parent; color: S.parch }
 
-    // what the others already have: the default share is what is left to reach 100
-    function othersTotal() {
-        var h = (st && st.heirs) ? st.heirs : []
-        var t = 0
-        for (var i = 0; i < h.length; i++) if (h[i].name !== oldName) t += h[i].percent
-        return t
-    }
+    // a new heir starts from what is left (the first one from 0); editing keeps the share
     Component.onCompleted: {
-        var p = oldName !== '' ? oldPercent : Math.max(0, 100 - othersTotal())
-        percent = p
-        other = fixed.indexOf(p) < 0
-        if (other && p > 0) otherField.text = '' + p
+        percent = Share.startFor(oldName !== '', oldPercent, others)
+        slider.value = Math.min(percent, maxP)
+        if (oldName !== '' || nothingLeft) shareScroll.restart()
     }
 
     // another heir already has this name (trimmed, any case): saving it is refused
@@ -86,7 +125,7 @@ Item {
     }
 
     readonly property bool canSave: !busy && nameField.text.trim() !== '' && address !== ''
-                                    && addrError === '' && percent >= 1 && percent <= 100
+                                    && addrError === '' && Share.canSave(percent, maxP)
 
     Connections {
         target: page.bal
@@ -109,7 +148,8 @@ Item {
         anchors.bottomMargin: 8
         contentHeight: col.implicitHeight + 10
         boundsBehavior: Flickable.StopAtBounds
-        interactive: contentHeight > height + 1
+        // the page must not steal the finger from the slider
+        interactive: !slider.pressed && contentHeight > height + 1
         clip: true
 
         ColumnLayout {
@@ -246,79 +286,221 @@ Item {
                 font.pixelSize: 15
             }
 
-            EhCaption { text: qsTr('How much they receive'); Layout.topMargin: 6; Layout.bottomMargin: -4 }
-            EhSegmented {
-                model: ['25%', '40%', '50%', qsTr('Other')]
-                currentIndex: page.other ? 3 : page.fixed.indexOf(page.percent)
-                onActivated: (i) => {
-                    page.error = ''
-                    if (i === 3) {
-                        page.other = true
-                        var n = parseInt(otherField.text)
-                        page.percent = isNaN(n) ? 0 : n
-                        otherField.forceActiveFocus()
-                    } else {
-                        page.other = false
-                        page.percent = page.fixed[i]
-                    }
-                }
+            EhCaption {
+                text: qsTr('How much they receive')
+                tail: qsTr('· tap ✎ to write it')
+                Layout.topMargin: 6
+                Layout.bottomMargin: -4
             }
-            // "Other": a number 1-100
-            Item {
-                visible: page.other
-                Layout.fillWidth: true
-                Layout.preferredHeight: 63
-                Rectangle {
-                    y: 3
-                    width: otherBox.width
-                    height: otherBox.height
-                    radius: otherBox.radius
-                    color: S.edgeShadow
-                }
-                Rectangle {
-                    id: otherBox
-                    width: parent.width
-                    height: 60
-                    radius: 16
-                    color: S.paper
-                    border.width: otherField.activeFocus ? 2.5 : 1.5
-                    border.color: otherField.activeFocus ? S.wine : S.edge
-                    RowLayout {
-                        anchors.fill: parent
-                        anchors.leftMargin: 14
-                        anchors.rightMargin: 14
-                        spacing: 6
-                        TextField {
-                            id: otherField
-                            Layout.fillWidth: true
-                            Layout.fillHeight: true
-                            topPadding: 0
-                            bottomPadding: 0
-                            leftPadding: 0
-                            rightPadding: 0
-                            verticalAlignment: TextInput.AlignVCenter
-                            horizontalAlignment: TextInput.AlignRight
-                            background: null
-                            color: S.ink
-                            font.family: BodyFont ? BodyFont : font.family
-                            font.pixelSize: 18
-                            font.bold: true
-                            inputMethodHints: Qt.ImhDigitsOnly
-                            validator: IntValidator { bottom: 1; top: 100 }
-                            maximumLength: 3
-                            onTextChanged: {
-                                var n = parseInt(text)
-                                page.percent = isNaN(n) ? 0 : n
-                                page.error = ''
+            EhSheet {
+                id: shareSheet
+                topPadding: 10
+                bottomPadding: 10
+                spacing: 0
+                // the number (pen: tap to write it) and, on the right, what remains
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 10
+                    Item {
+                        id: numBox
+                        Layout.preferredWidth: 138
+                        Layout.preferredHeight: 57
+                        opacity: page.nothingLeft ? 0.55 : 1
+                        Rectangle {      // hard shadow
+                            y: 3
+                            width: numFace.width
+                            height: numFace.height
+                            radius: numFace.radius
+                            color: S.edgeShadow
+                        }
+                        Rectangle {
+                            id: numFace
+                            width: parent.width
+                            height: 54
+                            radius: 14
+                            color: page.tooHigh ? S.dangerBg : (numTap.pressed ? S.sand : 'white')
+                            border.width: page.padOpen || page.tooHigh ? 2.5 : 2
+                            border.color: page.tooHigh ? S.red : S.wine
+                            RowLayout {
+                                anchors.fill: parent
+                                anchors.leftMargin: 8
+                                anchors.rightMargin: 10
+                                spacing: 6
+                                Rectangle {
+                                    Layout.preferredWidth: 32
+                                    Layout.preferredHeight: 32
+                                    radius: 8
+                                    color: '#f3e4c4'
+                                    Image {
+                                        anchors.centerIn: parent
+                                        source: Qt.resolvedUrl('../../icons/eh_pen_wine.svg')
+                                        sourceSize.width: 20
+                                        sourceSize.height: 20
+                                    }
+                                }
+                                Label {
+                                    id: numLabel
+                                    Layout.fillWidth: true
+                                    horizontalAlignment: Text.AlignRight
+                                    text: (page.padOpen && page.typed !== '' ? page.typed : page.percent) + '%'
+                                    color: page.tooHigh ? S.red : S.wineDark
+                                    font.family: SerifFont ? SerifFont : font.family
+                                    font.weight: Font.ExtraBold
+                                    font.pixelSize: 30
+                                    fontSizeMode: Text.HorizontalFit
+                                    minimumPixelSize: 18
+                                }
                             }
                         }
+                        TapHandler { id: numTap; onTapped: page.togglePad() }
+                    }
+                    Item { Layout.fillWidth: true }
+                    ColumnLayout {
+                        spacing: 0
                         Label {
-                            text: '%'
-                            color: S.ink
+                            Layout.alignment: Qt.AlignRight
+                            text: qsTr('Remaining')
+                            color: S.muted
                             font.family: BodyFont ? BodyFont : font.family
-                            font.pixelSize: 18
+                            font.pixelSize: 15
+                        }
+                        Label {
+                            Layout.alignment: Qt.AlignRight
+                            text: Share.remaining(page.maxP, page.percent) + '%'
+                            color: S.oliveInk
+                            font.family: BodyFont ? BodyFont : font.family
+                            font.pixelSize: 19
                             font.bold: true
                         }
+                    }
+                }
+                // 0-100 in steps of 5; the part of the others is grey and cannot be reached
+                Slider {
+                    id: slider
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 54
+                    Layout.topMargin: 4
+                    from: 0
+                    to: 100
+                    stepSize: Share.STEP
+                    snapMode: Slider.SnapAlways
+                    touchDragThreshold: 2
+                    enabled: !page.nothingLeft && !page.busy
+                    readonly property real knob: 44
+                    onMoved: {
+                        var v = Share.snap(value, page.maxP)
+                        if (value !== v) value = v
+                        page.padOpen = false
+                        page.typed = ''
+                        page.error = ''
+                        page.percent = v
+                    }
+                    onPressedChanged: if (!pressed) value = Math.min(page.percent, page.maxP)
+                    background: Item {
+                        x: slider.leftPadding + slider.knob / 2
+                        y: slider.topPadding + slider.availableHeight / 2 - height / 2
+                        width: slider.availableWidth - slider.knob
+                        height: 12
+                        Rectangle {      // the sand track
+                            anchors.fill: parent
+                            radius: 6
+                            color: S.sand
+                            border.width: 1
+                            border.color: S.edge
+                        }
+                        Rectangle {      // this heir: olive
+                            visible: !page.nothingLeft
+                            width: Math.max(0, Math.min(parent.width, parent.width * slider.visualPosition))
+                            height: parent.height
+                            radius: 6
+                            color: S.olive
+                        }
+                        Rectangle {      // the others: grey, not reachable
+                            x: parent.width * page.maxP / 100
+                            width: parent.width - x
+                            height: parent.height
+                            radius: 6
+                            color: '#cfc4b2'
+                            border.width: 1
+                            border.color: '#b9ad99'
+                        }
+                    }
+                    // the brass knob of the app's sliders (fee slider), grey when nothing is left
+                    handle: Rectangle {
+                        x: slider.leftPadding + slider.visualPosition * (slider.availableWidth - width)
+                        y: slider.topPadding + slider.availableHeight / 2 - height / 2
+                        width: slider.knob
+                        height: slider.knob
+                        radius: slider.knob / 2
+                        border.width: 2
+                        border.color: slider.enabled ? S.brassRing : S.offEdge
+                        gradient: Gradient {
+                            GradientStop { position: 0.0; color: slider.enabled ? S.brassLight : '#f2eee6' }
+                            GradientStop { position: 0.55; color: slider.enabled ? S.brass : S.offBg }
+                            GradientStop { position: 1.0; color: slider.enabled ? S.brassDark : '#cfc8bb' }
+                        }
+                    }
+                }
+                // 0% 25% 50% 75% 100% under the track
+                Item {
+                    Layout.fillWidth: true
+                    Layout.topMargin: -8
+                    Layout.preferredHeight: 18
+                    Repeater {
+                        model: [0, 25, 50, 75, 100]
+                        delegate: Label {
+                            required property int modelData
+                            readonly property real c: slider.leftPadding + slider.knob / 2
+                                                      + (slider.availableWidth - slider.knob) * modelData / 100
+                            x: Math.max(0, Math.min(parent.width - width, c - width / 2))
+                            text: modelData + '%'
+                            color: S.muted
+                            font.family: BodyFont ? BodyFont : font.family
+                            font.pixelSize: 13
+                        }
+                    }
+                }
+                Label {
+                    id: shareNote
+                    Layout.fillWidth: true
+                    Layout.topMargin: 6
+                    wrapMode: Text.WordWrap
+                    textFormat: Text.StyledText
+                    readonly property bool bad: page.nothingLeft || page.tooHigh
+                    text: page.nothingLeft
+                          ? qsTr("%1: the other heirs already have 100%. Go back and lower someone's share.")
+                                .arg('<b>' + qsTr('Nothing is left') + '</b>')
+                          : page.tooHigh
+                            ? qsTr('At most %1: the other heirs already have %2.')
+                                .arg('<b>' + page.maxP + '%</b>').arg(page.others + '%')
+                            : page.others <= 0
+                              ? qsTr('This is the first heir: they can have up to 100%.')
+                              : qsTr('The other heirs already have %1: this one can get at most %2.')
+                                  .arg('<b>' + page.others + '%</b>').arg('<b>' + page.maxP + '%</b>')
+                    color: bad ? S.wine : S.muted
+                    font.family: BodyFont ? BodyFont : font.family
+                    font.pixelSize: 15
+                    font.bold: bad
+                }
+            }
+            // the keypad of the app (as the fee sheet): a whole number 1-100
+            GridLayout {
+                id: pad
+                visible: page.padOpen
+                Layout.fillWidth: true
+                columns: 3
+                rowSpacing: 8
+                columnSpacing: 8
+                Repeater {
+                    model: ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'ok', '0', 'del']
+                    delegate: EhKey {
+                        required property string modelData
+                        implicitHeight: 52
+                        text: modelData === 'ok' ? '✓' : modelData
+                        letter: modelData === 'ok'
+                        fontSize: modelData === 'ok' ? 26 : 34
+                        isDelete: modelData === 'del'
+                        onActivated: page.press(modelData)
                     }
                 }
             }

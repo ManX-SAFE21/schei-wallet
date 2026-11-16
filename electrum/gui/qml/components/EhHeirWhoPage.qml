@@ -10,6 +10,7 @@ import QtQuick.Controls.Material
 
 import "controls"
 import "controls/EhStyle.js" as S
+import "controls/EhShare.js" as Share
 
 Item {
     id: page
@@ -38,6 +39,15 @@ Item {
         function onDone(op, result) { if (op === 'refresh') page.error = '' }
     }
     Component.onCompleted: if (bal && !bal.busy) bal.refresh()
+    // owner Q7: the total and its message (what is left to give) must be seen: on a phone they
+    // can fall under the fold, so the list scrolls to its end when the heirs change
+    onHeirsChanged: endScroll.restart()
+    onTotalChanged: endScroll.restart()
+    Timer {
+        id: endScroll
+        interval: 120
+        onTriggered: flick.contentY = Math.max(0, flick.contentHeight - flick.height)
+    }
 
     function openPerson(h) {
         app.stack.push(Qt.resolvedUrl('EhHeirPersonPage.qml'), h
@@ -167,13 +177,14 @@ Item {
                 }
             }
 
+            // owner Q7: with 5 heirs it stays in view, off, «(già 5)»
             EhStitchButton {
-                visible: page.heirs.length < page.maxHeirs
+                readonly property bool full: page.heirs.length >= page.maxHeirs
                 Layout.topMargin: 4
                 kind: 'paper'
                 icon: 'eh_plus.svg'
-                text: qsTr('Add a person')
-                enabled: !page.busy
+                text: qsTr('Add a person') + (full ? ' ' + qsTr('(already 5)') : '')
+                enabled: !page.busy && !full
                 onClicked: page.openPerson(null)
             }
 
@@ -210,10 +221,18 @@ Item {
                 }
             }
 
+            // owner Q7: 100 = go on; less = what is left to give; more (old data) = how much too much
             EhInfoBox {
-                visible: page.heirs.length > 0 && page.total !== 100
-                kind: 'danger'
-                text: qsTr('The total must be 100%.')
+                visible: page.heirs.length > 0
+                readonly property string sk: Share.summaryKind(page.total)
+                kind: sk === 'ok' ? 'tip' : 'danger'
+                text: sk === 'ok'
+                      ? qsTr('The total is 100%: you can go on.')
+                      : sk === 'missing'
+                        ? qsTr('There is %1 left to give. Add a person or tap an heir to change their share.')
+                            .arg('<b>' + (100 - page.total) + '%</b>')
+                        : qsTr('There is %1 too much: the total must be 100%. Tap an heir to lower their share.')
+                            .arg('<b>' + (page.total - 100) + '%</b>')
             }
             EhInfoBox {
                 visible: page.error !== ''

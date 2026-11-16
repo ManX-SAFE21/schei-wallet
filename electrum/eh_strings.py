@@ -981,6 +981,18 @@ STRINGS = {
         'Yes, continue anyway': 'Sì, continua lo stesso',
         'Fine, continue': 'Va bene, continua',
         'Change the number': 'Cambia il numero',
+        # owner Q7 (16/11): «Quanto riceve» with the slider, summary «Chi riceve?»
+        '· tap ✎ to write it': '· tocca ✎ per scriverlo',
+        'Remaining': 'Restano',
+        'This is the first heir: they can have up to 100%.': 'È il primo erede: può avere fino al 100%.',
+        'The other heirs already have %1: this one can get at most %2.': 'Gli altri eredi hanno già %1: questo può arrivare al massimo a %2.',
+        'At most %1: the other heirs already have %2.': 'Al massimo %1: gli altri eredi hanno già %2.',
+        'Nothing is left': 'Non resta niente',
+        "%1: the other heirs already have 100%. Go back and lower someone's share.": '%1: gli altri eredi hanno già il 100%. Torna indietro e abbassa la parte di qualcuno.',
+        'There is %1 left to give. Add a person or tap an heir to change their share.': 'Restano %1 da dare. Aggiungi una persona o tocca un erede per cambiare la sua parte.',
+        'There is %1 too much: the total must be 100%. Tap an heir to lower their share.': 'Ci sono %1 di troppo: il totale deve fare 100%. Tocca un erede per abbassare la sua parte.',
+        'The total is 100%: you can go on.': 'Il totale fa 100%: puoi andare avanti.',
+        '(already 5)': '(già 5)',
     },
     'vec_IT': {
         'waiting': 'in atesa',
@@ -1941,6 +1953,18 @@ STRINGS = {
         'Yes, continue anyway': 'Sì, va vanti istesso',
         'Fine, continue': 'Va ben, va vanti',
         'Change the number': 'Cambia el numaro',
+        # owner Q7 (16/11): «Quanto riceve» with the slider, summary «Chi riceve?»
+        '· tap ✎ to write it': '· tocca ✎ par scrivarlo',
+        'Remaining': 'Resta',
+        'This is the first heir: they can have up to 100%.': "L'è el primo erede: el pol aver fin al 100%.",
+        'The other heirs already have %1: this one can get at most %2.': 'Chealtri eredi i ga za %1: questo el pol rivar al massimo a %2.',
+        'At most %1: the other heirs already have %2.': 'Al massimo %1: chealtri eredi i ga za %2.',
+        'Nothing is left': 'No resta gnente',
+        "%1: the other heirs already have 100%. Go back and lower someone's share.": '%1: chealtri eredi i ga za el 100%. Torna indrìo e sbassa la parte de qualcun.',
+        'There is %1 left to give. Add a person or tap an heir to change their share.': 'Resta %1 da dar. Zonta na persona o tocca un erede par cambiar la so parte.',
+        'There is %1 too much: the total must be 100%. Tap an heir to lower their share.': 'Ghe xe %1 de massa: el totale el ga da far 100%. Tocca un erede par sbassar la so parte.',
+        'The total is 100%: you can go on.': 'El totale el fa 100%: te pol ndar vanti.',
+        '(already 5)': '(za 5)',
     },
 }
 
