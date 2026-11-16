@@ -22,7 +22,9 @@ ApplicationWindow
     readonly property bool ehTest: Network.isTestNet
     readonly property int ehTestBand: ehTest ? 22 : 0
     readonly property int statusBarHeight: (AppController ? AppController.getStatusBarHeight() : 0) + ehTestBand
-    readonly property int navigationBarHeight: AppController ? AppController.getNavigationBarHeight() : 0
+    // a property (not a call): on Android 14 without edge-to-edge the Qt window can end under the
+    // Android keys; AppController measures it once the window is laid out (owner 16/11, Galaxy A15)
+    readonly property int navigationBarHeight: AppController ? AppController.navigationBarHeight : 0
 
     // dimensions ignored on android
     width: 480

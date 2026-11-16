@@ -80,6 +80,7 @@ class QEAppController(BaseCrashReporter, QObject):
     wantCloseChanged = pyqtSignal()
     pluginLoaded = pyqtSignal(str)
     startupFinished = pyqtSignal()
+    systemBarsChanged = pyqtSignal()
 
     def __init__(self, qeapp: 'ElectrumQmlApplication', plugins: 'Plugins'):
         BaseCrashReporter.__init__(self, None, None, None)
@@ -114,6 +115,18 @@ class QEAppController(BaseCrashReporter, QObject):
             self.bindIntent()
 
         self._want_close = False
+
+        # Schȅi (owner 16/11, Galaxy A15 = Android 14): without edge-to-edge the Qt window can
+        # still be laid out taller than the visible area, its bottom under the Android keys,
+        # while getNavigationBarHeight() said 0. The Qt window gets its size after main.qml is
+        # loaded, so look again for a while and tell QML (navigationBarHeight) when it changes.
+        self._navBarDp = None
+        self._barsChecks = 0
+        self._barsTimer = QTimer(self)
+        self._barsTimer.setInterval(500)  # msec
+        self._barsTimer.timeout.connect(self._onBarsTimer)
+        if self.isAndroid() and not self.enforcesEdgeToEdge():
+            self._barsTimer.start()
 
     def on_wallet_loaded(self):
         qewallet = QEDaemon.instance.currentWallet
@@ -505,6 +518,8 @@ class QEAppController(BaseCrashReporter, QObject):
     @profiler(min_threshold=0.02)
     def _getSystemBarHeight(self, bar_type: str) -> int:
         if not self.enforcesEdgeToEdge():
+            if bar_type == 'navigation' and self.isAndroid():
+                return self._qtWindowUnderKeysDp()
             return 0
         assert systemSdkVersion >= 30, \
             f"Android WindowInsets unavailable on {systemSdkVersion=}"
@@ -543,6 +558,54 @@ class QEAppController(BaseCrashReporter, QObject):
     @pyqtSlot(result=int)
     def getNavigationBarHeight(self) -> int:
         return self._getSystemBarHeight('navigation')
+
+    def _qtWindowUnderKeysDp(self) -> int:
+        """Not edge-to-edge (Android < 15): how much of the Qt window is below the visible
+        area, i.e. under the Android keys (dp). Seen on a Galaxy A15 with Android 14: the
+        QtWindow is 2260 px tall inside a QtRootLayout of 2125 px (keys 135 px = 48 dp)."""
+        try:
+            group = 'android.view.ViewGroup'
+            content = jview.findViewById(16908290)  # android.R.id.content
+            if content is None:
+                return 0
+            content = cast(group, content)
+            if content.getChildCount() == 0:
+                return 0
+            root = cast(group, content.getChildAt(0))  # QtRootLayout
+            root_h = root.getHeight()
+            if root_h <= 0:
+                return 0
+            over = 0
+            for i in range(root.getChildCount()):
+                v = root.getChildAt(i)  # QtWindow
+                over = max(over, v.getTop() + v.getHeight() - root_h)
+            if over <= 0:
+                return 0
+            density = jpythonActivity.getResources().getDisplayMetrics().density
+            return max(0, int(over / density + 0.99))
+        except Exception as e:
+            self.logger.debug(f"_qtWindowUnderKeysDp failed: {e!r}")
+            return 0
+
+    def _onBarsTimer(self):
+        self._barsChecks += 1
+        if self._barsChecks >= 30:  # 15 s after the start: the layout is done
+            self._barsTimer.stop()
+        self.recheckSystemBars()
+
+    @pyqtSlot()
+    def recheckSystemBars(self):
+        nav = self._getSystemBarHeight('navigation')
+        if nav != self._navBarDp:
+            self._navBarDp = nav
+            self.logger.info(f"navigation bar height: {nav} dp")
+            self.systemBarsChanged.emit()
+
+    @pyqtProperty(int, notify=systemBarsChanged)
+    def navigationBarHeight(self) -> int:
+        if self._navBarDp is None:
+            self._navBarDp = self._getSystemBarHeight('navigation')
+        return self._navBarDp
 
 
 class ElectrumQmlApplication(QGuiApplication):

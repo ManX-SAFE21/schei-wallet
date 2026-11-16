@@ -1,0 +1,89 @@
+# Schȅi (owner 16/11, Galaxy A15 = Android 14, not edge-to-edge): the Qt window was 2260 px tall
+# in a visible area of 2125 px, its bottom 48 dp under the Android keys, while
+# getNavigationBarHeight() said 0, so every page and sheet ended under the keys.
+# QEAppController now measures that part and tells QML (navigationBarHeight).
+import types
+from unittest import TestCase, mock
+
+from electrum.gui.qml import qeapp
+
+
+class _View:
+    def __init__(self, top=0, height=0, children=()):
+        self._top, self._h, self._c = top, height, list(children)
+
+    def getTop(self): return self._top
+    def getHeight(self): return self._h
+    def getChildCount(self): return len(self._c)
+    def getChildAt(self, i): return self._c[i]
+
+
+def _android(content, density=2.8125):
+    decor = types.SimpleNamespace(findViewById=lambda _id: content)
+    metrics = types.SimpleNamespace(density=density)
+    activity = types.SimpleNamespace(getResources=lambda: types.SimpleNamespace(getDisplayMetrics=lambda: metrics))
+    return mock.patch.multiple(qeapp, create=True, jview=decor, jpythonActivity=activity, cast=lambda _cls, o: o)
+
+
+def _me():
+    return types.SimpleNamespace(logger=mock.Mock())
+
+
+class TestNavBarUnderKeys(TestCase):
+
+    def test_galaxy_a15(self):
+        # A15: QtRootLayout 2125 px, QtWindow 2260 px, density 450 dpi -> 48 dp under the keys
+        content = _View(height=2125, children=[_View(height=2125, children=[_View(0, 2260)])])
+        with _android(content):
+            self.assertEqual(48, qeapp.QEAppController._qtWindowUnderKeysDp(_me()))
+
+    def test_window_fits(self):
+        content = _View(height=2125, children=[_View(height=2125, children=[_View(0, 2125)])])
+        with _android(content):
+            self.assertEqual(0, qeapp.QEAppController._qtWindowUnderKeysDp(_me()))
+
+    def test_not_laid_out_yet(self):
+        with _android(_View()):
+            self.assertEqual(0, qeapp.QEAppController._qtWindowUnderKeysDp(_me()))
+        with _android(_View(children=[_View(height=0, children=[_View(0, 2260)])])):
+            self.assertEqual(0, qeapp.QEAppController._qtWindowUnderKeysDp(_me()))
+        with _android(None):
+            self.assertEqual(0, qeapp.QEAppController._qtWindowUnderKeysDp(_me()))
+
+    def test_java_error_gives_zero(self):
+        decor = types.SimpleNamespace(findViewById=mock.Mock(side_effect=RuntimeError("jni")))
+        with mock.patch.multiple(qeapp, create=True, jview=decor, cast=lambda _c, o: o):
+            self.assertEqual(0, qeapp.QEAppController._qtWindowUnderKeysDp(_me()))
+
+    def test_recheck_tells_qml_only_on_change(self):
+        me = _me()
+        me._navBarDp = 0
+        me.systemBarsChanged = mock.Mock()
+        me._getSystemBarHeight = mock.Mock(return_value=48)
+        qeapp.QEAppController.recheckSystemBars(me)
+        self.assertEqual(48, me._navBarDp)
+        me.systemBarsChanged.emit.assert_called_once()
+        qeapp.QEAppController.recheckSystemBars(me)
+        me.systemBarsChanged.emit.assert_called_once()
+
+    def test_timer_stops_after_15_s(self):
+        me = _me()
+        me._barsChecks = 0
+        me._barsTimer = mock.Mock()
+        me.recheckSystemBars = mock.Mock()
+        for _ in range(29):
+            qeapp.QEAppController._onBarsTimer(me)
+        me._barsTimer.stop.assert_not_called()
+        qeapp.QEAppController._onBarsTimer(me)
+        me._barsTimer.stop.assert_called_once()
+        self.assertEqual(30, me.recheckSystemBars.call_count)
+
+    def test_not_edge_to_edge_android_measures_the_keys(self):
+        me = _me()
+        me.enforcesEdgeToEdge = lambda: False
+        me.isAndroid = lambda: True
+        me._qtWindowUnderKeysDp = lambda: 48
+        self.assertEqual(48, qeapp.QEAppController._getSystemBarHeight(me, 'navigation'))
+        self.assertEqual(0, qeapp.QEAppController._getSystemBarHeight(me, 'status'))
+        me.isAndroid = lambda: False  # desktop: no keys
+        self.assertEqual(0, qeapp.QEAppController._getSystemBarHeight(me, 'navigation'))
