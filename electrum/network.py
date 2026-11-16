@@ -541,26 +541,6 @@ class Network(Logger, NetworkRetryManager[ServerAddr]):
         self.mempool_fees.set_data(histogram)
         self.logger.info(f'fee_histogram {len(histogram)}')
         util.trigger_callback('fee_histogram', self.mempool_fees)
-        if not self.has_fee_etas() and constants.net.NET_NAME == 'testnet4':
-            await self._testnet4_fees_from_mempool_space()
-
-    async def _testnet4_fees_from_mempool_space(self):
-        """Schȅi, owner 16/11: the testnet4 Electrum servers give no fee estimates
-        (estimatefee -1), so Electrum would fall back to 150 sat/vB. On testnet4
-        only (no privacy at stake: the coins have no value) ask mempool.space.
-        """
-        url = 'https://mempool.space/testnet4/api/v1/fees/recommended'
-        try:
-            text = await self.async_send_http_on_proxy('get', url, timeout=15)
-            rec = json.loads(text)
-
-            def rate(n):  # sat/vB -> sat/kvB for the block target n
-                key = ('fastestFee' if n <= 1 else 'halfHourFee' if n <= 3
-                       else 'hourFee' if n <= 6 else 'economyFee')
-                return int(max(1.0, float(rec.get(key) or rec.get('minimumFee') or 1)) * 1000)
-            self.update_fee_estimates(fee_est={n: rate(n) for n in FEE_ETA_TARGETS[0:-1]})
-        except Exception as e:
-            self.logger.info(f'testnet4 fees from mempool.space failed: {e!r}')
 
     def is_fee_estimates_update_required(self):
         """Checks time since last requested and updated fee estimates.

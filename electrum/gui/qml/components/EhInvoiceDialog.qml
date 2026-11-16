@@ -96,6 +96,7 @@ ElDialog {
         finalizer.amount = amount
         finalizer.doUpdate()
         phase = 'review'
+        Qt.callLater(dialog.maybeAskFee)
     }
     function groupedAddress() {
         var a = invoice ? invoice.address : ''
@@ -170,9 +171,48 @@ ElDialog {
         d.open()
     }
     function chooseFee() {
+        if (dialog.feeByHand) { dialog.askFee(); return }
         var d = Qt.createComponent(Qt.resolvedUrl('EhFeeDialog.qml')).createObject(app, { finalizer: finalizer })
-        d.closed.connect(function() { d.destroy() })
+        dialog.feeDlgOpen = true
+        d.closed.connect(function() { d.destroy(); dialog.feeDlgOpen = false; Qt.callLater(dialog.maybeAskFee) })
         d.open()
+    }
+    // owner Q8 (16/11): the servers give no fee estimate -> "How much to pay the miner?"
+    // (never Electrum's 150 sat/vB). From then on the cost row opens this sheet again.
+    property bool feeByHand: false       // the fee of this payment was written by hand in the sheet
+    property string feeRateByHand: ''    // sat/vB with the dot, e.g. '0.7'
+    property bool feeDlgOpen: false
+    property var feeSheet: null
+    function maybeAskFee() {
+        if (finalizer.ehNoEstimate && dialog.phase === 'review' && !dialog.feeDlgOpen && dialog.countdown < 0)
+            dialog.askFee()
+    }
+    function askFee() {
+        if (dialog.feeSheet) return
+        var start = dialog.feeRateByHand !== '' ? dialog.feeRateByHand
+                    : (app.ehTest ? '' : (Config.ehGet('manual_feerate') || ''))
+        var amt = Number(dialog.useMax ? dialog.balanceSats() : (dialog.reviewAmount ? dialog.reviewAmount.satsInt : 0)) || 0
+        var d = Qt.createComponent(Qt.resolvedUrl('EhManualFeeSheet.qml')).createObject(app, {
+            finalizer: finalizer, amountSats: amt, startRate: '' + start })
+        dialog.feeSheet = d
+        d.chosen.connect(function(rate) {
+            dialog.feeByHand = true
+            dialog.feeRateByHand = rate
+            if (!app.ehTest) Config.ehSet('manual_feerate', rate)   // mainnet: the next start
+            finalizer.ehSetManualFeerate(rate)
+        })
+        d.cancelled.connect(function() {
+            if (finalizer.valid) return              // a fee is already there: nothing changes
+            // no fee, the payment cannot leave: back to the amount, or out
+            if (dialog.invoice && dialog.invoice.amount.isEmpty) { dialog.useMax = false; dialog.phase = 'amount' }
+            else dialog.doClose()
+        })
+        d.closed.connect(function() { dialog.feeSheet = null; d.destroy() })
+        d.open()
+    }
+    Connections {
+        target: finalizer
+        function onEhNoEstimateChanged() { if (finalizer.ehNoEstimate) Qt.callLater(dialog.maybeAskFee) }
     }
     function confirmSend() {
         if (!dialog.needsPin) { startCountdown(); return }
@@ -600,7 +640,14 @@ ElDialog {
                                         font.pixelSize: 16
                                         color: S.ink
                                     }
-                                    Label { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: app.ehFeeEta(finalizer.sliderPos); font.pixelSize: 16; color: S.muted }
+                                    Label {
+                                        Layout.fillWidth: true
+                                        wrapMode: Text.WordWrap
+                                        // Q8: written by hand -> the rate, not a time we cannot know
+                                        text: dialog.feeByHand ? app.ehFeeRate(dialog.feeRateByHand + ' sat/vB') : app.ehFeeEta(finalizer.sliderPos)
+                                        font.pixelSize: 16
+                                        color: S.muted
+                                    }
                                     // T6: the invitation is inside the button, not below it
                                     Label { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: qsTr('tap to change it'); font.pixelSize: 16; font.bold: true; font.underline: true; color: S.wine }
                                 }
