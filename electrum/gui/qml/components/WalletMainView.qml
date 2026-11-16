@@ -312,7 +312,7 @@ Item {
 
     ColumnLayout {
         anchors.fill: parent
-        anchors.bottomMargin: 14 + app.navigationBarHeight
+        anchors.bottomMargin: 14
         spacing: 8
 
         // logo "schȅi Wallet" at the top, in the sky

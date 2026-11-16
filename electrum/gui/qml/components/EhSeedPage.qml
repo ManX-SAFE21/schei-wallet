@@ -22,7 +22,6 @@ Item {
     Flickable {
         id: ehFlick
         anchors.fill: parent
-        anchors.bottomMargin: app.navigationBarHeight   // nothing under the Android keys
         contentHeight: ehCol.implicitHeight + 16
         boundsBehavior: Flickable.StopAtBounds
         clip: true

@@ -251,7 +251,6 @@ Item {
         anchors.bottom: parent.bottom
         anchors.leftMargin: S.margin
         anchors.rightMargin: S.margin
-        anchors.bottomMargin: app.navigationBarHeight
         spacing: 10
 
         // busy: what the bridge is doing

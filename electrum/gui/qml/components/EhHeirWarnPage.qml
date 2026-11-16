@@ -123,7 +123,6 @@ Item {
     Flickable {
         id: flick
         anchors.fill: parent
-        anchors.bottomMargin: app.navigationBarHeight
         contentHeight: col.height + 12
         clip: true
         ColumnLayout {

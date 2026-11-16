@@ -56,7 +56,6 @@ Item {
 
     Flickable {
         anchors.fill: parent
-        anchors.bottomMargin: app.navigationBarHeight  // T9: last button was under the Android keys
         contentHeight: col.implicitHeight + 30
         clip: true
         ColumnLayout {

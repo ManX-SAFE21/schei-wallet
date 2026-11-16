@@ -29,7 +29,6 @@ Item {
 
     Flickable {
         anchors.fill: parent
-        anchors.bottomMargin: app.navigationBarHeight  // T9
         contentHeight: col.implicitHeight + 30
         clip: true
         ColumnLayout {

@@ -36,7 +36,7 @@ Item {
         anchors.fill: parent
         anchors.leftMargin: 16
         anchors.rightMargin: 16
-        anchors.bottomMargin: 16 + app.navigationBarHeight
+        anchors.bottomMargin: 16
         spacing: 9
 
         EhPageTop { title: ''; Layout.leftMargin: 6; Layout.rightMargin: 6 }

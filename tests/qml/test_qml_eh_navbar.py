@@ -121,3 +121,34 @@ class TestNavBarUnderKeys(TestCase):
         self.assertEqual(0, qeapp.QEAppController._getSystemBarHeight(me, 'status'))
         me.isAndroid = lambda: False  # desktop: no keys
         self.assertEqual(0, qeapp.QEAppController._getSystemBarHeight(me, 'navigation'))
+
+
+class TestKeysCountedOnce(TestCase):
+    # owner 16/11 (Samsung A15): empty space under the leather wallet. The keys were counted twice:
+    # main.qml leaves room for them under the page stack, and every page added them again.
+    # Pages (root Item) must not add them; windows (ElDialog / Popup, over the whole screen) add them once.
+
+    def _comp(self):
+        import os
+        return os.path.join(os.path.dirname(qeapp.__file__), 'components')
+
+    def test_pages_do_not_add_the_keys(self):
+        import glob
+        import os
+        import re
+        bad = []
+        for p in glob.glob(os.path.join(self._comp(), '*.qml')):
+            if os.path.basename(p) == 'main.qml':
+                continue
+            s = open(p, encoding='utf-8').read()
+            root = next(ln for ln in s.split('\n') if ln.strip() and not re.match(r'\s*(import|//|\.pragma)', ln))
+            if root.strip().startswith('Item') and 'navigationBarHeight' in s:
+                bad.append(os.path.basename(p))
+        self.assertEqual([], bad)
+
+    def test_room_for_the_keys_left_once_by_the_containers(self):
+        import os
+        main = open(os.path.join(self._comp(), 'main.qml'), encoding='utf-8').read()
+        self.assertIn('Layout.preferredHeight: app.navigationBarHeight', main)
+        pd = open(os.path.join(self._comp(), 'EhPageDialog.qml'), encoding='utf-8').read()
+        self.assertIn('needsSystemBarPadding: true', pd)

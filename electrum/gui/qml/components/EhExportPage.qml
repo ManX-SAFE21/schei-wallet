@@ -29,7 +29,6 @@ Item {
     Flickable {
         id: flick
         anchors.fill: parent
-        anchors.bottomMargin: app.navigationBarHeight
         contentHeight: col.height + 16
         boundsBehavior: Flickable.StopAtBounds
         clip: true
