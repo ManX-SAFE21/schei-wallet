@@ -1,4 +1,7 @@
-// Easy Heirs (schȅi): "Scrivi le tue 12 parole" — restore from existing words.
+// Easy Heirs (schȅi): "Scrivi le tue parole" — restore from existing words.
+// Owner 17/11: first "12 words" / "24 words" (15, 18, 21 from a small link); the words are judged
+// only when all of them are written (before: a red box after the 12th word of a 24-word list, and
+// 1 time in 16 the first 12 words of a 24-word list looked right and "Next" lit up).
 // Two big choices (Electrum / other wallet = BIP39), the words shown one by one
 // with their number, big suggestions, and our own on-screen keyboard: 7 keys
 // per row in alphabetical order, no phone keyboard (it could remember or send
@@ -30,11 +33,14 @@ WizardComponent {
     property bool _canPassphrase
     property bool checked: false            // validation ran on the current text
     property string hint: ''                // the words are right, but for the other choice
+    property int wantWords: 12              // how many words the person has (12, 15, 18, 21, 24)
+    property bool otherCounts: false        // the small link "I have 15, 18 or 21 words" was used
 
     readonly property var tokens: seedText === '' ? [] : seedText.replace(/ +$/, '').split(' ')
     readonly property bool typing: seedText !== '' && seedText.slice(-1) !== ' '
     readonly property string fragment: typing ? (tokens[tokens.length - 1] || '') : ''
     readonly property int doneWords: typing ? tokens.length - 1 : tokens.length
+    readonly property bool tooMany: doneWords > wantWords   // the number was changed after writing
     readonly property var suggestions: fragment.length >= 1 ? bitcoin.mnemonicsFor(fragment).slice(0, 3) : []
 
     background: Rectangle { color: S.parch }
@@ -58,7 +64,7 @@ WizardComponent {
         checkTimer.restart()
     }
     function key(ch) {
-        if (doneWords >= 24 && !typing)
+        if (doneWords >= wantWords && !typing)
             return
         setText(seedText + ch)
     }
@@ -84,10 +90,11 @@ WizardComponent {
         // opens an empty wallet. Schȅi accepts them only if they are a real list: right number of
         // words, all from the list, and the last one matching the others (checksum).
         var n = s === '' ? 0 : s.split(/ +/).length
+        ok = ok && n === wantWords
         if (variant === 'bip39')
             ok = ok && r.message === '' && [12, 15, 18, 21, 24].indexOf(n) >= 0
         hint = ''
-        if (!ok && n >= 12) {
+        if (!ok && n === wantWords) {
             var other = variant === 'bip39' ? 'electrum' : 'bip39'
             var r2 = wiz.verifySeed(s, other, wizard_data['wallet_type'])
             if (r2.valid && (other === 'electrum' || (r2.message === '' && [12, 15, 18, 21, 24].indexOf(n) >= 0)))
@@ -134,7 +141,7 @@ WizardComponent {
         EhPageTop {
             Layout.leftMargin: 6
             Layout.rightMargin: 6
-            title: qsTr('Write your 12 words (SEED)')
+            title: qsTr('Write your words (SEED)')
         }
 
         // ---- where were the words made ----
@@ -147,6 +154,26 @@ WizardComponent {
             onActivated: (i) => { root.variant = values[i]; root.setText(root.seedText) }
         }
 
+        // ---- how many words (owner 17/11) ----
+        EhCaption { text: qsTr('HOW MANY WORDS DO YOU HAVE?'); Layout.topMargin: 2; Layout.bottomMargin: 0 }
+        EhSegmented {
+            look: 'filter'   // lower than the choice above: room for the words on short phones
+            readonly property var values: root.otherCounts ? [12, 15, 18, 21, 24] : [12, 24]
+            model: root.otherCounts ? ['12', '15', '18', '21', '24'] : [qsTr('12 words'), qsTr('24 words')]
+            currentIndex: Math.max(0, values.indexOf(root.wantWords))
+            onActivated: (i) => { root.wantWords = values[i]; root.setText(root.seedText) }
+        }
+        Label {
+            visible: !root.otherCounts
+            Layout.alignment: Qt.AlignHCenter
+            text: '<u>' + qsTr('I have 15, 18 or 21 words') + '</u>'
+            textFormat: Text.StyledText
+            color: S.wine
+            font.family: BodyFont ? BodyFont : font.family
+            font.pixelSize: app.ehFsSmall
+            TapHandler { onTapped: root.otherCounts = true }
+        }
+
         // ---- the words, one by one with their number ----
         Rectangle {
             Layout.fillWidth: true
@@ -155,7 +182,7 @@ WizardComponent {
             radius: 16
             color: S.paper
             border.width: 2
-            border.color: root.checked && root.doneWords >= 12 && !root.valid ? S.wine : S.edge
+            border.color: root.tooMany || (root.checked && root.doneWords === root.wantWords && !root.valid) ? S.wine : S.edge
             Flickable {
                 id: wordsFlick
                 anchors.fill: parent
@@ -224,9 +251,10 @@ WizardComponent {
         }
 
         EhInfoBox {
-            visible: root.checked && root.doneWords >= 12 && !root.valid && !root.typing
+            visible: !root.typing && (root.tooMany || (root.checked && root.doneWords === root.wantWords && !root.valid))
             kind: 'danger'
-            text: '<b>' + (root.hint !== '' ? root.hint : qsTr('These words are not right. Check them one by one.')) + '</b>'
+            text: '<b>' + (root.tooMany ? qsTr('You wrote %1 words, but you chose %2. Delete the extra words or choose another number.').arg(root.doneWords).arg(root.wantWords)
+                          : root.hint !== '' ? root.hint : qsTr('These words are not right. Check them one by one.')) + '</b>'
         }
 
         // ---- big suggestions ----
@@ -270,69 +298,19 @@ WizardComponent {
             Item { visible: root.suggestions.length === 0; Layout.fillWidth: true; Layout.preferredHeight: 51 }
         }
 
-        // ---- the keyboard: 7 keys per row, alphabetical ----
-        // keys with the EhKey look (paper, hard shadow, letter Lexend bold), 48 high (with the shadow)
-        Rectangle {
-            id: kbd
+        // ---- the keyboard: QWERTY like the phone (owner 17/11), shared control ----
+        EhLetterKeyboard {
             Layout.fillWidth: true
-            readonly property real keyW: Math.floor((width - 6 - 6 * 4) / 7)
-            readonly property real keyH: 48
-            Layout.preferredHeight: 4 * keyH + 3 * 6 + 12
-            radius: 16
-            color: S.sand
-            Column {
-                anchors.centerIn: parent
-                spacing: 6
-                Repeater {
-                    model: ['abcdefg', 'hijklmn', 'opqrstu', 'vwxyz']
-                    delegate: Row {
-                        id: krow
-                        required property string modelData
-                        required property int index
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        spacing: 4
-                        Repeater {
-                            model: krow.modelData.split('')
-                            delegate: EhKey {
-                                id: kk
-                                required property string modelData
-                                width: kbd.keyW
-                                height: kbd.keyH
-                                letter: true
-                                fontSize: app.ehFsStrong
-                                keyRadius: 10
-                                text: kk.modelData
-                                onActivated: root.key(kk.modelData)
-                            }
-                        }
-                        // delete key on the last row (a long press clears everything)
-                        Item {
-                            visible: krow.index === 3
-                            width: 2 * kbd.keyW + 4
-                            height: kbd.keyH
-                            Rectangle { visible: !bt.pressed; y: 3; width: parent.width; height: parent.height - 3; radius: 10; color: S.edgeShadow }
-                            Rectangle {
-                                id: delFace
-                                y: bt.pressed ? 2 : 0
-                                width: parent.width
-                                height: parent.height - 3
-                                radius: 10
-                                color: bt.pressed ? Qt.darker(S.sandDel, 1.08) : S.sandDel
-                                border.width: 1.5
-                                border.color: S.edge
-                                EhBackspaceIcon { anchors.centerIn: parent; width: 38; height: 27; ink: S.wine; fill: delFace.color }
-                            }
-                            TapHandler { id: bt; onTapped: root.backspace(); onLongPressed: root.setText('') }
-                        }
-                    }
-                }
-            }
+            Layout.preferredHeight: implicitHeight
+            onLetter: (ch) => root.key(ch)
+            onDeleteOne: root.backspace()
+            onDeleteAll: root.setText('')
         }
 
         EhStitchButton {
             enabled: root.valid && !root.typing
             kind: 'wine'
-            text: enabled ? qsTr('Next') : qsTr('Next (%1 of 12)').arg(Math.min(root.doneWords, 12))
+            text: enabled ? qsTr('Next') : qsTr('Next (%1 of %2)').arg(Math.min(root.doneWords, root.wantWords)).arg(root.wantWords)
             endIcon: 'next'
             onClicked: root.goOn()
         }

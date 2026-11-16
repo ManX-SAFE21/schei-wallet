@@ -67,6 +67,31 @@ def eh_pocket_move(wallet, outpoints, aside):
     return addresses
 
 
+
+def eh_bip39_words_match(ks, words) -> bool:
+    """Easy Heirs (owner 17/11, forgot PIN): are these BIP39 words the ones of this keystore?
+    The words are not stored (keystore.from_bip43_rootseed), so the account key is rebuilt from
+    them with the keystore's own path and kind, and compared with its xpub."""
+    import hmac
+    from electrum import keystore as _ks
+    from electrum.bip32 import xpub_type
+    from electrum.mnemonic import normalize_text
+    if not isinstance(ks, _ks.BIP32_KeyStore) or not ks.xpub:
+        return False
+    try:
+        derivation = ks.get_derivation_prefix()
+        if not derivation:
+            return False
+        text = ' '.join(normalize_text(words or '').split())
+        checksum_ok, wordlist_ok = _ks.bip39_is_checksum_valid(text)
+        if not (checksum_ok and wordlist_ok):
+            return False
+        root_seed = _ks.bip39_to_seed(text, passphrase='')
+        k = _ks.from_bip43_rootseed(root_seed, derivation=derivation, xtype=xpub_type(ks.xpub))
+        return hmac.compare_digest(k.xpub.encode(), ks.xpub.encode())
+    except Exception:
+        return False
+
 class QEWallet(AuthMixin, QObject, QtEventListener):
     __instances = []
 
@@ -1179,7 +1204,9 @@ class QEWallet(AuthMixin, QObject, QtEventListener):
         """Easy Heirs (third review, forgot PIN): are these the words of this wallet?"""
         try:
             if not self.wallet.has_seed():
-                return False
+                # owner 17/11: words of another wallet (BIP39): Electrum does not keep them, so
+                # rebuild the key from the words and compare it with the one of this wallet
+                return eh_bip39_words_match(getattr(self.wallet, 'keystore', None), words)
             seed = self.wallet.get_seed(self.password)
         except Exception as e:
             self._logger.error(f'ehSeedMatches: {e!r}')

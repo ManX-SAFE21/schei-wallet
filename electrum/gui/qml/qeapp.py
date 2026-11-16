@@ -46,6 +46,7 @@ from .qeswaphelper import QESwapHelper
 from .qewizard import QENewWalletWizard, QEServerConnectWizard, QETermsOfUseWizard
 from .qemodelfilter import QEFilterProxyModel
 from .qebip39recovery import QEBip39RecoveryListModel
+from .qeehfindfunds import QEEhFindFunds
 from .qebiometrics import QEBiometrics
 
 if TYPE_CHECKING:
@@ -658,6 +659,7 @@ class ElectrumQmlApplication(QGuiApplication):
         qmlRegisterType(QETxCanceller, 'org.electrum', 1, 0, 'TxCanceller')
         qmlRegisterType(QETxSweepFinalizer, 'org.electrum', 1, 0, 'SweepFinalizer')
         qmlRegisterType(QEBip39RecoveryListModel, 'org.electrum', 1, 0, 'Bip39RecoveryListModel')
+        qmlRegisterType(QEEhFindFunds, 'org.electrum', 1, 0, 'EhFindFunds')  # Easy Heirs, owner 17/11
         qmlRegisterType(FeeSlider, 'org.electrum', 1, 0, 'FeeSlider')
         # TODO QT6: these were declared as uncreatable, but that doesn't seem to work for pyqt6
         # qmlRegisterUncreatableType(QEAmount, 'org.electrum', 1, 0, 'Amount', 'Amount can only be used as property')

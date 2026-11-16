@@ -7,6 +7,9 @@ import "controls"
 import "controls/EhStyle.js" as S
 
 // Easy Heirs (schȅi): the 12 words again (after the PIN).
+// Owner 17/11: also 24 (or 15/18/21) words, always top to bottom, left column first
+// (12: 1-6 | 7-12, 24: 1-12 | 13-24). Words of another wallet (BIP39) are not kept by
+// Electrum: the page says so instead of staying empty.
 // "Bottega" (WP6): same word tiles as the new-wallet page (paper, number in brass), the scam
 // warning in the rose box; the page scrolls.
 Item {
@@ -35,14 +38,24 @@ Item {
             text: '‹ ' + qsTr('Advanced')   // it opens from the advanced settings
             onClicked: app.stack.pop()
         }
-        EhTitle { text: qsTr('Your 12 words (SEED)') }
+        EhTitle { text: page.words.length === 12 ? qsTr('Your 12 words (SEED)')
+                      : page.words.length === 0 ? qsTr('Your words (SEED)')
+                      : qsTr('Your %1 words (SEED)').arg(page.words.length) }
         EhInfoBox {
             kind: 'danger'
-            text: '<b>' + qsTr('Nobody will ever ask you for the 12 words (SEED). Whoever asks is a scammer.') + '</b>'
+            text: '<b>' + (page.words.length === 12 ? qsTr('Nobody will ever ask you for the 12 words (SEED). Whoever asks is a scammer.')
+                                                    : qsTr('Nobody will ever ask you for the words (SEED). Whoever asks is a scammer.')) + '</b>'
+        }
+        // words of another wallet: Electrum does not keep them (owner 17/11)
+        EhInfoBox {
+            visible: page.words.length === 0
+            kind: 'warn'
+            text: qsTr('This wallet comes from the words of <b>another wallet</b>.') + '<br><br>'
+                  + qsTr('For safety Schȅi <b>does not keep them</b>: your paper with the words is <b>the only copy</b>. Keep it in a safe place.')
         }
         GridLayout {
             Layout.fillWidth: true
-            columns: 2; rows: 6; flow: GridLayout.TopToBottom
+            columns: 2; rows: Math.max(1, Math.ceil(page.words.length / 2)); flow: GridLayout.TopToBottom
             rowSpacing: 8; columnSpacing: 8
             Repeater {
                 model: page.words
