@@ -78,6 +78,40 @@ class TestNavBarUnderKeys(TestCase):
         me._barsTimer.stop.assert_called_once()
         self.assertEqual(30, me.recheckSystemBars.call_count)
 
+    def test_back_in_the_app_window_fits_again(self):
+        # owner 16/11: at the start 48 dp, back in the app the window fits (0): the strip must go
+        me = _me()
+        me._navBarDp = 48
+        me._barsChecks = 30
+        me._barsTimer = mock.Mock()
+        me.systemBarsChanged = mock.Mock()
+        me.isAndroid = lambda: True
+        me.enforcesEdgeToEdge = lambda: False
+        me._getSystemBarHeight = mock.Mock(return_value=0)
+        me.recheckSystemBars = lambda: qeapp.QEAppController.recheckSystemBars(me)
+        qeapp.QEAppController.watchSystemBars(me)
+        self.assertEqual(0, me._navBarDp)
+        me.systemBarsChanged.emit.assert_called_once()
+        self.assertEqual(0, me._barsChecks)  # looks again for 15 s
+        me._barsTimer.start.assert_called_once()
+
+    def test_watch_does_nothing_on_desktop_or_edge_to_edge(self):
+        for android, e2e in ((False, False), (True, True)):
+            me = _me()
+            me._barsTimer = mock.Mock()
+            me.recheckSystemBars = mock.Mock()
+            me.isAndroid = lambda a=android: a
+            me.enforcesEdgeToEdge = lambda e=e2e: e
+            qeapp.QEAppController.watchSystemBars(me)
+            me.recheckSystemBars.assert_not_called()
+            me._barsTimer.start.assert_not_called()
+
+    def test_qml_asks_again_on_resize_and_resume(self):
+        import os
+        qml = open(os.path.join(os.path.dirname(qeapp.__file__), 'components', 'main.qml'), encoding='utf-8').read()
+        self.assertIn('onHeightChanged: if (AppController) AppController.watchSystemBars()', qml)
+        self.assertIn('if (AppController) AppController.watchSystemBars()  // the window may be another size now', qml)
+
     def test_not_edge_to_edge_android_measures_the_keys(self):
         me = _me()
         me.enforcesEdgeToEdge = lambda: False

@@ -29,6 +29,8 @@ ApplicationWindow
     // dimensions ignored on android
     width: 480
     height: 800
+    // the window changed size (back in the app, keyboard...): measure the Android keys again
+    onHeightChanged: if (AppController) AppController.watchSystemBars()
 
     Material.theme: Material.Dark
     Material.primary: Material.Indigo
@@ -764,7 +766,11 @@ ApplicationWindow
     Timer { interval: 60000; repeat: true; running: true; onTriggered: app.ehToday = new Date().toDateString() }
     Connections {
         target: Qt.application
-        function onStateChanged() { if (Qt.application.state === Qt.ApplicationActive) app.ehToday = new Date().toDateString() }
+        function onStateChanged() {
+            if (Qt.application.state !== Qt.ApplicationActive) return
+            app.ehToday = new Date().toDateString()
+            if (AppController) AppController.watchSystemBars()  // the window may be another size now
+        }
     }
     function ehWhen(timestamp, withTime) {
         ehToday

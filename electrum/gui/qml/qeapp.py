@@ -120,6 +120,9 @@ class QEAppController(BaseCrashReporter, QObject):
         # still be laid out taller than the visible area, its bottom under the Android keys,
         # while getNavigationBarHeight() said 0. The Qt window gets its size after main.qml is
         # loaded, so look again for a while and tell QML (navigationBarHeight) when it changes.
+        # Owner 16/11 (same phone): back in the app, Android shrank the Qt window above the keys
+        # but the old 48 dp stayed (empty strip under the leather wallet): so look again also
+        # every time the window changes size or the app comes back (watchSystemBars).
         self._navBarDp = None
         self._barsChecks = 0
         self._barsTimer = QTimer(self)
@@ -586,6 +589,15 @@ class QEAppController(BaseCrashReporter, QObject):
         except Exception as e:
             self.logger.debug(f"_qtWindowUnderKeysDp failed: {e!r}")
             return 0
+
+    @pyqtSlot()
+    def watchSystemBars(self):
+        """Window resized or app back in front: measure now and again for 15 s."""
+        if not self.isAndroid() or self.enforcesEdgeToEdge():
+            return
+        self._barsChecks = 0
+        self.recheckSystemBars()
+        self._barsTimer.start()
 
     def _onBarsTimer(self):
         self._barsChecks += 1
