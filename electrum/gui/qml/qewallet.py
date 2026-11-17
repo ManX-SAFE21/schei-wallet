@@ -476,6 +476,21 @@ class QEWallet(AuthMixin, QObject, QtEventListener):
     def hasSeed(self):
         return self.wallet.has_seed()
 
+    @pyqtProperty(bool, notify=dataChanged)
+    def ehCanCheckWords(self):
+        """Easy Heirs (Samsung 17/11, forgot PIN): can the words on paper be checked against this
+        wallet? Words kept (Electrum), or words of another wallet (BIP39): the key made from
+        them can be compared with this wallet's (eh_bip39_words_match)."""
+        if self.wallet.has_seed():
+            return True
+        ks = getattr(self.wallet, 'keystore', None)
+        from electrum import keystore as _ks
+        try:
+            return (isinstance(ks, _ks.BIP32_KeyStore) and not ks.is_watching_only()
+                    and bool(ks.get_derivation_prefix()))
+        except Exception:
+            return False
+
     @pyqtProperty(str, notify=dataChanged)
     def seed(self):
         return self._seed

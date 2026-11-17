@@ -234,6 +234,21 @@ class TestForgotPinOtherWallet(TestCase):
         QEWallet.retrieve_seed.__wrapped__(me)   # without the PIN request
         me.seedRetrieved.emit.assert_not_called()
 
+    def test_forgot_pin_link_also_for_words_of_another_wallet(self):
+        # Samsung 17/11: the link "I forgot the PIN" was shown only for wallets that keep the words
+        from electrum.gui.qml.qewallet import QEWallet
+        fget = QEWallet.ehCanCheckWords.fget
+        ks = self._ks(WORDS24)
+        me = types.SimpleNamespace(wallet=types.SimpleNamespace(has_seed=lambda: False, keystore=ks))
+        self.assertTrue(fget(me))
+        me = types.SimpleNamespace(wallet=types.SimpleNamespace(has_seed=lambda: True, keystore=None))
+        self.assertTrue(fget(me))
+        watch = keystore.from_master_key(ks.xpub)        # only to look at: no words to check
+        me = types.SimpleNamespace(wallet=types.SimpleNamespace(has_seed=lambda: False, keystore=watch))
+        self.assertFalse(fget(me))
+        pin = _read('EhPinDialog.qml')
+        self.assertIn('Daemon.currentWallet.ehCanCheckWords && !Daemon.currentWallet.isWatchOnly', pin)
+
     def test_wallet_uses_it_when_no_seed_is_kept(self):
         src = open(os.path.join(os.path.dirname(qeapp.__file__), 'qewallet.py'), encoding='utf-8').read()
         body = src[src.index('def ehSeedMatches'):src.index('def importAddresses')]

@@ -179,7 +179,7 @@ ElDialog {
         // third review: a forgotten PIN can be replaced with the 12 words of this wallet
         PinLink {
             visible: root.mode === 'verify' && Daemon.currentWallet !== null
-                     && Daemon.currentWallet.hasSeed && !Daemon.currentWallet.isWatchOnly
+                     && Daemon.currentWallet.ehCanCheckWords && !Daemon.currentWallet.isWatchOnly
             text: qsTr('I forgot the PIN')
             // the words page opens ABOVE this pad: with the new PIN chosen, the person comes
             // back here, types the new PIN and goes on with what they were doing
