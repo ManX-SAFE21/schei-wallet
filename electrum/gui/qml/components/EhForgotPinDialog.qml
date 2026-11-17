@@ -218,8 +218,8 @@ ElDialog {
             Layout.bottomMargin: 14
             enabled: root.ready
             kind: 'wine'
-            // 12 or 24 words (also 15, 18, 21): count to the next possible length
-            readonly property int target: [12, 15, 18, 21, 24].find(function(n) { return n >= root.doneWords }) || 24
+            // 12 or 24 words: count to 12, then to 24
+            readonly property int target: root.doneWords <= 12 ? 12 : 24   // 15, 18, 21 are accepted too (ready), but rare
             text: enabled ? qsTr('Next') : qsTr('Next (%1 of %2)').arg(Math.min(root.doneWords, target)).arg(target)
             endIcon: 'next'
             onClicked: root.check()
