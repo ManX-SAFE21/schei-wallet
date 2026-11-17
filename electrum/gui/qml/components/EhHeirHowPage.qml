@@ -52,7 +52,13 @@ Item {
                 EhDotLine { Layout.fillWidth: true }
                 Para { text: qsTr('<b>Your money stays yours</b>: you receive and pay as always. If new money arrives or you make a payment, Schȅi asks you to update the envelope. The PIN is enough and you pay nothing.') }
                 EhDotLine { Layout.fillWidth: true }
-                Para { text: qsTr('If you no longer answer, on the delivery date you chose the keepers send the envelope and the heirs receive the bitcoin. Only then is one keeper paid, with a small part of the envelope. Schȅi is made for <b>pocket amounts</b>: for big sums use Àncòra (the plugin for the Electrum wallet) on the computer.') }
+                Para { text: qsTr('If you no longer answer, on the delivery date you chose the keepers send the envelope and the heirs receive the bitcoin. Only then is one keeper paid, with a small part of the envelope.') }
+            }
+            // owner 17/11: the inheritance lives in the wallet of THIS device, not in the words: two
+            // inheritances on the same words would not see each other
+            EhInfoBox {
+                kind: 'warn'
+                text: '<b>' + qsTr('Use your words (SEED) on one phone or computer only: never put them on more devices. And make the inheritance in one place only.') + '</b>'
             }
         }
     }

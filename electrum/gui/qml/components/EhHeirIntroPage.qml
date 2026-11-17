@@ -1,6 +1,6 @@
 // Easy Heirs (schȅi): "Eredità" (inheritance, screen 1). Opened from Settings › Inheritance
-// while there is no inheritance yet (app.ehHeirOpen). Four numbered steps, the "pocket amounts"
-// note, then "Make the inheritance" (the wizard, WP-B) and "How it works, calmly".
+// while there is no inheritance yet (app.ehHeirOpen). Four numbered steps (owner 17/11: no amount note)
+// then "Make the inheritance" (the wizard, WP-B) and "How it works, calmly".
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
@@ -106,10 +106,6 @@ Item {
                 Step { n: 2; text: qsTr('Choose <b>how long from now</b>: for example 2 years.') }
                 Step { n: 3; text: qsTr('When the delivery gets close, Schȅi asks you: <b>"Are you still here?"</b> You say yes, and the time starts again from the beginning.') }
                 Step { n: 4; last: true; text: qsTr('If you no longer answer, on the delivery date the heirs receive.') }
-            }
-            EhInfoBox {
-                kind: 'tip'
-                text: qsTr('Made for pocket amounts, up to about <b>%1</b>. For big sums use Àncòra on the computer.').arg(app.ehHeirPocketLimit())
             }
 
             Item { Layout.fillHeight: true; Layout.minimumHeight: 4 }

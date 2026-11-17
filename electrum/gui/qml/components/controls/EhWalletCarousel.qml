@@ -73,10 +73,13 @@ ColumnLayout {
             height: list.height
             // the cards next to the open one: smaller and more transparent,
             // so it is clear that there are more wallets
-            scale: isCurrent || (isAdd && list.currentIndex === index) ? 1 : 0.9
-            opacity: isCurrent || (isAdd && list.currentIndex === index) ? 1 : 0.9   // T45: clearly visible
-            Behavior on scale { NumberAnimation { duration: 180 } }
-            Behavior on opacity { NumberAnimation { duration: 180 } }
+            // owner 17/11 (anteprima/cambio-portafoglio-vero.png): how far this card is from the middle
+            // place (0 = in the middle, 1 = one card away). The card grows while it slides to the
+            // middle, not after the wallet has loaded (that was a jump on the Samsung)
+            readonly property real away: Math.min(1, Math.abs(x - list.contentX - list.preferredHighlightBegin)
+                                                     / Math.max(1, width + list.spacing))
+            scale: 1 - 0.1 * away
+            opacity: 1 - 0.1 * away   // T45: the others clearly visible
 
             EhWalletInside {
                 visible: d.isCurrent && openK > 0.01
@@ -86,7 +89,8 @@ ColumnLayout {
             }
             EhBalanceCard {
                 id: card
-                visible: d.isCurrent
+                visible: !d.isAdd
+                idleName: d.isCurrent ? '' : (d.model.name || '')
                 showGear: true
                 compact: root.compact
                 strapLeft: root.strapLeft
@@ -99,49 +103,13 @@ ColumnLayout {
                     yScale: 1 - 0.22 * root.openK
                 }
             }
-            // other wallets: name and colour, swipe here to open
-            Rectangle {
-                id: otherCard
+            // a wallet not open: tap anywhere on it to open it
+            MouseArea {
                 visible: !d.isCurrent && !d.isAdd
                 anchors.fill: parent
-                anchors.topMargin: 6
-                anchors.bottomMargin: 6
-                radius: 24
-                // T45: a watch-only wallet is light: a wine border so it stands out from the page
-                readonly property bool light: d.model.name ? app.ehWalletIsWatchFor(d.model.name) : false
-                gradient: Gradient {
-                    GradientStop { position: 0.0; color: otherCard.light ? '#fffdf8' : Qt.rgba(Qt.lighter(d.wc, 1.3).r, Qt.lighter(d.wc, 1.3).g, Qt.lighter(d.wc, 1.3).b, 0.92) }
-                    GradientStop { position: 1.0; color: otherCard.light ? '#fbf3ee' : Qt.rgba(Qt.darker(d.wc, 1.35).r, Qt.darker(d.wc, 1.35).g, Qt.darker(d.wc, 1.35).b, 0.88) }
-                }
-                border.width: light ? 2.5 : 0
-                border.color: '#b98a9a'
-                // T45: the stitching, as on the open wallet
-                EhDashedBorder {
-                    anchors.fill: parent
-                    inset: 7
-                    radius: 17
-                    lineWidth: 1.6
-                    color: parent.light ? '#b98a9a' : (root.strapLeft ? '#e3c57e' : Qt.rgba(1, 0.91, 0.77, 0.75))
-                }
-                ColumnLayout {
-                    anchors.fill: parent
-                    anchors.margins: 18
-                    Label { text: app.ehWalletNameFor(d.model.name || ""); color: '#ffffff'; font.pixelSize: app.ehFsText; font.bold: true }
-                    // the balance seen the last time this wallet was open
-                    Label {
-                        visible: text !== ''
-                        text: app.ehLastBalanceFor(d.model.name || "")
-                        color: '#ffffff'
-                        font.family: TitleFont ? TitleFont : font.family
-                        font.weight: Font.Black
-                        font.pixelSize: app.ehFsBox
-                    }
-                    Item { Layout.fillHeight: true }
-                    Label { text: qsTr('tap to open it'); color: '#ffffff'; opacity: 0.8; font.pixelSize: app.ehFsSmall }
-                }
-                TapHandler { enabled: !d.isAdd; onTapped: { list.currentIndex = d.index; Daemon.loadWallet(d.model.path) } }
+                z: 10
+                onClicked: { list.currentIndex = d.index; Daemon.loadWallet(d.model.path) }
             }
-
             // last card: add a new wallet
             Rectangle {
                 visible: d.isAdd

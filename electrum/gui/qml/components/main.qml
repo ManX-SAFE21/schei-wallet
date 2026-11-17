@@ -1134,7 +1134,9 @@ ApplicationWindow
     function ehZoomAddress(address, mine) { ehAddressZoom.createObject(app, { address: address, mine: mine }).open() }
 
     // Schȅi testnet4: test coins have no price, always in bitcoin
-    function ehBtcOnly() { ehOptRev; return app.ehTest || Config.ehGet('opt_btc_only') === true }
+    // owner 17/11: the testnet4 app shows euro too, at the real bitcoin price (to try banknotes,
+    // euro amounts...); the striped band says on every page that the test coins are worth nothing
+    function ehBtcOnly() { ehOptRev; return Config.ehGet('opt_btc_only') === true }
     function ehSetBtcOnly(on) {
         ehSetOption('btc_only', on)
         Daemon.fx.enabled = !on
@@ -1674,8 +1676,10 @@ ApplicationWindow
         var finish = ph === 'unfinished' && _ehHeirWant
         var key = ph === 'needs_update' ? (s.updateReason + ':' + s.uncoveredSats) : ''
         var update = ph === 'needs_update' && key !== _ehHeirSeen
-        if (!ask && !finish && !update) { _ehHeirWaiting = false; return }
+        var offer = (ph === 'none' || ph === 'draft') && _ehHeirWant
+        if (!ask && !finish && !update && !offer) { _ehHeirWaiting = false; return }
         if (_ehHeirHomeBusy()) { _ehHeirWaiting = true; return }
+        if (offer) { _ehHeirWaiting = false; _ehHeirWant = false; ehHeirMaybeOffer(ph); return }
         _ehHeirWaiting = false
         if (ask) { _ehHeirWant = false; ehHeirAsk() }
         else if (finish) { _ehHeirWant = false; ehHeirUpdate('unfinished') }
@@ -1692,6 +1696,26 @@ ApplicationWindow
         return d
     }
     function ehHeirAsk() { return _ehHeirOpenSheet('EhHeirAskSheet.qml') }
+    // owner 17/11: Settings › Inheritance switch, per wallet, ON unless turned off
+    function ehHeirEnabled() { ehOptRev; return Config.ehGet('heir_on_' + ehWalletKey()) !== false }
+    function ehSetHeirEnabled(on) { Config.ehSet('heir_on_' + ehWalletKey(), on); ehOptRev++ }
+    // owner 17/11: about every 3 months, on opening, a wallet with money and no inheritance asks once
+    // "do you want to make the inheritance?". Not when turned off, not for a wallet only to look at,
+    // not when empty; the first time 3 months after Schȅi first saw the wallet.
+    readonly property real ehHeirOfferEvery: 90 * 24 * 3600 * 1000
+    function ehHeirMaybeOffer(phase) {
+        var w = Daemon.currentWallet
+        if (!w || w.isWatchOnly || !ehHeirEnabled()) return false
+        if (phase !== 'none' && phase !== 'draft') return false
+        if (w.ehTotal.satsInt <= 0) return false
+        var k = 'heir_offer_next_' + ehWalletKey(), now = Date.now()
+        var next = Number(Config.ehGet(k) || 0)
+        if (!next) { Config.ehSet(k, now + ehHeirOfferEvery); return false }
+        if (now < next) return false
+        Config.ehSet(k, now + ehHeirOfferEvery)
+        _ehHeirOpenSheet('EhHeirOfferSheet.qml')
+        return true
+    }
     function ehHeirUpdate(reason) { return _ehHeirOpenSheet('EhHeirUpdateSheet.qml', { reason: reason }) }
     // Settings › Inheritance: the intro while there is none, else its status
     function ehHeirOpen() {

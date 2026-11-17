@@ -1046,6 +1046,16 @@ STRINGS = {
         '<b>When it is needed.</b> If the words (SEED) were also used in another wallet that created many addresses without using them, the money can be after more than 20 empty addresses. Schȅi does not see it and the balance seems to be missing. Looking further finds it.': '<b>Quando serve.</b> Se le parole (SEED) sono state usate anche in un altro portafoglio che ha creato tanti indirizzi senza usarli, i soldi possono stare dopo più di 20 indirizzi vuoti. Schȅi non li vede e il saldo sembra mancare. Cercando più lontano li ritrova.',
         'If the balance did not change, the money is not here: try with 100 or 200, or check that the words (SEED) and the kind of seed are right.': 'Se il saldo non è cambiato, i soldi non sono qui: prova con 100 o 200, oppure controlla che le parole (SEED) e il tipo di seed siano giusti.',
         '4 numbers that are easy for you to remember. You will need them for big payments and to see the words (SEED).': '4 numeri facili da ricordare per te. Ti serviranno per gli invii grandi e per rivedere le parole (SEED).',
+        # owner 17/11: no pocket amounts; words on one device
+        'If you no longer answer, on the delivery date you chose the keepers send the envelope and the heirs receive the bitcoin. Only then is one keeper paid, with a small part of the envelope.': 'Se non rispondi più, alla data della consegna che hai scelto i custodi spediscono la busta e gli eredi ricevono i bitcoin. Solo allora si paga un custode, con una piccola parte della busta.',
+        'Use your words (SEED) on one phone or computer only: never put them on more devices. And make the inheritance in one place only.': 'Usa le tue parole (SEED) su un solo telefono o computer: non metterle mai su più dispositivi. E fai l’eredità in un posto solo.',
+        # owner 17/11: carousel, inheritance switch and question
+        'last balance': 'ultimo saldo',
+        'If one day you are no longer here, do you want your bitcoin to go to the people you choose?': 'Se un giorno non ci sei più, vuoi che i tuoi bitcoin vadano alle persone che scegli?',
+        "Yes, let's make it": 'Sì, facciamola',
+        'there is an inheritance: to turn it off, cancel it first': "c'è un'eredità: per spegnerlo, prima annullala",
+        'the badge on the wallet and the question every 3 months': 'il bollo sul portafoglio e la domanda ogni 3 mesi',
+        'Use the inheritance': "Usa l'eredità",
     },
     'vec_IT': {
         'waiting': 'in atesa',
@@ -2071,6 +2081,16 @@ STRINGS = {
         '<b>When it is needed.</b> If the words (SEED) were also used in another wallet that created many addresses without using them, the money can be after more than 20 empty addresses. Schȅi does not see it and the balance seems to be missing. Looking further finds it.': "<b>Co che serve.</b> Se le parole (SEED) le xe stade dopará anca in n'altro portafojo che ga fato tanti indirissi sensa doperarli, i schei i pol star dopo più de 20 indirissi vodi. Schȅi no el li vede e el saldo el par che manca. Sercando più lontan el li cata.",
         'If the balance did not change, the money is not here: try with 100 or 200, or check that the words (SEED) and the kind of seed are right.': 'Se el saldo no el xe cambià, i schei no i xe qua: prova co 100 o 200, opure controla che le parole (SEED) e el tipo de seed i sia giusti.',
         '4 numbers that are easy for you to remember. You will need them for big payments and to see the words (SEED).': '4 numari fasili da ricordar par ti. Te serviranno par i invii grandi e par riguardar le parole (SEED).',
+        # owner 17/11: no pocket amounts; words on one device
+        'If you no longer answer, on the delivery date you chose the keepers send the envelope and the heirs receive the bitcoin. Only then is one keeper paid, with a small part of the envelope.': 'Se no te rispondi più, a la data de la consegna che te ghe sielto i custodi i manda la busta e i eredi i riceve i bitcoin. Solo alora se paga un custode, co na picola parte de la busta.',
+        'Use your words (SEED) on one phone or computer only: never put them on more devices. And make the inheritance in one place only.': 'Dopara le to parole (SEED) su un telefono o computer solo: no metarle mai su più dispositivi. E fa l’eredità in un posto solo.',
+        # owner 17/11: carousel, inheritance switch and question
+        'last balance': 'ultimo saldo',
+        'If one day you are no longer here, do you want your bitcoin to go to the people you choose?': 'Se un dì no te ghe sì più, vuto che i to bitcoin i vaga a le persone che te sielgi?',
+        "Yes, let's make it": 'Sì, femola',
+        'there is an inheritance: to turn it off, cancel it first': "ghe xe n'eredità: par stuarlo, prima anulela",
+        'the badge on the wallet and the question every 3 months': 'el bolo sul portafojo e la domanda ogni 3 mesi',
+        'Use the inheritance': "Dopara l'eredità",
     },
 }
 

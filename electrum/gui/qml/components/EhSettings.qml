@@ -94,23 +94,36 @@ Item {
             Group { visible: col.heirOn; text: qsTr('INHERITANCE') }
             EhSheet {
                 visible: col.heirOn
-                EhRow { icon: 'eh_will.svg'; text: qsTr('Inheritance')
+                // owner 17/11: on by default; it cannot be turned off while an inheritance exists
+                // (cancel it first), or it would stay active without being seen
+                EhRow { icon: 'eh_will.svg'; text: qsTr('Use the inheritance')
+                        readonly property bool exists: col.heirPhase !== 'none' && col.heirPhase !== 'draft'
+                        showSwitch: true
+                        checked: app.ehHeirEnabled()
+                        switchEnabled: !exists || !app.ehHeirEnabled()
+                        hint: exists ? qsTr('there is an inheritance: to turn it off, cancel it first')
+                                     : qsTr('the badge on the wallet and the question every 3 months')
+                        last: !app.ehHeirEnabled()
+                        onToggled: (on) => app.ehSetHeirEnabled(on) }
+                EhRow { visible: app.ehHeirEnabled()
+                        icon: 'eh_will.svg'; text: qsTr('Inheritance')
                         value: col.heirPhase === 'due' || col.heirPhase === 'expired' ? qsTr('to renew')
                              : (col.heirPhase === 'active' || col.heirPhase === 'needs_update' ? qsTr('Active') : '')
                         onClicked: app.ehHeirOpen() }
-                EhRow { visible: col.heirPhase !== 'none' && col.heirPhase !== 'foreign'
+                EhRow { visible: app.ehHeirEnabled() && col.heirPhase !== 'none' && col.heirPhase !== 'foreign'
                         icon: 'eh_cal.svg'; text: qsTr('When to remind you')
                         value: col.heir.warn === 'third' ? qsTr('One third from the end')
                              : (col.heir.warn === 'quarter' ? qsTr('One quarter from the end') : qsTr('Half way through the period'))
                         onClicked: app.stack.push(Qt.resolvedUrl('EhHeirWarnPage.qml')) }
                 // owner 15/11 (point 4c): 3 (default), 5, 7 … 19 keepers
-                EhRow { visible: col.heirPhase !== 'foreign'
+                EhRow { visible: app.ehHeirEnabled() && col.heirPhase !== 'foreign'
                         icon: 'eh_shield_olive.svg'; iconColor: S.olive; text: qsTr('How many keepers')
                         hint: qsTr('more keepers, safer')
                         value: (col.heir.keepersWanted || 3) === 3 ? qsTr('%1 (default)').arg(3) : '' + col.heir.keepersWanted
                         onClicked: app._ehHeirOpenSheet('EhHeirKeepersSheet.qml') }
                 // owner 15/11 (point 8): "How it works" also while the inheritance is active
-                EhRow { icon: 'eh_info.svg'; text: qsTr('How it works')
+                EhRow { visible: app.ehHeirEnabled()
+                        icon: 'eh_info.svg'; text: qsTr('How it works')
                         last: true
                         onClicked: app.stack.push(Qt.resolvedUrl('EhHeirHowPage.qml')) }
             }

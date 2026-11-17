@@ -9,8 +9,11 @@ Rectangle {
 
     property string euroText: ''
     property string previewName: ''
+    // a wallet in the carousel that is not open: its last balance, no live data
+    property string idleName: ''
+    readonly property bool idle: idleName !== ''
     property string previewColor: ''
-    readonly property color baseColor: previewColor !== '' ? previewColor : app.ehWalletColor()
+    readonly property color baseColor: previewColor !== '' ? previewColor : (idle ? app.ehWalletColorFor(idleName) : app.ehWalletColor())
     property string btcText: ''
     readonly property bool showCash: cashRoom && root.euroText !== ''
     // owner 12/11: at startup the exchange rate comes a few seconds later; the card keeps the room
@@ -28,12 +31,16 @@ Rectangle {
     // owner 15/11 (points 6c-6g, home-reale.html): the inheritance on the card, bottom right:
     // the light logo + "EREDITÀ" and a dot (green active, yellow to look at, red not valid);
     // not made yet: faint logo + "DA FARE", no dot. Not for a wallet that cannot spend.
+    // Owner 17/11: always "EREDITÀ" (no more "DA FARE"); not made yet, or the state not read yet:
+    // the logo and the word faint, no dot.
     readonly property var heirBal: AppController ? AppController.plugin('bal') : null
     readonly property var heirState: root.heirBal && root.heirBal.state ? root.heirBal.state : ({})
-    readonly property bool heirShown: root.fixedRows && root.showGear && !!root.heirBal && !root.watch
+    readonly property bool heirShown: root.fixedRows && root.showGear && !!root.heirBal && !root.watch && !root.idle
+                                      && app.ehHeirEnabled()
                                       && Daemon.currentWallet !== null
     readonly property string heirPhase: root.heirState.phase || ''
     readonly property bool heirOff: root.heirPhase === 'none' || root.heirPhase === 'draft'
+    readonly property bool heirFaint: root.heirOff || root.heirPhase === ''
     readonly property string heirKeepers: root.heirState.custodians ? (root.heirState.custodians.status || '') : ''
     readonly property string heirDot: root.heirOff || root.heirPhase === '' ? ''
         : (root.heirPhase === 'expired' || root.heirKeepers === 'none' || root.heirKeepers === 'invalid') ? 'bad'
@@ -163,6 +170,17 @@ Rectangle {
     }
 
     function refresh() {
+        if (root.idle) {
+            var s = Number(Config.ehGet('bal_' + root.idleName) || 0)
+            var a = root.satsAmount(s)
+            root.arrivingSats = 0
+            root.frozenSats = 0
+            root.euroText = app.ehEuro(a)
+            root.btcText = app.ehBtc(a)
+            root.hasMoney = s > 0
+            root.totalSats = s
+            return
+        }
         if (!Daemon.currentWallet)
             return
         var total = Daemon.currentWallet.ehTotal      // third review: with the money arriving
@@ -176,7 +194,7 @@ Rectangle {
 
     // owner 13/11 (home-ritocchi.html): the home card is 184 high, always (pills or not, rate or not)
     implicitHeight: root.fixedRows ? 184 : col.implicitHeight + 30
-    readonly property bool watch: Daemon.currentWallet ? Daemon.currentWallet.isWatchOnly : false
+    readonly property bool watch: idle ? app.ehWalletIsWatchFor(idleName) : (Daemon.currentWallet ? Daemon.currentWallet.isWatchOnly : false)
     // home "Bottega" (owner 13/11, preview home-nuova-grafica.html, proposal B): darker leather of
     // the wallet colour, gold stitching, a flap at the top, brass buttons, ivory amount.
     // Only the home card (strap on the left); a watch-only wallet keeps its light look.
@@ -278,7 +296,7 @@ Rectangle {
             }
             Label {
                 Layout.fillWidth: true
-                text: root.previewName !== '' ? root.previewName : app.ehWalletName()
+                text: root.previewName !== '' ? root.previewName : (root.idle ? app.ehWalletNameFor(root.idleName) : app.ehWalletName())
                 color: root.watch ? root.baseColor : '#ffffff'
                 font.pixelSize: app.ehFsText
                 elide: Text.ElideRight
@@ -499,8 +517,8 @@ Rectangle {
     // bitcoin line and the pills (arriving / blocked); the stamped banknote bottom left, the
     // inheritance bottom right (owner 15/11). One fixed height, no empty area.
     readonly property string body: BodyFont ? BodyFont : app.font.family
-    readonly property color statusInk: Network.isConnected ? (root.watch ? '#45541f' : '#d6eca0') : (root.watch ? '#7a4a12' : '#ffd88a')
-    readonly property string statusText: Network.isConnected ? '● ' + qsTr('Up to date') : '● ' + qsTr('Not connected')
+    readonly property color statusInk: root.idle ? Qt.rgba(1, 0.95, 0.85, 0.8) : Network.isConnected ? (root.watch ? '#45541f' : '#d6eca0') : (root.watch ? '#7a4a12' : '#ffd88a')
+    readonly property string statusText: root.idle ? '○ ' + qsTr('last balance') : Network.isConnected ? '● ' + qsTr('Up to date') : '● ' + qsTr('Not connected')
     Item {
         id: homeBox
         visible: root.fixedRows
@@ -531,7 +549,7 @@ Rectangle {
                 id: hName
                 Layout.fillWidth: true
                 Layout.alignment: Qt.AlignVCenter
-                text: root.previewName !== '' ? root.previewName : app.ehWalletName()
+                text: root.previewName !== '' ? root.previewName : (root.idle ? app.ehWalletNameFor(root.idleName) : app.ehWalletName())
                 color: root.watch ? root.baseColor : '#ffffff'
                 font.family: root.body
                 font.pixelSize: app.ehFsText
@@ -713,7 +731,7 @@ Rectangle {
                 anchors.horizontalCenter: parent.horizontalCenter
                 width: 50
                 height: 52
-                opacity: root.heirOff ? 0.42 : 1
+                opacity: root.heirFaint ? 0.42 : 1
                 source: Qt.resolvedUrl('../../../icons/eh_bal_logo_cream.svg')
                 sourceSize.width: 150
                 sourceSize.height: 156
@@ -722,8 +740,9 @@ Rectangle {
                 anchors.horizontalCenter: parent.horizontalCenter
                 width: Math.min(implicitWidth, heirBtn.width)
                 horizontalAlignment: Text.AlignHCenter
-                text: root.heirOff ? qsTr('TO DO') : qsTr('INHERITANCE')
-                color: root.heirOff ? '#d4a536' : '#fbeccb'
+                text: qsTr('INHERITANCE')
+                color: '#fbeccb'
+                opacity: root.heirFaint ? 0.5 : 1
                 font.family: TitleFont ? TitleFont : root.body
                 font.weight: Font.Black
                 font.pixelSize: app.ehFsSmall
@@ -775,5 +794,6 @@ Rectangle {
         target: Daemon
         function onWalletLoaded() { root.revealed = false; root.refresh() }
     }
+    onIdleChanged: refresh()
     Component.onCompleted: refresh()
 }
