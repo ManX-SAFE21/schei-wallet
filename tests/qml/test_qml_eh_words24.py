@@ -325,3 +325,22 @@ class TestPages(TestCase):
         s = _read('EhSeedPage.qml')
         self.assertIn('visible: page.words.length === 0', s)
         self.assertIn('does not keep them', s)
+
+
+class TestFindFundsWarnsAboutTheInheritance(TestCase):
+    # owner 17/11 (controllo-mainnet M5): 1.../3... addresses = no inheritance, said on this page
+
+    def test_warning_for_every_kind_but_native_segwit(self):
+        import os as _os
+        from electrum.gui.qml import qeapp as _qeapp
+        w = open(_os.path.join(_os.path.dirname(_qeapp.__file__), 'components', 'wizard', 'WCEasyFindFunds.qml'),
+                 encoding='utf-8').read()
+        i = w.index("qsTr('With this kind of addresses the inheritance cannot be made.')")
+        box = w[w.rindex('EhInfoBox {', 0, i):i]
+        self.assertIn("root.chosen.script_type !== 'p2wpkh'", box)
+        self.assertIn("finder.state === 'done'", box)
+
+    def test_bal_still_needs_native_segwit(self):
+        # if the core ever accepts other kinds, this warning must be looked at again
+        from electrum.plugins.bal.core import heirs
+        self.assertTrue(hasattr(heirs, 'only_native_segwit'))

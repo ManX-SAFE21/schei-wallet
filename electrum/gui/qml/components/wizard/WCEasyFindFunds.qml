@@ -208,6 +208,15 @@ WizardComponent {
                   : qsTr('If the wallet is new that is fine: I use the kind «%1», the one of today’s wallets.').arg(qsTr('Modern'))
         }
 
+        // owner 17/11 (controllo-mainnet M5): the inheritance works only with the modern kind
+        // (native segwit, bal core/heirs.py only_native_segwit): say it here, not at the end
+        EhInfoBox {
+            visible: finder.state === 'done' && root.chosen !== null && root.chosen.script_type !== 'p2wpkh'
+            kind: 'warn'
+            text: '<b>' + qsTr('With this kind of addresses the inheritance cannot be made.') + '</b> '
+                  + qsTr('To use it, later send the money to a new Schȅi wallet (kind «%1»).').arg(qsTr('Modern'))
+        }
+
         // ---- result: more places, the person chooses ----
         EhInfoBox {
             visible: root.mustChoose
