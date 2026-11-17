@@ -231,7 +231,14 @@ ElDialog {
         sentBtc = app.ehBtc(finalizer.effectiveAmount)
         dialog.setBusy(true)
         app._ehSendOk = true      // our screens (slides, PIN when needed, countdown) were passed
-        finalizer.signAndSend()
+        // owner 17/11 (controllo-mainnet M4): the go-ahead is used up inside this call (the wallet
+        // asks for the signature right away). If signAndSend stops before asking, it must not stay
+        // on for a later signature: always off again here
+        try {
+            finalizer.signAndSend()
+        } finally {
+            app._ehSendOk = false
+        }
     }
 
     // owner 13/11: the middle of "Check carefully" scrolls between the two slides: a soft
