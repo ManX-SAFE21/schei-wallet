@@ -903,6 +903,10 @@ class QEBal(PluginQObject):
         """
         wallet = self._local.wallet
         self._need_network(wallet)
+        # owner 17/11: never left without an inheritance. Before the invalidation (which cannot be
+        # undone) check what the new will needs: heirs at 100% and keepers that answer. If not,
+        # nothing is touched and the will in force stays.
+        self._renew_precheck()
         inv = self._invalidate(wallet)
         if inv and not inv['seen']:
             raise _Fail('not_synced', 'The renewal was sent: it is finished the next time.')
@@ -915,6 +919,15 @@ class QEBal(PluginQObject):
         sent, total = self._sign_and_send()
         return {'delivery': self._min_locktime(self._live_items(wallet)), 'sent': sent,
                 'total': total, 'feeSats': inv['feeSats'] if inv else 0}
+
+    def _renew_precheck(self):
+        """What a renewal needs before its invalidation: heirs at 100% and keepers that answer."""
+        heirs = self._cmd('bal_heirs_list') or {}
+        if not heirs:
+            raise _Fail('no_heirs', 'Add at least one person.')
+        if sum(_percent(v[1]) or 0 for v in heirs.values()) != 100:
+            raise _Fail('percent', 'The total must be 100%.')
+        self._keepers()
 
     def _invalidate(self, wallet, on_sent=None):
         """``bal_will_invalidate`` + ``signtransaction`` + ``broadcast``, then wait (F4).
