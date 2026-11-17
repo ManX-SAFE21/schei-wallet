@@ -1248,6 +1248,65 @@ ApplicationWindow
         Config.ehSet('color_' + ehWalletKey(), color)
         ehOptRev++
     }
+    // owner 17/11: an added wallet can be removed (gear page), only at the EXPERT level (who knows what
+    // he is doing; there "Send all the balance" is on). Never the main one, never with money in it or
+    // with an inheritance (first move the money / cancel the inheritance); then the PIN.
+    property bool _ehRemoving: false
+    function ehCanRemoveWallet() {
+        return ehLevel() === 'esperto' && Daemon.currentWallet !== null && Daemon.availableWallets.rowCount() > 1
+               && Daemon.currentWallet.name !== Daemon.ehMainWalletName()
+    }
+    function ehRemoveWallet() {
+        var w = Daemon.currentWallet
+        if (!w || !ehCanRemoveWallet()) return
+        var name = w.name
+        var shown = ehWalletNameFor(name)
+        if (!w.isWatchOnly) {
+            var b = ehBal()
+            if (b) {
+                var st = ehHeirState(b)
+                if (st.phase === undefined) {
+                    ehTell(qsTr('I am still checking the inheritance of this wallet. Try again in a moment.'))
+                    return
+                }
+                if (st.phase !== 'none' && st.phase !== 'draft') {
+                    ehTell(qsTr('This wallet has an inheritance.'),
+                           qsTr('First cancel the inheritance (Settings › Inheritance), then you can remove the wallet.'))
+                    return
+                }
+            }
+            if (w.ehTotal.satsInt > 0 || w.frozenBalance.satsInt > 0) {
+                ehTell(qsTr('In this wallet there is still %1.').arg(ehMoney(w.ehTotal)),
+                       qsTr('First send it to another of your wallets with Send › All the balance, then you can remove this one.'))
+                return
+            }
+        }
+        var detail = w.isWatchOnly
+            ? qsTr('It is a wallet to watch: no money is lost. You can add it again when you want.')
+            : qsTr('It is empty. It disappears from this phone: to open it again you will need its words (SEED).')
+        ehAsk(qsTr('Remove «%1» from this phone?').arg(shown), detail, function() {
+            ehAskPin(qsTr('Type the PIN to remove the wallet'), function() { app._ehDoRemoveWallet(name, shown) })
+        }, null, qsTr('Yes, remove it'), qsTr('No'))
+    }
+    function _ehDoRemoveWallet(name, shown) {
+        if (!Daemon.currentWallet || Daemon.currentWallet.name !== name) return
+        var main = Daemon.ehWalletPathFor(Daemon.ehMainWalletName())
+        if (main === '') return
+        app.stack.pop(null)
+        _ehRemoving = true
+        var ok = Daemon.ehRemoveWallet(name)
+        _ehRemoving = false
+        if (!ok) {
+            if (!Daemon.currentWallet) Daemon.loadWallet(main)
+            ehTell(qsTr('The wallet could not be removed. Nothing has changed.'))
+            return
+        }
+        var keys = ['name_', 'color_', 'watch_', 'bal_']
+        for (var i = 0; i < keys.length; i++) Config.ehSet(keys[i] + name, '')
+        ehOptRev++
+        Daemon.loadWallet(main)
+        ehTell(qsTr('«%1» has been removed from this phone.').arg(shown))
+    }
     function ehResetSettings() {
         var keys = ['euro_btc', 'max', 'request_amount', 'multi', 'watch', 'sign_elsewhere', 'buttons', 'coins', 'no_anim', 'privacy', 'utxo', 'show_adv', 'manual_fee']
         for (var i = 0; i < keys.length; i++) Config.ehSet('opt_' + keys[i], ehOptDefaultOn.indexOf(keys[i]) >= 0)

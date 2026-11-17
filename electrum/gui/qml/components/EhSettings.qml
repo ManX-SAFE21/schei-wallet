@@ -77,13 +77,19 @@ Item {
 
             Group { text: qsTr('YOUR WALLET') }
             EhSheet {
-                EhRow { icon: 'eh_palette.svg'; text: qsTr('Name and colour'); last: col.lv < 1
+                id: walletSheet
+                readonly property bool canRemove: app.ehCanRemoveWallet()
+                EhRow { icon: 'eh_palette.svg'; text: qsTr('Name and colour'); last: col.lv < 1 && !walletSheet.canRemove
                         onClicked: app.stack.push(Qt.resolvedUrl('EhNamePage.qml')) }
                 RowSw { visible: col.lv >= 1; tag: 1; icon: 'eh_wallet.svg'; text: qsTr('Manage more wallets'); note: qsTr('up to 7, each with its own colour'); key: 'multi'
                         locked: Daemon.availableWallets.rowCount() > 1
                         lockedHint: qsTr('you have %1 wallets: it stays on, so you see them all').arg(Daemon.availableWallets.rowCount()) }
                 RowSw { visible: col.lv >= 1; tag: 1; icon: 'eh_eye.svg'; text: qsTr('View and receive only'); note: qsTr('a wallet without the words (SEED): see the balance and receive, no spending'); key: 'watch'
-                        last: true }
+                        last: !walletSheet.canRemove }
+                // owner 17/11: only an added wallet (never the main one), only in ESPERTO, with the PIN
+                EhRow { visible: walletSheet.canRemove; icon: 'eh_cross.svg'; text: qsTr('Remove this wallet')
+                        hint: qsTr('only if it is empty and without inheritance'); lock: true; last: true
+                        onClicked: app.ehRemoveWallet() }
             }
 
             // the inheritance (Àncòra inside Schȅi), every level; not for a wallet that cannot spend

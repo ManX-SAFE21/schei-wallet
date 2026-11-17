@@ -460,6 +460,43 @@ class QEDaemon(AuthMixin, QObject):
         else:
             self.currentWallet.requestNewPassword.emit()
 
+    # ---------- Easy Heirs: remove an added wallet (owner 17/11) ----------
+    @pyqtSlot(str, result=str)
+    def ehWalletPathFor(self, name):
+        for wallet_name, wallet_path in self.availableWallets._wallets:
+            if wallet_name == name:
+                return wallet_path
+        return ''
+
+    @pyqtSlot(result=str)
+    def ehMainWalletName(self):
+        """The main wallet: 'Portafoglio' (the first one Schȅi makes), else the first of the list."""
+        names = [n for n, _ in self.availableWallets._wallets]
+        if 'Portafoglio' in names:
+            return 'Portafoglio'
+        return names[0] if names else ''
+
+    @pyqtSlot(str, result=bool)
+    def ehRemoveWallet(self, name):
+        """Deletes the file of an added wallet. The app asked the PIN and checked the inheritance
+        before; here again: never the main one, never the last one, never with money in it."""
+        path = self.ehWalletPathFor(name)
+        if not path or name == self.ehMainWalletName() or len(self.availableWallets._wallets) < 2:
+            return False
+        w = self.daemon.get_wallet(path)
+        if w is not None and not w.is_watching_only() and sum(w.get_balance()) > 0:
+            return False
+        if self._current_wallet is not None and \
+                standardize_path(self._current_wallet.wallet.storage.get_path()) == standardize_path(path):
+            self._current_wallet = None
+            self.walletLoaded.emit(None, None)
+        if not self.daemon.delete_wallet(path):
+            self._logger.error(f'eh: cannot remove wallet {name}')
+            return False
+        self.availableWallets.remove_wallet(standardize_path(path))
+        self._logger.info(f'eh: wallet {name} removed')
+        return True
+
     # ---------- Easy Heirs: phone safe + PIN (see qeehvault.py) ----------
     @pyqtSlot(result=bool)
     def ehVaultReady(self):

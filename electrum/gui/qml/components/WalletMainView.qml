@@ -627,6 +627,7 @@ Item {
         target: Daemon
         function onWalletLoaded() {
             if (!Daemon.currentWallet) {  // wallet got deleted
+                if (app._ehRemoving) return     // Schȅi removed an added wallet: the main one opens next
                 app.stack.replaceRoot('Wallets.qml')
                 return
             }
