@@ -104,3 +104,15 @@ class TestStateOfTheWalletOpen(TestCase):
         m = _read('main.qml')
         body = m[m.index('function ehHeirDecide'):m.index('function _ehHeirOpenSheet')]
         self.assertIn('if (s.wallet !== Daemon.currentWallet.name)', body)
+
+
+class TestWalletInside(TestCase):
+    # owner 17/11: the inside of a green wallet looked brown (the lining colours were fixed wine)
+
+    def test_inside_colours_come_from_the_wallet_colour(self):
+        s = _read('controls', 'EhWalletInside.qml')
+        code = '\n'.join(ln for ln in s.split('\n') if not ln.strip().startswith('//'))
+        for wine in ('#2a0b18', '#1a0610', '#33101f'):
+            self.assertNotIn(wine, code)
+        for k in ('Qt.darker(root.baseColor, 2.2)', 'Qt.darker(root.baseColor, 3.6)', 'Qt.darker(root.baseColor, 1.85)'):
+            self.assertIn(k, code)
