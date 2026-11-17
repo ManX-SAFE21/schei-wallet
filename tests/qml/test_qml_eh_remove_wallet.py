@@ -117,3 +117,10 @@ class TestRemoveInThePages(TestCase):
         self.assertIn("readonly property bool canRemove: app.ehCanRemoveWallet()", s)
         self.assertIn("EhRow { visible: walletSheet.canRemove; icon: 'eh_cross.svg'; text: qsTr('Remove this wallet')", s)
         self.assertIn("onClicked: app.ehRemoveWallet() }", s)
+
+    def test_settings_of_the_removed_name_are_cleared(self):
+        # Opus review 18/11: a new wallet gets the freed name again (Portafoglio_2): it must not
+        # inherit 'inheritance off' of the removed one. '' reads as 'on' in ehHeirEnabled.
+        m = _read('main.qml')
+        self.assertIn("var keys = ['name_', 'color_', 'watch_', 'bal_', 'heir_on_']", m)
+        self.assertIn("return Config.ehGet('heir_on_' + ehWalletKey()) !== false", m)

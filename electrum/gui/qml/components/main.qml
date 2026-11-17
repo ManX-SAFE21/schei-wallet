@@ -1301,7 +1301,7 @@ ApplicationWindow
             ehTell(qsTr('The wallet could not be removed. Nothing has changed.'))
             return
         }
-        var keys = ['name_', 'color_', 'watch_', 'bal_']
+        var keys = ['name_', 'color_', 'watch_', 'bal_', 'heir_on_']
         for (var i = 0; i < keys.length; i++) Config.ehSet(keys[i] + name, '')
         ehOptRev++
         Daemon.loadWallet(main)
