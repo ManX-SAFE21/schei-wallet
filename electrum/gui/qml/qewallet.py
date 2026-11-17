@@ -1265,6 +1265,10 @@ class QEWallet(AuthMixin, QObject, QtEventListener):
         except Exception:
             self._seed = ''
             self._seed_passphrase = ''
+            # Easy Heirs (Samsung 17/11): words of another wallet are not kept by Electrum:
+            # open the page anyway (the PIN was right), it explains that the paper is the only copy
+            if not self.wallet.has_seed():
+                self.seedRetrieved.emit()
 
         self.dataChanged.emit()
 

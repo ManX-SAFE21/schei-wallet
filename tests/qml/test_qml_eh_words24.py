@@ -6,6 +6,7 @@
 # - QWERTY keyboard; the words always top to bottom, left column first
 import asyncio
 import os
+import types
 from unittest import TestCase, mock
 
 from electrum import bitcoin, constants, keystore
@@ -211,6 +212,27 @@ class TestForgotPinOtherWallet(TestCase):
         ks = self._ks(WORDS12, "m/49'/0'/0'", 'p2wpkh-p2sh')
         self.assertTrue(eh_bip39_words_match(ks, WORDS12))
         self.assertFalse(eh_bip39_words_match(self._ks(WORDS12, "m/84'/0'/1'"), WORDS24))
+
+    def test_seed_page_opens_also_without_kept_words(self):
+        # Samsung 17/11: after the PIN the page did not open for a wallet from another wallet's words
+        from electrum.gui.qml.qewallet import QEWallet
+
+        class _W:
+            def get_seed(self, pw):
+                raise Exception('no seed')
+
+            def has_seed(self):
+                return False
+
+        me = types.SimpleNamespace(wallet=_W(), password='x', seedRetrieved=mock.Mock(), dataChanged=mock.Mock())
+        QEWallet.retrieve_seed.__wrapped__(me)   # without the PIN request
+        me.seedRetrieved.emit.assert_called_once()
+        self.assertEqual('', me._seed)
+        # a wallet WITH words that cannot be read (e.g. wrong password): nothing opens
+        me = types.SimpleNamespace(wallet=_W(), password='x', seedRetrieved=mock.Mock(), dataChanged=mock.Mock())
+        me.wallet.has_seed = lambda: True
+        QEWallet.retrieve_seed.__wrapped__(me)   # without the PIN request
+        me.seedRetrieved.emit.assert_not_called()
 
     def test_wallet_uses_it_when_no_seed_is_kept(self):
         src = open(os.path.join(os.path.dirname(qeapp.__file__), 'qewallet.py'), encoding='utf-8').read()

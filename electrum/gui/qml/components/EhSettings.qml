@@ -192,7 +192,7 @@ Item {
 
             Group { text: qsTr('SECURITY') }
             EhSheet {
-                EhRow { icon: 'eh_key_wine.svg'; text: qsTr('See the 12 words (SEED) again'); lock: true; onClicked: app.ehShowSeed() }
+                EhRow { icon: 'eh_key_wine.svg'; text: qsTr('See the words (SEED) again'); lock: true; onClicked: app.ehShowSeed() }
                 EhRow { icon: 'eh_dots.svg'; text: qsTr('Change PIN'); lock: true; last: true; onClicked: app.ehChangePin() }
             }
 
