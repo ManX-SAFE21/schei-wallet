@@ -40,6 +40,8 @@ ElDialog {
     closePolicy: canCancel ? Popup.CloseOnEscape : Popup.NoAutoClose
 
     background: Rectangle { color: S.parch }
+    // owner 16/11 + controllo-mainnet: the PIN / the payment are important data: black on mainnet
+    Binding { target: AppController; property: 'secureWindow'; value: true; when: root.visible }
 
     Component.onCompleted: if (mode === 'verify' && app.ehPinLockMessage()) { pad.message = app.ehPinLockMessage(); pad.messageBad = true }
 

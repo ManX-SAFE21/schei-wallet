@@ -1150,3 +1150,32 @@ def test_invalidation_coins_are_the_coins_it_spends(s):
     out = s.ok('cancelWill', False)
     tx = s.wallet.adb.get_transaction(out['txid'])
     assert sorted(i.prevout.to_str() for i in tx.inputs()) == coins
+
+
+# ---- controllo-mainnet 2.6: 1.../3... wallets stop at the start, clearly ----
+
+def test_old_address_kind_stops_at_review(s, monkeypatch):
+    s.ok('refresh')
+    s.ok('heirSave', '', 'Marco', MARCO, 100)
+    monkeypatch.setattr(s.wallet, "txin_type", "p2wpkh-p2sh", raising=False)
+    ev, _ = s.call('review')
+    assert ev[0] == 'failed' and ev[2] == 'address_kind', ev
+
+
+def test_native_segwit_passes_the_kind_check(s):
+    s.ok('refresh')
+    s.ok('heirSave', '', 'Marco', MARCO, 100)
+    ev, _ = s.call('review')
+    assert not (ev[0] == 'failed' and ev[2] == 'address_kind'), ev
+
+
+def test_two_heirs_on_one_address_share_its_output(monkeypatch):
+    # controllo-mainnet 2.8 (view only): the output of a shared address is split by percent
+    out = SimpleNamespace(address=MARCO, value=9000)
+    monkeypatch.setattr(bal_qml, "tx_from_any", lambda raw: SimpleNamespace(outputs=lambda: [out]))
+    monkeypatch.setattr(bal_qml, "_inputs", lambda raw: [])
+    items = [{"tx": "x", "willexecutor": ""}]
+    heirs = {"Anna": [MARCO, "60%"], "Bruno": [MARCO, "30%"], "Carla": [GIULIA, "10%"]}
+    rows, *_ = bal_qml.QEBal._split(None, items, heirs, {})
+    got = {r["name"]: r["sats"] for r in rows}
+    assert got == {"Anna": 6000, "Bruno": 3000, "Carla": 0}

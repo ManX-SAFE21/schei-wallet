@@ -839,6 +839,7 @@ class QEBal(PluginQObject):
         """
         wallet = self._local.wallet
         self._need_network(wallet)
+        self._kind_ok(wallet)
         change, months, _x, _y = self._period_change(wallet)
         if change == 'renew':
             return dict(self._job_renew(), change=change)
@@ -856,6 +857,7 @@ class QEBal(PluginQObject):
     def _job_review(self):
         wallet = self._local.wallet
         self._need_network(wallet)
+        self._kind_ok(wallet)
         heirs = self._cmd('bal_heirs_list') or {}
         if not heirs:
             raise _Fail('no_heirs', 'Add at least one person.')
@@ -942,6 +944,17 @@ class QEBal(PluginQObject):
         return {'delivery': self._min_locktime(self._live_items(wallet)), 'sent': sent,
                 'total': total, 'feeSats': inv['feeSats'] if inv else 0}
 
+    def _kind_ok(self, wallet):
+        """controllo-mainnet 2.6: the inheritance works only on native segwit (bc1q...) coins
+        (bal core/heirs.py only_native_segwit): say it at once, not at the end."""
+        from electrum.bitcoin import is_segwit_address
+        kind = getattr(wallet, 'txin_type', None)
+        bad_kind = kind is not None and kind not in ('p2wpkh', 'p2wsh')
+        bad_coin = any(not is_segwit_address(c.get('address') or '')
+                       for c in (self._cmd('listunspent') or []))
+        if bad_kind or bad_coin:
+            raise _Fail('address_kind', 'The inheritance works only with bc1 addresses.')
+
     def _heirs_ready(self):
         """M2 (owner 17/11): at least one person and the shares at 100%, before any new will."""
         heirs = self._cmd('bal_heirs_list') or {}
@@ -949,6 +962,7 @@ class QEBal(PluginQObject):
             raise _Fail('no_heirs', 'Add at least one person.')
         if sum(_percent(v[1]) or 0 for v in heirs.values()) != 100:
             raise _Fail('percent', 'The total must be 100%.')
+        self._kind_ok(self._local.wallet)
 
     def _renew_precheck(self):
         """What a renewal needs before its invalidation: heirs at 100% and keepers that answer."""
@@ -1206,8 +1220,16 @@ class QEBal(PluginQObject):
             fee = sum(val for a, val in outs.items() if a not in heir_addrs)
             key = it.get('willexecutor') or ''
             by_keeper[key] = max(by_keeper.get(key, 0), int(fee))
-        rows = [{'name': n, 'percent': _percent(v[1]) or 0, 'sats': int(first_outs.get(v[0], 0))}
-                for n, v in heirs.items()]
+        # controllo-mainnet 2.8: heirs sharing one address share its output by their percent
+        share = {}
+        for v in heirs.values():
+            share[v[0]] = share.get(v[0], 0) + (_percent(v[1]) or 0)
+
+        def sats_of(v):
+            total = int(first_outs.get(v[0], 0))
+            whole = share.get(v[0]) or 0
+            return total if whole <= 0 else total * (_percent(v[1]) or 0) // whole
+        rows = [{'name': n, 'percent': _percent(v[1]) or 0, 'sats': sats_of(v)} for n, v in heirs.items()]
         miner = sum(coins.get(i, 0) for i in _inputs(items[0]['tx'])) - sum(first_outs.values())
         fees = list(by_keeper.values())
         return rows, min(fees), max(fees), int(max(0, miner))

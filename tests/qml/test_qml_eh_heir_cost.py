@@ -63,3 +63,11 @@ class TestPagesUseTheRow(TestCase):
 
     def test_no_fee_error_has_a_sentence(self):
         self.assertIn("if (code === 'no_fee') return qsTr('First choose the cost of the operation.')", _read('main.qml'))
+
+
+class TestBusyConfirm(TestCase):
+    # controllo-mainnet 2.5: a confirmation refused for "busy" puts the coin back
+
+    def test_coin_back_when_busy(self):
+        s = _read('EhHeirCheckPage.qml')
+        self.assertIn("if (code === 'busy') { slide.reset(); return }", s)

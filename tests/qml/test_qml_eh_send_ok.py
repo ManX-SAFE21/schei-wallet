@@ -62,3 +62,33 @@ class TestBanknotesNeverHideAnAmount(TestCase):
         d = _read('EhInvoiceDialog.qml')
         i = d.index('euroInput = d.euroInput')
         self.assertIn('coinsMode = false', d[i - 200:i])
+
+
+class TestSendAnswersAndUnits(TestCase):
+    # controllo-mainnet 3.5 / 3.7
+
+    def test_sent_only_for_our_payment(self):
+        d = _read('EhInvoiceDialog.qml')
+        self.assertIn('dialog.sentTxid = finalizer.finalizedTxid', d)
+        for sig in ('function onBroadcastSucceeded(txid) {', 'function onBroadcastFailed(txid, code, reason) {'):
+            i = d.index(sig)
+            self.assertIn('if (!mine(txid)) return', d[i:i + 120], sig)
+        self.assertIn("dialog.busy && (dialog.sentTxid === '' || txid === dialog.sentTxid)", d)
+
+    def test_no_fixed_btc_unit(self):
+        d = _read('EhInvoiceDialog.qml')
+        self.assertNotIn("'0 BTC'", d)
+        self.assertNotIn("'Bitcoin (BTC)'", d)
+
+
+class TestFeeByHand(TestCase):
+    # controllo-mainnet 3.2 / 3.3
+
+    def test_invalid_typed_rate_never_goes_on(self):
+        m = _read('EhManualFeeSheet.qml')
+        i = m.index("qsTr('Fine, continue')")
+        self.assertIn("root.finalizer.ehParseFeerate(root.typed) !== ''", m[i - 400:i])
+
+    def test_rows_show_the_rate_written_by_hand(self):
+        for f in ('EhInvoiceDialog.qml', 'EhHeirCostRow.qml'):
+            self.assertIn("finalizer.userFeerate !== '' ? app.ehFeeRate(finalizer.userFeerate + ' sat/vB')", _read(f), f)

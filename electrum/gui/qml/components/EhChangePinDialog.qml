@@ -20,6 +20,8 @@ ElDialog {
     header: null
     needsSystemBarPadding: false
     background: Rectangle { color: S.parch }
+    // owner 16/11 + controllo-mainnet: the PIN / the payment are important data: black on mainnet
+    Binding { target: AppController; property: 'secureWindow'; value: true; when: root.visible }
 
     function bad(msg) { pad.clear(); pad.message = msg; pad.messageBad = true; AppController.haptic() }
     function onPin(p) {

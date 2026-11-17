@@ -127,6 +127,7 @@ Item {
                 Layout.fillWidth: true
                 wrapMode: Text.WordWrap
                 text: root.byHand ? app.ehFeeRate(root.rateByHand + ' sat/vB')
+                      : finalizer.userFeerate !== '' ? app.ehFeeRate(finalizer.userFeerate + ' sat/vB')
                       : finalizer.ehNoEstimate ? qsTr('to be written by hand')
                       : app.ehFeeEta(finalizer.sliderPos)
                 font.family: BodyFont ? BodyFont : font.family

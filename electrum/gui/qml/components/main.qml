@@ -1790,6 +1790,7 @@ ApplicationWindow
         if (code === 'custodians') return qsTr('No keeper answered. Your money is safe; try again later.')
         if (code === 'not_synced') return qsTr('Schȅi is still updating. Try again in a little while.')
         if (code === 'no_heirs') return qsTr('First add at least one person.')
+        if (code === 'address_kind') return qsTr('This wallet uses addresses that start with 1 or 3: the inheritance works only with addresses that start with bc1. Send the money to a new Schȅi wallet.')
         if (code === 'no_fee') return qsTr('First choose the cost of the operation.')
         if (code === 'percent') return qsTr('The shares of the people do not make 100%. Open the people and fix the shares.')
         if (code === 'needs_renew') return qsTr('First the inheritance must be renewed.')

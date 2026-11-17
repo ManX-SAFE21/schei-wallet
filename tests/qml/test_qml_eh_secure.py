@@ -14,6 +14,9 @@ COMP = os.path.join(os.path.dirname(qeapp.__file__), 'components')
 SECURE_SCREENS = {
     'AddressDetails.qml': 'Boolean(addressdetails.privkey)',  # while the private key is shown
     'EhForgotPinDialog.qml': 'true',
+    'EhPinDialog.qml': 'true',
+    'EhChangePinDialog.qml': 'true',
+    'EhInvoiceDialog.qml': 'true',
     'EhSeedPage.qml': 'true',
     'EhSendDialog.qml': 'true',
     'ImportAddressesKeysDialog.qml': 'true',
@@ -27,6 +30,7 @@ SECURE_WIZARD_PAGES = [
     'WCCreateSeed.qml', 'WCConfirmSeed.qml', 'WCHaveSeed.qml', 'WCEasyCreateSeed.qml',
     'WCEasyConfirmSeed.qml', 'WCEasyHaveSeed.qml', 'WCImport.qml', 'WCHaveMasterKey.qml',
     'WCEnterExt.qml', 'WCConfirmExt.qml',
+    'WCEasyPin.qml',
 ]
 
 

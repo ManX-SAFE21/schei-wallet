@@ -294,7 +294,10 @@ EhBottomSheet {
         EhStitchButton {
             kind: 'wine'
             endIcon: root.askHigh || root.tight ? '' : 'next'
+            // controllo-mainnet 3.2: a number typed that is not valid (e.g. "0,0") never goes on
+            // with the rate that was there before
             enabled: !root.tooLow && root.costSats >= 0
+                     && (root.typed === '' || (root.finalizer !== null && root.finalizer.ehParseFeerate(root.typed) !== ''))
             text: root.askHigh ? qsTr('Yes, continue anyway') : qsTr('Fine, continue')
             onClicked: root.go()
         }

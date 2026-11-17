@@ -26,6 +26,7 @@ ElDialog {
     property string euroInput: ''   // digits typed, e.g. "25,5"
     property var chosen: null       // QEAmount to send
     property string sentEuro: ''
+    property string sentTxid: ''    // the payment this page sent (its answer only, not another one's)
     property string sentBtc: ''
     property bool btcMode: app.ehBtcOnly()     // typing in bitcoin (expert toggle, or 'only bitcoin')
     property bool useMax: false      // expert: all the balance
@@ -48,6 +49,8 @@ ElDialog {
     header: null
     needsSystemBarPadding: false
     background: Rectangle { color: S.parch }
+    // owner 16/11 + controllo-mainnet: the PIN / the payment are important data: black on mainnet
+    Binding { target: AppController; property: 'secureWindow'; value: true; when: dialog.visible }
 
     // ---------- helpers ----------
     // blocked gold coins cannot be spent: "you have" is what can be spent
@@ -70,7 +73,7 @@ ElDialog {
     function satsToAmount(sats) { return Config.unitsToSats((sats / 100000000).toFixed(8)) }
     function euroDisplay() {
         var sym = btcMode ? '' : app.ehSym() + ' '
-        if (euroInput === '') return btcMode ? '0 BTC' : sym + '0'
+        if (euroInput === '') return btcMode ? '0 ' + app.ehBtcUnit() : sym + '0'
         if (btcMode) return euroInput.replace(',', app.ehLocale().decimalPoint) + ' ' + app.ehBtcUnit()
         var parts = euroInput.split(',')
         var intPart = Number(parts[0] || '0').toLocaleString(app.ehLocale(), 'f', 0)
@@ -230,6 +233,7 @@ ElDialog {
         sentEuro = app.ehMoney(finalizer.effectiveAmount)
         sentBtc = app.ehBtc(finalizer.effectiveAmount)
         dialog.setBusy(true)
+        dialog.sentTxid = finalizer.finalizedTxid
         app._ehSendOk = true      // our screens (slides, PIN when needed, countdown) were passed
         // owner 17/11 (controllo-mainnet M4): the go-ahead is used up inside this call (the wallet
         // asks for the signature right away). If signAndSend stops before asking, it must not stay
@@ -351,7 +355,7 @@ ElDialog {
         // ===== amount =====
         EhSegmented {
             visible: dialog.phase === 'amount' && app.ehOption('euro_btc') && !app.ehBtcOnly()
-            model: [ (app.ehSym() !== app.ehCcy() ? app.ehSym() + '  ' : '') + app.ehCcyTitle(), 'Bitcoin (BTC)' ]
+            model: [ (app.ehSym() !== app.ehCcy() ? app.ehSym() + '  ' : '') + app.ehCcyTitle(), 'Bitcoin (' + app.ehBtcUnit() + ')' ]
             currentIndex: dialog.btcMode ? 1 : 0
             onActivated: (i) => {
                 var b = (i === 1)
@@ -653,7 +657,9 @@ ElDialog {
                                         Layout.fillWidth: true
                                         wrapMode: Text.WordWrap
                                         // Q8: written by hand -> the rate, not a time we cannot know
-                                        text: dialog.feeByHand ? app.ehFeeRate(dialog.feeRateByHand + ' sat/vB') : app.ehFeeEta(finalizer.sliderPos)
+                                        text: dialog.feeByHand ? app.ehFeeRate(dialog.feeRateByHand + ' sat/vB')
+                                              : finalizer.userFeerate !== '' ? app.ehFeeRate(finalizer.userFeerate + ' sat/vB')
+                                              : app.ehFeeEta(finalizer.sliderPos)
                                         font.pixelSize: app.ehFsText
                                         color: S.muted
                                     }
@@ -952,11 +958,15 @@ ElDialog {
 
     Connections {
         target: Daemon.currentWallet
+        // controllo-mainnet 3.5: the answer of THIS payment only (another payment can end meanwhile)
+        function mine(txid) { return dialog.busy && (dialog.sentTxid === '' || txid === dialog.sentTxid) }
         function onBroadcastSucceeded(txid) {
+            if (!mine(txid)) return
             dialog.setBusy(false)
             dialog.phase = 'sent'
         }
         function onBroadcastFailed(txid, code, reason) {
+            if (!mine(txid)) return
             dialog.resetBars()
             // third review: say only what we know. A rejection: it did not leave. A broken
             // connection: maybe it left, look at the movements before paying again.

@@ -17,6 +17,7 @@ WizardComponent {
     Material.accent: '#5e1a33'
     valid: password !== ''
     property bool hideWizardButtons: true
+    securePage: true    // the PIN is typed here: black on mainnet
 
     // other wallets exist and Electrum wants one password for all: ask that PIN
     // third review: after "this phone no longer recognises the key" the old PIN protects

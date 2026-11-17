@@ -114,7 +114,9 @@ Item {
         }
         function onFailed(op, code, message) {
             if (op !== 'review' && op !== 'confirm') return
-            if (code === 'busy') return
+            // controllo-mainnet 2.5: another job was running: nothing happened, the coin goes back
+            // to the left so it can be pushed again (no error, it was not a failure)
+            if (code === 'busy') { slide.reset(); return }
             page.failedOp = op
             page.error = top.failText(code, message)
             slide.reset()
