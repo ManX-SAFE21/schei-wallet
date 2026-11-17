@@ -33,7 +33,7 @@ Item {
     property int oldPercent: 0
 
     readonly property var bal: AppController.plugin('bal')
-    readonly property var st: bal ? bal.state : ({})
+    readonly property var st: app.ehHeirState(bal)   // M1: only the wallet open
     readonly property bool busy: bal ? bal.busy : false
 
     property string address: oldAddress

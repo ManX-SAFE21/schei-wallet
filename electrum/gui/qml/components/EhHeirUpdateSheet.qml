@@ -13,7 +13,7 @@ EhBottomSheet {
     id: root
     property string reason: 'received'         // received | spent | changed | unfinished
     readonly property var bal: AppController.plugin('bal')
-    readonly property var st: bal ? bal.state : ({})
+    readonly property var st: app.ehHeirState(bal)   // M1: only the wallet open
     property string error: ''
     property bool _mine: false
 

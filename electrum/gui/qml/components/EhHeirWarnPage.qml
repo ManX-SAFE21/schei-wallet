@@ -17,7 +17,7 @@ Item {
     Material.foreground: S.ink
 
     readonly property var bal: AppController.plugin('bal')
-    readonly property var st: bal ? bal.state : ({})
+    readonly property var st: app.ehHeirState(bal)   // M1: only the wallet open
     // the example uses the period of the inheritance in force (owner 16/11), else the one
     // chosen (2 years when none is set yet)
     readonly property int months: (st.monthsInForce || 0) > 0 ? st.monthsInForce : ((st.months || 0) > 0 ? st.months : 24)

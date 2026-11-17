@@ -28,7 +28,7 @@ Item {
     Material.accent: S.wine
 
     readonly property var bal: AppController.plugin('bal')
-    readonly property var st: bal ? bal.state : ({})
+    readonly property var st: app.ehHeirState(bal)   // M1: only the wallet open
     readonly property bool busy: bal ? bal.busy : false
 
     property var rv: null              // the review() result, null until it comes

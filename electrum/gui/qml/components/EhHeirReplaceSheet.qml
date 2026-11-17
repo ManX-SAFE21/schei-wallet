@@ -15,7 +15,7 @@ import "controls/EhStyle.js" as S
 EhBottomSheet {
     id: root
     readonly property var bal: AppController.plugin('bal')
-    readonly property var st: bal ? bal.state : ({})
+    readonly property var st: app.ehHeirState(bal)   // M1: only the wallet open
     property string stage: 'find'              // find | pick | done | none | error
     property var candidates: []
     property var picks: []                     // urls of the new keepers chosen

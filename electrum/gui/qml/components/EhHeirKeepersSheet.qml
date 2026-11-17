@@ -11,7 +11,7 @@ import "controls/EhStyle.js" as S
 EhBottomSheet {
     id: root
     readonly property var bal: AppController.plugin('bal')
-    readonly property var st: bal ? bal.state : ({})
+    readonly property var st: app.ehHeirState(bal)   // M1: only the wallet open
     readonly property var choices: st.keepersChoices || [3, 5, 7, 9, 11, 13, 15, 17, 19]
     readonly property int wanted: st.keepersWanted || 3
     property string error: ''

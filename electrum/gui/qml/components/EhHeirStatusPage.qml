@@ -28,7 +28,7 @@ Item {
     Material.foreground: S.ink
 
     readonly property var bal: AppController.plugin('bal')
-    readonly property var st: bal ? bal.state : ({})
+    readonly property var st: app.ehHeirState(bal)   // M1: only the wallet open
     readonly property string phase: st.phase || 'none'
     readonly property bool foreign: phase === 'foreign'
     readonly property bool toRenew: phase === 'due' || phase === 'expired'

@@ -1617,6 +1617,12 @@ ApplicationWindow
     property bool _ehHeirWaiting: false     // a decision waits for the home to be free
     readonly property Item _ehOverlay: Overlay.overlay   // where the open popups are
     function ehBal() { return AppController ? AppController.plugin('bal') : null }
+    // owner 17/11 (controllo-mainnet M1): the inheritance state only when it belongs to the wallet
+    // open; right after a switch the bridge still holds the previous wallet's state
+    function ehHeirState(b) {
+        if (!b || !b.state || !Daemon.currentWallet) return ({})
+        return b.state.wallet === Daemon.currentWallet.name ? b.state : ({})
+    }
     function ehHeirOnOpen() {
         var b = ehBal()
         if (!b || !Daemon.currentWallet || Daemon.currentWallet.isWatchOnly) return
@@ -1635,18 +1641,22 @@ ApplicationWindow
     // "Cancel the inheritance" + "delete the heirs too", but the wallet did not see the
     // cancellation yet (not_synced): the heirs are deleted one by one when the phase is draft
     property bool _ehHeirDropHeirs: false
+    property string _ehHeirDropWallet: ''
     function ehHeirDropHeirsLater() {
         var b = ehBal()
         if (!b) return
         _ehBalObj = b
         _ehHeirDropHeirs = true
+        _ehHeirDropWallet = Daemon.currentWallet ? Daemon.currentWallet.name : ''
         _ehHeirDropNext()
     }
     function _ehHeirDropNext() {
         var b = _ehBalObj
         if (!_ehHeirDropHeirs || !b || b.busy) return
-        var s = b.state
-        if (!s || s.phase === 'none') { _ehHeirDropHeirs = false; return }
+        // M1: never on another wallet (the bridge acts on the wallet open)
+        if (!Daemon.currentWallet || Daemon.currentWallet.name !== _ehHeirDropWallet) return
+        var s = ehHeirState(b)
+        if (!s.phase || s.phase === 'none') { _ehHeirDropHeirs = false; return }
         if (s.phase !== 'draft') return              // not seen yet: wait
         var h = s.heirs || []
         if (h.length === 0) { _ehHeirDropHeirs = false; return }
@@ -1735,7 +1745,7 @@ ApplicationWindow
     function ehHeirOpen() {
         var b = ehBal()
         if (b) _ehBalObj = b
-        var ph = b && b.state ? b.state.phase : 'none'
+        var ph = ehHeirState(b).phase || 'none'
         if (!ph || ph === 'none' || ph === 'draft') stack.push(Qt.resolvedUrl('EhHeirIntroPage.qml'))
         else stack.push(Qt.resolvedUrl('EhHeirStatusPage.qml'))
     }
