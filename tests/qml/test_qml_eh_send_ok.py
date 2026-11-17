@@ -40,3 +40,25 @@ class TestSendGoAheadDoesNotStayOn(TestCase):
         self.assertIn("method === 'payment_auth' && qtobject === Daemon.currentWallet && app._ehSendOk", body)
         i = body.index('&& app._ehSendOk) {')
         self.assertIn('app._ehSendOk = false', body[i:i + 80])
+
+
+class TestBanknotesNeverHideAnAmount(TestCase):
+    # M6: what the banknotes show is the amount that goes to the check page
+
+    def test_switch_to_euro_with_notes_starts_from_zero(self):
+        d = _read('EhInvoiceDialog.qml')
+        i = d.index('dialog.btcMode = b')
+        nxt = d[i:i + 900]
+        self.assertIn("if (sats <= 0 || dialog.useCoins) { dialog.euroInput = ''; return }", nxt)
+        # the conversion to euro comes only after that check
+        self.assertLess(nxt.index('dialog.useCoins'), nxt.index('Daemon.fx.fiatValue'))
+
+    def test_notes_pad_drives_the_amount(self):
+        d = _read('EhInvoiceDialog.qml')
+        self.assertIn('onBtcModeChanged: if (!btcMode && coinsMode) coinPad.clear()', d)
+        self.assertIn('onEuroInputChanged: if (dialog.useCoins) dialog.euroInput = euroInput', d)
+
+    def test_draft_back_from_step_one_turns_the_notes_off(self):
+        d = _read('EhInvoiceDialog.qml')
+        i = d.index('euroInput = d.euroInput')
+        self.assertIn('coinsMode = false', d[i - 200:i])

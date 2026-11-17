@@ -359,7 +359,9 @@ ElDialog {
                 // convert what is typed to the other unit
                 var sats = dialog.inputSats()
                 dialog.btcMode = b
-                if (sats <= 0) { dialog.euroInput = ''; return }
+                // owner 17/11 (controllo-mainnet M6): back to euro with the banknotes, the notes start
+                // empty: the amount starts from zero too (never a hidden amount behind EUR 0)
+                if (sats <= 0 || dialog.useCoins) { dialog.euroInput = ''; return }
                 if (dialog.btcMode) {
                     dialog.euroInput = (sats / 100000000).toFixed(8).replace(/0+$/, '').replace(/\.$/, '').replace('.', ',')
                 } else {
