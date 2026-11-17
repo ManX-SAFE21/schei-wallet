@@ -35,7 +35,7 @@ Item {
         spacing: 10
         EhPageTop { title: ''; Layout.leftMargin: 6; Layout.rightMargin: 6 }
         EhBackLink {
-            text: '‹ ' + qsTr('Advanced')   // it opens from the advanced settings
+            text: '‹ ' + qsTr('Settings')   // it opens from the settings (Security)
             onClicked: app.stack.pop()
         }
         EhTitle { text: page.words.length === 12 ? qsTr('Your 12 words (SEED)')

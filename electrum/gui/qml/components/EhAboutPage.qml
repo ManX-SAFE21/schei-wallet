@@ -77,7 +77,7 @@ Item {
                 topPadding: 12
                 bottomPadding: 12
                 Para {
-                    text: qsTr('The code of Schȅi is free and public on GitHub. Nobody, not even who made the app, can see your 12 words (SEED) or touch your money.')
+                    text: qsTr('The code of Schȅi is free and public on GitHub. Nobody, not even who made the app, can see your words (SEED) or touch your money.')
                 }
             }
 
@@ -106,7 +106,7 @@ Item {
                 bottomPadding: 15
                 spacing: 10
                 Para {
-                    text: qsTr('Something does not work, or you have an idea? Write to us. Never send your 12 words (SEED) or your PIN: nobody will ever ask for them.')
+                    text: qsTr('Something does not work, or you have an idea? Write to us. Never send your words (SEED) or your PIN: nobody will ever ask for them.')
                 }
                 Repeater {
                     model: [

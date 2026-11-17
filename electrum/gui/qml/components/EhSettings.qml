@@ -82,7 +82,7 @@ Item {
                 RowSw { visible: col.lv >= 1; tag: 1; icon: 'eh_wallet.svg'; text: qsTr('Manage more wallets'); note: qsTr('up to 7, each with its own colour'); key: 'multi'
                         locked: Daemon.availableWallets.rowCount() > 1
                         lockedHint: qsTr('you have %1 wallets: it stays on, so you see them all').arg(Daemon.availableWallets.rowCount()) }
-                RowSw { visible: col.lv >= 1; tag: 1; icon: 'eh_eye.svg'; text: qsTr('View and receive only'); note: qsTr('a wallet without the 12 words (SEED): see the balance and receive, no spending'); key: 'watch'
+                RowSw { visible: col.lv >= 1; tag: 1; icon: 'eh_eye.svg'; text: qsTr('View and receive only'); note: qsTr('a wallet without the words (SEED): see the balance and receive, no spending'); key: 'watch'
                         last: true }
             }
 
@@ -229,7 +229,7 @@ Item {
                             var d = Qt.createComponent(Qt.resolvedUrl('EhAskDialog.qml')).createObject(app, {
                                 text: qsTr('Are you sure?'),
                                 detail: qsTr('All the settings go back to the standard ones and the level goes back to BASE.') + '\n\n'
-                                        + qsTr('Your money, the wallets, the 12 words (SEED), the PIN, the name and the language do not change.')
+                                        + qsTr('Your money, the wallets, the words (SEED), the PIN, the name and the language do not change.')
                             })
                             d.accepted.connect(function() { app.ehResetAndCheck() })
                             d.open()

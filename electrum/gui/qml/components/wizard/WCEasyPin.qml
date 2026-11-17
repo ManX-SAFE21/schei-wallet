@@ -122,7 +122,7 @@ WizardComponent {
             color: S.ink
             text: root.phase === 'repeat' ? qsTr('Type the same 4 numbers again.')
                 : root.phase === 'existing' ? qsTr('Type the PIN you already use for your other wallets.')
-                : qsTr('4 numbers that are easy for you to remember. You will need them for big payments and to see the 12 words (SEED).')
+                : qsTr('4 numbers that are easy for you to remember. You will need them for big payments and to see the words (SEED).')
         }
 
         EhPinPad {

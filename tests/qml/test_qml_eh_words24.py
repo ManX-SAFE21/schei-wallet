@@ -276,6 +276,18 @@ class TestPages(TestCase):
             body = body[:body.index('wizard.pages.finish()')]
             self.assertIn('checkIsLast()', body, name)
 
+    def test_general_texts_do_not_say_12_words(self):
+        # owner 17/11: texts about the words of any wallet (also 24); a NEW Schȅi wallet keeps 12
+        import re as _re
+        for name in ('main.qml', 'EhSettings.qml', 'WalletMainView.qml', 'EhCoinsPage.qml', 'EhKeyLostDialog.qml',
+                     'EhGapLimitPage.qml', 'EhForgotPinDialog.qml', 'EhSeedPage.qml'):
+            for t in _re.findall(r"qsTr\('((?:[^'\\]|\\.)*)'\)", _read(name)):
+                if name == 'EhSeedPage.qml' and t.startswith(('Your 12 words', 'Nobody will ever ask you for the 12')):
+                    continue   # shown only when the wallet really has 12 words
+                self.assertNotIn('12 words', t, name)
+                self.assertNotIn('of 12', t, name)
+        self.assertIn("qsTr('Next (%1 of %2)')", _read('EhForgotPinDialog.qml'))
+
     def test_welcome_does_not_say_12_words(self):
         self.assertIn("qsTr('I already have the words (SEED)')", _read('wizard', 'WCEasyWelcome.qml'))
 

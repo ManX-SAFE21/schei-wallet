@@ -106,7 +106,7 @@ Item {
             EhTitle { text: qsTr('Look at more addresses') }
 
             Note {
-                text: qsTr('<b>What it is for.</b> The wallet has a long row of addresses, always the same, born from the 12 words (SEED). To find your money Schȅi looks at them <b>one after the other</b>, and stops when it finds <b>%1 empty in a row</b>: it thinks there is nothing after.').arg(20)   // always explain the normal value
+                text: qsTr('<b>What it is for.</b> The wallet has a long row of addresses, always the same, born from the words (SEED). To find your money Schȅi looks at them <b>one after the other</b>, and stops when it finds <b>%1 empty in a row</b>: it thinks there is nothing after.').arg(20)   // always explain the normal value
             }
             // the row of addresses: used, empty, and money hidden after many empty ones
             Flow {
@@ -134,7 +134,7 @@ Item {
                 text: qsTr('green = used · grey = empty · gold = money that is <b>after</b> many empty ones')
             }
             Note {
-                text: qsTr('<b>When it is needed.</b> If the 12 words (SEED) were also used in another wallet that created many addresses without using them, the money can be after more than 20 empty addresses. Schȅi does not see it and the balance seems to be missing. Looking further finds it.')
+                text: qsTr('<b>When it is needed.</b> If the words (SEED) were also used in another wallet that created many addresses without using them, the money can be after more than 20 empty addresses. Schȅi does not see it and the balance seems to be missing. Looking further finds it.')
             }
 
             EhCaption { text: qsTr('Look up to'); Layout.topMargin: 6; Layout.bottomMargin: 0 }
@@ -209,7 +209,7 @@ Item {
             }
             Note {
                 visible: page.state_ === 'done'
-                text: qsTr('If the balance did not change, the money is not here: try with 100 or 200, or check that the 12 words (SEED) and the kind of seed are right.')
+                text: qsTr('If the balance did not change, the money is not here: try with 100 or 200, or check that the words (SEED) and the kind of seed are right.')
             }
             Note {
                 visible: page.state_ === 'too_low'

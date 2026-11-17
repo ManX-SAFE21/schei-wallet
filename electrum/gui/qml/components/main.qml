@@ -922,7 +922,7 @@ ApplicationWindow
         if (to === 'base')
             return '• ' + qsTr('The standard settings come back: the extra options turn off, the PIN for big payments is on.')
                  + '\n• ' + qsTr('The rows for more choices are hidden.')
-                 + '\n• ' + qsTr('Your money, the 12 words (SEED) and the PIN do not change.')
+                 + '\n• ' + qsTr('Your money, the words (SEED) and the PIN do not change.')
         if (to === 'medio')
             return '• ' + qsTr('You write the amounts in %1 or in bitcoin').arg(ehCcyName())
                  + '\n• ' + qsTr('In Receive you can ask a precise amount')
