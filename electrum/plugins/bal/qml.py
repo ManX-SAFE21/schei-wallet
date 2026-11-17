@@ -888,6 +888,7 @@ class QEBal(PluginQObject):
         self._need_network(wallet)
         if self._read_state(wallet).get('phase') in ('due', 'expired'):
             raise _Fail('needs_renew', 'The inheritance must be renewed.')
+        self._heirs_ready()
         self._keepers()
         self._prepare()
         sent, total = self._sign_and_send()
@@ -920,13 +921,17 @@ class QEBal(PluginQObject):
         return {'delivery': self._min_locktime(self._live_items(wallet)), 'sent': sent,
                 'total': total, 'feeSats': inv['feeSats'] if inv else 0}
 
-    def _renew_precheck(self):
-        """What a renewal needs before its invalidation: heirs at 100% and keepers that answer."""
+    def _heirs_ready(self):
+        """M2 (owner 17/11): at least one person and the shares at 100%, before any new will."""
         heirs = self._cmd('bal_heirs_list') or {}
         if not heirs:
             raise _Fail('no_heirs', 'Add at least one person.')
         if sum(_percent(v[1]) or 0 for v in heirs.values()) != 100:
             raise _Fail('percent', 'The total must be 100%.')
+
+    def _renew_precheck(self):
+        """What a renewal needs before its invalidation: heirs at 100% and keepers that answer."""
+        self._heirs_ready()
         self._keepers()
 
     def _invalidate(self, wallet, on_sent=None):
@@ -1060,6 +1065,7 @@ class QEBal(PluginQObject):
             raise _Fail('needs_renew', 'The inheritance must be renewed.')
         if phase not in ('active', 'needs_update', 'unfinished'):
             raise _Fail('user', 'There is no inheritance in force.')
+        self._heirs_ready()
         new = list(dict.fromkeys(u for u in urls or [] if u))
         if not new:
             raise _Fail('user', 'No keeper chosen.')

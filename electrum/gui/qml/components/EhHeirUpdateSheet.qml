@@ -61,6 +61,8 @@ EhBottomSheet {
                         .arg('<font color="' + S.oliveInk + '">' + app.ehHeirSats(root.st.uncoveredSats || 0) + '</font>')
                   : root.reason === 'unfinished'
                   ? qsTr('The inheritance is not finished.<br>Do I finish it now?')
+                  : root.reason === 'changed'
+                  ? qsTr('Something in the inheritance was changed.<br>Do I update it now?')
                   : qsTr('You made a payment.<br>Do I update the inheritance with what is left?')
         }
     }

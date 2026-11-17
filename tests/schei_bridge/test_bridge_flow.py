@@ -1042,3 +1042,32 @@ def test_cancel_still_only_invalidates(s):
     if ev[0] == 'failed':
         assert ev[2] == 'not_synced', ev                      # sent, the wallet sees it soon
     assert len(s.network.broadcasts) == sent_before + 1       # the invalidation went out
+
+
+# ---- owner 17/11 (controllo-mainnet M2): a person removed outside the procedure ----
+
+def test_update_with_heirs_not_100_stops_before_signing(s):
+    make_will(s)
+    sent_before = len(s.network.broadcasts)
+    s.ok('heirDelete', 'Giulia')                              # total 60%
+    ev, _ = s.call('update')
+    assert ev[0] == 'failed' and ev[2] == 'percent', ev
+    assert len(s.network.broadcasts) == sent_before
+
+
+def test_replace_keepers_with_heirs_not_100_stops_before_signing(s):
+    s.keepers.listed = [E2]
+    make_will(s, keepers=3)
+    sent_before = len(s.network.broadcasts)
+    s.ok('heirDelete', 'Giulia')
+    ev, _ = s.call('replaceKeepers', [E2])
+    assert ev[0] == 'failed' and ev[2] == 'percent', ev
+    assert len(s.network.broadcasts) == sent_before
+
+
+def test_heirs_changed_after_the_will_reads_changed(s):
+    make_will(s)
+    s.ok('heirDelete', 'Giulia')
+    s.ok('refresh')
+    assert s.state['phase'] == 'needs_update'
+    assert s.state['updateReason'] == 'changed'

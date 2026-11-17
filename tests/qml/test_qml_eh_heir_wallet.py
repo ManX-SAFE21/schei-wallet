@@ -59,3 +59,17 @@ class TestHeirStateOnlyOfTheWalletOpen(TestCase):
 
     def test_settings_check_the_wallet(self):
         self.assertIn('bal.state.wallet === Daemon.currentWallet.name ? bal.state : ({})', _read('EhSettings.qml'))
+
+
+class TestHeirsChangedOutside(TestCase):
+    # M2: the update sheet never says "You made a payment" when the people were changed
+
+    def test_update_sheet_has_its_own_changed_text(self):
+        u = _read('EhHeirUpdateSheet.qml')
+        i = u.index("root.reason === 'changed'")
+        self.assertLess(i, u.index("qsTr('You made a payment."))
+        self.assertIn("qsTr('Something in the inheritance was changed.<br>Do I update it now?')", u)
+
+    def test_percent_error_is_a_clear_sentence(self):
+        body = _body(_read('main.qml'), 'function ehHeirErrorText', '\n    }\n')
+        self.assertIn("if (code === 'percent') return qsTr(", body)
