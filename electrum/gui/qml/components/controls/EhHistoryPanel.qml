@@ -13,7 +13,7 @@ Item {
     readonly property string body: BodyFont ? BodyFont : app.font.family
 
     // dotted line between the rows (QML borders are solid)
-    component Dotted: Canvas {
+    component Dotted: EhCanvas {
         property color tint: '#d8c69a'
         height: 2
         onWidthChanged: requestPaint()

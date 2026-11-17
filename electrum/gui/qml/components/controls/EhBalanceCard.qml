@@ -209,7 +209,7 @@ Rectangle {
         color: root.tint(root.bottega ? root.darkC : root.baseColor, root.watch ? 0.10 : (root.bottega ? 0.3 : 0.18))
     }
     // Bottega: the flap of the wallet, a darker curved shade across the top
-    Canvas {
+    EhCanvas {
         visible: root.bottega
         anchors.left: parent.left
         anchors.right: parent.right

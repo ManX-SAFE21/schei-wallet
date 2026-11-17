@@ -163,7 +163,7 @@ ElDialog {
                 readonly property real fy: Math.max(12, (height - side) / 2 - 14)
                 readonly property color ink: found ? '#9cc25a' : S.gold
                 // darker outside the frame (one shape with a hole, with the box's round corners)
-                Canvas {
+                EhCanvas {
                     anchors.fill: parent
                     onWidthChanged: requestPaint()
                     onHeightChanged: requestPaint()

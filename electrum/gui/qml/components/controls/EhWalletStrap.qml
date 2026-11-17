@@ -23,7 +23,7 @@ Item {
         radius: 28
         color: Qt.rgba(0.12, 0.02, 0.06, root.light ? 0.12 : 0.28)
     }
-    Canvas {
+    EhCanvas {
         id: cv
         anchors.fill: parent
         onWidthChanged: requestPaint()

@@ -221,7 +221,7 @@ Item {
         spacing: -2
         Repeater {
             model: 3
-            Canvas {
+            EhCanvas {
                 id: arrow
                 required property int index
                 width: 28; height: 16

@@ -1036,7 +1036,7 @@ ElDialog {
                 Layout.alignment: Qt.AlignHCenter
                 Layout.preferredWidth: 190
                 Layout.preferredHeight: 190
-                Canvas {
+                EhCanvas {
                     id: ring
                     anchors.fill: parent
                     property real part: Math.max(0, dialog.countdown) / 5
