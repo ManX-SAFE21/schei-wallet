@@ -152,7 +152,7 @@ Item {
                             spacing: 1
                             Label {
                                 Layout.fillWidth: true
-                                text: row.model.label !== '' ? row.model.label : (row.incoming ? qsTr('Received') : qsTr('Sent'))
+                                text: row.model.label !== '' ? app.ehTxNote(row.model.label) : (row.incoming ? qsTr('Received') : qsTr('Sent'))
                                 color: S.ink
                                 font.family: BodyFont ? BodyFont : font.family
                                 font.pixelSize: app.ehFsText

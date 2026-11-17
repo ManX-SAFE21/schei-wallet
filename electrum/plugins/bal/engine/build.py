@@ -44,7 +44,9 @@ _logger = get_logger(__name__)
 
 # The History label of the rebuilt transactions. Stored text: always English,
 # never translated.
-BACKUP_LABEL = "Safe21 Heartbeat backup transaction"
+BACKUP_LABEL = "Àncòra – copia di riserva dell'eredità"
+# owner 17/11/2026: the old text, still found in wallets (only a name, nothing reads it back)
+OLD_BACKUP_LABELS = ("Safe21 Heartbeat backup transaction",)
 
 
 def build_will(host, *, with_creation_date):

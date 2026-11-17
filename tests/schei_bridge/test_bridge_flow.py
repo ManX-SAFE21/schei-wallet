@@ -1189,3 +1189,30 @@ def test_new_will_envelope_pays_50(s):
     make_will(s)
     ws = s.controller().will_settings
     assert int(float(ws.get("baltx_fees"))) == 50, ws
+
+
+# ---- owner 17/11: no more "Safe21 Heartbeat" in the movements ----
+
+def test_cancellation_label_is_the_new_text(s):
+    from electrum.plugins.bal.core import will_versions as wv
+    assert wv.INVALIDATION_LABEL == "Àncòra – annullamento eredità"
+    make_will(s)
+    out = s.ok('cancelWill', False)
+    assert s.wallet.get_label_for_txid(out['txid']) == wv.INVALIDATION_LABEL
+
+
+def test_old_cancellation_label_still_means_unfinished(s, monkeypatch):
+    # a renewal cut in half in a wallet that has the OLD label still reads "unfinished"
+    from electrum.plugins.bal.core import will_versions as wv
+    make_will(s)
+    s.clock.now = s.state['warnAt'] + DAY
+    s.ok('refresh')
+
+    def stop(self):
+        raise bal_qml._Fail('offline', 'stopped (test)')
+    monkeypatch.setattr(bal_qml.QEBal, '_prepare', stop)
+    s.call('renew')
+    txid = s.network.broadcasts[-1]
+    s.wallet.set_label(txid, wv.OLD_INVALIDATION_LABELS[0])
+    s.ok('refresh')
+    assert s.state['phase'] == 'unfinished'

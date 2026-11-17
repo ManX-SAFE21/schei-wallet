@@ -797,6 +797,26 @@ ApplicationWindow
         if (withTime) s += ', ' + hm
         return s
     }
+    // owner 17/11: the inheritance plugin writes its own labels on some transactions (the
+    // cancellation, the backup copies, the envelopes kept in the wallet). Shown in the app's words,
+    // in every language; the old "Safe21 Heartbeat" texts too. Never edited (the app reads them).
+    readonly property var ehPluginLabels: ({
+        'Àncòra – annullamento eredità': 'cancel', 'Safe21 Heartbeat invalidation': 'cancel',
+        "Àncòra – copia di riserva dell'eredità": 'backup', 'Safe21 Heartbeat backup transaction': 'backup'
+    })
+    function ehPluginLabelKind(l) {
+        if (!l) return ''
+        if (ehPluginLabels[l]) return ehPluginLabels[l]
+        if (l.indexOf('BitcoinAfterLife inheritance transaction') === 0) return 'envelope'
+        return ''
+    }
+    function ehTxNote(l) {
+        var k = ehPluginLabelKind(l)
+        if (k === 'cancel') return qsTr('Inheritance cancellation')
+        if (k === 'backup') return qsTr('Inheritance backup copy')
+        if (k === 'envelope') return qsTr('Inheritance envelope')
+        return l || ''
+    }
     // amount of a history item: historic euro value if known, else today's, else BTC
     function ehTxAmount(amount, timestamp, signed) {
         app.ehFxRev   // re-evaluated when the rates arrive

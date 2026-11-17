@@ -71,3 +71,29 @@ class TestBusyConfirm(TestCase):
     def test_coin_back_when_busy(self):
         s = _read('EhHeirCheckPage.qml')
         self.assertIn("if (code === 'busy') { slide.reset(); return }", s)
+
+
+class TestPluginLabelsInMovements(TestCase):
+    # owner 17/11: «Annullamento eredità», never "Safe21 Heartbeat"; never edited
+
+    def test_known_labels_mapped(self):
+        m = _read('main.qml')
+        for k in ("'Àncòra – annullamento eredità': 'cancel'", "'Safe21 Heartbeat invalidation': 'cancel'",
+                  "'Safe21 Heartbeat backup transaction': 'backup'", "qsTr('Inheritance cancellation')"):
+            self.assertIn(k, m)
+
+    def test_rows_use_the_mapped_note(self):
+        self.assertIn('app.ehTxNote(row.model.label)', _read('controls', 'EhHistoryPanel.qml'))
+        self.assertIn('app.ehTxNote(row.model.label)', _read('EhMovements.qml'))
+
+    def test_details_never_overwrite_the_plugin_label(self):
+        d = _read('EhTxDetailsPage.qml')
+        self.assertIn("readOnly: app.ehPluginLabelKind(tx.label) !== ''", d)
+        self.assertIn("if (app.ehPluginLabelKind(tx.label) !== '') return", d)
+
+    def test_labels_match_the_plugin(self):
+        from electrum.plugins.bal.core import will_versions as wv
+        from electrum.plugins.bal.engine import build
+        m = _read('main.qml')
+        for l in (wv.INVALIDATION_LABEL,) + wv.OLD_INVALIDATION_LABELS + (build.BACKUP_LABEL,) + build.OLD_BACKUP_LABELS:
+            self.assertIn(l.replace("'", "\\'") if False else l, m)

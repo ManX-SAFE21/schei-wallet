@@ -140,7 +140,7 @@ Item {
                 readonly property bool euroShown: !btcOnly && main.indexOf(app.ehSym()) >= 0
                 readonly property bool waiting: row.model.confirmations < 1
                 readonly property string when: app.ehWhen(row.model.timestamp)
-                readonly property string note: row.model.label ? row.model.label : ''
+                readonly property string note: app.ehTxNote(row.model.label)
                 readonly property string what: {
                     var s = row.incoming ? qsTr('money received') : qsTr('money sent')
                     return s.charAt(0).toUpperCase() + s.substring(1)

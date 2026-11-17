@@ -49,6 +49,7 @@ Item {
     // the note is saved with the Save button, with Enter, and when the page is left
     function saveNote() {
         var t = noteField.text.trim()
+        if (app.ehPluginLabelKind(tx.label) !== '') return   // the plugin's label stays as it is
         if (t !== tx.label) {
             tx.setLabel(t)
             Daemon.currentWallet.historyModel.updateTxLabel(page.txid, t)
@@ -229,7 +230,8 @@ Item {
                         id: noteField
                         Layout.fillWidth: true
                         Layout.fillHeight: true
-                        text: tx.label
+                        text: app.ehTxNote(tx.label)
+                        readOnly: app.ehPluginLabelKind(tx.label) !== ''
                         placeholderText: ''          // no Material floating label: our own hint below
                         topPadding: 0
                         bottomPadding: 0

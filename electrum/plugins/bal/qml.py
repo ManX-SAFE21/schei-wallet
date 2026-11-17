@@ -1294,7 +1294,7 @@ class QEBal(PluginQObject):
     def _read_state(self, wallet):
         """The ``state`` map of plan 1.2 (worker thread, commands only)."""
         from .core import delivery as delivery_mod
-        from .engine.invalidate import INVALIDATION_LABEL
+        from .core.will_versions import INVALIDATION_LABELS
         now = int(time.time())
         network = self._network()
         s = _empty_state()
@@ -1420,7 +1420,7 @@ class QEBal(PluginQObject):
             labels = {self._spender_label(wallet, i) for i in spent}
             if cancel and cancel in {self._spender_txid(wallet, i) for i in spent}:
                 phase = 'draft'      # point 7: cancelled on purpose, the heirs kept
-            elif INVALIDATION_LABEL in labels:
+            elif labels & set(INVALIDATION_LABELS):   # the new text or the old one
                 phase, s['updateReason'] = 'unfinished', 'unfinished'
             else:
                 phase, s['updateReason'] = 'needs_update', 'spent'
