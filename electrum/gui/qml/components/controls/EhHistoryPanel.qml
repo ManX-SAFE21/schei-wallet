@@ -152,6 +152,10 @@ Item {
                 // only bitcoin: the size that fits the line (from the text, not from the layout: no loop)
                 TextMetrics { id: tm; font.family: root.serif; font.weight: Font.ExtraBold; font.pixelSize: app.ehFsStrong; text: row.rest }
                 readonly property real btcSize: Math.max(12, Math.min(app.ehFsStrong, app.ehFsStrong * (width - 48 - 14) / Math.max(1, tm.advanceWidth)))
+                // euro: the amount gets smaller rather than squeezing «Mandati» onto two lines
+                // (owner 17/11, −€ 1.227.181,61 on the Samsung); room: the row minus icon, words, gap
+                TextMetrics { id: tmE; font.family: root.serif; font.weight: Font.ExtraBold; font.pixelSize: app.ehFsStrong; text: row.sgn + row.rest }
+                readonly property real amtSize: Math.max(11, Math.min(app.ehFsStrong, app.ehFsStrong * (width - 48 - 72 - 8) / Math.max(1, tmE.advanceWidth)))
 
                 Dotted {
                     visible: row.index < list.count - 1
@@ -183,13 +187,13 @@ Item {
                     Row {
                         anchors.right: parent.right
                         spacing: 1
-                        Label { anchors.baseline: amtL.baseline; text: row.sgn; font.family: root.body; font.bold: true; font.pixelSize: app.ehFsStrong; color: row.ink }
+                        Label { anchors.baseline: amtL.baseline; text: row.sgn; font.family: root.body; font.bold: true; font.pixelSize: row.amtSize; color: row.ink }
                         Label {
                             id: amtL
                             text: row.rest
                             font.family: root.serif
                             font.weight: Font.ExtraBold
-                            font.pixelSize: app.ehFsStrong
+                            font.pixelSize: row.amtSize
                             color: row.ink
                         }
                     }

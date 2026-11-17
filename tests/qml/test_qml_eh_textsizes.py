@@ -9,7 +9,8 @@ from unittest import TestCase
 from electrum.gui.qml import qeapp
 
 COMP = os.path.join(os.path.dirname(qeapp.__file__), 'components')
-ROLES = {'ehFsSmall': 13, 'ehFsText': 15, 'ehFsStrong': 18, 'ehFsBox': 26, 'ehFsTitle': 32, 'ehFsFigure': 42}
+# owner 17/11 (anteprima/testi-piu-piccoli.png): about 12% smaller, floor 12
+ROLES = {'ehFsSmall': 12, 'ehFsText': 14, 'ehFsStrong': 16, 'ehFsBox': 23, 'ehFsTitle': 28, 'ehFsFigure': 37}
 
 
 def _eh_files():
@@ -33,6 +34,7 @@ class TestTextSizes(TestCase):
             m = re.search(r'readonly property int %s: (.*)' % name, qml)
             self.assertIsNotNone(m, name)
             self.assertIn('Math.round(%d * ehFs)' % base, m.group(1))
+        self.assertNotIn('Math.max(13,', qml[qml.index('ehFsSmall'):qml.index('ehFsFigure')])
 
     def test_no_size_written_by_hand(self):
         bad = []
@@ -50,7 +52,16 @@ class TestTextSizes(TestCase):
         # what the rule gives: Pixel 7 (412), Samsung A15 (384), narrow phone (360)
         def size(base, width, floor=True):
             v = round(base * _width_factor(width))
-            return max(13, v) if floor else v
-        self.assertEqual([13, 15, 18, 26, 32, 42], [size(b, 412) for b in ROLES.values()])
-        self.assertEqual([13, 14, 17, 24, 30, 39], [size(b, 384) for b in ROLES.values()])
-        self.assertEqual([13, 14, 16, 23, 29, 38], [size(b, 360) for b in ROLES.values()])
+            return max(12, v) if floor else v
+        self.assertEqual([12, 14, 16, 23, 28, 37], [size(b, 412) for b in ROLES.values()])
+        self.assertEqual([12, 13, 15, 21, 26, 34], [size(b, 384) for b in ROLES.values()])
+        self.assertEqual([12, 13, 14, 21, 25, 33], [size(b, 360) for b in ROLES.values()])
+
+
+class TestBigEuroAmount(TestCase):
+    # Samsung 17/11: «Mandati» broke on two lines next to −€ 1.227.181,61
+
+    def test_euro_amount_shrinks_to_leave_the_words_room(self):
+        s = open(os.path.join(COMP, 'controls', 'EhHistoryPanel.qml'), encoding='utf-8').read()
+        self.assertIn('(width - 48 - 72 - 8) / Math.max(1, tmE.advanceWidth)', s)
+        self.assertEqual(2, s.count('font.pixelSize: row.amtSize'))
