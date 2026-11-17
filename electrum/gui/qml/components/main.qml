@@ -1671,6 +1671,8 @@ ApplicationWindow
         if (!b || !Daemon.currentWallet || Daemon.currentWallet.isWatchOnly) { _ehHeirWaiting = false; return }
         var s = b.state
         if (!s || !s.synced || b.busy) { _ehHeirWaiting = false; return }   // a new state will come
+        // owner 17/11: a state of another wallet (just switched): wait for the right one
+        if (s.wallet !== Daemon.currentWallet.name) { _ehHeirWaiting = false; return }
         var ph = s.phase
         var ask = (ph === 'due' || ph === 'expired') && _ehHeirWant
         var finish = ph === 'unfinished' && _ehHeirWant

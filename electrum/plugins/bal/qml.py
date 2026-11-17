@@ -263,7 +263,7 @@ def _empty_state():
         'updateReason': '', 'uncoveredSats': 0,
         'fees': {'custodianSats': 0, 'custodianMinSats': 0, 'custodianMaxSats': 0,
                  'minerSats': 0, 'renewSats': 0, 'cancelSats': 0},
-        'detail': '',
+        'detail': '', 'wallet': '',
     }
 
 
@@ -1188,6 +1188,8 @@ class QEBal(PluginQObject):
         network = self._network()
         s = _empty_state()
         s['now'] = now
+        # owner 17/11: whose state this is (the pages ignore a state of another wallet)
+        s['wallet'] = wallet.basename()
         s['available'] = not wallet.is_watching_only()
         s['online'] = bool(network and network.is_connected())
         s['synced'] = bool(wallet.is_up_to_date())

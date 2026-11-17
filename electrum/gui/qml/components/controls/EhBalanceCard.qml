@@ -34,7 +34,9 @@ Rectangle {
     // Owner 17/11: always "EREDITÀ" (no more "DA FARE"); not made yet, or the state not read yet:
     // the logo and the word faint, no dot.
     readonly property var heirBal: AppController ? AppController.plugin('bal') : null
-    readonly property var heirState: root.heirBal && root.heirBal.state ? root.heirBal.state : ({})
+    // only the state of the wallet open (Samsung 17/11: right after a switch it was the previous one's)
+    readonly property var heirState: root.heirBal && root.heirBal.state && Daemon.currentWallet
+                                     && root.heirBal.state.wallet === Daemon.currentWallet.name ? root.heirBal.state : ({})
     readonly property bool heirShown: root.fixedRows && root.showGear && !!root.heirBal && !root.watch && !root.idle
                                       && app.ehHeirEnabled()
                                       && Daemon.currentWallet !== null

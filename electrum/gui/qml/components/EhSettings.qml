@@ -88,7 +88,9 @@ Item {
 
             // the inheritance (Àncòra inside Schȅi), every level; not for a wallet that cannot spend
             readonly property var bal: AppController.plugin('bal')
-            readonly property var heir: bal ? bal.state : ({})
+            // only the state of the wallet open (owner 17/11: right after a switch it can be the previous one's)
+            readonly property var heir: bal && bal.state && Daemon.currentWallet
+                                        && bal.state.wallet === Daemon.currentWallet.name ? bal.state : ({})
             readonly property bool heirOn: bal !== null && Daemon.currentWallet !== null && !Daemon.currentWallet.isWatchOnly
             readonly property string heirPhase: heir.phase || 'none'
             Group { visible: col.heirOn; text: qsTr('INHERITANCE') }

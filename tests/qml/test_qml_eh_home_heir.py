@@ -86,3 +86,21 @@ class TestTexts(TestCase):
     def test_testnet_shows_euro(self):
         m = _read('main.qml')
         self.assertIn("function ehBtcOnly() { ehOptRev; return Config.ehGet('opt_btc_only') === true }", m)
+
+
+class TestStateOfTheWalletOpen(TestCase):
+    # Samsung 17/11: right after a switch the card showed the previous wallet's green dot
+
+    def test_state_says_whose_it_is(self):
+        p = os.path.join(os.path.dirname(qeapp.__file__), '..', '..', 'plugins', 'bal', 'qml.py')
+        src = open(p, encoding='utf-8').read()
+        self.assertIn("s['wallet'] = wallet.basename()", src)
+        from electrum.plugins.bal.qml import _empty_state
+        self.assertEqual('', _empty_state()['wallet'])
+
+    def test_card_and_decisions_ignore_another_wallets_state(self):
+        card = _read('controls', 'EhBalanceCard.qml')
+        self.assertIn('root.heirBal.state.wallet === Daemon.currentWallet.name', card)
+        m = _read('main.qml')
+        body = m[m.index('function ehHeirDecide'):m.index('function _ehHeirOpenSheet')]
+        self.assertIn('if (s.wallet !== Daemon.currentWallet.name)', body)
