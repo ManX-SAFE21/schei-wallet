@@ -23,7 +23,24 @@ def get_electrum_version() -> str:
     return version.ELECTRUM_VERSION
 
 
+def get_schei_version():
+    """Schȅi's own version (contrib/android/SCHEI_VERSION), or None."""
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "SCHEI_VERSION")
+    if not os.path.exists(path):
+        return None
+    return open(path).read().strip()
+
+
 def get_android_versioncode(*, arch_name: str) -> int:
+    # Schȅi (owner 17/11): its own version: 50_000_000 + (major*10000 + minor*100 + patch)*10 + arch,
+    # always above every Electrum-based code (Electrum 9.9.99 would be 45_999_99x) and above the
+    # published Schȅi pre-release 45408033.
+    schei = get_schei_version()
+    if schei:
+        parts = schei.split('.')
+        assert len(parts) == 3 and all(x.isdigit() and int(x) < 100 for x in parts), schei
+        major, minor, patch = (int(x) for x in parts)
+        return 50_000_000 + (major * 10_000 + minor * 100 + patch) * 10 + int(ARCH_DICT[arch_name])
     version_code = 0
     # add ELECTRUM_VERSION
     app_version = get_electrum_version()
