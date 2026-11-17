@@ -597,6 +597,13 @@ class QETxFinalizer(TxFeeSlider):
     def ehInputCount(self):
         return len(self._inputs) if getattr(self, '_inputs', None) else 0
 
+    @pyqtSlot(result='QStringList')
+    def ehTxCoins(self):
+        """Easy Heirs (owner 17/11): the coins ("txid:n") of the payment made now."""
+        if not self._tx:
+            return []
+        return [i.prevout.to_str() for i in self._tx.inputs()]
+
     # Easy Heirs (owner Q8): true when the fee policy in use has no estimate from the servers
     # (Electrum would raise NoDynamicFeeEstimates or fall back to 150 sat/vB): QML then shows
     # «Quanto pagare al miner?» and the user writes the fee by hand.

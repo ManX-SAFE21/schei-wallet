@@ -92,3 +92,25 @@ class TestFeeByHand(TestCase):
     def test_rows_show_the_rate_written_by_hand(self):
         for f in ('EhInvoiceDialog.qml', 'EhHeirCostRow.qml'):
             self.assertIn("finalizer.userFeerate !== '' ? app.ehFeeRate(finalizer.userFeerate + ' sat/vB')", _read(f), f)
+
+
+class TestNeverPaidTwice(TestCase):
+    # owner 17/11 (controllo-mainnet 3.4): «not sure it left» -> the same coins for the next try
+
+    def test_unsure_locks_the_same_coins(self):
+        d = _read('EhInvoiceDialog.qml')
+        i = d.index('function onBroadcastFailed(txid, code, reason) {')
+        body = d[i:i + 600]
+        self.assertIn("if (code !== 'rejected') {", body)
+        self.assertIn('finalizer.ehCoins = same; dialog.coinsLocked = true', body)
+
+    def test_other_coins_cannot_be_chosen_while_locked(self):
+        d = _read('EhInvoiceDialog.qml')
+        i = d.index('function chooseCoins() {')
+        self.assertIn('if (dialog.coinsLocked) {', d[i:i + 200])
+
+    def test_finalizer_gives_the_coins_of_the_payment(self):
+        from electrum.gui.qml import qetxfinalizer
+        src = open(qetxfinalizer.__file__, encoding='utf-8').read()
+        i = src.index('def ehTxCoins(self):')
+        self.assertIn('self._tx.inputs()', src[i:i + 300])

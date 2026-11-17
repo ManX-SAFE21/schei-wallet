@@ -27,6 +27,9 @@ ElDialog {
     property var chosen: null       // QEAmount to send
     property string sentEuro: ''
     property string sentTxid: ''    // the payment this page sent (its answer only, not another one's)
+    // owner 17/11 (controllo-mainnet 3.4): «not sure it left» -> the next try keeps THE SAME coins
+    // (the fee may change). A payment with other coins could arrive as well: never two payments.
+    property bool coinsLocked: false
     property string sentBtc: ''
     property bool btcMode: app.ehBtcOnly()     // typing in bitcoin (expert toggle, or 'only bitcoin')
     property bool useMax: false      // expert: all the balance
@@ -167,6 +170,11 @@ ElDialog {
         return n > 1 ? out : []
     }
     function chooseCoins() {
+        if (dialog.coinsLocked) {
+            app.ehTell(qsTr('Same coins as before'),
+                       qsTr('The payment before may have left. I use the same coins, so it can never be paid twice: if the first one left, this one does not.'))
+            return
+        }
         var need = (finalizer.valid ? finalizer.effectiveAmount.satsInt + finalizer.fee.satsInt
                                     : (dialog.reviewAmount ? dialog.reviewAmount.satsInt : 0))
         var d = Qt.createComponent(Qt.resolvedUrl('EhCoinPickerDialog.qml')).createObject(app, { finalizer: finalizer, needSats: need })
@@ -709,7 +717,8 @@ ElDialog {
                             icon: 'eh_goldcoin.svg'
                             text: qsTr('Coins used')
                             hint: (finalizer.valid ? finalizer.ehInputCount + ' · ' : '')
-                                  + (finalizer.ehCoins.length > 0 ? qsTr('chosen by you') : qsTr('chosen by itself'))
+                                  + (dialog.coinsLocked ? qsTr('the same as before')
+                                     : finalizer.ehCoins.length > 0 ? qsTr('chosen by you') : qsTr('chosen by itself'))
                             last: true
                             onClicked: dialog.chooseCoins()
                         }
@@ -967,6 +976,10 @@ ElDialog {
         }
         function onBroadcastFailed(txid, code, reason) {
             if (!mine(txid)) return
+            if (code !== 'rejected') {
+                var same = finalizer.ehTxCoins()
+                if (same.length > 0) { finalizer.ehCoins = same; dialog.coinsLocked = true }
+            }
             dialog.resetBars()
             // third review: say only what we know. A rejection: it did not leave. A broken
             // connection: maybe it left, look at the movements before paying again.
