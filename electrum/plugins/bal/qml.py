@@ -1173,18 +1173,13 @@ class QEBal(PluginQObject):
         return rows, min(fees), max(fees), miner
 
     def _renew_estimate(self, n_inputs, show):
-        """The miner fee of a renewal (its invalidation), estimated (plan 1.4)."""
+        """The miner fee of a renewal / cancellation (its invalidation), estimated (plan 1.4).
+
+        owner 17/11 (controllo-mainnet M7): the invalidation pays the will's own rate
+        (``baltx_fees``, engine/invalidate.py), never the network estimate: show that same rate.
+        """
         vbytes = 11 + 68 * max(1, n_inputs) + 31
-        rate = None
-        try:
-            network = self._network()
-            per_kvb = network.fee_estimates.eta_target_to_fee(6) if network else None
-            if per_kvb:
-                rate = per_kvb / 1000
-        except Exception:
-            rate = None
-        if not rate:
-            rate = float(show.get('baltx_fees') or 1)
+        rate = float(show.get('baltx_fees') or 1)
         return int(round(vbytes * rate))
 
     @staticmethod

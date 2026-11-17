@@ -1071,3 +1071,25 @@ def test_heirs_changed_after_the_will_reads_changed(s):
     s.ok('refresh')
     assert s.state['phase'] == 'needs_update'
     assert s.state['updateReason'] == 'changed'
+
+
+# ---- owner 17/11 (controllo-mainnet M7): the renew / cancel fee shown is the one paid ----
+
+def test_renew_fee_shown_uses_the_rate_paid_not_the_network(s):
+    make_will(s)
+    s.ok('refresh')
+    before = dict(s.state['fees'])
+    assert before['renewSats'] > 0
+    # the network now says 100 sat/vB: the invalidation still pays baltx_fees, so nothing changes
+    s.network.fee_estimates = SimpleNamespace(eta_target_to_fee=lambda blocks: 100_000)
+    s.ok('refresh')
+    assert s.state['fees']['renewSats'] == before['renewSats']
+    assert s.state['fees']['cancelSats'] == before['cancelSats'] == before['renewSats']
+
+
+def test_invalidation_rate_is_the_rate_shown():
+    import inspect
+    from electrum.plugins.bal.engine import invalidate
+    assert 'host.will_settings.get("baltx_fees", 1)' in inspect.getsource(invalidate)
+    src = inspect.getsource(bal_qml.QEBal._renew_estimate)
+    assert "show.get('baltx_fees')" in src and 'fee_estimates' not in src
