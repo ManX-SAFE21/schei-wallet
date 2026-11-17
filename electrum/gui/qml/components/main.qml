@@ -605,7 +605,7 @@ ApplicationWindow
         // second review (W5): at first start the wizard cannot just go away (Back on Welcome):
         // without a wallet the home has nothing to show, so it comes back on the first page
         function ehFirstWizard() {
-            var newww = app.newWalletWizard.createObject(app)
+            var newww = app.newWalletWizard.createObject(app, { ehSeedAllowed: true })   // first wallet
             var created = false
             newww.walletCreated.connect(function() {
                 created = true
@@ -932,6 +932,8 @@ ApplicationWindow
              + '\n• ' + qsTr('Tip written by hand, advanced privacy and "Send all the balance" turn on')
              + '\n• ' + qsTr('The rows for experts appear: PIN threshold, more addresses')
     }
+    // owner 17/11: a Schȅi message with one button (not Electrum's message box)
+    function ehTell(text, detail) { ehAsk(text, detail || '', null, null, qsTr('OK (go ahead)'), '') }
     function ehAsk(text, detail, onYes, onNo, yesText, noText) {
         var props = { text: text, detail: detail }
         if (yesText) props.yesText = yesText
@@ -1200,15 +1202,26 @@ ApplicationWindow
     }
     function ehAddWallet(full) {
         if (full) {
-            app.messageDialog.createObject(app, { text: qsTr('You already have 7 wallets, the maximum.') }).open()
+            ehTell(qsTr('You already have 7 wallets, the maximum.'))
             return
         }
-        var w = app.newWalletWizard.createObject(app)
-        w.walletCreated.connect(function() {
-            Daemon.availableWallets.reload()
-            Daemon.loadWallet(w.path, w.wizard_data['password'])
-        })
-        w.open()
+        // owner 17/11 (controllo-mainnet G2): another wallet WITH words only in ESPERTO, and with the
+        // PIN; in BASE / MEDIO only wallets to watch (they have no words, they cannot spend)
+        var seed = ehLevel() === 'esperto' || Daemon.availableWallets.rowCount() === 0
+        if (!seed && !ehOption('watch')) {
+            ehTell(qsTr('Another wallet with the words (SEED) can be added only at the EXPERT level.'))
+            return
+        }
+        var open = function() {
+            var w = app.newWalletWizard.createObject(app, { ehSeedAllowed: seed })
+            w.walletCreated.connect(function() {
+                Daemon.availableWallets.reload()
+                Daemon.loadWallet(w.path, w.wizard_data['password'])
+            })
+            w.open()
+        }
+        if (seed && Daemon.ehPinIsSet()) ehAskPin(qsTr('Type the PIN to add a wallet'), open)
+        else open()
     }
     function ehSetWalletLook(name, color) {
         Config.ehSet('name_' + ehWalletKey(), name)
@@ -1251,8 +1264,7 @@ ApplicationWindow
     function ehChangeLanguage() {
         var d = languagePicker.createObject(app)
         d.accepted.connect(function() {
-            var m = app.messageDialog.createObject(app, { text: qsTr('Close and reopen Schȅi to see everything in the new language.') })
-            m.open()
+            ehTell(qsTr('Close and reopen Schȅi to see everything in the new language.'))
         })
         d.open()
     }
@@ -1366,7 +1378,7 @@ ApplicationWindow
         _ehKeyLost = kl
         kl.restoreChosen.connect(function() {
             _ehKeyLost = null
-            var w = app.newWalletWizard.createObject(app)
+            var w = app.newWalletWizard.createObject(app, { ehSeedAllowed: true })   // put back the words
             var created = false
             w.walletCreated.connect(function() {
                 created = true

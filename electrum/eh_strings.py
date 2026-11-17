@@ -1056,6 +1056,9 @@ STRINGS = {
         'there is an inheritance: to turn it off, cancel it first': "c'è un'eredità: per spegnerlo, prima annullala",
         'the badge on the wallet and the question every 3 months': 'il bollo sul portafoglio e la domanda ogni 3 mesi',
         'Use the inheritance': "Usa l'eredità",
+        # owner 17/11: other wallets with words only in ESPERTO, with the PIN
+        'Another wallet with the words (SEED) can be added only at the EXPERT level.': 'Un altro portafoglio con le parole (SEED) si può aggiungere solo al livello ESPERTO.',
+        'Type the PIN to add a wallet': 'Scrivi il PIN per aggiungere un portafoglio',
     },
     'vec_IT': {
         'waiting': 'in atesa',
@@ -2091,6 +2094,9 @@ STRINGS = {
         'there is an inheritance: to turn it off, cancel it first': "ghe xe n'eredità: par stuarlo, prima anulela",
         'the badge on the wallet and the question every 3 months': 'el bolo sul portafojo e la domanda ogni 3 mesi',
         'Use the inheritance': "Dopara l'eredità",
+        # owner 17/11: other wallets with words only in ESPERTO, with the PIN
+        'Another wallet with the words (SEED) can be added only at the EXPERT level.': "N'altro portafojo co le parole (SEED) se pol zontarlo solo al livelo ESPERTO.",
+        'Type the PIN to add a wallet': 'Scrivi el PIN par zontar un portafojo',
     },
 }
 

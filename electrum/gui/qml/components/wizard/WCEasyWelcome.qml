@@ -110,6 +110,7 @@ WizardComponent {
             Item { Layout.fillHeight: true; Layout.minimumHeight: 12 }
 
             EhStitchButton {
+                visible: wizard.ehSeedAllowed === true
                 kind: 'wine'
                 text: qsTr('Create a new wallet')
                 endIcon: 'next'
@@ -130,10 +131,22 @@ WizardComponent {
             }
 
             EhStitchButton {
+                visible: wizard.ehSeedAllowed === true
                 kind: 'paper'
                 text: qsTr('I already have the words (SEED)')
                 icon: 'eh_key_wine.svg'
                 onClicked: root.go('haveseed')
+            }
+            // owner 17/11: why the words choices are not here
+            Label {
+                visible: wizard.ehSeedAllowed !== true
+                Layout.fillWidth: true
+                horizontalAlignment: Text.AlignHCenter
+                wrapMode: Text.WordWrap
+                text: qsTr('Another wallet with the words (SEED) can be added only at the EXPERT level.')
+                color: S.muted
+                font.family: BodyFont ? BodyFont : font.family
+                font.pixelSize: app.ehFsSmall
             }
         }
         }
