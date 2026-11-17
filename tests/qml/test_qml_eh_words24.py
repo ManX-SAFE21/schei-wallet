@@ -344,3 +344,16 @@ class TestFindFundsWarnsAboutTheInheritance(TestCase):
         # if the core ever accepts other kinds, this warning must be looked at again
         from electrum.plugins.bal.core import heirs
         self.assertTrue(hasattr(heirs, 'only_native_segwit'))
+
+
+class TestPassphraseNotice(TestCase):
+    # owner 17/11 ("si aggiungi"): no movements found -> the passphrase notice
+
+    def test_notice_only_when_nothing_found(self):
+        import os as _os
+        from electrum.gui.qml import qeapp as _qeapp
+        w = open(_os.path.join(_os.path.dirname(_qeapp.__file__), 'components', 'wizard', 'WCEasyFindFunds.qml'),
+                 encoding='utf-8').read()
+        i = w.index("qsTr('If your old wallet also used an extra secret word (passphrase)")
+        box = w[w.rindex('EhInfoBox {', 0, i):i]
+        self.assertIn("finder.state === 'done' && !root.mustChoose && !finder.pick.found", box)

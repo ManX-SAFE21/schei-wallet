@@ -208,6 +208,13 @@ WizardComponent {
                   : qsTr('If the wallet is new that is fine: I use the kind «%1», the one of today’s wallets.').arg(qsTr('Modern'))
         }
 
+        // owner 17/11: nothing found -> maybe the old wallet used a passphrase, which Schȅi does not use
+        EhInfoBox {
+            visible: finder.state === 'done' && !root.mustChoose && !finder.pick.found
+            kind: 'warn'
+            text: qsTr('If your old wallet also used an extra secret word (passphrase), your money is safe, but Schȅi cannot use it. Open your words with Electrum, adding the extra word.')
+        }
+
         // owner 17/11 (controllo-mainnet M5): the inheritance works only with the modern kind
         // (native segwit, bal core/heirs.py only_native_segwit): say it here, not at the end
         EhInfoBox {

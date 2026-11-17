@@ -381,667 +381,668 @@ costs more"
 371;Se non rispondi più, alla data della consegna che hai scelto i custodi spediscono la busta e gli eredi ricevono i bitcoin. Solo allora si paga un custode, con una piccola parte della busta.;Se no te rispondi più, a la data de la consegna che te ghe sielto i custodi i manda la busta e i eredi i riceve i bitcoin. Solo alora se paga un custode, co na picola parte de la busta.;If you no longer answer, on the delivery date you chose the keepers send the envelope and the heirs receive the bitcoin. Only then is one keeper paid, with a small part of the envelope.
 372;Se non rispondi più, alla data della consegna che hai scelto i custodi spediscono la busta e gli eredi ricevono i bitcoin. Solo allora si paga un custode, con una piccola parte della busta. Schȅi è pensato per <b>cifre da tasca</b>: per somme grandi usa Àncòra (il plugin per il portafoglio Electrum) sul computer.;Se no te rispondi più, a la data de la consegna che te ghe sielto i custodi i manda la busta e i eredi i riceve i bitcoin. Solo alora se paga un custode, co na picola parte de la busta. Schȅi el xe pensà par <b>schei da scarsela</b>: par some grande dopara Àncòra (el plugin par el portafojo Electrum) sul computer.;If you no longer answer, on the delivery date you chose the keepers send the envelope and the heirs receive the bitcoin. Only then is one keeper paid, with a small part of the envelope. Schȅi is made for <b>pocket amounts</b>: for big sums use Àncòra (the plugin for the Electrum wallet) on the computer.
 373;Se metti da parte tutto il sacchetto, viene bloccato l'<b>indirizzo</b>: anche le monete che ci arriveranno dopo. Se sposti una moneta sola, blocchi solo quella.;Se te meti da parte tuto el sacheto, vien blocà l'<b>indirisso</b>: anca le monede che ghe rivarà dopo. Se te sposti na moneda sola, te blochi solo quela.;If you set a whole little bag aside, the <b>address</b> is blocked: also the coins that arrive there later. If you move one coin only, only that one is blocked.
-374;fra %1 giorni;fra %1 dì;in %1 days
-375;fra %1 mesi;fra %1 mesi;in %1 months
-376;fra %1 anni;fra %1 ani;in %1 years
-377;fra 1 giorno;fra 1 dì;in 1 day
-378;fra 1 anno;fra 1 ano;in 1 year
-379;in qualche ora;in qualche ora;in a few hours
-380;in circa 1 ora;in più o manco 1 ora;in about 1 hour
-381;in circa 10 minuti;in più o manco 10 minuti;in about 10 minutes
-382;in circa 20 minuti;in più o manco 20 minuti;in about 20 minutes
-383;Fra quanto?;Fra quanto?;In how long?
-384;in meno di 2 ore;in manco de 2 ore;in less than 2 hours
-385;In Ricevi puoi chiedere un importo preciso;In Ricevi te pol domandar un importo preciso;In Receive you can ask a precise amount
-386;in Ricevi, un QR con la cifra;in Ricevi, un QR co la cifra;in Receive, a QR with the amount
-387;Nella lista pubblica non c'è un altro custode acceso adesso.;Ne la lista publica no ghe xe n'altro custode impissà desso.;In the public list there is no other keeper on now.
-388;nel costo dell'invio scrivi tu i sat/vB (per chi se ne intende);nel costo de l'invio te scrivi ti i sat/vB (par chi che se ne intende);in the sending cost, you write the sat/vB (for those who know)
-389;Informazioni;Informasion;Information
-390;Informazioni e aiuto;Informassion e aiuto;Information and help
-391;Eredità;Eredità;Inheritance
-392;EREDITÀ;EREDITÀ;INHERITANCE
-393;Eredità annullata;Eredità scancelada;Inheritance cancelled
-394;Consegna eredità;Consegna eredità;Inheritance delivery
-395;Al posto di %1 metto %2 e mando a ciascuno la sua copia della busta. La consegna resta il <b>%3</b>.;Al posto de %1 meto %2 e ghe mando a ognidun la so copia de la busta. La consegna la resta el <b>%3</b>.;Instead of %1 I put %2 and send each one its copy of the envelope. The delivery stays on <b>%3</b>.
-396;Al posto di %1 metto %2 e gli mando la sua copia della busta. La consegna resta il <b>%3</b>.;Al posto de %1 meto %2 e ghe mando la so copia de la busta. La consegna la resta el <b>%3</b>.;Instead of %1 I put %2 and send it its copy of the envelope. The delivery stays on <b>%3</b>.
-397;al posto dei numeri, solo in euro;al posto dei numari, solo in euro;instead of the numbers, only in euro
-398;Saldo Lightning insufficiente. Paghi on-chain?;Saldo Lightning no bastante. Te paghi on-chain?;Insufficient balance to pay over Lightning. Pay on-chain instead?
-399;Fondi insufficienti;No te ghe basta schei;Insufficient funds
-400;Per l'eredità serve internet. Riprova quando sei collegato.;Par l'eredità serve internet. Riprova co te si colegà.;Internet is needed for the inheritance. Try again when you are connected.
-401;ARRIVA;EL RIVA;IT ARRIVES
-402;Si può spendere;La se pol spendar;It can be spent
-403;Non si può annullare.;No se pol tornar indrìo.;It cannot be undone.
-404;Non si può tornare indietro: per avere di nuovo l'eredità dovrai rifarla.;No se pol tornar indrio: par ver da novo l'eredità te ghe da rifarla.;It cannot be undone: to have an inheritance again you must make it again.
-405;Non si può scendere sotto <b>%1</b>: ne servono almeno tanti per i tuoi indirizzi già usati.;No se pol ndar soto <b>%1</b>: ghe ne serve almanco tanti par i to indirissi zà doperai.;It cannot go below <b>%1</b>: your addresses already used need at least that many.
-406;Non costa niente. La consegna diventa il <b>%1</b>.;No costa gnente. La consegna la deventa el <b>%1</b>.;It costs nothing. The delivery becomes <b>%1</b>.
-407;Non cambia i tuoi soldi e non costa niente. Più lontano cerca, un po' più tempo ci mette ad aggiornare il saldo. Se non serve, lascia 20.;No el cambia i to schei e no el costa gnente. Più lontan che el serca, più tempo el ghe mete a ajornar el saldo. Se no serve, lassa 20.;It does not change your money and costs nothing. The further it looks, the more time it takes to update the balance. If it is not needed, leave 20.
-408;Succede quando l'app viene spostata su un altro telefono o ricopiata da un backup.;Sucede quando che la app la vien spostada su n'altro telefono o ricopiada da un backup.;It happens when the app is moved to another phone or copied back from a backup.
-409;È una cifra grande.;La xe na cifra granda.;It is a big amount.
-410;<b>È un invio grande</b> (più di %1). Quando avrai spinto a destra le due monete bitcoin scorrevoli, ti chiederò il PIN.;<b>El xe un invio grando</b> (più de %1). Co te ghe spinto a destra le do monede bitcoin che score, te domandarò el PIN.;<b>It is a big payment</b> (more than %1). When you have pushed the two sliding bitcoin coins to the right, I will ask you for the PIN.
-411;È una richiesta di pagamento <b>Lightning</b>. Schȅi paga solo indirizzi bitcoin normali (cominciano con bc1, 1 o 3).;El xe na richiesta de pagamento <b>Lightning</b>. Schȅi el paga solo indirissi bitcoin normali (i scominsia co bc1, 1 o 3).;It is a <b>Lightning</b> payment request. Schȅi pays only normal bitcoin addresses (they start with bc1, 1 or 3).
-412;Va bene lo stesso;Va ben istesso;It is fine
-413;Serve a chi vuole scegliere <b>quali monete tenere da parte</b>, per non collegare tra loro pagamenti diversi.;La serve a chi che vol sielzar <b>che monede tegnir da parte</b>, par no ligar tra de lori pagamenti difarenti.;It is for those who want to choose <b>which coins to keep apart</b>, so that different payments are not linked to each other.
-414;È meno di quella che serve per arrivare in 4 ore (ora circa %1 sat/vB): il pagamento può restare in attesa a lungo, o i minatori possono non prenderlo mai.;La xe manco de quela che serve par rivar in 4 ore (desso circa %1 sat/vB): el pagamento el pol restar in atesa a longo, o i minadori i pol no ciaparlo mai.;It is less than what is needed to arrive within 4 hours (now about %1 sat/vB): the payment can wait a long time, or the miners may never take it.
-415;Serve per ritrovare i soldi con un altro programma: va bene <b>Electrum</b> (o Schȅi). Senza parola in più (passphrase).;El serve par catar i schei con n'altro programa: va ben <b>Electrum</b> (o Schȅi). Sensa parola in più (passphrase).;It is needed to get the money back with another program: <b>Electrum</b> (or Schȅi) is fine. No extra word (passphrase).
-416;sono sulla blockchain.;i xe su la blockchain.;it is on the blockchain.
-417;Serve solo a te: il colore fa vedere subito quali monete vengono dallo stesso posto.;La serve solo a ti: el color el fa vedar subito che monede che vien dal stesso posto.;It is only for you: the colour shows at a glance which coins come from the same place.
-418;<b>È lo stesso indirizzo di prima.</b> Nella memoria del telefono c'è ancora quello: copia l'indirizzo nuovo e incolla di nuovo.;<b>El xe el stesso indirisso de prima.</b> Ne la memoria del telefonin ghe xe ancora quelo: copia l'indirisso novo e incola da novo.;<b>It is the same address as before.</b> In the phone memory there is still that one: copy the new address and paste again.
-419;"È la piccola mancia ai ""minatori"" che scrivono il tuo pagamento sulla blockchain.";"Xe la picola mancia ai ""minatori"" che i scrive el to pagamento su la blockchain.";"It is the small tip to the ""miners"" who write your payment on the blockchain."
-420;"È la piccola mancia ai ""minatori"".";"La xe la picola mancia ai ""minadori"".";"It is the small tip to the ""miners""."
-421;Deve cominciare con http:// o https://;El ga da scominsiar co http:// o https://;It must start with http:// or https://
-422;Mostra il saldo, ma non ha le chiavi per pagare. Per pagare apri un portafoglio con le sue 12 parole (SEED).;El mostra el saldo, ma nol ga le ciavi par pagar. Par pagar verzi un portafojo co le so 12 parole (SEED).;It shows the balance, but it does not have the keys to pay. Open a wallet with its 12 words (SEED) to pay.
-423;Mostra il saldo, ma non ha le chiavi per pagare. Per pagare apri un portafoglio con le sue parole (SEED).;El mostra el saldo, ma nol ga le ciavi par pagar. Par pagar verzi un portafojo co le so parole (SEED).;It shows the balance, but it does not have the keys to pay. Open a wallet with its words (SEED) to pay.
-424;Ci vogliono pochi secondi. Gli indirizzi .onion (Tor) li salto.;Ghe vol pochi secondi. I indirissi .onion (Tor) li salto.;It takes a few seconds. I skip the .onion (Tor) addresses.
-425;Usa la rete di prova di Bitcoin (testnet4): le monete qui non valgono niente e non si possono cambiare in euro. Serve per imparare e provare senza paura.;La dòpara la rete de prova de Bitcoin (testnet4): i schȅi qua no i val gnente e no se pol cambiarli in euro. La serve par imparar e provar sensa paura.;It uses the Bitcoin test network (testnet4): the coins here are worth nothing and cannot be changed into euro. It is for learning and trying without fear.
-426;LE SUE MONETE (%1);LE SO MONEDE (%1);ITS COINS (%1)
-427;"è bloccato tutto il suo indirizzo: sbloccalo da ""I tuoi indirizzi""";"xe blocà tuto el so indirisso: sblochelo da ""I to indirissi""";"its whole address is blocked: unblock it from ""Your addresses"""
-428;Lasciala com'è;Lassela come che la xe;Keep it
-429;tienici pochi schei, quelli per le spese. Non è una cassaforte: per i risparmi grandi usa un sistema più sicuro.;tienghe pochi schei, queli par le spese. No el xe na cassaforte: par i risparmi grandi dopara un sistema più sicuro.;keep only a few schei in it, the ones for spending. It is not a safe: for big savings use a safer system.
-430;Custode sostituito;Custode cambià;Keeper replaced
-431;Custodi;Custodi;Keepers
-432;Custodi sostituiti;Custodi cambiai;Keepers replaced
-433;TIPO;TIPO;KIND
-434;Lingua;Lengua;Language
-435;ultimo saldo;ultimo saldo;last balance
-436;Mese scorso;Mese passà;Last month
-437;Settimana scorsa;Setimana passada;Last week
-438;Più tardi;Più tardi;Later
-439;IMPARA;IMPARA;LEARN
-440;RIMANGONO;TE RESTA;LEFT
-441;Meno di 1 sat/vB: il pagamento può aspettare a lungo, e qualche nodo potrebbe non farlo passare.;Manco de 1 sat/vB: el pagamento el pol spetar tanto, e qualche nodo el podarìa no farlo passar.;Less than 1 sat/vB: the payment can wait a long time, and some nodes may not pass it on.
-442;Controlliamo;Controlemo;Let's check
-443;LIVELLO;LIVEO;LEVEL
-444;come la carta contactless: sotto la soglia basta la moneta;come la carta contactless: soto la soglia basta la moneda;like a contactless card: below the threshold the coin is enough
-445;come mempool.space, su un altro server;come mempool.space, su n'altro server;like mempool.space, on another server
-446;bloccata · %1 s;blocà · %1 s;locked · %1 s
-447;Rivedi cifra, costo e indirizzo prima di mandare. Poi spingi a destra le due monete bitcoin.;Riguarda cifra, costo e indirisso prima de mandar. Dopo spingi a destra le do monede bitcoin.;Look again at amount, cost and address before sending. Then push the two bitcoin coins to the right.
-448;Cerca più indirizzi;Serca più indirissi;Look at more addresses
-449;Guarda il foglio e tocca le parole nell'ordine giusto: prima la 1, poi la 2…;Varda el foglio e toca le parole in ordine giusto: prima la 1, dopo la 2…;Look at your paper and tap the words in the right order: first number 1, then number 2…
-450;Guarda su mempool.space;Varda su mempool.space;Look on mempool.space
-451;Cerca fino a;Serca fin a;Look up to
-452;cerco Orbot…;serco Orbot…;looking for Orbot…
-453;Cerco i tuoi soldi;Serco i to schȅi;Looking for your money
-454;Sto cercando…;Sto sercando…;Looking…
-455;Pensata per cifre da tasca, fino a circa <b>%1</b>. Per somme grandi usa Àncòra sul computer.;Pensada par schei da scarsela, fin a circa <b>%1</b>. Par some grande dopara Àncòra sul computer.;Made for pocket amounts, up to about <b>%1</b>. For big sums use Àncòra on the computer.
-456;Con un altro portafoglio;Co n'altro portafojo;Made with another wallet
-457;Creato con Schȅi o con Electrum;Creà co Schȅi o co Electrum;Made with Schȅi or Electrum
-458;SCHERMATA PRINCIPALE;SCHERMADA PRINSIPAL;MAIN SCREEN
-459;Fai l'eredità;Fa l'eredità;Make the inheritance
-460;Gestisci più portafogli;Gestissi più portafoji;Manage more wallets
-461;molti dettagli;tanti detagli;many details
-462;Massimo %1 sat/vB;Massimo %1 sat/vB;Maximum %1 sat/vB
-463;MEDIO;MEDIO;MEDIUM
-464;minatore;minador;miner
-465;Licenza MIT;Licensa MIT;MIT licence
-466;Moderno;Moderno;Modern
-467;SOLDI;SCHEI;MONEY
-468;ricevuti;ricevùi;money received
-469;mandati;mandài;money sent
-470;soldi, sicurezza e rete · serve il PIN;schȅi, sicuressa e rete · ghe vol el PIN;money, security and network · the PIN is needed
-471;Soldi, sicurezza e rete. Di serie è tutto spento, tranne il PIN per gli invii grandi.;Schȅi, sicuressa e rete. De serie xe tuto distuà, fora che el PIN par i invii grandi.;Money, security and network. By default everything is off, except the PIN for big payments.
-472;più scelte;più sielte;more choices
-473;Maggiori informazioni;Più informasion;More information
-474;più custodi, più sicuro;più custodi, più sicuro;more keepers, safer
-475;più riservato · serve l'app Orbot;più riservà · ghe vol l'app Orbot;more private · needs the Orbot app
-476;Più portafogli;Più portafoji;More wallets
-477;Si accendono più portafogli, sola visualizzazione e monete d'oro;Se impissa più portafoji, solo vardar e monede d'oro;More wallets, view-only wallets and gold coins turn on
-478;Movimenti;Movimenti;Movements
-479;Il mio indirizzo bitcoin;El me indirisso bitcoin;My bitcoin address
-480;Il mio nodo;El me nodo;My node
-481;Il mio portafoglio;El me portafojo;My wallet
-482;NOME;NOME;NAME
-483;Nome;Nome;Name
-484;Nome e colore;Nome e color;Name and colour
-485;nome, per esempio: negozio;nome, par esempio: botega;name, for example: shop
-486;Servono;Ghe vol;Needed
-487;RETE;RETE;NETWORK
-488;Rete;Rete;Network
-489;RETE E RECUPERO;RETE E RECUPERO;NETWORK AND RECOVERY
-490;nuovo;novo;new
-491;Nuova categoria;Categoria nova;New category
-492;Nuova persona;Nova persona;New person
-493;Avanti;Avanti;Next
-494;Avanti (%1 di %2);Avanti (%1 de %2);Next (%1 of %2)
-495;Avanti (%1 di 12);Avanti (%1 de 12);Next (%1 of 12)
-496;No;No;No
-497;nessuna moneta qui;nissuna moneda qua;no coins here
-498;Nessuna moneta su questo indirizzo.;Nissuna moneda su sto indirisso.;No coins on this address.
-499;Ancora nessuna moneta: arrivano quando qualcuno ti manda bitcoin.;Gnancora nissuna moneda: le riva co qualchedun te manda bitcoin.;No coins yet: they arrive when someone sends you bitcoin.
-500;senza busta;sensa busta;no envelope
-501;Nessun custode libero;Nissun custode libero;No free keeper
-502;Senza internet.;Sensa internet.;No internet.
-503;"Nessun custode ha risposto. I tuoi soldi sono al sicuro; riprova più tardi.";"Nissun custode el ga risposto. I to schei i xe al sicuro; riprova più tardi.";"No keeper answered. Your money is safe; try again later."
-504;nessun movimento;nissun movimento;no movements
-505;Nessun movimento trovato;Nissun movimento catà;No movements found
-506;Ancora nessun movimento;Gnancora nissun movimento;No movements yet
-507;Ancora nessun movimento.;Gnancora nissun movimento.;No movements yet.
-508;nessuna nota;nissuna nota;no note
-509;No, tienili;No, tienli;No, keep them
-510;nessuno risponde;nissun risponde;nobody answers
-511;nessuno risponde da giorni;nissun risponde da giorni;nobody answers for days
-512;Nessuno deve chiederti di farlo per telefono.;Nissun ga da domandarte de farlo par telefono.;Nobody should ask you to do this by phone.
-513;Nessuno ti chiederà mai le 12 parole (SEED). Chi le chiede è un truffatore.;Nissun te domandarà mai le 12 parole (SEED). Chi che le domanda el xe un imbrojon.;Nobody will ever ask you for the 12 words (SEED). Whoever asks is a scammer.
-514;Nessuno ti chiederà mai le parole (SEED). Chi le chiede è un truffatore.;Nissun te domandarà mai le parole (SEED). Chi che le domanda el xe un imbroion.;Nobody will ever ask you for the words (SEED). Whoever asks is a scammer.
-515;Non risponde da %1 giorni;No el risponde da %1 dì;Not answering for %1 days
-516;Non risponde da 1 giorno;No el risponde da 1 dì;Not answering for 1 day
-517;Non risponde da oggi;No el risponde da ancuo;Not answering since today
-518;non disponibile;no disponibile;not available
-519;NON BIP39;NO BIP39;NOT BIP39
-520;non ancora confermata;gnancora confermada;not confirmed yet
-521;Non collegato;No coleà;Not connected
-522;Non sei collegato a internet: comincio appena ti colleghi.;No te sì tacà a internet: scominsio pena che te te tachi.;Not connected to the internet: I start as soon as you are connected.
-523;Non valida;No valida;Not valid
-524;non ancora;gnancora;not yet
-525;NOTA;NOTA;NOTE
-526;Nota;Nota;Note
-527;Nota salvata;Nota salvada;Note saved
-528;niente;gnente;nothing
-529;Non resta niente;No resta gnente;Nothing is left
-530;Ora l'altra, svelto!;Desso cuel'altra, svelto!;Now the other one, quickly!
-531;ora: %1;desso: %1;now: %1
-532;"La numero %1 non è ""%2"". Guarda bene il foglio.";"La numaro %1 no la xe ""%2"". Varda ben el foglio.";"Number %1 is not ""%2"". Look carefully at your paper."
-533;spenta;studà;off
-534;Spenta;Destuada;Off
-535;spenta;studada;off (f)
-536;spento;studà;off (m)
-537;Va bene;Va ben;OK (go ahead)
-538;Vecchio;Vecio;Old
-539;Più vecchi;Più veci;Older
-540;acceso;impissà;on
-541;Accesa;Impissada;On
-542;il %1;el %1;on %1
-543;accesa;impissada;on (f)
-544;SUL TUO INDIRIZZO;SUL TO INDIRISSO;ON YOUR ADDRESS
-545;Una volta inviati, solo chi li riceve può restituirteli.;Na volta mandài, solo chi che li riceve el pol ridartei.;Once sent, only the person who receives them can give them back.
-546;Una volta inviati, solo chi li riceve può restituirteli: non c'è nessun altro modo.;Na volta mandài, solo chi che li riceve el pol ridartei: no ghe xe nissun altro modo.;Once sent, only the person who receives them can give them back: there is no other way.
-547;A un quarto dalla fine;A un quarto da la fine;One quarter from the end
-548;A un terzo dalla fine;A un terzo da la fine;One third from the end
-549;Solo bitcoin (senza euro);Solo bitcoin (sensa euro);Only bitcoin (no euro)
-550;Solo il mio nodo;Solo el me nodo;Only my node
-551;Apri il portafoglio;Verzi el portafojo;Open the wallet
-552;si apre %1;se verze %1;opens %1
-553;Orbot trovato;Orbot catà;Orbot found
-554;Orbot non è acceso;Orbot no el xe impissà;Orbot is not on
-555;Originale;Original;Original
-556;Altro;Altro;Other
-557;altra cifra…;n'altra cifra…;other amount…
-558;Compaiono altre scelte, spente: privacy, invia tutto, nodo e Tor;Vien fora altre sielte, studae: privacy, manda tuto, nodo e Tor;Other choices appear, off: privacy, send all, node and Tor
-559;Altri portafogli;Altri portafoji;Other wallets
-560;Incolla;Incola;Paste
-561;Incolla un indirizzo bitcoin;Incola un indirisso bitcoin;Paste a bitcoin address
-562;Incolla un altro;Incola n'altro;Paste another one
-563;Pagamento non riuscito;Pagamento no riussìo;Payment failed
-564;Pagamento riuscito;Pagamento riussìo;Payment succeeded
-565;pensione;pension;pension
-566;Perfetto! Il tuo foglio è giusto: tutte le 12 parole (SEED), nell'ordine giusto.;Perfeto! El to foglio el xe giusto: tute le 12 parole (SEED), in ordine giusto.;Perfect! Your paper is correct: all 12 words (SEED), in the right order.
-567;Periodo;Periodo;Period
-568;TELEFONO;TELEFONO;PHONE
-569;PIN cambiato;PIN cambià;PIN changed
-570;PIN per gli invii grandi;PIN par i invii grandi;PIN for big payments
-571;Tasche, origine e avvisi;Scarsele, origine e avisi;Pockets, origin and warnings
-572;tasche, provenienza delle monete e avvisi;scarsele, origine de le monede e avisi;pockets, origin of the coins and warnings
-573;Preferisci scrivere i numeri?;Te piase de più scrivar i numari?;Prefer to write the numbers?
-574;Preferenze;Preferense;Preferences
-575;Riservatezza.;Riservatessa.;Privacy.
-576;tira giù;tira zo;pull down
-577;Tira giù la moneta per ricevere i primi bitcoin.;Tira zo la moneda par ricevar i primi bitcoin.;Pull the coin down to receive your first bitcoin.
-578;Spingi a destra <b>le due monete insieme</b>, con due dita.;Spingi a destra <b>tute do le monede insieme</b>, co do dei.;Push <b>both coins to the right together</b>, with two fingers.
-579;Spingi a destra le due monete: insieme con due dita, oppure una dopo l'altra.;Spingi a destra le do monede: insieme co do dei, opure una dopo l'altra.;Push both coins to the right: together with two fingers, or one after the other.
-580;Spingi a destra la prima moneta…;Spingi a destra la prima moneda…;Push the first coin to the right…
-581;spingi a destra;spingi a destra;push to the right
-582;spingi su;spingi su;push up
-583;Metti da parte;Meti da parte;Put aside
-584;Rimetti le 12 parole (SEED);Rimeti le 12 parole (SEED);Put back the 12 words (SEED)
-585;Rimetti le parole (SEED);Rimeti le parole (SEED);Put back the words (SEED)
-586;Metti il codice QR dentro il riquadro;Meti el codice QR drento el riquadro;Put the QR code inside the frame
-587;Leggi QR;Lezi QR;Read QR
-588;<b>Leggile a voce</b> a chi riceve, lettera per lettera: devono essere uguali alle sue.;<b>Lezile a vose</b> a chi che riceve, letara par letara: le ga da èssar compagne de le sue.;<b>Read them aloud</b> to the person receiving, letter by letter: they must be the same as theirs.
-589;<b>Leggile a voce</b> a chi ti manda i bitcoin, lettera per lettera.;<b>Lezile a vose</b> a chi che te manda i bitcoin, letara par letara.;<b>Read them aloud</b> to the person sending you bitcoin, letter by letter.
-590;RICEVI;RICEVI;RECEIVE
-591;Ricevi;Ricevi;Receive
-592;ricevi in:;ricevi in:;receive in:
-593;Ricevi su questo indirizzo;Ricevi su sto indirisso;Receive on this address
-594;Ricevuti;Ricevùi;Received
-595;ricevuti;ricevùi;received
-596;consigliato;consiglià;recommended
-597;Restano;Resta;Remaining
-598;Avvisami;Avisame;Remind me
-599;Avviso;Aviso;Reminder
-600;Togli questa persona;Cava sta persona;Remove this person
-601;Rinnova adesso;Rinova desso;Renew now
-602;Avviso rinnovo, dal;Aviso rinovo, dal;Renewal reminder, from
-603;Ripeti il PIN;Ripeti el PIN;Repeat the PIN
-604;Sostituisci quelli che non rispondono;Cambia quei che no i risponde;Replace the ones that do not answer
-605;Segnala un problema su GitHub;Segnala un problema su GitHub;Report a problem on GitHub
-606;Rivedi le 12 parole (SEED);Riguarda le 12 parole (SEED);Review the 12 words (SEED)
-607;Le stesse monete di prima;Le stesse monede de prima;Same coins as before
-608;Salva;Salva;Save
-609;Salvato;Salvà;Saved
-610;Inquadra il codice QR bitcoin di chi devi pagare.;Inquadra el codice QR bitcoin de chi che te ga da pagar.;Scan the bitcoin QR code of the person you have to pay.
-611;Inquadra il codice QR o incolla l'indirizzo di chi devi pagare.;Inquadra el codice QR o incola l'indirisso de chi che te ghe da pagar.;Scan the QR code or paste the address of the person you pay.
-612;"<b>Schȅi sceglie da solo una mancia ""normale""</b>: di solito il pagamento arriva in circa un'ora. Se hai fretta, sposta il cursore a destra. Tutta la mancia va ai minatori: Schȅi non prende niente.";"<b>Schȅi el sielze da solo na mancia ""normale""</b>: de solito el pagamento el riva in circa un'ora. Se te ghe pressa, sposta el cursor a destra. Tuta la mancia la va ai minadori: Schȅi nol ciapa gnente.";"<b>Schȅi chooses a ""normal"" tip by itself</b>: the payment usually arrives in about an hour. If you are in a hurry, move the slider to the right. The whole tip goes to the miners: Schȅi takes nothing."
-613;"<b>Schȅi sceglie da solo una mancia ""normale""</b>: il pagamento arriva di solito in una decina di minuti. La mancia va tutta ai minatori: Schȅi non prende niente.";"<b>Schȅi el sielze da solo na mancia ""normale""</b>: el pagamento de solito el riva in na desina de minuti. La mancia la va tuta ai minadori: Schȅi no el ciapa gnente.";"<b>Schȅi chooses a ""normal"" tip by itself</b>: the payment usually arrives in about ten minutes. The whole tip goes to the miners: Schȅi takes nothing."
-614;Schȅi si collega da solo ai server pubblici di Electrum, per sapere il saldo e mandare i pagamenti. Se hai un <b>tuo nodo</b> (per esempio su Umbrel), puoi collegarti solo a quello.;Schȅi el se colega da solo ai server publici de Electrum, par saver el saldo e mandar i pagamenti. Se te ghe un <b>to nodo</b> (par esempio su Umbrel), te pol colegarte solo a quelo.;Schȅi connects by itself to the public Electrum servers, to know the balance and to send payments. If you have <b>your own node</b> (for example on Umbrel), you can connect only to that.
-615;Schȅi è un <b>riadattamento grafico</b> del wallet mobile di Electrum, reso più semplice per tutti: schermate, parole, tasti grandi.;Schȅi el xe un <b>vestito novo</b> del portafojo mobile de Electrum, fato più sempio par tuti: schermate, parole, botoni grandi.;Schȅi is a <b>new look</b> of the Electrum mobile wallet, made simpler for everyone: screens, words, big buttons.
-616;"<b>Schȅi è un portafoglio da tasca</b>, pensato per le cifre di tutti i giorni. Per questi importi <b>1 conferma è più che sufficiente</b>: per questo la mostriamo già come ""✓ Confermato"".";"<b>Schȅi el xe un portafojo da scarsela</b>, fato par le cifre de tuti i dì. Par ste cifre <b>1 conferma la basta e vansa</b>: par questo la mostremo zà come ""✓ Confermà"".";"<b>Schȅi is a pocket wallet</b>, made for everyday amounts. For these amounts <b>1 confirmation is more than enough</b>: that is why we already show it as ""✓ Confirmed""."
-617;Schȅi è come il portafoglio in tasca:;Schȅi el xe come el portafojo in scarsela:;Schȅi is like the wallet in your pocket:
-618;Schȅi si sta ancora aggiornando. Riprova fra poco.;Schȅi el se sta ancora agiornando. Riprova fra un fià.;Schȅi is still updating. Try again in a little while.
-619;Movimenti Schȅi (CSV);Movimenti Schȅi (CSV);Schȅi movements (CSV)
-620;Schȅi aggiunge solo il PIN e tiene la password del portafoglio nella cassaforte del telefono (Android Keystore), come fa Electrum con l'impronta digitale.;Schȅi el zonta solo el PIN e el tien la password del portafojo ne la cassaforte del telefonin (Android Keystore), come che fa Electrum co l'impronta.;Schȅi only adds the PIN and keeps the wallet password in the safe of the phone (Android Keystore), the same way Electrum does with the fingerprint.
-621;Schȅi prepara una <b>busta chiusa</b> con i tuoi bitcoin per le persone che hai scelto. Ne tengono una copia vari custodi (Will Executor): computer sempre accesi che la spediscono solo alla data della consegna. Prima di quella data nessuno può spedirla: anche se qualcuno ci provasse, i nodi Bitcoin la rifiuterebbero.;Schȅi el prepara na <b>busta sarada</b> coi to bitcoin par le persone che te ghe sielto. Ghe ne tien na copia vari custodi (Will Executor): computer sempre impissai che i la manda solo a la data de la consegna. Prima de quela data nissun pol mandarla: anca se qualchedun el ghe provasse, i nodi Bitcoin i la rifiutaria.;Schȅi prepares a <b>sealed envelope</b> with your bitcoin for the people you chose. Several keepers (Will Executor) each hold a copy: computers that are always on and send it only on the delivery date. Before that date nobody can send it: even if someone tried, the Bitcoin nodes would refuse it.
-622;Cerca (es. franco, yen…);Serca (es. franco, yen…);Search (e.g. franc, yen…)
-623;Ricerca su più indirizzi di ricezione;Riserca su più indirissi de ricevuta;Search on more receiving addresses
-624;SICUREZZA;SICURESSA;SECURITY
-625;sicurezza, importi, monete, portafogli · serve il PIN;sicuressa, cifre, monede, portafoji · ghe vol el PIN;security, amounts, coins, wallets · the PIN is needed
-626;Vedi tutti;Varda tuti;See all
-627;Vedi in banconote;Varda in bancanote;See in banknotes
-628;Vedi sulla blockchain;Vardilo su la blockchain;See it on the blockchain
-629;Rivedi le 12 parole (SEED);Riguarda le 12 parole (SEED);See the 12 words (SEED) again
-630;vedi il saldo senza poter spendere;te vedi el saldo sensa poder spendar;see the balance without being able to spend
-631;Rivedi le parole (SEED);Riguarda le parole (SEED);See the words (SEED) again
-632;INVIA;MANDA;SEND
-633;INVIARE E RICEVERE;MANDAR E RICEVAR;SEND AND RECEIVE
-634;Manda la busta ad altri custodi;Manda la busta a altri custodi;Send the envelope to other keepers
-635;Manda la busta con il PIN;Manda la busta col PIN;Send the envelope with the PIN
-636;COSTO DELL'INVIO;COSTO DE L'INVIO;SENDING COST
-637;Costo dell'invio;Costo de l'invio;Sending cost
-638;Costo invio €;Costo invio €;Sending cost €
-639;Sto mandando i bitcoin…;Drio mandar i bitcoin…;Sending the bitcoin…
-640;Invio in corso…;Drio mandar…;Sending…
-641;Inviati;Mandài;Sent
-642;inviati;mandài;sent
-643;Inviati!;Mandà!;Sent!
-644;INDIRIZZO DEL SERVER;INDIRISSO DEL SERVER;SERVER ADDRESS
-645;Da parte;Da parte;Set aside
-646;Impostazioni;Impostasion;Settings
-647;Impostazioni per esperti;Impostasion par esperti;Settings for experts
-648;Condividi;Condividi;Share
-649;Mostra le impostazioni avanzate;Mostra le impostasion avansade;Show the advanced settings
-650;Firma altrove;Firma da n'altra parte;Sign elsewhere
-651;Firma in un altro dispositivo;Firma su n'altro dispositivo;Sign on another device
-652;firmi il pagamento su un altro dispositivo;te firmi el pagamento su n'altro aparechio;sign the payment on another device
-653;Firma/Verifica messaggio;Firma/Verifica messajo;Sign/Verify Message
-654;semplice;sempio;simple
-655;semplice e veloce;sempio e svelto;simple and fast
-656;Scorri per inviare;Scori par mandar;Slide to send
-657;"più lento
+374;Se nel tuo vecchio portafoglio usavi anche una parola segreta in più (passphrase), i tuoi soldi sono al sicuro, ma Schȅi non la può usare. Apri le tue parole con Electrum, aggiungendo la parola in più.;Se nel to vecio portafoglio te dopravi anca na parola segreta in più (passphrase), i to schei i xe al sicuro, ma Schȅi no la pol doparar. Verzi le to parole co Electrum, zontando la parola in più.;If your old wallet also used an extra secret word (passphrase), your money is safe, but Schȅi cannot use it. Open your words with Electrum, adding the extra word.
+375;fra %1 giorni;fra %1 dì;in %1 days
+376;fra %1 mesi;fra %1 mesi;in %1 months
+377;fra %1 anni;fra %1 ani;in %1 years
+378;fra 1 giorno;fra 1 dì;in 1 day
+379;fra 1 anno;fra 1 ano;in 1 year
+380;in qualche ora;in qualche ora;in a few hours
+381;in circa 1 ora;in più o manco 1 ora;in about 1 hour
+382;in circa 10 minuti;in più o manco 10 minuti;in about 10 minutes
+383;in circa 20 minuti;in più o manco 20 minuti;in about 20 minutes
+384;Fra quanto?;Fra quanto?;In how long?
+385;in meno di 2 ore;in manco de 2 ore;in less than 2 hours
+386;In Ricevi puoi chiedere un importo preciso;In Ricevi te pol domandar un importo preciso;In Receive you can ask a precise amount
+387;in Ricevi, un QR con la cifra;in Ricevi, un QR co la cifra;in Receive, a QR with the amount
+388;Nella lista pubblica non c'è un altro custode acceso adesso.;Ne la lista publica no ghe xe n'altro custode impissà desso.;In the public list there is no other keeper on now.
+389;nel costo dell'invio scrivi tu i sat/vB (per chi se ne intende);nel costo de l'invio te scrivi ti i sat/vB (par chi che se ne intende);in the sending cost, you write the sat/vB (for those who know)
+390;Informazioni;Informasion;Information
+391;Informazioni e aiuto;Informassion e aiuto;Information and help
+392;Eredità;Eredità;Inheritance
+393;EREDITÀ;EREDITÀ;INHERITANCE
+394;Eredità annullata;Eredità scancelada;Inheritance cancelled
+395;Consegna eredità;Consegna eredità;Inheritance delivery
+396;Al posto di %1 metto %2 e mando a ciascuno la sua copia della busta. La consegna resta il <b>%3</b>.;Al posto de %1 meto %2 e ghe mando a ognidun la so copia de la busta. La consegna la resta el <b>%3</b>.;Instead of %1 I put %2 and send each one its copy of the envelope. The delivery stays on <b>%3</b>.
+397;Al posto di %1 metto %2 e gli mando la sua copia della busta. La consegna resta il <b>%3</b>.;Al posto de %1 meto %2 e ghe mando la so copia de la busta. La consegna la resta el <b>%3</b>.;Instead of %1 I put %2 and send it its copy of the envelope. The delivery stays on <b>%3</b>.
+398;al posto dei numeri, solo in euro;al posto dei numari, solo in euro;instead of the numbers, only in euro
+399;Saldo Lightning insufficiente. Paghi on-chain?;Saldo Lightning no bastante. Te paghi on-chain?;Insufficient balance to pay over Lightning. Pay on-chain instead?
+400;Fondi insufficienti;No te ghe basta schei;Insufficient funds
+401;Per l'eredità serve internet. Riprova quando sei collegato.;Par l'eredità serve internet. Riprova co te si colegà.;Internet is needed for the inheritance. Try again when you are connected.
+402;ARRIVA;EL RIVA;IT ARRIVES
+403;Si può spendere;La se pol spendar;It can be spent
+404;Non si può annullare.;No se pol tornar indrìo.;It cannot be undone.
+405;Non si può tornare indietro: per avere di nuovo l'eredità dovrai rifarla.;No se pol tornar indrio: par ver da novo l'eredità te ghe da rifarla.;It cannot be undone: to have an inheritance again you must make it again.
+406;Non si può scendere sotto <b>%1</b>: ne servono almeno tanti per i tuoi indirizzi già usati.;No se pol ndar soto <b>%1</b>: ghe ne serve almanco tanti par i to indirissi zà doperai.;It cannot go below <b>%1</b>: your addresses already used need at least that many.
+407;Non costa niente. La consegna diventa il <b>%1</b>.;No costa gnente. La consegna la deventa el <b>%1</b>.;It costs nothing. The delivery becomes <b>%1</b>.
+408;Non cambia i tuoi soldi e non costa niente. Più lontano cerca, un po' più tempo ci mette ad aggiornare il saldo. Se non serve, lascia 20.;No el cambia i to schei e no el costa gnente. Più lontan che el serca, più tempo el ghe mete a ajornar el saldo. Se no serve, lassa 20.;It does not change your money and costs nothing. The further it looks, the more time it takes to update the balance. If it is not needed, leave 20.
+409;Succede quando l'app viene spostata su un altro telefono o ricopiata da un backup.;Sucede quando che la app la vien spostada su n'altro telefono o ricopiada da un backup.;It happens when the app is moved to another phone or copied back from a backup.
+410;È una cifra grande.;La xe na cifra granda.;It is a big amount.
+411;<b>È un invio grande</b> (più di %1). Quando avrai spinto a destra le due monete bitcoin scorrevoli, ti chiederò il PIN.;<b>El xe un invio grando</b> (più de %1). Co te ghe spinto a destra le do monede bitcoin che score, te domandarò el PIN.;<b>It is a big payment</b> (more than %1). When you have pushed the two sliding bitcoin coins to the right, I will ask you for the PIN.
+412;È una richiesta di pagamento <b>Lightning</b>. Schȅi paga solo indirizzi bitcoin normali (cominciano con bc1, 1 o 3).;El xe na richiesta de pagamento <b>Lightning</b>. Schȅi el paga solo indirissi bitcoin normali (i scominsia co bc1, 1 o 3).;It is a <b>Lightning</b> payment request. Schȅi pays only normal bitcoin addresses (they start with bc1, 1 or 3).
+413;Va bene lo stesso;Va ben istesso;It is fine
+414;Serve a chi vuole scegliere <b>quali monete tenere da parte</b>, per non collegare tra loro pagamenti diversi.;La serve a chi che vol sielzar <b>che monede tegnir da parte</b>, par no ligar tra de lori pagamenti difarenti.;It is for those who want to choose <b>which coins to keep apart</b>, so that different payments are not linked to each other.
+415;È meno di quella che serve per arrivare in 4 ore (ora circa %1 sat/vB): il pagamento può restare in attesa a lungo, o i minatori possono non prenderlo mai.;La xe manco de quela che serve par rivar in 4 ore (desso circa %1 sat/vB): el pagamento el pol restar in atesa a longo, o i minadori i pol no ciaparlo mai.;It is less than what is needed to arrive within 4 hours (now about %1 sat/vB): the payment can wait a long time, or the miners may never take it.
+416;Serve per ritrovare i soldi con un altro programma: va bene <b>Electrum</b> (o Schȅi). Senza parola in più (passphrase).;El serve par catar i schei con n'altro programa: va ben <b>Electrum</b> (o Schȅi). Sensa parola in più (passphrase).;It is needed to get the money back with another program: <b>Electrum</b> (or Schȅi) is fine. No extra word (passphrase).
+417;sono sulla blockchain.;i xe su la blockchain.;it is on the blockchain.
+418;Serve solo a te: il colore fa vedere subito quali monete vengono dallo stesso posto.;La serve solo a ti: el color el fa vedar subito che monede che vien dal stesso posto.;It is only for you: the colour shows at a glance which coins come from the same place.
+419;<b>È lo stesso indirizzo di prima.</b> Nella memoria del telefono c'è ancora quello: copia l'indirizzo nuovo e incolla di nuovo.;<b>El xe el stesso indirisso de prima.</b> Ne la memoria del telefonin ghe xe ancora quelo: copia l'indirisso novo e incola da novo.;<b>It is the same address as before.</b> In the phone memory there is still that one: copy the new address and paste again.
+420;"È la piccola mancia ai ""minatori"" che scrivono il tuo pagamento sulla blockchain.";"Xe la picola mancia ai ""minatori"" che i scrive el to pagamento su la blockchain.";"It is the small tip to the ""miners"" who write your payment on the blockchain."
+421;"È la piccola mancia ai ""minatori"".";"La xe la picola mancia ai ""minadori"".";"It is the small tip to the ""miners""."
+422;Deve cominciare con http:// o https://;El ga da scominsiar co http:// o https://;It must start with http:// or https://
+423;Mostra il saldo, ma non ha le chiavi per pagare. Per pagare apri un portafoglio con le sue 12 parole (SEED).;El mostra el saldo, ma nol ga le ciavi par pagar. Par pagar verzi un portafojo co le so 12 parole (SEED).;It shows the balance, but it does not have the keys to pay. Open a wallet with its 12 words (SEED) to pay.
+424;Mostra il saldo, ma non ha le chiavi per pagare. Per pagare apri un portafoglio con le sue parole (SEED).;El mostra el saldo, ma nol ga le ciavi par pagar. Par pagar verzi un portafojo co le so parole (SEED).;It shows the balance, but it does not have the keys to pay. Open a wallet with its words (SEED) to pay.
+425;Ci vogliono pochi secondi. Gli indirizzi .onion (Tor) li salto.;Ghe vol pochi secondi. I indirissi .onion (Tor) li salto.;It takes a few seconds. I skip the .onion (Tor) addresses.
+426;Usa la rete di prova di Bitcoin (testnet4): le monete qui non valgono niente e non si possono cambiare in euro. Serve per imparare e provare senza paura.;La dòpara la rete de prova de Bitcoin (testnet4): i schȅi qua no i val gnente e no se pol cambiarli in euro. La serve par imparar e provar sensa paura.;It uses the Bitcoin test network (testnet4): the coins here are worth nothing and cannot be changed into euro. It is for learning and trying without fear.
+427;LE SUE MONETE (%1);LE SO MONEDE (%1);ITS COINS (%1)
+428;"è bloccato tutto il suo indirizzo: sbloccalo da ""I tuoi indirizzi""";"xe blocà tuto el so indirisso: sblochelo da ""I to indirissi""";"its whole address is blocked: unblock it from ""Your addresses"""
+429;Lasciala com'è;Lassela come che la xe;Keep it
+430;tienici pochi schei, quelli per le spese. Non è una cassaforte: per i risparmi grandi usa un sistema più sicuro.;tienghe pochi schei, queli par le spese. No el xe na cassaforte: par i risparmi grandi dopara un sistema più sicuro.;keep only a few schei in it, the ones for spending. It is not a safe: for big savings use a safer system.
+431;Custode sostituito;Custode cambià;Keeper replaced
+432;Custodi;Custodi;Keepers
+433;Custodi sostituiti;Custodi cambiai;Keepers replaced
+434;TIPO;TIPO;KIND
+435;Lingua;Lengua;Language
+436;ultimo saldo;ultimo saldo;last balance
+437;Mese scorso;Mese passà;Last month
+438;Settimana scorsa;Setimana passada;Last week
+439;Più tardi;Più tardi;Later
+440;IMPARA;IMPARA;LEARN
+441;RIMANGONO;TE RESTA;LEFT
+442;Meno di 1 sat/vB: il pagamento può aspettare a lungo, e qualche nodo potrebbe non farlo passare.;Manco de 1 sat/vB: el pagamento el pol spetar tanto, e qualche nodo el podarìa no farlo passar.;Less than 1 sat/vB: the payment can wait a long time, and some nodes may not pass it on.
+443;Controlliamo;Controlemo;Let's check
+444;LIVELLO;LIVEO;LEVEL
+445;come la carta contactless: sotto la soglia basta la moneta;come la carta contactless: soto la soglia basta la moneda;like a contactless card: below the threshold the coin is enough
+446;come mempool.space, su un altro server;come mempool.space, su n'altro server;like mempool.space, on another server
+447;bloccata · %1 s;blocà · %1 s;locked · %1 s
+448;Rivedi cifra, costo e indirizzo prima di mandare. Poi spingi a destra le due monete bitcoin.;Riguarda cifra, costo e indirisso prima de mandar. Dopo spingi a destra le do monede bitcoin.;Look again at amount, cost and address before sending. Then push the two bitcoin coins to the right.
+449;Cerca più indirizzi;Serca più indirissi;Look at more addresses
+450;Guarda il foglio e tocca le parole nell'ordine giusto: prima la 1, poi la 2…;Varda el foglio e toca le parole in ordine giusto: prima la 1, dopo la 2…;Look at your paper and tap the words in the right order: first number 1, then number 2…
+451;Guarda su mempool.space;Varda su mempool.space;Look on mempool.space
+452;Cerca fino a;Serca fin a;Look up to
+453;cerco Orbot…;serco Orbot…;looking for Orbot…
+454;Cerco i tuoi soldi;Serco i to schȅi;Looking for your money
+455;Sto cercando…;Sto sercando…;Looking…
+456;Pensata per cifre da tasca, fino a circa <b>%1</b>. Per somme grandi usa Àncòra sul computer.;Pensada par schei da scarsela, fin a circa <b>%1</b>. Par some grande dopara Àncòra sul computer.;Made for pocket amounts, up to about <b>%1</b>. For big sums use Àncòra on the computer.
+457;Con un altro portafoglio;Co n'altro portafojo;Made with another wallet
+458;Creato con Schȅi o con Electrum;Creà co Schȅi o co Electrum;Made with Schȅi or Electrum
+459;SCHERMATA PRINCIPALE;SCHERMADA PRINSIPAL;MAIN SCREEN
+460;Fai l'eredità;Fa l'eredità;Make the inheritance
+461;Gestisci più portafogli;Gestissi più portafoji;Manage more wallets
+462;molti dettagli;tanti detagli;many details
+463;Massimo %1 sat/vB;Massimo %1 sat/vB;Maximum %1 sat/vB
+464;MEDIO;MEDIO;MEDIUM
+465;minatore;minador;miner
+466;Licenza MIT;Licensa MIT;MIT licence
+467;Moderno;Moderno;Modern
+468;SOLDI;SCHEI;MONEY
+469;ricevuti;ricevùi;money received
+470;mandati;mandài;money sent
+471;soldi, sicurezza e rete · serve il PIN;schȅi, sicuressa e rete · ghe vol el PIN;money, security and network · the PIN is needed
+472;Soldi, sicurezza e rete. Di serie è tutto spento, tranne il PIN per gli invii grandi.;Schȅi, sicuressa e rete. De serie xe tuto distuà, fora che el PIN par i invii grandi.;Money, security and network. By default everything is off, except the PIN for big payments.
+473;più scelte;più sielte;more choices
+474;Maggiori informazioni;Più informasion;More information
+475;più custodi, più sicuro;più custodi, più sicuro;more keepers, safer
+476;più riservato · serve l'app Orbot;più riservà · ghe vol l'app Orbot;more private · needs the Orbot app
+477;Più portafogli;Più portafoji;More wallets
+478;Si accendono più portafogli, sola visualizzazione e monete d'oro;Se impissa più portafoji, solo vardar e monede d'oro;More wallets, view-only wallets and gold coins turn on
+479;Movimenti;Movimenti;Movements
+480;Il mio indirizzo bitcoin;El me indirisso bitcoin;My bitcoin address
+481;Il mio nodo;El me nodo;My node
+482;Il mio portafoglio;El me portafojo;My wallet
+483;NOME;NOME;NAME
+484;Nome;Nome;Name
+485;Nome e colore;Nome e color;Name and colour
+486;nome, per esempio: negozio;nome, par esempio: botega;name, for example: shop
+487;Servono;Ghe vol;Needed
+488;RETE;RETE;NETWORK
+489;Rete;Rete;Network
+490;RETE E RECUPERO;RETE E RECUPERO;NETWORK AND RECOVERY
+491;nuovo;novo;new
+492;Nuova categoria;Categoria nova;New category
+493;Nuova persona;Nova persona;New person
+494;Avanti;Avanti;Next
+495;Avanti (%1 di %2);Avanti (%1 de %2);Next (%1 of %2)
+496;Avanti (%1 di 12);Avanti (%1 de 12);Next (%1 of 12)
+497;No;No;No
+498;nessuna moneta qui;nissuna moneda qua;no coins here
+499;Nessuna moneta su questo indirizzo.;Nissuna moneda su sto indirisso.;No coins on this address.
+500;Ancora nessuna moneta: arrivano quando qualcuno ti manda bitcoin.;Gnancora nissuna moneda: le riva co qualchedun te manda bitcoin.;No coins yet: they arrive when someone sends you bitcoin.
+501;senza busta;sensa busta;no envelope
+502;Nessun custode libero;Nissun custode libero;No free keeper
+503;Senza internet.;Sensa internet.;No internet.
+504;"Nessun custode ha risposto. I tuoi soldi sono al sicuro; riprova più tardi.";"Nissun custode el ga risposto. I to schei i xe al sicuro; riprova più tardi.";"No keeper answered. Your money is safe; try again later."
+505;nessun movimento;nissun movimento;no movements
+506;Nessun movimento trovato;Nissun movimento catà;No movements found
+507;Ancora nessun movimento;Gnancora nissun movimento;No movements yet
+508;Ancora nessun movimento.;Gnancora nissun movimento.;No movements yet.
+509;nessuna nota;nissuna nota;no note
+510;No, tienili;No, tienli;No, keep them
+511;nessuno risponde;nissun risponde;nobody answers
+512;nessuno risponde da giorni;nissun risponde da giorni;nobody answers for days
+513;Nessuno deve chiederti di farlo per telefono.;Nissun ga da domandarte de farlo par telefono.;Nobody should ask you to do this by phone.
+514;Nessuno ti chiederà mai le 12 parole (SEED). Chi le chiede è un truffatore.;Nissun te domandarà mai le 12 parole (SEED). Chi che le domanda el xe un imbrojon.;Nobody will ever ask you for the 12 words (SEED). Whoever asks is a scammer.
+515;Nessuno ti chiederà mai le parole (SEED). Chi le chiede è un truffatore.;Nissun te domandarà mai le parole (SEED). Chi che le domanda el xe un imbroion.;Nobody will ever ask you for the words (SEED). Whoever asks is a scammer.
+516;Non risponde da %1 giorni;No el risponde da %1 dì;Not answering for %1 days
+517;Non risponde da 1 giorno;No el risponde da 1 dì;Not answering for 1 day
+518;Non risponde da oggi;No el risponde da ancuo;Not answering since today
+519;non disponibile;no disponibile;not available
+520;NON BIP39;NO BIP39;NOT BIP39
+521;non ancora confermata;gnancora confermada;not confirmed yet
+522;Non collegato;No coleà;Not connected
+523;Non sei collegato a internet: comincio appena ti colleghi.;No te sì tacà a internet: scominsio pena che te te tachi.;Not connected to the internet: I start as soon as you are connected.
+524;Non valida;No valida;Not valid
+525;non ancora;gnancora;not yet
+526;NOTA;NOTA;NOTE
+527;Nota;Nota;Note
+528;Nota salvata;Nota salvada;Note saved
+529;niente;gnente;nothing
+530;Non resta niente;No resta gnente;Nothing is left
+531;Ora l'altra, svelto!;Desso cuel'altra, svelto!;Now the other one, quickly!
+532;ora: %1;desso: %1;now: %1
+533;"La numero %1 non è ""%2"". Guarda bene il foglio.";"La numaro %1 no la xe ""%2"". Varda ben el foglio.";"Number %1 is not ""%2"". Look carefully at your paper."
+534;spenta;studà;off
+535;Spenta;Destuada;Off
+536;spenta;studada;off (f)
+537;spento;studà;off (m)
+538;Va bene;Va ben;OK (go ahead)
+539;Vecchio;Vecio;Old
+540;Più vecchi;Più veci;Older
+541;acceso;impissà;on
+542;Accesa;Impissada;On
+543;il %1;el %1;on %1
+544;accesa;impissada;on (f)
+545;SUL TUO INDIRIZZO;SUL TO INDIRISSO;ON YOUR ADDRESS
+546;Una volta inviati, solo chi li riceve può restituirteli.;Na volta mandài, solo chi che li riceve el pol ridartei.;Once sent, only the person who receives them can give them back.
+547;Una volta inviati, solo chi li riceve può restituirteli: non c'è nessun altro modo.;Na volta mandài, solo chi che li riceve el pol ridartei: no ghe xe nissun altro modo.;Once sent, only the person who receives them can give them back: there is no other way.
+548;A un quarto dalla fine;A un quarto da la fine;One quarter from the end
+549;A un terzo dalla fine;A un terzo da la fine;One third from the end
+550;Solo bitcoin (senza euro);Solo bitcoin (sensa euro);Only bitcoin (no euro)
+551;Solo il mio nodo;Solo el me nodo;Only my node
+552;Apri il portafoglio;Verzi el portafojo;Open the wallet
+553;si apre %1;se verze %1;opens %1
+554;Orbot trovato;Orbot catà;Orbot found
+555;Orbot non è acceso;Orbot no el xe impissà;Orbot is not on
+556;Originale;Original;Original
+557;Altro;Altro;Other
+558;altra cifra…;n'altra cifra…;other amount…
+559;Compaiono altre scelte, spente: privacy, invia tutto, nodo e Tor;Vien fora altre sielte, studae: privacy, manda tuto, nodo e Tor;Other choices appear, off: privacy, send all, node and Tor
+560;Altri portafogli;Altri portafoji;Other wallets
+561;Incolla;Incola;Paste
+562;Incolla un indirizzo bitcoin;Incola un indirisso bitcoin;Paste a bitcoin address
+563;Incolla un altro;Incola n'altro;Paste another one
+564;Pagamento non riuscito;Pagamento no riussìo;Payment failed
+565;Pagamento riuscito;Pagamento riussìo;Payment succeeded
+566;pensione;pension;pension
+567;Perfetto! Il tuo foglio è giusto: tutte le 12 parole (SEED), nell'ordine giusto.;Perfeto! El to foglio el xe giusto: tute le 12 parole (SEED), in ordine giusto.;Perfect! Your paper is correct: all 12 words (SEED), in the right order.
+568;Periodo;Periodo;Period
+569;TELEFONO;TELEFONO;PHONE
+570;PIN cambiato;PIN cambià;PIN changed
+571;PIN per gli invii grandi;PIN par i invii grandi;PIN for big payments
+572;Tasche, origine e avvisi;Scarsele, origine e avisi;Pockets, origin and warnings
+573;tasche, provenienza delle monete e avvisi;scarsele, origine de le monede e avisi;pockets, origin of the coins and warnings
+574;Preferisci scrivere i numeri?;Te piase de più scrivar i numari?;Prefer to write the numbers?
+575;Preferenze;Preferense;Preferences
+576;Riservatezza.;Riservatessa.;Privacy.
+577;tira giù;tira zo;pull down
+578;Tira giù la moneta per ricevere i primi bitcoin.;Tira zo la moneda par ricevar i primi bitcoin.;Pull the coin down to receive your first bitcoin.
+579;Spingi a destra <b>le due monete insieme</b>, con due dita.;Spingi a destra <b>tute do le monede insieme</b>, co do dei.;Push <b>both coins to the right together</b>, with two fingers.
+580;Spingi a destra le due monete: insieme con due dita, oppure una dopo l'altra.;Spingi a destra le do monede: insieme co do dei, opure una dopo l'altra.;Push both coins to the right: together with two fingers, or one after the other.
+581;Spingi a destra la prima moneta…;Spingi a destra la prima moneda…;Push the first coin to the right…
+582;spingi a destra;spingi a destra;push to the right
+583;spingi su;spingi su;push up
+584;Metti da parte;Meti da parte;Put aside
+585;Rimetti le 12 parole (SEED);Rimeti le 12 parole (SEED);Put back the 12 words (SEED)
+586;Rimetti le parole (SEED);Rimeti le parole (SEED);Put back the words (SEED)
+587;Metti il codice QR dentro il riquadro;Meti el codice QR drento el riquadro;Put the QR code inside the frame
+588;Leggi QR;Lezi QR;Read QR
+589;<b>Leggile a voce</b> a chi riceve, lettera per lettera: devono essere uguali alle sue.;<b>Lezile a vose</b> a chi che riceve, letara par letara: le ga da èssar compagne de le sue.;<b>Read them aloud</b> to the person receiving, letter by letter: they must be the same as theirs.
+590;<b>Leggile a voce</b> a chi ti manda i bitcoin, lettera per lettera.;<b>Lezile a vose</b> a chi che te manda i bitcoin, letara par letara.;<b>Read them aloud</b> to the person sending you bitcoin, letter by letter.
+591;RICEVI;RICEVI;RECEIVE
+592;Ricevi;Ricevi;Receive
+593;ricevi in:;ricevi in:;receive in:
+594;Ricevi su questo indirizzo;Ricevi su sto indirisso;Receive on this address
+595;Ricevuti;Ricevùi;Received
+596;ricevuti;ricevùi;received
+597;consigliato;consiglià;recommended
+598;Restano;Resta;Remaining
+599;Avvisami;Avisame;Remind me
+600;Avviso;Aviso;Reminder
+601;Togli questa persona;Cava sta persona;Remove this person
+602;Rinnova adesso;Rinova desso;Renew now
+603;Avviso rinnovo, dal;Aviso rinovo, dal;Renewal reminder, from
+604;Ripeti il PIN;Ripeti el PIN;Repeat the PIN
+605;Sostituisci quelli che non rispondono;Cambia quei che no i risponde;Replace the ones that do not answer
+606;Segnala un problema su GitHub;Segnala un problema su GitHub;Report a problem on GitHub
+607;Rivedi le 12 parole (SEED);Riguarda le 12 parole (SEED);Review the 12 words (SEED)
+608;Le stesse monete di prima;Le stesse monede de prima;Same coins as before
+609;Salva;Salva;Save
+610;Salvato;Salvà;Saved
+611;Inquadra il codice QR bitcoin di chi devi pagare.;Inquadra el codice QR bitcoin de chi che te ga da pagar.;Scan the bitcoin QR code of the person you have to pay.
+612;Inquadra il codice QR o incolla l'indirizzo di chi devi pagare.;Inquadra el codice QR o incola l'indirisso de chi che te ghe da pagar.;Scan the QR code or paste the address of the person you pay.
+613;"<b>Schȅi sceglie da solo una mancia ""normale""</b>: di solito il pagamento arriva in circa un'ora. Se hai fretta, sposta il cursore a destra. Tutta la mancia va ai minatori: Schȅi non prende niente.";"<b>Schȅi el sielze da solo na mancia ""normale""</b>: de solito el pagamento el riva in circa un'ora. Se te ghe pressa, sposta el cursor a destra. Tuta la mancia la va ai minadori: Schȅi nol ciapa gnente.";"<b>Schȅi chooses a ""normal"" tip by itself</b>: the payment usually arrives in about an hour. If you are in a hurry, move the slider to the right. The whole tip goes to the miners: Schȅi takes nothing."
+614;"<b>Schȅi sceglie da solo una mancia ""normale""</b>: il pagamento arriva di solito in una decina di minuti. La mancia va tutta ai minatori: Schȅi non prende niente.";"<b>Schȅi el sielze da solo na mancia ""normale""</b>: el pagamento de solito el riva in na desina de minuti. La mancia la va tuta ai minadori: Schȅi no el ciapa gnente.";"<b>Schȅi chooses a ""normal"" tip by itself</b>: the payment usually arrives in about ten minutes. The whole tip goes to the miners: Schȅi takes nothing."
+615;Schȅi si collega da solo ai server pubblici di Electrum, per sapere il saldo e mandare i pagamenti. Se hai un <b>tuo nodo</b> (per esempio su Umbrel), puoi collegarti solo a quello.;Schȅi el se colega da solo ai server publici de Electrum, par saver el saldo e mandar i pagamenti. Se te ghe un <b>to nodo</b> (par esempio su Umbrel), te pol colegarte solo a quelo.;Schȅi connects by itself to the public Electrum servers, to know the balance and to send payments. If you have <b>your own node</b> (for example on Umbrel), you can connect only to that.
+616;Schȅi è un <b>riadattamento grafico</b> del wallet mobile di Electrum, reso più semplice per tutti: schermate, parole, tasti grandi.;Schȅi el xe un <b>vestito novo</b> del portafojo mobile de Electrum, fato più sempio par tuti: schermate, parole, botoni grandi.;Schȅi is a <b>new look</b> of the Electrum mobile wallet, made simpler for everyone: screens, words, big buttons.
+617;"<b>Schȅi è un portafoglio da tasca</b>, pensato per le cifre di tutti i giorni. Per questi importi <b>1 conferma è più che sufficiente</b>: per questo la mostriamo già come ""✓ Confermato"".";"<b>Schȅi el xe un portafojo da scarsela</b>, fato par le cifre de tuti i dì. Par ste cifre <b>1 conferma la basta e vansa</b>: par questo la mostremo zà come ""✓ Confermà"".";"<b>Schȅi is a pocket wallet</b>, made for everyday amounts. For these amounts <b>1 confirmation is more than enough</b>: that is why we already show it as ""✓ Confirmed""."
+618;Schȅi è come il portafoglio in tasca:;Schȅi el xe come el portafojo in scarsela:;Schȅi is like the wallet in your pocket:
+619;Schȅi si sta ancora aggiornando. Riprova fra poco.;Schȅi el se sta ancora agiornando. Riprova fra un fià.;Schȅi is still updating. Try again in a little while.
+620;Movimenti Schȅi (CSV);Movimenti Schȅi (CSV);Schȅi movements (CSV)
+621;Schȅi aggiunge solo il PIN e tiene la password del portafoglio nella cassaforte del telefono (Android Keystore), come fa Electrum con l'impronta digitale.;Schȅi el zonta solo el PIN e el tien la password del portafojo ne la cassaforte del telefonin (Android Keystore), come che fa Electrum co l'impronta.;Schȅi only adds the PIN and keeps the wallet password in the safe of the phone (Android Keystore), the same way Electrum does with the fingerprint.
+622;Schȅi prepara una <b>busta chiusa</b> con i tuoi bitcoin per le persone che hai scelto. Ne tengono una copia vari custodi (Will Executor): computer sempre accesi che la spediscono solo alla data della consegna. Prima di quella data nessuno può spedirla: anche se qualcuno ci provasse, i nodi Bitcoin la rifiuterebbero.;Schȅi el prepara na <b>busta sarada</b> coi to bitcoin par le persone che te ghe sielto. Ghe ne tien na copia vari custodi (Will Executor): computer sempre impissai che i la manda solo a la data de la consegna. Prima de quela data nissun pol mandarla: anca se qualchedun el ghe provasse, i nodi Bitcoin i la rifiutaria.;Schȅi prepares a <b>sealed envelope</b> with your bitcoin for the people you chose. Several keepers (Will Executor) each hold a copy: computers that are always on and send it only on the delivery date. Before that date nobody can send it: even if someone tried, the Bitcoin nodes would refuse it.
+623;Cerca (es. franco, yen…);Serca (es. franco, yen…);Search (e.g. franc, yen…)
+624;Ricerca su più indirizzi di ricezione;Riserca su più indirissi de ricevuta;Search on more receiving addresses
+625;SICUREZZA;SICURESSA;SECURITY
+626;sicurezza, importi, monete, portafogli · serve il PIN;sicuressa, cifre, monede, portafoji · ghe vol el PIN;security, amounts, coins, wallets · the PIN is needed
+627;Vedi tutti;Varda tuti;See all
+628;Vedi in banconote;Varda in bancanote;See in banknotes
+629;Vedi sulla blockchain;Vardilo su la blockchain;See it on the blockchain
+630;Rivedi le 12 parole (SEED);Riguarda le 12 parole (SEED);See the 12 words (SEED) again
+631;vedi il saldo senza poter spendere;te vedi el saldo sensa poder spendar;see the balance without being able to spend
+632;Rivedi le parole (SEED);Riguarda le parole (SEED);See the words (SEED) again
+633;INVIA;MANDA;SEND
+634;INVIARE E RICEVERE;MANDAR E RICEVAR;SEND AND RECEIVE
+635;Manda la busta ad altri custodi;Manda la busta a altri custodi;Send the envelope to other keepers
+636;Manda la busta con il PIN;Manda la busta col PIN;Send the envelope with the PIN
+637;COSTO DELL'INVIO;COSTO DE L'INVIO;SENDING COST
+638;Costo dell'invio;Costo de l'invio;Sending cost
+639;Costo invio €;Costo invio €;Sending cost €
+640;Sto mandando i bitcoin…;Drio mandar i bitcoin…;Sending the bitcoin…
+641;Invio in corso…;Drio mandar…;Sending…
+642;Inviati;Mandài;Sent
+643;inviati;mandài;sent
+644;Inviati!;Mandà!;Sent!
+645;INDIRIZZO DEL SERVER;INDIRISSO DEL SERVER;SERVER ADDRESS
+646;Da parte;Da parte;Set aside
+647;Impostazioni;Impostasion;Settings
+648;Impostazioni per esperti;Impostasion par esperti;Settings for experts
+649;Condividi;Condividi;Share
+650;Mostra le impostazioni avanzate;Mostra le impostasion avansade;Show the advanced settings
+651;Firma altrove;Firma da n'altra parte;Sign elsewhere
+652;Firma in un altro dispositivo;Firma su n'altro dispositivo;Sign on another device
+653;firmi il pagamento su un altro dispositivo;te firmi el pagamento su n'altro aparechio;sign the payment on another device
+654;Firma/Verifica messaggio;Firma/Verifica messajo;Sign/Verify Message
+655;semplice;sempio;simple
+656;semplice e veloce;sempio e svelto;simple and fast
+657;Scorri per inviare;Scori par mandar;Slide to send
+658;"più lento
 costa meno";"più lento
 costa manco";"slower
 costs less"
-658;"Qualcosa non ha funzionato. I tuoi soldi sono al sicuro; riprova più tardi.";"Qualcosa no ga funsionà. I to schei i xe al sicuro; riprova più tardi.";"Something did not work. Your money is safe; try again later."
-659;Qualcosa non funziona, o hai un'idea? Scrivici. Non mandare mai le 12 parole (SEED) o il PIN: nessuno te li chiederà mai.;Qualcossa no funsiona, o te ghe n'idea? Scrivine. No mandar mai le 12 parole (SEED) o el PIN: nissun te li domandarà mai.;Something does not work, or you have an idea? Write to us. Never send your 12 words (SEED) or your PIN: nobody will ever ask for them.
-660;Qualcosa non funziona, o hai un'idea? Scrivici. Non mandare mai le parole (SEED) o il PIN: nessuno te li chiederà mai.;Qualcossa no funsiona, o te ghe n'idea? Scrivine. No mandar mai le parole (SEED) o el PIN: nissun te li domandarà mai.;Something does not work, or you have an idea? Write to us. Never send your words (SEED) or your PIN: nobody will ever ask for them.
-661;Nell'eredità è cambiato qualcosa.<br>La aggiorno adesso?;Ne l'eredità xe cambià qualcosa.<br>La agiorno desso?;Something in the inheritance was changed.<br>Do I update it now?
-662;percorso particolare %1;percorso particolare %1;special path %1
-663;si spende;se spende;spendable
-664;spendibili %1;da spendar %1;spendable %1
-665;A partire da;A partir da;Starting from
-666;Comincia con (dopo %1);Scominsia co (dopo %1);Starts with (after %1)
-667;Stato;Stato;Status
-668;PASSO %1 DI %2;PASSO %1 DE %2;STEP %1 OF %2
-669;Mancano ancora: <b>%1</b>;Manca ancora: <b>%1</b>;Still missing: <b>%1</b>
-670;Monetine sospette;Monedine sospete;Suspicious little coins
-671;Trasferisci;Trasferissi;Sweep
-672;Trasferisci da chiavi private;Trasferissi da ciavi private;Sweep key(s)
-673;Trasferimento delle monete;Trasferimento de le monede;Sweep transaction
-674;Trasferisci...;Trasferissi...;Sweep...
-675;Passi a %1?;Te passi a %1?;Switch to %1?
-676;Prendi il numero di «Priorità media»;Ciapa el numaro de «Priorità media»;Take the number of «Medium priority»
-677;Tocca un sito per sceglierlo. La matita cambia nome e indirizzo.;Toca un sito par sielzarlo. La matita la cambia nome e indirisso.;Tap a site to choose it. The pencil changes its name and address.
-678;tocca banconote e monete;toca banconote e monede;tap notes and coins
-679;Tocca RICEVI per farti mandare i primi bitcoin.;Toca RICEVI par farte mandar i primi bitcoin.;Tap RECEIVE to get your first bitcoin.
-680;tocca l'indirizzo per ingrandirlo;toca l'indirisso par ingrandirlo;tap the address to enlarge
-681;tocca le lettere, poi la parola;toca le letare, dopo la parola;tap the letters, then the word
-682;tocca per cambiarlo;toca par cambiarlo;tap to change it
-683;tocca per ingrandire;toca par ingrandir;tap to enlarge
-684;tocca per aprirlo;toca par verzarlo;tap to open it
-685;tocca per vedere;tocca par vedar;tap to see
-686;tocca per scrivere;tocca par scrivar;tap to write
-687;Tocca per scriverla o cambiarla. Solo tu la vedi, resta sul telefono.;Toca par scrivarla o cambiarla. Solo ti te la vedi, la resta sul telefonin.;Tap to write or change it. Only you see it, it stays on the phone.
-688;tocca: togli l'ultimo;tocca: cava l'ultimo;tap: take the last one back
-689;RETE DI PROVA (testnet4) · monete senza valore;RETE DE PROVA (testnet4) · schȅi che no val gnente;TEST NETWORK (testnet4) · coins without value
-690;Va bene così;Va ben cussì;That is fine
-691;Gli importi si vedono in questa valuta, al prezzo del giorno. Banconote e monete ci sono per l'euro e il dollaro.;I importi i se vede in sta valuta, al prezo del giorno. Banconote e monede ghe xe par l'euro e el dolaro.;The amounts are shown in this currency, at the price of the day. Banknotes and coins exist for the euro and the dollar.
-692;Gli importi in %1 sono il valore <b>del giorno</b> di ogni movimento. I pagamenti ancora in arrivo non sono nel file.;I importi in %1 i xe el valor <b>del giorno</b> de ogni movimento. I pagamenti ancora in rivo no i xe nel file.;The amounts in %1 are the value <b>of the day</b> of each movement. Payments still arriving are not in the file.
-693;l'app non usa questa moneta per pagare;l'app no la dopara sta moneda par pagar;the app will not use this coin to pay
-694;il bollo sul portafoglio e la domanda ogni 3 mesi;el bolo sul portafojo e la domanda ogni 3 mesi;the badge on the wallet and the question every 3 months
-695;Il saldo potrebbe non essere aggiornato.;El saldo podarìa no èssar ajornà.;The balance may not be up to date.
-696;La rete bitcoin ha rifiutato questo pagamento. I tuoi soldi sono ancora nel portafoglio.;La rete bitcoin la ga rifiutà sto pagamento. I to schȅi i xe ancora nel portafojo.;The bitcoin network refused this payment. Your money is still in the wallet.
-697;la fotocamera è già accesa;la fotocamera la xe zà impissada;the camera is already on
-698;L'annullamento è partito. Schȅi lo vedrà fra poco.;La scancelasion la xe partìa. Schȅi el la vedarà fra un fià.;The cancellation has left. Schȅi will see it in a little while.
-699;"Il resto arriva su un tuo <b>indirizzo di resto</b>: lo trovi in ""Indirizzi"", nel gruppo ""Resto"".";"El resto el riva su un to <b>indirisso de resto</b>: te lo cati in ""Indirissi"", nel grupo ""Resto"".";"The change arrives on one of your <b>change addresses</b>: you find it in ""Addresses"", in the group ""Change""."
-700;Il resto, <b>%1</b>, torna a te come moneta nuova.;El resto, <b>%1</b>, el torna a ti come moneda nova.;The change, <b>%1</b>, comes back to you as a new coin.
-701;Il codice di Schȅi è libero e pubblico su GitHub. Nessuno, nemmeno chi ha fatto l'app, può vedere le tue 12 parole (SEED) o toccare i tuoi soldi.;El codice de Schȅi el xe libero e publico su GitHub. Nissun, gnanca chi che ga fato l'app, pol vedar le to 12 parole (SEED) o tocar i to schei.;The code of Schȅi is free and public on GitHub. Nobody, not even who made the app, can see your 12 words (SEED) or touch your money.
-702;Il codice di Schȅi è libero e pubblico su GitHub. Nessuno, nemmeno chi ha fatto l'app, può vedere le tue parole (SEED) o toccare i tuoi soldi.;El codice de Schȅi el xe libero e publico su GitHub. Nissun, gnanca chi che ga fato l'app, pol vedar le to parole (SEED) o tocar i to schei.;The code of Schȅi is free and public on GitHub. Nobody, not even who made the app, can see your words (SEED) or touch your money.
-703;Le monete restano tue: le vedi sempre nel saldo, come bloccate. Per usarle di nuovo, sblocca l'indirizzo.;Le monede le resta tue: te le vedi sempre nel saldo, come blocade. Par doperarle da novo, sbloca l'indirisso.;The coins stay yours: you still see them in the balance, as blocked. To use them again, unblock the address.
-704;Il server collegato accetta almeno %1 sat/vB.;El server tacà el ciapa almanco %1 sat/vB.;The connected server accepts at least %1 sat/vB.
-705;La connessione si è interrotta mentre il pagamento partiva.;La conession la se ga interoto intanto che el pagamento el partiva.;The connection broke while the payment was leaving.
-706;Il costo <b>non dipende da quanto mandi</b>: costa uguale mandare 10 € o 1.000 €. Cambia solo un po' secondo il traffico della rete.;El costo <b>no el dipende da quanto che te mandi</b>: mandar 10 € o 1.000 € el costa compagno. El cambia solo un fià secondo el trafico de la rete.;The cost <b>does not depend on how much you send</b>: sending 10 € or 1,000 € costs the same. It only changes a little with the network traffic.
-707;il <b>crogiuolo</b> = la transazione;el <b>crogiolo</b> = la transasion;the <b>crucible</b> = the transaction
-708;il <b>crogiuolo</b> = la transazione sulla blockchain;el <b>crogiolo</b> = la transasion su la blockchain;the <b>crucible</b> = the transaction on the blockchain
-709;Il riquadro tratteggiato è un <b>sacchetto</b>: monete arrivate sullo <b>stesso indirizzo</b>. Nel registro pubblico sono già collegate, quindi conviene spostarle insieme.;El riquadro tratejà el xe un <b>sacheto</b>: monede rivae sul <b>stesso indirisso</b>. Sul registro publico le xe zà ligae, alora convien spostarle insieme.;The dashed frame is a <b>little bag</b>: coins that arrived on the <b>same address</b>. In the public register they are already linked, so it is better to move them together.
-710;la data è passata;la data la xe passada;the date has passed
-711;Le date;Le date;The dates
-712;La consegna passa dal <b>%1</b> al <b>%2</b>: è un <b>aggiornamento gratis</b>.;La consegna la passa dal <b>%1</b> al <b>%2</b>: el xe un <b>agiornamento gratis</b>.;The delivery moves from <b>%1</b> to <b>%2</b>: it is a <b>free update</b>.
-713;La consegna passa dal <b>%1</b> al <b>%2</b>: è un <b>rinnovo</b>. Schȅi annulla la busta di adesso sulla rete bitcoin e unisce tutte le monete in una sola.;La consegna la passa dal <b>%1</b> al <b>%2</b>: el xe un <b>rinovo</b>. Schȅi el anula la busta de adesso su la rete bitcoin e el mete insieme tute le monede in una sola.;The delivery moves from <b>%1</b> to <b>%2</b>: it is a <b>renewal</b>. Schȅi cancels the envelope of now on the bitcoin network and joins all the coins into one.
-714;La busta per gli eredi viene annullata sulla rete bitcoin con una piccola operazione, che si paga come un pagamento.;La busta par i eredi la vien anulada su la rete bitcoin co na picola operassion, che se paga come un pagamento.;The envelope for the heirs is cancelled on the bitcoin network with a small operation, paid like a payment.
-715;"La busta va a più custodi: se uno si spegne, la spediscono gli altri. Più sono, più è sicuro; alla consegna se ne paga uno solo. Il numero nuovo vale dalla prossima busta (aggiornamento o rinnovo).";"La busta la va a più custodi: se uno el se stua, i altri i la manda. Più che i xe, più xe sicuro; a la consegna se ghe ne paga uno solo. El numaro novo el val da la prossima busta (agiornamento o rinovo).";"The envelope goes to several keepers: if one switches off, the others send it. More keepers is safer; at the delivery only one is paid. The new number counts from the next envelope (update or renewal)."
-716;La busta è pronta ma nessun custode l'ha presa. Riprova fra poco.;La busta la xe pronta ma nissun custode el la ga ciapada. Riprova fra un fià.;The envelope is ready but no keeper took it. Try again in a little while.
-717;La busta è al sicuro da <b>%1 custodi su %2</b>.;La busta la xe al sicuro da <b>%1 custodi su %2</b>.;The envelope is safe with <b>%1 keepers out of %2</b>.
-718;La busta è al sicuro da <b>1 custode</b>.;La busta la xe al sicuro da <b>1 custode</b>.;The envelope is safe with <b>1 keeper</b>.
-719;La busta è ancora al sicuro da %1 custodi.;La busta la xe ancora al sicuro da %1 custodi.;The envelope is still safe with %1 keepers.
-720;La busta è ancora al sicuro da 1 custode.;La busta la xe ancora al sicuro da 1 custode.;The envelope is still safe with 1 keeper.
-721;La busta resta ai tuoi <b>%1 custodi</b> che funzionano: l'eredità vale. Riprova più avanti.;La busta la resta ai to <b>%1 custodi</b> che funsiona: l'eredità la val. Riprova più vanti.;The envelope stays with your <b>%1 keepers</b> that work: the inheritance is valid. Try again later.
-722;La busta resta al tuo <b>custode</b> che funziona: l'eredità vale. Riprova più avanti.;La busta la resta al to <b>custode</b> che funsiona: l'eredità la val. Riprova più vanti.;The envelope stays with your <b>keeper</b> that works: the inheritance is valid. Try again later.
-723;Gli euro sono il valore <b>del giorno</b> di ogni movimento. I pagamenti ancora in arrivo non sono nel file.;I euro i xe el valor <b>del dì</b> de ogni movimento. I pagamenti gnancora rivai no i xe nel file.;The euro are the value <b>of the day</b> of each movement. Payments still arriving are not in the file.
-724;Il valore in euro cambia con il prezzo del bitcoin.;El valor in euro el cambia col presso del bitcoin.;The euro value changes with the bitcoin price.
-725;il primo della lista;el primo de la lista;the first of the list
-726;L'eredità non è finita.<br>La finisco adesso?;L'eredità no la xe finìa.<br>La finisso desso?;The inheritance is not finished.<br>Do I finish it now?
-727;I <b>custodi</b> (Will Executor) sono server che tengono la busta chiusa e la spediscono alla data della consegna.;I <b>custodi</b> (Will Executor) i xe server che i tien la busta sarada e i la manda a la data de la consegna.;The <b>keepers</b> (Will Executor) are servers that keep the sealed envelope and send it on the delivery date.
-728;Il costo dei custodi è alto per questo portafoglio: %1 su %2. Puoi andare avanti lo stesso.;El costo dei custodi el xe alto par sto portafojo: %1 su %2. Te pol ndar vanti istesso.;The keepers' cost is high for this wallet: %1 out of %2. You can go on anyway.
-729;"La parte lunga è la transazione (il crogiuolo) da cui è uscita la moneta; ""%1"" è il suo numero d'ordine: la prima moneta uscita è :0, la seconda :1.";"La parte longa la xe la transasion (el crogiolo) da dove che xe vegnùa fora la moneda; ""%1"" el xe el so numaro de ordine: la prima moneda vegnùa fora la xe :0, la seconda :1.";"The long part is the transaction (the crucible) the coin came out of; ""%1"" is its order number: the first coin out is :0, the second :1."
-730;Il minimo è 1 sat/vB.;El minimo xe 1 sat/vB.;The minimum is 1 sat/vB.
-731;I soldi sono partiti. Arrivano dopo la prima conferma.;I schei i xe partìi. I riva dopo la prima conferma.;The money has left. It arrives after the first confirmation.
-732;qui finiscono i soldi che metti;qua finisse i schei che te meti;the money you put in lands here
-733;Più conferme ci sono, più è impossibile tornare indietro. Chi sposta <b>milioni di euro</b> aspetta 6 conferme, circa un'ora.;Più conferme ghe xe, più xe impossibile tornar indrìo. Chi che sposta <b>milioni de euro</b> el speta 6 conferme, più o manco un'ora.;The more confirmations, the more impossible it is to go back. People moving <b>millions of euro</b> wait for 6 confirmations, about one hour.
-734;LE PIÙ USATE;LE PIÙ DOPARÀE;THE MOST USED
-735;Le date nuove;Le date nove;The new dates
-736;La busta vecchia non vale più. I tuoi soldi restano tuoi.;La busta vecia no la val più. I to schei i resta tui.;The old envelope is no longer valid. Your money stays yours.
-737;quello spento;quel stuà;the one switched off
-738;il portafoglio Bitcoin open source creato da Thomas Voegtlin e dagli sviluppatori di Electrum.;el portafojo Bitcoin open source fato da Thomas Voegtlin e dai svilupatori de Electrum.;the open source Bitcoin wallet created by Thomas Voegtlin and the Electrum developers.
-739;Gli altri eredi hanno già %1: questo può arrivare al massimo a %2.;Chealtri eredi i ga za %1: questo el pol rivar al massimo a %2.;The other heirs already have %1: this one can get at most %2.
-740;Il pagamento di prima potrebbe essere partito. Uso le stesse monete, così non si può mai pagare due volte: se è partito il primo, questo no.;El pagamento de prima el podaria esser partìo. Dopero le stesse monede, cussì no se pol mai pagar do volte: se xe partìo el primo, sto qua no.;The payment before may have left. I use the same coins, so it can never be paid twice: if the first one left, this one does not.
-741;Il pagamento non è partito;El pagamento no el xe partìo;The payment did not leave
-742;Il pagamento è partito. Per essere sicuri bisogna aspettare <b>almeno una conferma</b>: di solito una decina di minuti, a volte di più. Intanto fai quattro chiacchiere o bevi un bicchiere di vino 🍷 in compagnia.;El pagamento el xe partìo. Par èssar sicuri bisogna spetar <b>almanco na conferma</b>: de solito na desina de minuti, a volte de più. Intanto fa quatro ciàcole o bevi un goto de vin 🍷 in compagnia.;The payment has left. To be safe you need to wait for <b>at least one confirmation</b>: usually about ten minutes, sometimes more. Meanwhile have a chat or a glass of wine 🍷 in company.
-743;"Il telefono non è riuscito a chiudere al sicuro il portafoglio. Riprova; se succede ancora, riavvia il telefono.";"El telefono no xe riussìo a serar al sicuro el portafoglio. Riprova; se sucede ancora, riavia el telefono.";"The phone could not lock the wallet safely. Try again; if it happens again, restart the phone."
-744;Non è stato possibile cambiare il PIN.;No se ga podùo cambiar el PIN.;The PIN could not be changed.
-745;Il prezzo è fisso in bitcoin, quindi in euro può cambiare.;El presso el xe fisso in bitcoin, quindi in euro el pol cambiar.;The price is fixed in bitcoin, so in euro it can change.
-746;Il rinnovo fa una piccola operazione sulla rete bitcoin, che si paga come un pagamento.;El rinovo el fa na picola operassion su la rete bitcoin, che se paga come un pagamento.;The renewal makes a small operation on the bitcoin network, paid like a payment.
-747;Compaiono le voci per esperti: soglia del PIN, più indirizzi;Vien fora le vosi par esperti: soja del PIN, più indirissi;The rows for experts appear: PIN threshold, more addresses
-748;Compaiono le voci per esperti: soglia del PIN, più indirizzi, torna alle impostazioni iniziali;Vien fora le vosi par esperti: soja del PIN, più indirissi, torna a le impostasion de partensa;The rows for experts appear: PIN threshold, more addresses, back to the initial settings
-749;Le voci per più scelte si nascondono.;Le vosi par più sielte le se sconde.;The rows for more choices are hidden.
-750;le stesse di prima;le stesse de prima;the same as before
-751;Il server non ha risposto, quindi non posso controllare dove sono i tuoi soldi.;El server no el ga risposto, quindi no posso controlar dove che xe i to schȅi.;The server did not answer, so I cannot check where your money is.
-752;Le parti delle persone non fanno 100%. Apri le persone e sistema le parti.;Le parti de le persone no le fa 100%. Verzi le persone e sistema le parti.;The shares of the people do not make 100%. Open the people and fix the shares.
-753;Il sito che apri vede quale movimento stai guardando e da dove ti colleghi.;El sito che te verzi el vede che movimento che te stà vardando e da dove che te te coleghi.;The site you open sees which movement you are looking at and where you connect from.
-754;Tornano le impostazioni di serie: importi in %1, banconote, PIN per gli invii grandi.;Le torna le impostasion de serie: importi in %1, banconote, PIN par i invii grandi.;The standard settings come back: amounts in %1, banknotes, the PIN for big payments.
-755;Tornano le impostazioni di serie: le opzioni in più si spengono, il PIN per gli invii grandi è acceso.;Le torna le impostasion de serie: le opzion in più le se studa, el PIN par i invii grandi el xe impissà.;The standard settings come back: the extra options turn off, the PIN for big payments is on.
-756;Il testo dentro il codice QR;El testo drento el codice QR;The text inside the QR code
-757;Il totale fa 100%: puoi andare avanti.;El totale el fa 100%: te pol ndar vanti.;The total is 100%: you can go on.
-758;Il totale deve fare 100%.;El totale el ga da far 100%.;The total must be 100%.
-759;I due PIN sono diversi. Riprova.;I do PIN i xe difarenti. Riprova.;The two PINs are different. Try again.
-760;Le due tasche;Le do scarsele;The two pockets
-761;Il valore in %1 cambia con il prezzo del bitcoin.;El valor in %1 el cambia col prezo del bitcoin.;The value in %1 changes with the bitcoin price.
-762;Le parole di un altro portafoglio possono usare indirizzi di tipo diverso. Li controllo tutti: ci vuole circa un minuto.;Le parole de n'altro portafojo le pol doparar indirissi de tipo diverso. Li controlo tuti: ghe vol più o manco un minuto.;The words of another wallet can use different kinds of addresses. I check all of them: it takes about a minute.
-763;Il suo indirizzo bitcoin;El so indirisso bitcoin;Their bitcoin address
-764;Restano %1 da dare. Aggiungi una persona o tocca un erede per cambiare la sua parte.;Resta %1 da dar. Zonta na persona o tocca un erede par cambiar la so parte.;There is %1 left to give. Add a person or tap an heir to change their share.
-765;Ci sono %1 di troppo: il totale deve fare 100%. Tocca un erede per abbassare la sua parte.;Ghe xe %1 de massa: el totale el ga da far 100%. Tocca un erede par sbassar la so parte.;There is %1 too much: the total must be 100%. Tap an heir to lower their share.
-766;C'è già una persona con questo nome.;Ghe xe za na persona co sto nome.;There is already a person with this name.
-767;c'è un'eredità: per spegnerlo, prima annullala;ghe xe n'eredità: par stuarlo, prima anulela;there is an inheritance: to turn it off, cancel it first
-768;Non c'è la connessione a internet, quindi non posso controllare dove sono i tuoi soldi.;No ghe xe la conession a internet, quindi no posso controlar dove che xe i to schȅi.;There is no internet connection, so I cannot check where your money is.
-769;Non c'è niente da incollare: prima copia l'indirizzo.;No ghe xe gnente da incolar: prima copia l'indirisso.;There is nothing to paste: copy the address first.
-770;Queste parole non vanno bene. Controllale una per una.;Ste parole no le va ben. Controlele una par una.;These words are not right. Check them one by one.
-771;Queste parole non sono quelle di questo portafoglio. Controllale una per una.;Ste parole no le xe quele de sto portafojo. Controlele una par una.;These words are not the ones of this wallet. Check them one by one.
-772;"Queste parole sono state fatte con un altro portafoglio: scegli sopra ""Con un altro portafoglio"".";"Ste parole le xe stà fate co n'altro portafojo: sielgi sora ""Co n'altro portafojo"".";"These words were made with another wallet: choose ""Made with another wallet"" above."
-773;"Queste parole sono state fatte con Schȅi o Electrum: scegli sopra ""Creato con Schȅi o con Electrum"".";"Ste parole le xe stà fate co Schȅi o Electrum: sielgi sora ""Creà co Schȅi o co Electrum"".";"These words were made with Schȅi or Electrum: choose ""Made with Schȅi or Electrum"" above."
-774;Hanno una copia della busta chiusa e la spediscono alla data della consegna. Ne basta uno.;I ga na copia de la busta sarada e i la spedisse a la data de la consegna. Ghe ne basta uno.;They have a copy of the sealed envelope and send it on the delivery date. One is enough.
-775;"Arrivano a destinazione dopo la <b>prima conferma</b>, di solito una decina di minuti. Nella lista dei movimenti vedi ""⏳ Non confermata"" e poi ""✓ Confermato"".";"I riva a destinasion dopo la <b>prima conferma</b>, de solito na desina de minuti. Ne la lista dei movimenti te vedi ""⏳ No confermada"" e dopo ""✓ Confermà"".";"They reach the other person after the <b>first confirmation</b>, usually about ten minutes. In the list of movements you will see ""⏳ Unconfirmed"" and then ""✓ Confirmed""."
-776;Questo indirizzo non va bene. Esempio: umbrel.local:50002:s;Sto indirisso no el va ben. Esempio: umbrel.local:50002:s;This address is not right. Example: umbrel.local:50002:s
-777;Questo indirizzo è tuo: i soldi resterebbero in questo portafoglio.;Sto indirisso el xe tuo: i schei i restaria in sto portafojo.;This address is one of yours: the money would stay in this wallet.
-778;Questo codice non si può pagare con Schȅi;Sto codice no se pol pagarlo co Schȅi;This code cannot be paid with Schȅi
-779;Questo codice non è un indirizzo;Sto codice no el xe un indirisso;This code is not an address
-780;Questo non rende anonime le monete: i pagamenti restano scritti nel registro pubblico. Aiuta a non collegare tra loro le tue monete.;Questo no el fa deventar anonime le monede: i pagamenti i resta scriti sul registro publico. El juta a no ligar tra de lore le to monede.;This does not make the coins anonymous: payments stay written in the public register. It helps not to link your coins to each other.
-781;Questa eredità è stata fatta con Àncòra sul computer: cambiala lì.;Sta eredità la xe stada fata co Àncòra sul computer: cambiala là.;This inheritance was made with Àncòra on the computer: change it there.
-782;Questo non è un indirizzo bitcoin.;Sto qua no el xe un indirisso bitcoin.;This is not a bitcoin address.
-783;Questo non è un indirizzo bitcoin. Copialo di nuovo e riprova.;Questo no el xe un indirisso bitcoin. Copielo da novo e riprova.;This is not a bitcoin address. Copy it again and retry.
-784;È il primo erede: può avere fino al 100%.;L'è el primo erede: el pol aver fin al 100%.;This is the first heir: they can have up to 100%.
-785;Questa è l'app di prova;Questa xe l'app de prova;This is the test app
-786;Questo è il tuo portafoglio Bitcoin.;Questo el xe el to portafojo Bitcoin.;This is your Bitcoin wallet.
-787;Questo può dare problemi se firmi fuori linea.;Questo el pol dar problemi se te firmi fora linea.;This might cause issues if signing offline.
-788;Questo mese;Sto mese;This month
-789;Questo pagamento usa monete di <b>provenienze diverse</b>. Chi riceve può capire che sono tutte tue.;Sto pagamento el dopara monede che vien da <b>posti difarenti</b>. Chi che riceve el pol capir che le xe tute tue.;This payment uses coins of <b>different origins</b>. Who receives can understand that they are all yours.
-790;Questo telefono non riconosce più la chiave;Sto telefono no el riconosse più la ciave;This phone no longer recognises the key
-791;Questo codice QR non contiene solo il tuo indirizzo: contiene anche <b>l'importo da pagare in bitcoin</b>.;Sto codice QR no el ga solo el to indirisso: el ga anca <b>la cifra da pagar in bitcoin</b>.;This QR code does not only hold your address: it also holds <b>the amount to pay in bitcoin</b>.
-792;Questo codice QR contiene una transazione intera o un backup, non un indirizzo bitcoin da pagare. Schȅi non lo può usare.;Sto codice QR el ga drento na transasion intiera o un backup, no un indirisso bitcoin da pagar. Schȅi no lo pol doparar.;This QR code holds a whole transaction or a backup, not a bitcoin address to pay. Schȅi cannot use it.
-793;Questo invio costa circa %1;Sto invio el costa circa %1;This sending costs about %1
-794;Questo portafoglio può solo guardare;Sto portafojo el pol solo vardar;This wallet can only look
-795;Questo portafoglio viene dalle parole di <b>un altro portafoglio</b>.;Sto portafojo el vien da le parole de <b>n'altro portafojo</b>.;This wallet comes from the words of <b>another wallet</b>.
-796;Questo portafoglio usa indirizzi che iniziano con 1 o 3: l'eredità funziona solo con indirizzi che iniziano con bc1. Manda i soldi a un portafoglio Schȅi nuovo.;Sto portafoglio el dopara indirissi che scominsia co 1 o 3: l'eredità la funsiona solo co indirissi che scominsia co bc1. Manda i schei a un portafoglio Schȅi novo.;This wallet uses addresses that start with 1 or 3: the inheritance works only with addresses that start with bc1. Send the money to a new Schȅi wallet.
-797;Questa settimana;Sta setimana;This week
-798;Mancia a mano;Mancia a man;Tip by hand
-799;Mancia scritta a mano;Mancia scrita a man;Tip written by hand
-800;"Si accendono mancia scritta a mano, privacy avanzata e ""Invia tutto il saldo""";"Se impissa mancia scrita a man, privacy avansada e ""Manda tuto el saldo""";"Tip written by hand, advanced privacy and ""Send all the balance"" turn on"
-801;a %1;a %1;to %1
-802;da scrivere a mano;da scrivar a man;to be written by hand
-803;"Per bloccare una moneta sola, usa il suo interruttore in ""Le tue monete bitcoin"".";"Par blocar na moneda sola, dopara el so interutor in ""Le to monede bitcoin"".";"To block only one coin, use its own switch in ""Your gold coins""."
-804;Per confermare spingi a destra la moneta.;Par confermar spingi a destra la moneda.;To confirm push the coin to the right.
-805;DA FARE;DA FAR;TO DO
-806;Per farlo chiedono una piccola <b>mancia</b>: chi la offre più alta passa prima, come in una coda.;Par farlo i domanda na picola <b>mancia</b>: chi che la ofre più alta el passa prima, come in fila.;To do it they ask for a small <b>tip</b>: whoever offers more goes first, like in a queue.
-807;per svuotare il portafoglio;par svodar el portafojo;to empty the wallet
-808;per svuotare il portafoglio · chiede sempre il PIN;par svodar el portafojo · el domanda sempre el PIN;to empty the wallet · it always asks the PIN
-809;Per riaverli ti servono <b>le tue 12 parole</b> (SEED), quelle che hai scritto sul foglio quando hai creato il portafoglio.;Par verli indrio te servi <b>le to 12 parole</b> (SEED), quele che te ghe scrito sul foglio quando che te ghe creà el portafojo.;To get it back you need <b>your 12 words</b> (SEED), the ones you wrote on the paper when you created the wallet.
-810;Per riaverli ti servono <b>le tue parole</b> (SEED), quelle che hai scritto sul foglio quando hai creato il portafoglio.;Par verli indrio te servi <b>le to parole</b> (SEED), quele che te ghe scrito sul foglio quando che te ghe creà el portafojo.;To get it back you need <b>your words</b> (SEED), the ones you wrote on the paper when you created the wallet.
-811;Per spostare: tocca le monete e poi il tasto in basso, oppure tieni premuta una moneta e trascinala nell'altra tasca.;Par spostar: toca le monede e dopo el boton in basso, opure tien schissà na moneda e strassinela ne l'altra scarsela.;To move: tap the coins and then the button at the bottom, or keep a coin pressed and drag it to the other pocket.
-812;per leggere meglio;par lèzar mejo;to read better
-813;PER RICEVERE;PAR RICEVAR;TO RECEIVE
-814;da rinnovare;da rinovar;to renew
-815;Per rinnovare spingi a destra la moneta.;Par rinovar spingi a destra la moneda.;To renew push the coin to the right.
-816;Da spendere;Da spendar;To spend
-817;Ai custodi, solo alla consegna;Ai custodi, solo a la consegna;To the keepers, only at the delivery
-818;A QUESTO INDIRIZZO;A STO INDIRISSO;TO THIS ADDRESS
-819;Per usarla, più avanti manda i soldi a un portafoglio Schȅi nuovo (tipo «%1»).;Par dopararla, più avanti manda i schei a un portafoglio Schȅi novo (tipo «%1»).;To use it, later send the money to a new Schȅi wallet (kind «%1»).
-820;Oggi;Ancuo;Today
-821;oggi;ancuo;today
-822;oggi %1;ancuo %1;today %1
-823;<b>Oggi nessun custode risponde.</b> Se non tornano, la busta non arriverà agli eredi. I tuoi soldi sono al sicuro: mandala ad altri custodi.;<b>Ancuo nissun custode risponde.</b> Se no i torna, la busta no la rivarà ai eredi. I to schei i xe al sicuro: mandala a altri custodi.;<b>Today no keeper answers.</b> If they do not come back, the envelope will not reach the heirs. Your money is safe: send it to other keepers.
-824;Oggi i server non dicono la commissione giusta.;Ancuo i server no i dise la comision giusta.;Today the servers do not say the right fee.
-825;Oggi paghi;Ancuo te paghi;Today you pay
-826;Oggi non paghi niente.;Ancuo no te paghi gnente.;Today you pay nothing.
-827;Troppo bassa.;Massa bassa.;Too low.
-828;Troppi PIN sbagliati. Riprova alle %1.;Massa PIN sbaglià. Riprova a le %1.;Too many wrong PINs. Try again at %1.
-829;Tor non risponde;Tor no el risponde;Tor does not answer
-830;Totale;Totale;Total
-831;Totale da trasferire;Totale da trasferir;Total sweep amount
-832;Codice transazione;Codice de la transasion;Transaction code
-833;Transazione creata e firmata in parte da questo portafoglio. Mostra questo QR al prossimo cofirmatario;Transasion fata e firmada in parte da sto portafojo. Mostra sto QR al cofirmatario dopo;Transaction created and partially signed by this wallet. Present this QR code to the next co-signer
-834;Transazione creata ma non ancora firmata da questo portafoglio. Firmala e mostra questo QR al prossimo cofirmatario;Transasion fata ma no ancora firmada da sto portafojo. Firmila e mostra sto QR al cofirmatario dopo;Transaction created but not signed by this wallet yet. Sign the transaction and present this QR code to the next co-signer
-835;Transazione creata. Mostra questo QR a uno dei cofirmatari o dispositivi di firma;Transasion fata. Mostra sto QR a uno dei cofirmatari o dispositivi de firma;Transaction created. Present this QR code to one of the co-cigners or signing devices
-836;Transazione creata. Mostra questo QR al dispositivo di firma;Transasion fata. Mostra sto QR al dispositivo de firma;Transaction created. Present this QR code to the signing device
-837;Riprova;Riprova;Try again
-838;Riprova più avanti: se i tuoi custodi tornano, la busta arriva lo stesso.;Riprova più vanti: se i to custodi i torna, la busta la riva istesso.;Try again later: if your keepers come back, the envelope arrives anyway.
-839;Riprova, oppure vai avanti con il tipo «%1», quello dei portafogli di oggi.;Riprova, opure va vanti col tipo «%1», quel dei portafoji de ancuo.;Try again, or go on with the kind «%1», the one of today’s wallets.
-840;Prova e collega;Prova e colega;Try and connect
-841;mi sto collegando…;me sto colegando…;trying to connect…
-842;spegnilo per bloccare questa moneta;studelo par blocar sta moneda;turn it off to block this coin
-843;spegnile se il telefono è lento;studele se el telefonin el xe lento;turn them off if the phone is slow
-844;due monete da spingere a destra, come due chiavi;do monede da spinger a destra, come do ciavi;two coins to push to the right, like two keys
-845;Tipo;Tipo;Type
-846;Scrivi il PIN per aggiungere un portafoglio;Scrivi el PIN par zontar un portafojo;Type the PIN to add a wallet
-847;Scrivi il PIN per annullare l'eredità;Scrivi el PIN par scancelar l'eredità;Type the PIN to cancel the inheritance
-848;Scrivi il PIN per cambiare il collegamento;Scrivi el PIN par cambiar el colegamento;Type the PIN to change the connection
-849;Scrivi il PIN per cambiare il PIN per gli invii grandi;Scrivi el PIN par cambiar el PIN par i invii grandi;Type the PIN to change the PIN for big payments
-850;Scrivi il PIN per confermare l'eredità;Scrivi el PIN par confermar l'eredità;Type the PIN to confirm the inheritance
-851;Scrivi il PIN per tornare alle impostazioni iniziali;Scrivi el PIN par tornar a le impostasion de partensa;Type the PIN to go back to the initial settings
-852;Scrivi il PIN per aprire le impostazioni avanzate;Scrivi el PIN par verzar le impostasion avansade;Type the PIN to open the advanced settings
-853;Scrivi il PIN per aprire le impostazioni per esperti;Scrivi el PIN par verzar le impostasion par esperti;Type the PIN to open the settings for experts
-854;Scrivi il PIN per rinnovare l'eredità;Scrivi el PIN par rinovar l'eredità;Type the PIN to renew the inheritance
-855;Scrivi il PIN per cercare su più indirizzi;Scrivi el PIN par sercar su più indirissi;Type the PIN to search on more addresses
-856;Scrivi il PIN per mandare %1;Scrivi el PIN par mandar %1;Type the PIN to send %1
-857;Scrivi il PIN per mandare la busta al nuovo custode;Scrivi el PIN par mandar la busta al custode novo;Type the PIN to send the envelope to the new keeper
-858;Scrivi il PIN per mandare la busta ai nuovi custodi;Scrivi el PIN par mandar la busta ai custodi novi;Type the PIN to send the envelope to the new keepers
-859;Scrivi il PIN per passare a ESPERTO.;Scrivi el PIN par passar a ESPERTO.;Type the PIN to switch to EXPERT.
-860;Scrivi il PIN per aggiornare l'eredità;Scrivi el PIN par agiornar l'eredità;Type the PIN to update the inheritance
-861;Scrivi il PIN che usi già per gli altri portafogli.;Scrivi el PIN che te dopari zà par i altri portafoji.;Type the PIN you already use for your other wallets.
-862;Scrivi di nuovo gli stessi 4 numeri.;Scrivi da novo i stessi 4 numari.;Type the same 4 numbers again.
-863;Scrivi il tuo PIN;Scrivi el to PIN;Type your PIN
-864;Sblocco le monete?;Sbloco le monede?;Unblock the coins?
-865;non conf.;no conf.;unconf.
-866;non confermata;no confermada;unconfirmed
-867;Non confermata;No confermada;Unconfirmed
-868;Sotto 1 sat/vB può metterci molto ad arrivare.;Soto 1 sat/vB el pol metarghe tanto a rivar.;Under 1 sat/vB it can take a long time to arrive.
-869;Fino a zero puoi ancora fermarlo.;Fin a zero te pol ancora fermarlo.;Until zero you can still stop it.
-870;fino a 7, ognuno col suo colore;fin a 7, ognun col so color;up to 7, each with its own colour
-871;Aggiornato;Ajornà;Up to date
-872;Aggiorna con il PIN;Agiorna col PIN;Update with the PIN
-873;Usa l'eredità;Dopara l'eredità;Use the inheritance
-874;Usa la gestione privacy;Dopara la gestion privacy;Use the privacy management
-875;Usa queste monete;Dopara ste monede;Use these coins
-876;Usa questo indirizzo;Dopara sto indirisso;Use this address
-877;Usa le tue parole (SEED) su un solo telefono o computer: non metterle mai su più dispositivi. E fai l’eredità in un posto solo.;Dopara le to parole (SEED) su un telefono o computer solo: no metarle mai su più dispositivi. E fa l’eredità in un posto solo.;Use your words (SEED) on one phone or computer only: never put them on more devices. And make the inheritance in one place only.
-878;usato;doperà;used
-879;<b>UTXO</b> è il <b>numero di serie</b> inciso sul bordo della moneta, come quello di una banconota: dice da quale pagamento viene. Non è segreto e non serve per spenderla.;<b>UTXO</b> el xe el <b>numaro de serie</b> incìso sul bordo de la moneda, come quelo de na banconota: el dise da che pagamento che la vien. No el xe segreto e no el serve par spenderla.;<b>UTXO</b> is the <b>serial number</b> engraved on the rim of the coin, like the one on a banknote: it tells which payment it comes from. It is not secret and it is not needed to spend the coin.
-880;UTXO · NUMERO DI SERIE;UTXO · NUMARO DE SERIE;UTXO · SERIAL NUMBER
-881;valore del giorno;valor del giorno;value of the day
-882;valore variabile: quanto c'è dentro;valor che cambia: quel che ghe xe drento;variable value: what is inside
-883;Verifica messaggio;Verifica messajo;Verify Message
-884;versione %1;version %1;version %1
-885;Mancia molto bassa.;Mancia massa bassa.;Very low tip.
-886;piccolissime, da sconosciuti;picolissime, da foresti;very small, from strangers
-887;Sola visualizzazione e ricezione;Solo vardar e ricever;View and receive only
-888;Aspetta qualche secondo, oppure scrivi l'importo in bitcoin.;Speta qualche secondo, o scrivi l'importo in bitcoin.;Wait a few seconds, or write the amount in bitcoin.
-889;in attesa;in atesa;waiting
-890;Dettagli del portafoglio;Detagli del portafojo;Wallet details
-891;PORTAFOGLI;PORTAFOJI;WALLETS
-892;"Attenzione: alcuni dati (transazioni precedenti / ""full utxos"") sono rimasti fuori dal QR perché non ci stavano.";"Atension: qualche dato (transasion de prima / ""full utxos"") el xe restà fora dal QR parché no el ghe stava.";"Warning: Some data (prev txs / ""full utxos"") was left out of the QR code as it would not fit."
-893;AVVISI;AVISI;WARNINGS
-894;SOLO DA GUARDARE;SOLO DA VARDAR;WATCH ONLY
-895;Solo da guardare;Solo da vardar;Watch only
-896;Portafoglio solo da guardare;Portafojo solo da vardar;Watch-only wallet
-897;Usiamo %1 custodi dei %2 scelti: in questa rete non ce ne sono altri.;Dopèmo %1 custodi dei %2 sielti: in sta rete no ghe ne xe altri.;We use %1 keepers of the %2 chosen: on this network there are no others.
-898;Ne usiamo %1 dei %2 scelti: se uno si spegne ci sono gli altri.;Ghe ne doparemo %1 dei %2 sielti: se uno el se stua ghe xe i altri.;We use %1 of the %2 chosen: if one switches off there are the others.
-899;Ne usiamo %1: se uno si spegne ci sono gli altri.;Ghe ne doparemo %1: se uno el se stua ghe xe i altri.;We use %1: if one switches off there are the others.
-900;Usiamo 1 custode dei %1 scelti: in questa rete non ce ne sono altri.;Dopèmo 1 custode dei %1 sielti: in sta rete no ghe ne xe altri.;We use 1 keeper of the %1 chosen: on this network there are no others.
-901;Ne usiamo 1: per ora non ce ne sono altri.;Ghe ne doparemo 1: par desso no ghe ne xe altri.;We use 1: for now there are no others.
-902;Ne usiamo 2 dei %1 scelti: se uno si spegne c'è l'altro.;Ghe ne doparemo 2 dei %1 sielti: se uno el se stua ghe xe l'altro.;We use 2 of the %1 chosen: if one switches off there is the other.
-903;Benvenuto;Benvegnù;Welcome
-904;Cosa sono le conferme?;Cossa xe le conferme?;What are confirmations?
-905;<b>Cos'è il crogiuolo?</b> In Bitcoin si chiama <b>transazione</b>. Prende alcune monete d'oro (gli UTXO che spendi), le fonde e conia monete nuove: una per chi riceve e una con il resto per te. Le monete vecchie spariscono per sempre: non si possono spendere due volte.;<b>Cossa xe el crogiolo?</b> In Bitcoin el se ciama <b>transasion</b>. El ciapa qualche moneda de oro (i UTXO che te spendi), el le fonde e el conia monede nove: una par chi che riceve e una col resto par ti. Le monede vece le sparisse par sempre: no le se pol spendar do volte.;<b>What is the crucible?</b> In Bitcoin it is called <b>transaction</b>. It takes some gold coins (the UTXOs you spend), melts them and mints new coins: one for who receives and one with the change for you. The old coins disappear for ever: they cannot be spent twice.
-906;Cos'è il costo dell'invio?;Cossa xe el costo de l'invio?;What is the sending cost?
-907;Quanto costa;Quanto che costa;What it costs
-908;<b>A cosa serve.</b> Il portafoglio ha una lunga fila di indirizzi, sempre gli stessi, che nascono dalle 12 parole (SEED). Per trovare i tuoi soldi Schȅi li guarda <b>uno dopo l'altro</b>, e si ferma quando ne trova <b>%1 vuoti di fila</b>: pensa che dopo non ci sia più niente.;<b>A cossa che serve.</b> El portafojo el ga na fila longa de indirissi, sempre i stessi, che nasse da le 12 parole (SEED). Par catar i to schei Schȅi el li varda <b>uno dopo l'altro</b>, e el se ferma co el ghe ne cata <b>%1 vodi de fila</b>: el pensa che dopo no ghe sia più gnente.;<b>What it is for.</b> The wallet has a long row of addresses, always the same, born from the 12 words (SEED). To find your money Schȅi looks at them <b>one after the other</b>, and stops when it finds <b>%1 empty in a row</b>: it thinks there is nothing after.
-909;<b>A cosa serve.</b> Il portafoglio ha una lunga fila di indirizzi, sempre gli stessi, che nascono dalle parole (SEED). Per trovare i tuoi soldi Schȅi li guarda <b>uno dopo l'altro</b>, e si ferma quando ne trova <b>%1 vuoti di fila</b>: pensa che dopo non ci sia più niente.;<b>A cossa che serve.</b> El portafojo el ga na fila longa de indirissi, sempre i stessi, che nasse da le parole (SEED). Par catar i to schei Schȅi el li varda <b>uno dopo l'altro</b>, e el se ferma co el ghe ne cata <b>%1 vodi de fila</b>: el pensa che dopo no ghe sia più gnente.;<b>What it is for.</b> The wallet has a long row of addresses, always the same, born from the words (SEED). To find your money Schȅi looks at them <b>one after the other</b>, and stops when it finds <b>%1 empty in a row</b>: it thinks there is nothing after.
-910;COSA CAMBIA SCHÈI;COSSA CHE CAMBIA SCHÈI;WHAT SCHÈI CHANGES
-911;Quanto prendono i custodi;Quanto che ciapa i custodi;What the keepers take
-912;<b>Come fare:</b> apri l'app <b>Orbot</b> e tocca il grande tasto per accenderla. Poi torna qui: Schȅi si collega da solo.;<b>Come far:</b> verzi l'app <b>Orbot</b> e toca el boton grando par impissarla. Dopo torna qua: Schȅi el se colega da solo.;<b>What to do:</b> open the <b>Orbot</b> app and tap the big button to turn it on. Then come back here: Schȅi connects by itself.
-913;Quando;Quando;When
-914;Quando mescolo provenienze;Co missio provenienze;When I mix origins
-915;<b>Quando serve.</b> Se le 12 parole (SEED) sono state usate anche in un altro portafoglio che ha creato tanti indirizzi senza usarli, i soldi possono stare dopo più di 20 indirizzi vuoti. Schȅi non li vede e il saldo sembra mancare. Cercando più lontano li ritrova.;<b>Co che serve.</b> Se le 12 parole (SEED) le xe stade dopará anca in n'altro portafojo che ga fato tanti indirissi sensa doperarli, i schei i pol star dopo più de 20 indirissi vodi. Schȅi no el li vede e el saldo el par che manca. Sercando più lontan el li cata.;<b>When it is needed.</b> If the 12 words (SEED) were also used in another wallet that created many addresses without using them, the money can be after more than 20 empty addresses. Schȅi does not see it and the balance seems to be missing. Looking further finds it.
-916;<b>Quando serve.</b> Se le parole (SEED) sono state usate anche in un altro portafoglio che ha creato tanti indirizzi senza usarli, i soldi possono stare dopo più di 20 indirizzi vuoti. Schȅi non li vede e il saldo sembra mancare. Cercando più lontano li ritrova.;<b>Co che serve.</b> Se le parole (SEED) le xe stade dopará anca in n'altro portafojo che ga fato tanti indirissi sensa doperarli, i schei i pol star dopo più de 20 indirissi vodi. Schȅi no el li vede e el saldo el par che manca. Sercando più lontan el li cata.;<b>When it is needed.</b> If the words (SEED) were also used in another wallet that created many addresses without using them, the money can be after more than 20 empty addresses. Schȅi does not see it and the balance seems to be missing. Looking further finds it.
-917;Quando si avvicina la consegna, Schȅi ti chiede: <b>«Sei ancora qui?»</b> Dici sì, e il tempo riparte da capo.;Co se svissina la consegna, Schȅi el te domanda: <b>«Sito ancora qua?»</b> Te disi sì, e el tempo el riparte da capo.;"When the delivery gets close, Schȅi asks you: <b>""Are you still here?""</b> You say yes, and the time starts again from the beginning."
-918;Quando avvisarti;Quando avisarte;When to remind you
-919;Quando ricevi o invii bitcoin, li trovi qui.;Co te ricevi o te mandi bitcoin, te li cati qua.;When you receive or send bitcoin, you find them here.
-920;Quando rinnovi, Schȅi unisce tutte le monete in una sola.;Co te rinovi, Schȅi el mete insieme tute le monede in una sola.;When you renew, Schȅi joins all the coins into one.
-921;Da dove vengono?;Da dove vienle?;Where do they come from?
-922;DA DOVE VIENE;DA DOVE CHE LA VIEN;WHERE IT COMES FROM
-923;DA DOVE VENGONO LE MONETE;DA DOVE CHE VIEN LE MONEDE;WHERE THE COINS COME FROM
-924;Dove vedere i movimenti;Dove vardar i movimenti;Where to see the movements
-925;Quali monete fondere?;Che monede fondar?;Which coins to melt?
-926;Chi;Chi;Who
-927;A chi mandi?;A chi mandito?;Who are you sending to?
-928;Chi lascia una <b>mancia più alta</b> ai minatori passa prima. Con la mancia più bassa può volerci <b>qualche ora</b>.;Chi che lassa na <b>mancia più alta</b> ai minadori el passa prima. Co la mancia più bassa ghe pol voler <b>qualche ora</b>.;Who leaves a <b>higher tip</b> to the miners goes first. With the lowest tip it can take <b>a few hours</b>.
-929;Chi lascia una <b>mancia più alta</b> ai minatori passa prima. Con la mancia più bassa può volerci <b>fino a un giorno</b>.;Chi che lassa na <b>mancia più alta</b> ai minadori el passa prima. Co la mancia più bassa ghe pol voler <b>fin a un giorno</b>.;Who leaves a <b>higher tip</b> to the miners goes first. With the lowest tip it can take <b>up to a day</b>.
-930;Chi paga di più passa prima. <b>I soldi arrivano comunque</b>: cambia solo quanto tempo ci mettono.;Chi che paga de più el passa prima. <b>I schei i riva istesso</b>: cambia solo quanto tempo che i ghe mete.;Who pays more goes first. <b>The money arrives anyway</b>: only the time it takes changes.
-931;chi riceve;chi che riceve;who receives
-932;Chi riceve?;Chi riceve?;Who receives?
-933;A chi;A chi;Who to
-934;Chi lo inquadra si trova la cifra già scritta: deve solo confermare.;Chi che lo inquadra el se cata la cifra zà scrita: el ga solo da confermar.;Whoever scans it finds the amount already written: they only have to confirm.
-935;indirizzo intero;indirisso intiero;whole address
-936;Con un sito pubblico puoi proteggerti con una <b>VPN</b> o con <b>Tor</b> (app Orbot o Tor Browser): il sito vede il movimento, ma non sa chi sei.;Co un sito publico te pol protegerte co na <b>VPN</b> o co <b>Tor</b> (app Orbot o Tor Browser): el sito el vede el movimento, ma no el sa chi che te si.;With a public site you can protect yourself with a <b>VPN</b> or with <b>Tor</b> (Orbot or Tor Browser app): the site sees the movement, but does not know who you are.
-937;con PIN;col PIN;with PIN
-938;Con il costo più basso, se ci sono tanti invii, può volerci anche più di un giorno.;Col costo più basso, se ghe xe tanti invii, ghe pol voler anca più de un dì.;With the lowest cost, when there are many payments it can take even more than a day.
-939;Con l'interruttore spento non cambia niente: l'app sceglie le monete da sola, come sempre.;Co l'interutor studà no cambia gnente: l'app la sielze le monede da sola, come sempre.;With the switch off nothing changes: the app chooses the coins by itself, as always.
-940;Con questo tipo di indirizzi l'eredità non si può fare.;Co sto tipo de indirissi l'eredità no se pol far.;With this kind of addresses the inheritance cannot be made.
-941;Con questo portafoglio puoi vedere il saldo e ricevere, ma <b>non puoi inviare</b>: le chiavi per firmare non sono su questo telefono.;Co sto portafojo te pol vedar el saldo e ricevar, ma <b>no te pol mandar</b>: le ciave par firmar no le xe su sto telefonin.;With this wallet you can see the balance and receive, but you <b>cannot send</b>: the keys to sign are not on this phone.
-942;Con Tor il collegamento è un po' più lento: qualche secondo in più all'apertura e per aggiornare il saldo.;Co Tor el colegamento el xe un fià più lento: qualche secondo in più a verzar e par ajornar el saldo.;With Tor the connection is a bit slower: a few seconds more when opening and to update the balance.
-943;Con Tor puoi scrivere anche l'indirizzo <b>.onion</b> del nodo: così ti colleghi a casa tua anche da fuori, senza toccare il router.;Co Tor te pol scrivar anca l'indirisso <b>.onion</b> del nodo: cussì te te colighi a casa tua anca da fora, sensa tocar el router.;With Tor you can also write the <b>.onion</b> address of the node: so you connect to your home even from outside, without touching the router.
-944;Con <b>il tuo nodo</b> non lo sa nessuno: resta tutto a casa tua.;Col <b>to nodo</b> no lo sa nissun: resta tuto a casa tua.;With <b>your node</b> nobody knows it: everything stays at your home.
-945;entro un giorno;entro un dì;within a day
-946;entro una settimana;entro na setimana;within a week
-947;scrivi una nota…;scrivi na nota…;write a note…
-948;Scrivi una mail;Scrivi na mail;Write an e-mail
-949;Scrivi in bitcoin;Scrivi in bitcoin;Write in bitcoin
-950;Scrivila tu: è quanto paghi per ogni «pezzetto» della transazione (sat/vB).;Scrivila ti: la xe quanto che te paghi par ogni «tocheto» de la transasion (sat/vB).;Write it yourself: it is what you pay for each «little piece» of the transaction (sat/vB).
-951;Scrivi le <b>12 parole</b> (SEED) di questo portafoglio, quelle del foglio. Se sono giuste, scegli un PIN nuovo.;Scrivi le <b>12 parole</b> (SEED) de sto portafojo, quele del foglio. Se le xe giuste, te sielgi un PIN novo.;Write the <b>12 words</b> (SEED) of this wallet, the ones on the paper. If they are right, you choose a new PIN.
-952;scrivi l'importo in %1 o in BTC;scrivi l'importo in %1 o in BTC;write the amount in %1 or in BTC
-953;scrivi l'importo in € o in BTC;scrivi la cifra in € o in BTC;write the amount in € or in BTC
-954;Scrivi le <b>parole</b> (SEED) di questo portafoglio, quelle del foglio. Se sono giuste, scegli un PIN nuovo.;Scrivi le <b>parole</b> (SEED) de sto portafojo, quele del foglio. Se le xe giuste, te sielgi un PIN novo.;Write the <b>words</b> (SEED) of this wallet, the ones on the paper. If they are right, you choose a new PIN.
-955;Scrivile su carta in stampatello;Scrivile su la carta in stampatelo;Write them on paper in block capitals
-956;SCRIVI ANCHE QUESTO, SOTTO LE PAROLE;SCRIVI ANCA QUESTO, SOTO LE PAROLE;WRITE THIS TOO, UNDER THE WORDS
-957;Scrivi le tue 12 parole (SEED);Scrivi le to 12 parole (SEED);Write your 12 words (SEED)
-958;Scrivi le tue parole (SEED);Scrivi le to parole (SEED);Write your words (SEED)
-959;PIN sbagliato, riprova.;PIN sbaglià, riprova.;Wrong PIN, try again.
-960;anno;ano;year
-961;anni;ani;years
-962;Sì;Sì;Yes
-963;Sì, annullala;Sì, scancelala;Yes, cancel it
-964;Sì, continua lo stesso;Sì, va vanti istesso;Yes, continue anyway
-965;Sì, cancellali;Sì, scancelali;Yes, delete them
-966;Sì, è giusto: avanti;Sì, el xe giusto: avanti;Yes, it is right: next
-967;Sì, facciamola;Sì, femola;Yes, let's make it
-968;Sì, rinnova;Sì, rinova;Yes, renew
-969;Ieri;Jeri;Yesterday
-970;ieri %1;ieri %1;yesterday %1
-971;tu;ti;you
-972;Hai già 7 portafogli, il massimo.;Te ghe zà 7 portafoji, el massimo.;You already have 7 wallets, the maximum.
-973;Stai chiedendo %1;Te sì drio domandar %1;You are asking %1
-974;Stai mescolando monete;Te stà missiando monede;You are mixing coins
-975;Puoi cambiare livello quando vuoi.;Te pol cambiar liveo quando che te vol.;You can change level whenever you want.
-976;Scegli tu fra quanto tempo consegnare l'eredità: 1, 2, 3 o 5 anni (consigliamo 2). Quando si avvicina la consegna, ogni volta che apri Schȅi ti chiede: <b>«Sei ancora qui?»</b> Un esempio: se hai scelto 2 anni, la domanda comincia quando manca 1 anno. Se rispondi sì, il tempo riparte da capo: altri 2 anni interi da quel giorno. Se scegli «Più tardi», te lo richiede la prossima volta che apri Schȅi: non arrivano avvisi sul telefono, quindi aprilo ogni tanto. Il rinnovo costa una piccola spesa di rete e unisce tutte le monete in una sola. In Impostazioni › «Quando avvisarti» puoi far cominciare la domanda più tardi: quando manca un terzo o un quarto del periodo.;Te sielzi ti fra quanto tempo consegnar l'eredità: 1, 2, 3 o 5 ani (consiliemo 2). Co se svissina la consegna, ogni volta che te verzi Schȅi el te domanda: <b>«Sito ancora qua?»</b> Un esempio: se te ghe sielto 2 ani, la domanda la scominsia quando manca 1 ano. Se te rispondi sì, el tempo el riparte da capo: altri 2 ani interi da quel dì. Se te sielzi «Più tardi», el te lo domanda da novo la prossima volta che te verzi Schȅi: no riva avisi sul telefono, quindi verzilo ogni tanto. El rinovo el costa na picola spesa de rete e el mete insieme tute le monede in una sola. In Impostazioni › «Quando avisarte» te pol far scominsiar la domanda più tardi: quando manca un terzo o un quarto del periodo.;"You choose how long from now to deliver the inheritance: 1, 2, 3 or 5 years (we suggest 2). When the delivery gets close, every time you open Schȅi it asks you: <b>""Are you still here?""</b> An example: if you chose 2 years, the question starts when 1 year is left. If you say yes, the time starts again from the beginning: 2 more whole years from that day. If you choose ""Later"", it asks you again the next time you open Schȅi: no alerts arrive on the phone, so open it now and then. The renewal costs a small network fee and joins all the coins into one. In Settings › ""When to remind you"" you can make the question start later: when a third or a quarter of the period is left."
-977;Hai scelto;Te ghe sielto;You chose
-978;Non hai abbastanza fondi on-chain per proteggere i tuoi canali Lightning.;No te ghe bastansa schei on-chain par protejar i to canai Lightning.;You do not have enough on-chain funds to protect your Lightning channels.
-979;Non hai abbastanza schei;No te ghe basta schei;You do not have enough schei
-980;"Lo trovi nell'app ""Electrs"" o ""Fulcrum"" del tuo nodo. "":s"" vuol dire collegamento protetto.";"Te lo cati ne l'app ""Electrs"" o ""Fulcrum"" del to nodo. "":s"" vol dir colegamento protèto.";"You find it in the ""Electrs"" or ""Fulcrum"" app of your node. "":s"" means protected connection."
-981;Lo trovi nel suo portafoglio, alla voce «Ricevi».;Te lo trovi nel so portafojo, a la vose «Ricevi».;"You find it in their wallet, under ""Receive""."
-982;Ritrovi le voci di questo livello come le avevi lasciate.;Te ritrovi le vosi de sto liveo come che te le gavevi lassà.;You find the switches of this level as you left them.
-983;"le trovi nel pagamento (""Monete usate"") e in ""bloccati ›"" sul portafoglio";"te le cati nel pagamento (""Monede doparà"") e in ""blocà ›"" sul portafojo";"you find them in the payment (""Coins used"") and in ""blocked ›"" on the wallet"
-984;HAI;TE GHE;YOU HAVE
-985;Hai %1;Te ghe %1;You have %1
-986;Hai %1 monete bloccate: l'app non le usa per pagare. Senza monete d'oro non le vedi più. Le sblocco tutte?;Te ghe %1 monede blocae: l'app no le dopra par pagar. Sensa monede d'oro no te le vedi più. Le sbloco tute?;You have %1 blocked coins: the app does not use them to pay. Without gold coins you do not see them any more. Unblock them all?
-987;hai %1 portafogli: resta acceso, così li vedi tutti;te ghe %1 portafoji: el resta inpissà, cussì te li vedi tuti;you have %1 wallets: it stays on, so you see them all
-988;Hai fatto un pagamento.<br>Aggiorno l'eredità con quello che resta?;Te ghe fato un pagamento.<br>Agiorno l'eredità co quel che resta?;You made a payment.<br>Do I update the inheritance with what is left?
-989;Servono per riavere i soldi se perdi il telefono.;Le serve par riavere i schei se te perdi el telefonin.;You need them to get your money back if you lose your phone.
-990;HAI INCOLLATO QUESTO INDIRIZZO;TE GHE INCOLÀ STO INDIRISSO;YOU PASTED THIS ADDRESS
-991;Ti sono arrivati;Te ze rivà;You received
-992;Hai ricevuto <b>%1</b>.<br>Aggiorno l'eredità perché valga anche per loro?;Te ghe ricevù <b>%1</b>.<br>Agiorno l'eredità parché la vaga anca par lori?;You received <b>%1</b>.<br>Do I update the inheritance so it covers them too?
-993;Hai ricevuto {};Te ghe ricevùo {};You received {}
-994;Mandi;Te mandi;You send
-995;Mandi <b>tutto quello che hai</b>. Il costo dell'invio è già tolto: il portafoglio resterà a zero.;Te mandi <b>tuto quel che te ghe</b>. El costo de l'invio el xe zà cavà: el portafojo el restarà a zero.;You send <b>everything you have</b>. The sending cost is already taken off: the wallet will be left at zero.
-996;Hai mandato {};Te ghe mandà {};You sent {}
-997;Dovresti avere almeno %1 on-chain per poter recuperare le uscite dei canali.;Te gavarissi da aver almanco %1 on-chain par poder recuperar le uscite dei canai.;You should have at least %1 on-chain in order to be able to sweep channel outputs.
-998;"Usavi un tuo nodo o Tor. In BASE la loro voce è nascosta: con ""Sì"" Schȅi si collega da solo ai server pubblici, come all'inizio.";"Te dopravi un to nodo o Tor. In BASE la so vose la xe sconta: col ""Sì"" Schȅi el se colega da solo ai server publici, come a l'inizio.";"You were using your own node or Tor. In BASE their row is hidden: with ""Yes"" Schȅi connects by itself to the public servers, as at the start."
-999;Scrivi gli importi in %1 o in bitcoin;Te scrivi i importi in %1 o in bitcoin;You write the amounts in %1 or in bitcoin
-1000;Hai scritto %1 parole, ma hai scelto %2. Cancella quelle in più o scegli un altro numero.;Te ghe scrito %1 parole, ma te ghe sielto %2. Scancela quele in pì o sielgi n'altro numero.;You wrote %1 words, but you chose %2. Delete the extra words or choose another number.
-1001;Le tue %1 parole (SEED);Le to %1 parole (SEED);Your %1 words (SEED)
-1002;Le tue 12 parole (SEED);Le to 12 parole (SEED);Your 12 words (SEED)
-1003;I tuoi indirizzi;I to indirissi;Your addresses
-1004;Il saldo è fatto di più <b>monete d'oro</b>: ognuna è un pagamento che hai ricevuto e vale quanto c'è dentro. Puoi <b>bloccarne</b> una: l'app non la userà per pagare.;El saldo el xe fato de più <b>monede de oro</b>: ognuna la xe un pagamento che te ghe ricevùo e la val quel che ghe xe drento. Te pol <b>blocarghene</b> una: l'app no la la doparà par pagar.;Your balance is made of several <b>gold coins</b>: each one is a payment you received, and it is worth what is inside. You can <b>block</b> one: the app will not use it to pay.
-1005;IL TUO INDIRIZZO BITCOIN;EL TO INDIRISSO BITCOIN;YOUR BITCOIN ADDRESS
-1006;Le tue scelte (modalità esperto, colori) torneranno come all'inizio.;Le to sielte (modalità esperto, colori) le tornarà come a l'inizio.;Your choices (expert mode, colours) will go back to how they were at the start.
-1007;A proteggere le tue monete sono le 12 parole (SEED).;A proteger le to monede xe le 12 parole (SEED).;Your coins are protected by the 12 words (SEED).
-1008;A proteggere le tue monete sono le parole (SEED).;A proteger le to monede xe le parole (SEED).;Your coins are protected by the words (SEED).
-1009;Le tue monete nelle tasche;Le to monede ne le scarsele;Your coins in the pockets
-1010;La tua eredità attuale;La to eredità atuale;Your current inheritance
-1011;La tua eredità attuale ha la consegna il <b>%1</b>.<br>Se vai avanti, la consegna diventa il <b>%2</b> (%3 da oggi). <b>Non costa niente: è un aggiornamento gratis.</b>;La to eredità atuale la ga la consegna el <b>%1</b>.<br>Se te vè avanti, la consegna la deventa el <b>%2</b> (%3 da ancuo). <b>No la costa gnente: el xe un agiornamento gratis.</b>;Your current inheritance has its delivery on <b>%1</b>.<br>If you go on, the delivery becomes <b>%2</b> (%3 from today). <b>It costs nothing: it is a free update.</b>
-1012;La tua eredità attuale ha la consegna il <b>%1</b>.<br>Se vai avanti, la consegna diventa il <b>%2</b> (%3 da oggi). È un rinnovo: lo paghi come un pagamento.;La to eredità atuale la ga la consegna el <b>%1</b>.<br>Se te vè avanti, la consegna la deventa el <b>%2</b> (%3 da ancuo). El xe un rinovo: te lo paghi come un pagamento.;Your current inheritance has its delivery on <b>%1</b>.<br>If you go on, the delivery becomes <b>%2</b> (%3 from today). It is a renewal: you pay it like a payment.
-1013;Il tuo PIN attuale;El to PIN de desso;Your current PIN
-1014;Le tue monete bitcoin;Le to monede bitcoin;Your gold coins
-1015;Le tue monete bitcoin e gli indirizzi;Le to monede bitcoin e i indirissi;Your gold coins and addresses
-1016;I tuoi eredi;I to eredi;Your heirs
-1017;I tuoi eredi restano salvati, pronti per una nuova eredità.;I to eredi i resta salvai, pronti par na eredità nova.;Your heirs are still saved, ready for a new inheritance.
-1018;La tua eredità;La to eredità;Your inheritance
-1019;I tuoi custodi;I to custodi;Your keepers
-1020;Il tuo gruzzoletto;El to gruzoleto;Your little stash
-1021;I tuoi schȅi;I to schȅi;Your money
-1022;I tuoi soldi sono in più posti;I to schȅi i xe in pì posti;Your money is in more places
-1023;I tuoi soldi non sono persi;I to schȅi no i xe persi;Your money is not lost
-1024;<b>I tuoi soldi restano tuoi</b>: ricevi e paghi come sempre. Se arrivano soldi nuovi o fai un pagamento, Schȅi ti chiede di aggiornare la busta. Basta il PIN e non devi pagare nulla.;<b>I to schei i resta tui</b>: te ricevi e te paghi come sempre. Se riva schei novi o te fa un pagamento, Schȅi el te domanda de agiornar la busta. Basta el PIN e no te ghe da pagar gnente.;<b>Your money stays yours</b>: you receive and pay as always. If new money arrives or you make a payment, Schȅi asks you to update the envelope. The PIN is enough and you pay nothing.
-1025;I tuoi soldi, le 12 parole (SEED) e il PIN non cambiano.;I to schei, le 12 parole (SEED) e el PIN no i cambia.;Your money, the 12 words (SEED) and the PIN do not change.
-1026;I tuoi soldi, i portafogli, le 12 parole (SEED), il PIN, il nome e la lingua non cambiano.;I to schei, i portafoji, le 12 parole (SEED), el PIN, el nome e la lengua no i cambia.;Your money, the wallets, the 12 words (SEED), the PIN, the name and the language do not change.
-1027;I tuoi soldi, i portafogli, le parole (SEED), il PIN, il nome e la lingua non cambiano.;I to schei, i portafoji, le parole (SEED), el PIN, el nome e la lengua no i cambia.;Your money, the wallets, the words (SEED), the PIN, the name and the language do not change.
-1028;I tuoi soldi, le parole (SEED) e il PIN non cambiano.;I to schei, le parole (SEED) e el PIN no i cambia.;Your money, the words (SEED) and the PIN do not change.
-1029;Il tuo PIN;El to PIN;Your PIN
-1030;IL TUO PORTAFOGLIO;EL TO PORTAFOJO;YOUR WALLET
-1031;Il tuo portafoglio è pronto;El to portafojo el xe pronto;Your wallet is ready
-1032;Le tue parole (SEED);Le to parole (SEED);Your words (SEED)
-1033;{} movimenti nuovi;{} movimenti novi;{} new movements
-1034;· tocca ✎ per scriverlo;· tocca ✎ par scrivarlo;· tap ✎ to write it
+659;"Qualcosa non ha funzionato. I tuoi soldi sono al sicuro; riprova più tardi.";"Qualcosa no ga funsionà. I to schei i xe al sicuro; riprova più tardi.";"Something did not work. Your money is safe; try again later."
+660;Qualcosa non funziona, o hai un'idea? Scrivici. Non mandare mai le 12 parole (SEED) o il PIN: nessuno te li chiederà mai.;Qualcossa no funsiona, o te ghe n'idea? Scrivine. No mandar mai le 12 parole (SEED) o el PIN: nissun te li domandarà mai.;Something does not work, or you have an idea? Write to us. Never send your 12 words (SEED) or your PIN: nobody will ever ask for them.
+661;Qualcosa non funziona, o hai un'idea? Scrivici. Non mandare mai le parole (SEED) o il PIN: nessuno te li chiederà mai.;Qualcossa no funsiona, o te ghe n'idea? Scrivine. No mandar mai le parole (SEED) o el PIN: nissun te li domandarà mai.;Something does not work, or you have an idea? Write to us. Never send your words (SEED) or your PIN: nobody will ever ask for them.
+662;Nell'eredità è cambiato qualcosa.<br>La aggiorno adesso?;Ne l'eredità xe cambià qualcosa.<br>La agiorno desso?;Something in the inheritance was changed.<br>Do I update it now?
+663;percorso particolare %1;percorso particolare %1;special path %1
+664;si spende;se spende;spendable
+665;spendibili %1;da spendar %1;spendable %1
+666;A partire da;A partir da;Starting from
+667;Comincia con (dopo %1);Scominsia co (dopo %1);Starts with (after %1)
+668;Stato;Stato;Status
+669;PASSO %1 DI %2;PASSO %1 DE %2;STEP %1 OF %2
+670;Mancano ancora: <b>%1</b>;Manca ancora: <b>%1</b>;Still missing: <b>%1</b>
+671;Monetine sospette;Monedine sospete;Suspicious little coins
+672;Trasferisci;Trasferissi;Sweep
+673;Trasferisci da chiavi private;Trasferissi da ciavi private;Sweep key(s)
+674;Trasferimento delle monete;Trasferimento de le monede;Sweep transaction
+675;Trasferisci...;Trasferissi...;Sweep...
+676;Passi a %1?;Te passi a %1?;Switch to %1?
+677;Prendi il numero di «Priorità media»;Ciapa el numaro de «Priorità media»;Take the number of «Medium priority»
+678;Tocca un sito per sceglierlo. La matita cambia nome e indirizzo.;Toca un sito par sielzarlo. La matita la cambia nome e indirisso.;Tap a site to choose it. The pencil changes its name and address.
+679;tocca banconote e monete;toca banconote e monede;tap notes and coins
+680;Tocca RICEVI per farti mandare i primi bitcoin.;Toca RICEVI par farte mandar i primi bitcoin.;Tap RECEIVE to get your first bitcoin.
+681;tocca l'indirizzo per ingrandirlo;toca l'indirisso par ingrandirlo;tap the address to enlarge
+682;tocca le lettere, poi la parola;toca le letare, dopo la parola;tap the letters, then the word
+683;tocca per cambiarlo;toca par cambiarlo;tap to change it
+684;tocca per ingrandire;toca par ingrandir;tap to enlarge
+685;tocca per aprirlo;toca par verzarlo;tap to open it
+686;tocca per vedere;tocca par vedar;tap to see
+687;tocca per scrivere;tocca par scrivar;tap to write
+688;Tocca per scriverla o cambiarla. Solo tu la vedi, resta sul telefono.;Toca par scrivarla o cambiarla. Solo ti te la vedi, la resta sul telefonin.;Tap to write or change it. Only you see it, it stays on the phone.
+689;tocca: togli l'ultimo;tocca: cava l'ultimo;tap: take the last one back
+690;RETE DI PROVA (testnet4) · monete senza valore;RETE DE PROVA (testnet4) · schȅi che no val gnente;TEST NETWORK (testnet4) · coins without value
+691;Va bene così;Va ben cussì;That is fine
+692;Gli importi si vedono in questa valuta, al prezzo del giorno. Banconote e monete ci sono per l'euro e il dollaro.;I importi i se vede in sta valuta, al prezo del giorno. Banconote e monede ghe xe par l'euro e el dolaro.;The amounts are shown in this currency, at the price of the day. Banknotes and coins exist for the euro and the dollar.
+693;Gli importi in %1 sono il valore <b>del giorno</b> di ogni movimento. I pagamenti ancora in arrivo non sono nel file.;I importi in %1 i xe el valor <b>del giorno</b> de ogni movimento. I pagamenti ancora in rivo no i xe nel file.;The amounts in %1 are the value <b>of the day</b> of each movement. Payments still arriving are not in the file.
+694;l'app non usa questa moneta per pagare;l'app no la dopara sta moneda par pagar;the app will not use this coin to pay
+695;il bollo sul portafoglio e la domanda ogni 3 mesi;el bolo sul portafojo e la domanda ogni 3 mesi;the badge on the wallet and the question every 3 months
+696;Il saldo potrebbe non essere aggiornato.;El saldo podarìa no èssar ajornà.;The balance may not be up to date.
+697;La rete bitcoin ha rifiutato questo pagamento. I tuoi soldi sono ancora nel portafoglio.;La rete bitcoin la ga rifiutà sto pagamento. I to schȅi i xe ancora nel portafojo.;The bitcoin network refused this payment. Your money is still in the wallet.
+698;la fotocamera è già accesa;la fotocamera la xe zà impissada;the camera is already on
+699;L'annullamento è partito. Schȅi lo vedrà fra poco.;La scancelasion la xe partìa. Schȅi el la vedarà fra un fià.;The cancellation has left. Schȅi will see it in a little while.
+700;"Il resto arriva su un tuo <b>indirizzo di resto</b>: lo trovi in ""Indirizzi"", nel gruppo ""Resto"".";"El resto el riva su un to <b>indirisso de resto</b>: te lo cati in ""Indirissi"", nel grupo ""Resto"".";"The change arrives on one of your <b>change addresses</b>: you find it in ""Addresses"", in the group ""Change""."
+701;Il resto, <b>%1</b>, torna a te come moneta nuova.;El resto, <b>%1</b>, el torna a ti come moneda nova.;The change, <b>%1</b>, comes back to you as a new coin.
+702;Il codice di Schȅi è libero e pubblico su GitHub. Nessuno, nemmeno chi ha fatto l'app, può vedere le tue 12 parole (SEED) o toccare i tuoi soldi.;El codice de Schȅi el xe libero e publico su GitHub. Nissun, gnanca chi che ga fato l'app, pol vedar le to 12 parole (SEED) o tocar i to schei.;The code of Schȅi is free and public on GitHub. Nobody, not even who made the app, can see your 12 words (SEED) or touch your money.
+703;Il codice di Schȅi è libero e pubblico su GitHub. Nessuno, nemmeno chi ha fatto l'app, può vedere le tue parole (SEED) o toccare i tuoi soldi.;El codice de Schȅi el xe libero e publico su GitHub. Nissun, gnanca chi che ga fato l'app, pol vedar le to parole (SEED) o tocar i to schei.;The code of Schȅi is free and public on GitHub. Nobody, not even who made the app, can see your words (SEED) or touch your money.
+704;Le monete restano tue: le vedi sempre nel saldo, come bloccate. Per usarle di nuovo, sblocca l'indirizzo.;Le monede le resta tue: te le vedi sempre nel saldo, come blocade. Par doperarle da novo, sbloca l'indirisso.;The coins stay yours: you still see them in the balance, as blocked. To use them again, unblock the address.
+705;Il server collegato accetta almeno %1 sat/vB.;El server tacà el ciapa almanco %1 sat/vB.;The connected server accepts at least %1 sat/vB.
+706;La connessione si è interrotta mentre il pagamento partiva.;La conession la se ga interoto intanto che el pagamento el partiva.;The connection broke while the payment was leaving.
+707;Il costo <b>non dipende da quanto mandi</b>: costa uguale mandare 10 € o 1.000 €. Cambia solo un po' secondo il traffico della rete.;El costo <b>no el dipende da quanto che te mandi</b>: mandar 10 € o 1.000 € el costa compagno. El cambia solo un fià secondo el trafico de la rete.;The cost <b>does not depend on how much you send</b>: sending 10 € or 1,000 € costs the same. It only changes a little with the network traffic.
+708;il <b>crogiuolo</b> = la transazione;el <b>crogiolo</b> = la transasion;the <b>crucible</b> = the transaction
+709;il <b>crogiuolo</b> = la transazione sulla blockchain;el <b>crogiolo</b> = la transasion su la blockchain;the <b>crucible</b> = the transaction on the blockchain
+710;Il riquadro tratteggiato è un <b>sacchetto</b>: monete arrivate sullo <b>stesso indirizzo</b>. Nel registro pubblico sono già collegate, quindi conviene spostarle insieme.;El riquadro tratejà el xe un <b>sacheto</b>: monede rivae sul <b>stesso indirisso</b>. Sul registro publico le xe zà ligae, alora convien spostarle insieme.;The dashed frame is a <b>little bag</b>: coins that arrived on the <b>same address</b>. In the public register they are already linked, so it is better to move them together.
+711;la data è passata;la data la xe passada;the date has passed
+712;Le date;Le date;The dates
+713;La consegna passa dal <b>%1</b> al <b>%2</b>: è un <b>aggiornamento gratis</b>.;La consegna la passa dal <b>%1</b> al <b>%2</b>: el xe un <b>agiornamento gratis</b>.;The delivery moves from <b>%1</b> to <b>%2</b>: it is a <b>free update</b>.
+714;La consegna passa dal <b>%1</b> al <b>%2</b>: è un <b>rinnovo</b>. Schȅi annulla la busta di adesso sulla rete bitcoin e unisce tutte le monete in una sola.;La consegna la passa dal <b>%1</b> al <b>%2</b>: el xe un <b>rinovo</b>. Schȅi el anula la busta de adesso su la rete bitcoin e el mete insieme tute le monede in una sola.;The delivery moves from <b>%1</b> to <b>%2</b>: it is a <b>renewal</b>. Schȅi cancels the envelope of now on the bitcoin network and joins all the coins into one.
+715;La busta per gli eredi viene annullata sulla rete bitcoin con una piccola operazione, che si paga come un pagamento.;La busta par i eredi la vien anulada su la rete bitcoin co na picola operassion, che se paga come un pagamento.;The envelope for the heirs is cancelled on the bitcoin network with a small operation, paid like a payment.
+716;"La busta va a più custodi: se uno si spegne, la spediscono gli altri. Più sono, più è sicuro; alla consegna se ne paga uno solo. Il numero nuovo vale dalla prossima busta (aggiornamento o rinnovo).";"La busta la va a più custodi: se uno el se stua, i altri i la manda. Più che i xe, più xe sicuro; a la consegna se ghe ne paga uno solo. El numaro novo el val da la prossima busta (agiornamento o rinovo).";"The envelope goes to several keepers: if one switches off, the others send it. More keepers is safer; at the delivery only one is paid. The new number counts from the next envelope (update or renewal)."
+717;La busta è pronta ma nessun custode l'ha presa. Riprova fra poco.;La busta la xe pronta ma nissun custode el la ga ciapada. Riprova fra un fià.;The envelope is ready but no keeper took it. Try again in a little while.
+718;La busta è al sicuro da <b>%1 custodi su %2</b>.;La busta la xe al sicuro da <b>%1 custodi su %2</b>.;The envelope is safe with <b>%1 keepers out of %2</b>.
+719;La busta è al sicuro da <b>1 custode</b>.;La busta la xe al sicuro da <b>1 custode</b>.;The envelope is safe with <b>1 keeper</b>.
+720;La busta è ancora al sicuro da %1 custodi.;La busta la xe ancora al sicuro da %1 custodi.;The envelope is still safe with %1 keepers.
+721;La busta è ancora al sicuro da 1 custode.;La busta la xe ancora al sicuro da 1 custode.;The envelope is still safe with 1 keeper.
+722;La busta resta ai tuoi <b>%1 custodi</b> che funzionano: l'eredità vale. Riprova più avanti.;La busta la resta ai to <b>%1 custodi</b> che funsiona: l'eredità la val. Riprova più vanti.;The envelope stays with your <b>%1 keepers</b> that work: the inheritance is valid. Try again later.
+723;La busta resta al tuo <b>custode</b> che funziona: l'eredità vale. Riprova più avanti.;La busta la resta al to <b>custode</b> che funsiona: l'eredità la val. Riprova più vanti.;The envelope stays with your <b>keeper</b> that works: the inheritance is valid. Try again later.
+724;Gli euro sono il valore <b>del giorno</b> di ogni movimento. I pagamenti ancora in arrivo non sono nel file.;I euro i xe el valor <b>del dì</b> de ogni movimento. I pagamenti gnancora rivai no i xe nel file.;The euro are the value <b>of the day</b> of each movement. Payments still arriving are not in the file.
+725;Il valore in euro cambia con il prezzo del bitcoin.;El valor in euro el cambia col presso del bitcoin.;The euro value changes with the bitcoin price.
+726;il primo della lista;el primo de la lista;the first of the list
+727;L'eredità non è finita.<br>La finisco adesso?;L'eredità no la xe finìa.<br>La finisso desso?;The inheritance is not finished.<br>Do I finish it now?
+728;I <b>custodi</b> (Will Executor) sono server che tengono la busta chiusa e la spediscono alla data della consegna.;I <b>custodi</b> (Will Executor) i xe server che i tien la busta sarada e i la manda a la data de la consegna.;The <b>keepers</b> (Will Executor) are servers that keep the sealed envelope and send it on the delivery date.
+729;Il costo dei custodi è alto per questo portafoglio: %1 su %2. Puoi andare avanti lo stesso.;El costo dei custodi el xe alto par sto portafojo: %1 su %2. Te pol ndar vanti istesso.;The keepers' cost is high for this wallet: %1 out of %2. You can go on anyway.
+730;"La parte lunga è la transazione (il crogiuolo) da cui è uscita la moneta; ""%1"" è il suo numero d'ordine: la prima moneta uscita è :0, la seconda :1.";"La parte longa la xe la transasion (el crogiolo) da dove che xe vegnùa fora la moneda; ""%1"" el xe el so numaro de ordine: la prima moneda vegnùa fora la xe :0, la seconda :1.";"The long part is the transaction (the crucible) the coin came out of; ""%1"" is its order number: the first coin out is :0, the second :1."
+731;Il minimo è 1 sat/vB.;El minimo xe 1 sat/vB.;The minimum is 1 sat/vB.
+732;I soldi sono partiti. Arrivano dopo la prima conferma.;I schei i xe partìi. I riva dopo la prima conferma.;The money has left. It arrives after the first confirmation.
+733;qui finiscono i soldi che metti;qua finisse i schei che te meti;the money you put in lands here
+734;Più conferme ci sono, più è impossibile tornare indietro. Chi sposta <b>milioni di euro</b> aspetta 6 conferme, circa un'ora.;Più conferme ghe xe, più xe impossibile tornar indrìo. Chi che sposta <b>milioni de euro</b> el speta 6 conferme, più o manco un'ora.;The more confirmations, the more impossible it is to go back. People moving <b>millions of euro</b> wait for 6 confirmations, about one hour.
+735;LE PIÙ USATE;LE PIÙ DOPARÀE;THE MOST USED
+736;Le date nuove;Le date nove;The new dates
+737;La busta vecchia non vale più. I tuoi soldi restano tuoi.;La busta vecia no la val più. I to schei i resta tui.;The old envelope is no longer valid. Your money stays yours.
+738;quello spento;quel stuà;the one switched off
+739;il portafoglio Bitcoin open source creato da Thomas Voegtlin e dagli sviluppatori di Electrum.;el portafojo Bitcoin open source fato da Thomas Voegtlin e dai svilupatori de Electrum.;the open source Bitcoin wallet created by Thomas Voegtlin and the Electrum developers.
+740;Gli altri eredi hanno già %1: questo può arrivare al massimo a %2.;Chealtri eredi i ga za %1: questo el pol rivar al massimo a %2.;The other heirs already have %1: this one can get at most %2.
+741;Il pagamento di prima potrebbe essere partito. Uso le stesse monete, così non si può mai pagare due volte: se è partito il primo, questo no.;El pagamento de prima el podaria esser partìo. Dopero le stesse monede, cussì no se pol mai pagar do volte: se xe partìo el primo, sto qua no.;The payment before may have left. I use the same coins, so it can never be paid twice: if the first one left, this one does not.
+742;Il pagamento non è partito;El pagamento no el xe partìo;The payment did not leave
+743;Il pagamento è partito. Per essere sicuri bisogna aspettare <b>almeno una conferma</b>: di solito una decina di minuti, a volte di più. Intanto fai quattro chiacchiere o bevi un bicchiere di vino 🍷 in compagnia.;El pagamento el xe partìo. Par èssar sicuri bisogna spetar <b>almanco na conferma</b>: de solito na desina de minuti, a volte de più. Intanto fa quatro ciàcole o bevi un goto de vin 🍷 in compagnia.;The payment has left. To be safe you need to wait for <b>at least one confirmation</b>: usually about ten minutes, sometimes more. Meanwhile have a chat or a glass of wine 🍷 in company.
+744;"Il telefono non è riuscito a chiudere al sicuro il portafoglio. Riprova; se succede ancora, riavvia il telefono.";"El telefono no xe riussìo a serar al sicuro el portafoglio. Riprova; se sucede ancora, riavia el telefono.";"The phone could not lock the wallet safely. Try again; if it happens again, restart the phone."
+745;Non è stato possibile cambiare il PIN.;No se ga podùo cambiar el PIN.;The PIN could not be changed.
+746;Il prezzo è fisso in bitcoin, quindi in euro può cambiare.;El presso el xe fisso in bitcoin, quindi in euro el pol cambiar.;The price is fixed in bitcoin, so in euro it can change.
+747;Il rinnovo fa una piccola operazione sulla rete bitcoin, che si paga come un pagamento.;El rinovo el fa na picola operassion su la rete bitcoin, che se paga come un pagamento.;The renewal makes a small operation on the bitcoin network, paid like a payment.
+748;Compaiono le voci per esperti: soglia del PIN, più indirizzi;Vien fora le vosi par esperti: soja del PIN, più indirissi;The rows for experts appear: PIN threshold, more addresses
+749;Compaiono le voci per esperti: soglia del PIN, più indirizzi, torna alle impostazioni iniziali;Vien fora le vosi par esperti: soja del PIN, più indirissi, torna a le impostasion de partensa;The rows for experts appear: PIN threshold, more addresses, back to the initial settings
+750;Le voci per più scelte si nascondono.;Le vosi par più sielte le se sconde.;The rows for more choices are hidden.
+751;le stesse di prima;le stesse de prima;the same as before
+752;Il server non ha risposto, quindi non posso controllare dove sono i tuoi soldi.;El server no el ga risposto, quindi no posso controlar dove che xe i to schȅi.;The server did not answer, so I cannot check where your money is.
+753;Le parti delle persone non fanno 100%. Apri le persone e sistema le parti.;Le parti de le persone no le fa 100%. Verzi le persone e sistema le parti.;The shares of the people do not make 100%. Open the people and fix the shares.
+754;Il sito che apri vede quale movimento stai guardando e da dove ti colleghi.;El sito che te verzi el vede che movimento che te stà vardando e da dove che te te coleghi.;The site you open sees which movement you are looking at and where you connect from.
+755;Tornano le impostazioni di serie: importi in %1, banconote, PIN per gli invii grandi.;Le torna le impostasion de serie: importi in %1, banconote, PIN par i invii grandi.;The standard settings come back: amounts in %1, banknotes, the PIN for big payments.
+756;Tornano le impostazioni di serie: le opzioni in più si spengono, il PIN per gli invii grandi è acceso.;Le torna le impostasion de serie: le opzion in più le se studa, el PIN par i invii grandi el xe impissà.;The standard settings come back: the extra options turn off, the PIN for big payments is on.
+757;Il testo dentro il codice QR;El testo drento el codice QR;The text inside the QR code
+758;Il totale fa 100%: puoi andare avanti.;El totale el fa 100%: te pol ndar vanti.;The total is 100%: you can go on.
+759;Il totale deve fare 100%.;El totale el ga da far 100%.;The total must be 100%.
+760;I due PIN sono diversi. Riprova.;I do PIN i xe difarenti. Riprova.;The two PINs are different. Try again.
+761;Le due tasche;Le do scarsele;The two pockets
+762;Il valore in %1 cambia con il prezzo del bitcoin.;El valor in %1 el cambia col prezo del bitcoin.;The value in %1 changes with the bitcoin price.
+763;Le parole di un altro portafoglio possono usare indirizzi di tipo diverso. Li controllo tutti: ci vuole circa un minuto.;Le parole de n'altro portafojo le pol doparar indirissi de tipo diverso. Li controlo tuti: ghe vol più o manco un minuto.;The words of another wallet can use different kinds of addresses. I check all of them: it takes about a minute.
+764;Il suo indirizzo bitcoin;El so indirisso bitcoin;Their bitcoin address
+765;Restano %1 da dare. Aggiungi una persona o tocca un erede per cambiare la sua parte.;Resta %1 da dar. Zonta na persona o tocca un erede par cambiar la so parte.;There is %1 left to give. Add a person or tap an heir to change their share.
+766;Ci sono %1 di troppo: il totale deve fare 100%. Tocca un erede per abbassare la sua parte.;Ghe xe %1 de massa: el totale el ga da far 100%. Tocca un erede par sbassar la so parte.;There is %1 too much: the total must be 100%. Tap an heir to lower their share.
+767;C'è già una persona con questo nome.;Ghe xe za na persona co sto nome.;There is already a person with this name.
+768;c'è un'eredità: per spegnerlo, prima annullala;ghe xe n'eredità: par stuarlo, prima anulela;there is an inheritance: to turn it off, cancel it first
+769;Non c'è la connessione a internet, quindi non posso controllare dove sono i tuoi soldi.;No ghe xe la conession a internet, quindi no posso controlar dove che xe i to schȅi.;There is no internet connection, so I cannot check where your money is.
+770;Non c'è niente da incollare: prima copia l'indirizzo.;No ghe xe gnente da incolar: prima copia l'indirisso.;There is nothing to paste: copy the address first.
+771;Queste parole non vanno bene. Controllale una per una.;Ste parole no le va ben. Controlele una par una.;These words are not right. Check them one by one.
+772;Queste parole non sono quelle di questo portafoglio. Controllale una per una.;Ste parole no le xe quele de sto portafojo. Controlele una par una.;These words are not the ones of this wallet. Check them one by one.
+773;"Queste parole sono state fatte con un altro portafoglio: scegli sopra ""Con un altro portafoglio"".";"Ste parole le xe stà fate co n'altro portafojo: sielgi sora ""Co n'altro portafojo"".";"These words were made with another wallet: choose ""Made with another wallet"" above."
+774;"Queste parole sono state fatte con Schȅi o Electrum: scegli sopra ""Creato con Schȅi o con Electrum"".";"Ste parole le xe stà fate co Schȅi o Electrum: sielgi sora ""Creà co Schȅi o co Electrum"".";"These words were made with Schȅi or Electrum: choose ""Made with Schȅi or Electrum"" above."
+775;Hanno una copia della busta chiusa e la spediscono alla data della consegna. Ne basta uno.;I ga na copia de la busta sarada e i la spedisse a la data de la consegna. Ghe ne basta uno.;They have a copy of the sealed envelope and send it on the delivery date. One is enough.
+776;"Arrivano a destinazione dopo la <b>prima conferma</b>, di solito una decina di minuti. Nella lista dei movimenti vedi ""⏳ Non confermata"" e poi ""✓ Confermato"".";"I riva a destinasion dopo la <b>prima conferma</b>, de solito na desina de minuti. Ne la lista dei movimenti te vedi ""⏳ No confermada"" e dopo ""✓ Confermà"".";"They reach the other person after the <b>first confirmation</b>, usually about ten minutes. In the list of movements you will see ""⏳ Unconfirmed"" and then ""✓ Confirmed""."
+777;Questo indirizzo non va bene. Esempio: umbrel.local:50002:s;Sto indirisso no el va ben. Esempio: umbrel.local:50002:s;This address is not right. Example: umbrel.local:50002:s
+778;Questo indirizzo è tuo: i soldi resterebbero in questo portafoglio.;Sto indirisso el xe tuo: i schei i restaria in sto portafojo.;This address is one of yours: the money would stay in this wallet.
+779;Questo codice non si può pagare con Schȅi;Sto codice no se pol pagarlo co Schȅi;This code cannot be paid with Schȅi
+780;Questo codice non è un indirizzo;Sto codice no el xe un indirisso;This code is not an address
+781;Questo non rende anonime le monete: i pagamenti restano scritti nel registro pubblico. Aiuta a non collegare tra loro le tue monete.;Questo no el fa deventar anonime le monede: i pagamenti i resta scriti sul registro publico. El juta a no ligar tra de lore le to monede.;This does not make the coins anonymous: payments stay written in the public register. It helps not to link your coins to each other.
+782;Questa eredità è stata fatta con Àncòra sul computer: cambiala lì.;Sta eredità la xe stada fata co Àncòra sul computer: cambiala là.;This inheritance was made with Àncòra on the computer: change it there.
+783;Questo non è un indirizzo bitcoin.;Sto qua no el xe un indirisso bitcoin.;This is not a bitcoin address.
+784;Questo non è un indirizzo bitcoin. Copialo di nuovo e riprova.;Questo no el xe un indirisso bitcoin. Copielo da novo e riprova.;This is not a bitcoin address. Copy it again and retry.
+785;È il primo erede: può avere fino al 100%.;L'è el primo erede: el pol aver fin al 100%.;This is the first heir: they can have up to 100%.
+786;Questa è l'app di prova;Questa xe l'app de prova;This is the test app
+787;Questo è il tuo portafoglio Bitcoin.;Questo el xe el to portafojo Bitcoin.;This is your Bitcoin wallet.
+788;Questo può dare problemi se firmi fuori linea.;Questo el pol dar problemi se te firmi fora linea.;This might cause issues if signing offline.
+789;Questo mese;Sto mese;This month
+790;Questo pagamento usa monete di <b>provenienze diverse</b>. Chi riceve può capire che sono tutte tue.;Sto pagamento el dopara monede che vien da <b>posti difarenti</b>. Chi che riceve el pol capir che le xe tute tue.;This payment uses coins of <b>different origins</b>. Who receives can understand that they are all yours.
+791;Questo telefono non riconosce più la chiave;Sto telefono no el riconosse più la ciave;This phone no longer recognises the key
+792;Questo codice QR non contiene solo il tuo indirizzo: contiene anche <b>l'importo da pagare in bitcoin</b>.;Sto codice QR no el ga solo el to indirisso: el ga anca <b>la cifra da pagar in bitcoin</b>.;This QR code does not only hold your address: it also holds <b>the amount to pay in bitcoin</b>.
+793;Questo codice QR contiene una transazione intera o un backup, non un indirizzo bitcoin da pagare. Schȅi non lo può usare.;Sto codice QR el ga drento na transasion intiera o un backup, no un indirisso bitcoin da pagar. Schȅi no lo pol doparar.;This QR code holds a whole transaction or a backup, not a bitcoin address to pay. Schȅi cannot use it.
+794;Questo invio costa circa %1;Sto invio el costa circa %1;This sending costs about %1
+795;Questo portafoglio può solo guardare;Sto portafojo el pol solo vardar;This wallet can only look
+796;Questo portafoglio viene dalle parole di <b>un altro portafoglio</b>.;Sto portafojo el vien da le parole de <b>n'altro portafojo</b>.;This wallet comes from the words of <b>another wallet</b>.
+797;Questo portafoglio usa indirizzi che iniziano con 1 o 3: l'eredità funziona solo con indirizzi che iniziano con bc1. Manda i soldi a un portafoglio Schȅi nuovo.;Sto portafoglio el dopara indirissi che scominsia co 1 o 3: l'eredità la funsiona solo co indirissi che scominsia co bc1. Manda i schei a un portafoglio Schȅi novo.;This wallet uses addresses that start with 1 or 3: the inheritance works only with addresses that start with bc1. Send the money to a new Schȅi wallet.
+798;Questa settimana;Sta setimana;This week
+799;Mancia a mano;Mancia a man;Tip by hand
+800;Mancia scritta a mano;Mancia scrita a man;Tip written by hand
+801;"Si accendono mancia scritta a mano, privacy avanzata e ""Invia tutto il saldo""";"Se impissa mancia scrita a man, privacy avansada e ""Manda tuto el saldo""";"Tip written by hand, advanced privacy and ""Send all the balance"" turn on"
+802;a %1;a %1;to %1
+803;da scrivere a mano;da scrivar a man;to be written by hand
+804;"Per bloccare una moneta sola, usa il suo interruttore in ""Le tue monete bitcoin"".";"Par blocar na moneda sola, dopara el so interutor in ""Le to monede bitcoin"".";"To block only one coin, use its own switch in ""Your gold coins""."
+805;Per confermare spingi a destra la moneta.;Par confermar spingi a destra la moneda.;To confirm push the coin to the right.
+806;DA FARE;DA FAR;TO DO
+807;Per farlo chiedono una piccola <b>mancia</b>: chi la offre più alta passa prima, come in una coda.;Par farlo i domanda na picola <b>mancia</b>: chi che la ofre più alta el passa prima, come in fila.;To do it they ask for a small <b>tip</b>: whoever offers more goes first, like in a queue.
+808;per svuotare il portafoglio;par svodar el portafojo;to empty the wallet
+809;per svuotare il portafoglio · chiede sempre il PIN;par svodar el portafojo · el domanda sempre el PIN;to empty the wallet · it always asks the PIN
+810;Per riaverli ti servono <b>le tue 12 parole</b> (SEED), quelle che hai scritto sul foglio quando hai creato il portafoglio.;Par verli indrio te servi <b>le to 12 parole</b> (SEED), quele che te ghe scrito sul foglio quando che te ghe creà el portafojo.;To get it back you need <b>your 12 words</b> (SEED), the ones you wrote on the paper when you created the wallet.
+811;Per riaverli ti servono <b>le tue parole</b> (SEED), quelle che hai scritto sul foglio quando hai creato il portafoglio.;Par verli indrio te servi <b>le to parole</b> (SEED), quele che te ghe scrito sul foglio quando che te ghe creà el portafojo.;To get it back you need <b>your words</b> (SEED), the ones you wrote on the paper when you created the wallet.
+812;Per spostare: tocca le monete e poi il tasto in basso, oppure tieni premuta una moneta e trascinala nell'altra tasca.;Par spostar: toca le monede e dopo el boton in basso, opure tien schissà na moneda e strassinela ne l'altra scarsela.;To move: tap the coins and then the button at the bottom, or keep a coin pressed and drag it to the other pocket.
+813;per leggere meglio;par lèzar mejo;to read better
+814;PER RICEVERE;PAR RICEVAR;TO RECEIVE
+815;da rinnovare;da rinovar;to renew
+816;Per rinnovare spingi a destra la moneta.;Par rinovar spingi a destra la moneda.;To renew push the coin to the right.
+817;Da spendere;Da spendar;To spend
+818;Ai custodi, solo alla consegna;Ai custodi, solo a la consegna;To the keepers, only at the delivery
+819;A QUESTO INDIRIZZO;A STO INDIRISSO;TO THIS ADDRESS
+820;Per usarla, più avanti manda i soldi a un portafoglio Schȅi nuovo (tipo «%1»).;Par dopararla, più avanti manda i schei a un portafoglio Schȅi novo (tipo «%1»).;To use it, later send the money to a new Schȅi wallet (kind «%1»).
+821;Oggi;Ancuo;Today
+822;oggi;ancuo;today
+823;oggi %1;ancuo %1;today %1
+824;<b>Oggi nessun custode risponde.</b> Se non tornano, la busta non arriverà agli eredi. I tuoi soldi sono al sicuro: mandala ad altri custodi.;<b>Ancuo nissun custode risponde.</b> Se no i torna, la busta no la rivarà ai eredi. I to schei i xe al sicuro: mandala a altri custodi.;<b>Today no keeper answers.</b> If they do not come back, the envelope will not reach the heirs. Your money is safe: send it to other keepers.
+825;Oggi i server non dicono la commissione giusta.;Ancuo i server no i dise la comision giusta.;Today the servers do not say the right fee.
+826;Oggi paghi;Ancuo te paghi;Today you pay
+827;Oggi non paghi niente.;Ancuo no te paghi gnente.;Today you pay nothing.
+828;Troppo bassa.;Massa bassa.;Too low.
+829;Troppi PIN sbagliati. Riprova alle %1.;Massa PIN sbaglià. Riprova a le %1.;Too many wrong PINs. Try again at %1.
+830;Tor non risponde;Tor no el risponde;Tor does not answer
+831;Totale;Totale;Total
+832;Totale da trasferire;Totale da trasferir;Total sweep amount
+833;Codice transazione;Codice de la transasion;Transaction code
+834;Transazione creata e firmata in parte da questo portafoglio. Mostra questo QR al prossimo cofirmatario;Transasion fata e firmada in parte da sto portafojo. Mostra sto QR al cofirmatario dopo;Transaction created and partially signed by this wallet. Present this QR code to the next co-signer
+835;Transazione creata ma non ancora firmata da questo portafoglio. Firmala e mostra questo QR al prossimo cofirmatario;Transasion fata ma no ancora firmada da sto portafojo. Firmila e mostra sto QR al cofirmatario dopo;Transaction created but not signed by this wallet yet. Sign the transaction and present this QR code to the next co-signer
+836;Transazione creata. Mostra questo QR a uno dei cofirmatari o dispositivi di firma;Transasion fata. Mostra sto QR a uno dei cofirmatari o dispositivi de firma;Transaction created. Present this QR code to one of the co-cigners or signing devices
+837;Transazione creata. Mostra questo QR al dispositivo di firma;Transasion fata. Mostra sto QR al dispositivo de firma;Transaction created. Present this QR code to the signing device
+838;Riprova;Riprova;Try again
+839;Riprova più avanti: se i tuoi custodi tornano, la busta arriva lo stesso.;Riprova più vanti: se i to custodi i torna, la busta la riva istesso.;Try again later: if your keepers come back, the envelope arrives anyway.
+840;Riprova, oppure vai avanti con il tipo «%1», quello dei portafogli di oggi.;Riprova, opure va vanti col tipo «%1», quel dei portafoji de ancuo.;Try again, or go on with the kind «%1», the one of today’s wallets.
+841;Prova e collega;Prova e colega;Try and connect
+842;mi sto collegando…;me sto colegando…;trying to connect…
+843;spegnilo per bloccare questa moneta;studelo par blocar sta moneda;turn it off to block this coin
+844;spegnile se il telefono è lento;studele se el telefonin el xe lento;turn them off if the phone is slow
+845;due monete da spingere a destra, come due chiavi;do monede da spinger a destra, come do ciavi;two coins to push to the right, like two keys
+846;Tipo;Tipo;Type
+847;Scrivi il PIN per aggiungere un portafoglio;Scrivi el PIN par zontar un portafojo;Type the PIN to add a wallet
+848;Scrivi il PIN per annullare l'eredità;Scrivi el PIN par scancelar l'eredità;Type the PIN to cancel the inheritance
+849;Scrivi il PIN per cambiare il collegamento;Scrivi el PIN par cambiar el colegamento;Type the PIN to change the connection
+850;Scrivi il PIN per cambiare il PIN per gli invii grandi;Scrivi el PIN par cambiar el PIN par i invii grandi;Type the PIN to change the PIN for big payments
+851;Scrivi il PIN per confermare l'eredità;Scrivi el PIN par confermar l'eredità;Type the PIN to confirm the inheritance
+852;Scrivi il PIN per tornare alle impostazioni iniziali;Scrivi el PIN par tornar a le impostasion de partensa;Type the PIN to go back to the initial settings
+853;Scrivi il PIN per aprire le impostazioni avanzate;Scrivi el PIN par verzar le impostasion avansade;Type the PIN to open the advanced settings
+854;Scrivi il PIN per aprire le impostazioni per esperti;Scrivi el PIN par verzar le impostasion par esperti;Type the PIN to open the settings for experts
+855;Scrivi il PIN per rinnovare l'eredità;Scrivi el PIN par rinovar l'eredità;Type the PIN to renew the inheritance
+856;Scrivi il PIN per cercare su più indirizzi;Scrivi el PIN par sercar su più indirissi;Type the PIN to search on more addresses
+857;Scrivi il PIN per mandare %1;Scrivi el PIN par mandar %1;Type the PIN to send %1
+858;Scrivi il PIN per mandare la busta al nuovo custode;Scrivi el PIN par mandar la busta al custode novo;Type the PIN to send the envelope to the new keeper
+859;Scrivi il PIN per mandare la busta ai nuovi custodi;Scrivi el PIN par mandar la busta ai custodi novi;Type the PIN to send the envelope to the new keepers
+860;Scrivi il PIN per passare a ESPERTO.;Scrivi el PIN par passar a ESPERTO.;Type the PIN to switch to EXPERT.
+861;Scrivi il PIN per aggiornare l'eredità;Scrivi el PIN par agiornar l'eredità;Type the PIN to update the inheritance
+862;Scrivi il PIN che usi già per gli altri portafogli.;Scrivi el PIN che te dopari zà par i altri portafoji.;Type the PIN you already use for your other wallets.
+863;Scrivi di nuovo gli stessi 4 numeri.;Scrivi da novo i stessi 4 numari.;Type the same 4 numbers again.
+864;Scrivi il tuo PIN;Scrivi el to PIN;Type your PIN
+865;Sblocco le monete?;Sbloco le monede?;Unblock the coins?
+866;non conf.;no conf.;unconf.
+867;non confermata;no confermada;unconfirmed
+868;Non confermata;No confermada;Unconfirmed
+869;Sotto 1 sat/vB può metterci molto ad arrivare.;Soto 1 sat/vB el pol metarghe tanto a rivar.;Under 1 sat/vB it can take a long time to arrive.
+870;Fino a zero puoi ancora fermarlo.;Fin a zero te pol ancora fermarlo.;Until zero you can still stop it.
+871;fino a 7, ognuno col suo colore;fin a 7, ognun col so color;up to 7, each with its own colour
+872;Aggiornato;Ajornà;Up to date
+873;Aggiorna con il PIN;Agiorna col PIN;Update with the PIN
+874;Usa l'eredità;Dopara l'eredità;Use the inheritance
+875;Usa la gestione privacy;Dopara la gestion privacy;Use the privacy management
+876;Usa queste monete;Dopara ste monede;Use these coins
+877;Usa questo indirizzo;Dopara sto indirisso;Use this address
+878;Usa le tue parole (SEED) su un solo telefono o computer: non metterle mai su più dispositivi. E fai l’eredità in un posto solo.;Dopara le to parole (SEED) su un telefono o computer solo: no metarle mai su più dispositivi. E fa l’eredità in un posto solo.;Use your words (SEED) on one phone or computer only: never put them on more devices. And make the inheritance in one place only.
+879;usato;doperà;used
+880;<b>UTXO</b> è il <b>numero di serie</b> inciso sul bordo della moneta, come quello di una banconota: dice da quale pagamento viene. Non è segreto e non serve per spenderla.;<b>UTXO</b> el xe el <b>numaro de serie</b> incìso sul bordo de la moneda, come quelo de na banconota: el dise da che pagamento che la vien. No el xe segreto e no el serve par spenderla.;<b>UTXO</b> is the <b>serial number</b> engraved on the rim of the coin, like the one on a banknote: it tells which payment it comes from. It is not secret and it is not needed to spend the coin.
+881;UTXO · NUMERO DI SERIE;UTXO · NUMARO DE SERIE;UTXO · SERIAL NUMBER
+882;valore del giorno;valor del giorno;value of the day
+883;valore variabile: quanto c'è dentro;valor che cambia: quel che ghe xe drento;variable value: what is inside
+884;Verifica messaggio;Verifica messajo;Verify Message
+885;versione %1;version %1;version %1
+886;Mancia molto bassa.;Mancia massa bassa.;Very low tip.
+887;piccolissime, da sconosciuti;picolissime, da foresti;very small, from strangers
+888;Sola visualizzazione e ricezione;Solo vardar e ricever;View and receive only
+889;Aspetta qualche secondo, oppure scrivi l'importo in bitcoin.;Speta qualche secondo, o scrivi l'importo in bitcoin.;Wait a few seconds, or write the amount in bitcoin.
+890;in attesa;in atesa;waiting
+891;Dettagli del portafoglio;Detagli del portafojo;Wallet details
+892;PORTAFOGLI;PORTAFOJI;WALLETS
+893;"Attenzione: alcuni dati (transazioni precedenti / ""full utxos"") sono rimasti fuori dal QR perché non ci stavano.";"Atension: qualche dato (transasion de prima / ""full utxos"") el xe restà fora dal QR parché no el ghe stava.";"Warning: Some data (prev txs / ""full utxos"") was left out of the QR code as it would not fit."
+894;AVVISI;AVISI;WARNINGS
+895;SOLO DA GUARDARE;SOLO DA VARDAR;WATCH ONLY
+896;Solo da guardare;Solo da vardar;Watch only
+897;Portafoglio solo da guardare;Portafojo solo da vardar;Watch-only wallet
+898;Usiamo %1 custodi dei %2 scelti: in questa rete non ce ne sono altri.;Dopèmo %1 custodi dei %2 sielti: in sta rete no ghe ne xe altri.;We use %1 keepers of the %2 chosen: on this network there are no others.
+899;Ne usiamo %1 dei %2 scelti: se uno si spegne ci sono gli altri.;Ghe ne doparemo %1 dei %2 sielti: se uno el se stua ghe xe i altri.;We use %1 of the %2 chosen: if one switches off there are the others.
+900;Ne usiamo %1: se uno si spegne ci sono gli altri.;Ghe ne doparemo %1: se uno el se stua ghe xe i altri.;We use %1: if one switches off there are the others.
+901;Usiamo 1 custode dei %1 scelti: in questa rete non ce ne sono altri.;Dopèmo 1 custode dei %1 sielti: in sta rete no ghe ne xe altri.;We use 1 keeper of the %1 chosen: on this network there are no others.
+902;Ne usiamo 1: per ora non ce ne sono altri.;Ghe ne doparemo 1: par desso no ghe ne xe altri.;We use 1: for now there are no others.
+903;Ne usiamo 2 dei %1 scelti: se uno si spegne c'è l'altro.;Ghe ne doparemo 2 dei %1 sielti: se uno el se stua ghe xe l'altro.;We use 2 of the %1 chosen: if one switches off there is the other.
+904;Benvenuto;Benvegnù;Welcome
+905;Cosa sono le conferme?;Cossa xe le conferme?;What are confirmations?
+906;<b>Cos'è il crogiuolo?</b> In Bitcoin si chiama <b>transazione</b>. Prende alcune monete d'oro (gli UTXO che spendi), le fonde e conia monete nuove: una per chi riceve e una con il resto per te. Le monete vecchie spariscono per sempre: non si possono spendere due volte.;<b>Cossa xe el crogiolo?</b> In Bitcoin el se ciama <b>transasion</b>. El ciapa qualche moneda de oro (i UTXO che te spendi), el le fonde e el conia monede nove: una par chi che riceve e una col resto par ti. Le monede vece le sparisse par sempre: no le se pol spendar do volte.;<b>What is the crucible?</b> In Bitcoin it is called <b>transaction</b>. It takes some gold coins (the UTXOs you spend), melts them and mints new coins: one for who receives and one with the change for you. The old coins disappear for ever: they cannot be spent twice.
+907;Cos'è il costo dell'invio?;Cossa xe el costo de l'invio?;What is the sending cost?
+908;Quanto costa;Quanto che costa;What it costs
+909;<b>A cosa serve.</b> Il portafoglio ha una lunga fila di indirizzi, sempre gli stessi, che nascono dalle 12 parole (SEED). Per trovare i tuoi soldi Schȅi li guarda <b>uno dopo l'altro</b>, e si ferma quando ne trova <b>%1 vuoti di fila</b>: pensa che dopo non ci sia più niente.;<b>A cossa che serve.</b> El portafojo el ga na fila longa de indirissi, sempre i stessi, che nasse da le 12 parole (SEED). Par catar i to schei Schȅi el li varda <b>uno dopo l'altro</b>, e el se ferma co el ghe ne cata <b>%1 vodi de fila</b>: el pensa che dopo no ghe sia più gnente.;<b>What it is for.</b> The wallet has a long row of addresses, always the same, born from the 12 words (SEED). To find your money Schȅi looks at them <b>one after the other</b>, and stops when it finds <b>%1 empty in a row</b>: it thinks there is nothing after.
+910;<b>A cosa serve.</b> Il portafoglio ha una lunga fila di indirizzi, sempre gli stessi, che nascono dalle parole (SEED). Per trovare i tuoi soldi Schȅi li guarda <b>uno dopo l'altro</b>, e si ferma quando ne trova <b>%1 vuoti di fila</b>: pensa che dopo non ci sia più niente.;<b>A cossa che serve.</b> El portafojo el ga na fila longa de indirissi, sempre i stessi, che nasse da le parole (SEED). Par catar i to schei Schȅi el li varda <b>uno dopo l'altro</b>, e el se ferma co el ghe ne cata <b>%1 vodi de fila</b>: el pensa che dopo no ghe sia più gnente.;<b>What it is for.</b> The wallet has a long row of addresses, always the same, born from the words (SEED). To find your money Schȅi looks at them <b>one after the other</b>, and stops when it finds <b>%1 empty in a row</b>: it thinks there is nothing after.
+911;COSA CAMBIA SCHÈI;COSSA CHE CAMBIA SCHÈI;WHAT SCHÈI CHANGES
+912;Quanto prendono i custodi;Quanto che ciapa i custodi;What the keepers take
+913;<b>Come fare:</b> apri l'app <b>Orbot</b> e tocca il grande tasto per accenderla. Poi torna qui: Schȅi si collega da solo.;<b>Come far:</b> verzi l'app <b>Orbot</b> e toca el boton grando par impissarla. Dopo torna qua: Schȅi el se colega da solo.;<b>What to do:</b> open the <b>Orbot</b> app and tap the big button to turn it on. Then come back here: Schȅi connects by itself.
+914;Quando;Quando;When
+915;Quando mescolo provenienze;Co missio provenienze;When I mix origins
+916;<b>Quando serve.</b> Se le 12 parole (SEED) sono state usate anche in un altro portafoglio che ha creato tanti indirizzi senza usarli, i soldi possono stare dopo più di 20 indirizzi vuoti. Schȅi non li vede e il saldo sembra mancare. Cercando più lontano li ritrova.;<b>Co che serve.</b> Se le 12 parole (SEED) le xe stade dopará anca in n'altro portafojo che ga fato tanti indirissi sensa doperarli, i schei i pol star dopo più de 20 indirissi vodi. Schȅi no el li vede e el saldo el par che manca. Sercando più lontan el li cata.;<b>When it is needed.</b> If the 12 words (SEED) were also used in another wallet that created many addresses without using them, the money can be after more than 20 empty addresses. Schȅi does not see it and the balance seems to be missing. Looking further finds it.
+917;<b>Quando serve.</b> Se le parole (SEED) sono state usate anche in un altro portafoglio che ha creato tanti indirizzi senza usarli, i soldi possono stare dopo più di 20 indirizzi vuoti. Schȅi non li vede e il saldo sembra mancare. Cercando più lontano li ritrova.;<b>Co che serve.</b> Se le parole (SEED) le xe stade dopará anca in n'altro portafojo che ga fato tanti indirissi sensa doperarli, i schei i pol star dopo più de 20 indirissi vodi. Schȅi no el li vede e el saldo el par che manca. Sercando più lontan el li cata.;<b>When it is needed.</b> If the words (SEED) were also used in another wallet that created many addresses without using them, the money can be after more than 20 empty addresses. Schȅi does not see it and the balance seems to be missing. Looking further finds it.
+918;Quando si avvicina la consegna, Schȅi ti chiede: <b>«Sei ancora qui?»</b> Dici sì, e il tempo riparte da capo.;Co se svissina la consegna, Schȅi el te domanda: <b>«Sito ancora qua?»</b> Te disi sì, e el tempo el riparte da capo.;"When the delivery gets close, Schȅi asks you: <b>""Are you still here?""</b> You say yes, and the time starts again from the beginning."
+919;Quando avvisarti;Quando avisarte;When to remind you
+920;Quando ricevi o invii bitcoin, li trovi qui.;Co te ricevi o te mandi bitcoin, te li cati qua.;When you receive or send bitcoin, you find them here.
+921;Quando rinnovi, Schȅi unisce tutte le monete in una sola.;Co te rinovi, Schȅi el mete insieme tute le monede in una sola.;When you renew, Schȅi joins all the coins into one.
+922;Da dove vengono?;Da dove vienle?;Where do they come from?
+923;DA DOVE VIENE;DA DOVE CHE LA VIEN;WHERE IT COMES FROM
+924;DA DOVE VENGONO LE MONETE;DA DOVE CHE VIEN LE MONEDE;WHERE THE COINS COME FROM
+925;Dove vedere i movimenti;Dove vardar i movimenti;Where to see the movements
+926;Quali monete fondere?;Che monede fondar?;Which coins to melt?
+927;Chi;Chi;Who
+928;A chi mandi?;A chi mandito?;Who are you sending to?
+929;Chi lascia una <b>mancia più alta</b> ai minatori passa prima. Con la mancia più bassa può volerci <b>qualche ora</b>.;Chi che lassa na <b>mancia più alta</b> ai minadori el passa prima. Co la mancia più bassa ghe pol voler <b>qualche ora</b>.;Who leaves a <b>higher tip</b> to the miners goes first. With the lowest tip it can take <b>a few hours</b>.
+930;Chi lascia una <b>mancia più alta</b> ai minatori passa prima. Con la mancia più bassa può volerci <b>fino a un giorno</b>.;Chi che lassa na <b>mancia più alta</b> ai minadori el passa prima. Co la mancia più bassa ghe pol voler <b>fin a un giorno</b>.;Who leaves a <b>higher tip</b> to the miners goes first. With the lowest tip it can take <b>up to a day</b>.
+931;Chi paga di più passa prima. <b>I soldi arrivano comunque</b>: cambia solo quanto tempo ci mettono.;Chi che paga de più el passa prima. <b>I schei i riva istesso</b>: cambia solo quanto tempo che i ghe mete.;Who pays more goes first. <b>The money arrives anyway</b>: only the time it takes changes.
+932;chi riceve;chi che riceve;who receives
+933;Chi riceve?;Chi riceve?;Who receives?
+934;A chi;A chi;Who to
+935;Chi lo inquadra si trova la cifra già scritta: deve solo confermare.;Chi che lo inquadra el se cata la cifra zà scrita: el ga solo da confermar.;Whoever scans it finds the amount already written: they only have to confirm.
+936;indirizzo intero;indirisso intiero;whole address
+937;Con un sito pubblico puoi proteggerti con una <b>VPN</b> o con <b>Tor</b> (app Orbot o Tor Browser): il sito vede il movimento, ma non sa chi sei.;Co un sito publico te pol protegerte co na <b>VPN</b> o co <b>Tor</b> (app Orbot o Tor Browser): el sito el vede el movimento, ma no el sa chi che te si.;With a public site you can protect yourself with a <b>VPN</b> or with <b>Tor</b> (Orbot or Tor Browser app): the site sees the movement, but does not know who you are.
+938;con PIN;col PIN;with PIN
+939;Con il costo più basso, se ci sono tanti invii, può volerci anche più di un giorno.;Col costo più basso, se ghe xe tanti invii, ghe pol voler anca più de un dì.;With the lowest cost, when there are many payments it can take even more than a day.
+940;Con l'interruttore spento non cambia niente: l'app sceglie le monete da sola, come sempre.;Co l'interutor studà no cambia gnente: l'app la sielze le monede da sola, come sempre.;With the switch off nothing changes: the app chooses the coins by itself, as always.
+941;Con questo tipo di indirizzi l'eredità non si può fare.;Co sto tipo de indirissi l'eredità no se pol far.;With this kind of addresses the inheritance cannot be made.
+942;Con questo portafoglio puoi vedere il saldo e ricevere, ma <b>non puoi inviare</b>: le chiavi per firmare non sono su questo telefono.;Co sto portafojo te pol vedar el saldo e ricevar, ma <b>no te pol mandar</b>: le ciave par firmar no le xe su sto telefonin.;With this wallet you can see the balance and receive, but you <b>cannot send</b>: the keys to sign are not on this phone.
+943;Con Tor il collegamento è un po' più lento: qualche secondo in più all'apertura e per aggiornare il saldo.;Co Tor el colegamento el xe un fià più lento: qualche secondo in più a verzar e par ajornar el saldo.;With Tor the connection is a bit slower: a few seconds more when opening and to update the balance.
+944;Con Tor puoi scrivere anche l'indirizzo <b>.onion</b> del nodo: così ti colleghi a casa tua anche da fuori, senza toccare il router.;Co Tor te pol scrivar anca l'indirisso <b>.onion</b> del nodo: cussì te te colighi a casa tua anca da fora, sensa tocar el router.;With Tor you can also write the <b>.onion</b> address of the node: so you connect to your home even from outside, without touching the router.
+945;Con <b>il tuo nodo</b> non lo sa nessuno: resta tutto a casa tua.;Col <b>to nodo</b> no lo sa nissun: resta tuto a casa tua.;With <b>your node</b> nobody knows it: everything stays at your home.
+946;entro un giorno;entro un dì;within a day
+947;entro una settimana;entro na setimana;within a week
+948;scrivi una nota…;scrivi na nota…;write a note…
+949;Scrivi una mail;Scrivi na mail;Write an e-mail
+950;Scrivi in bitcoin;Scrivi in bitcoin;Write in bitcoin
+951;Scrivila tu: è quanto paghi per ogni «pezzetto» della transazione (sat/vB).;Scrivila ti: la xe quanto che te paghi par ogni «tocheto» de la transasion (sat/vB).;Write it yourself: it is what you pay for each «little piece» of the transaction (sat/vB).
+952;Scrivi le <b>12 parole</b> (SEED) di questo portafoglio, quelle del foglio. Se sono giuste, scegli un PIN nuovo.;Scrivi le <b>12 parole</b> (SEED) de sto portafojo, quele del foglio. Se le xe giuste, te sielgi un PIN novo.;Write the <b>12 words</b> (SEED) of this wallet, the ones on the paper. If they are right, you choose a new PIN.
+953;scrivi l'importo in %1 o in BTC;scrivi l'importo in %1 o in BTC;write the amount in %1 or in BTC
+954;scrivi l'importo in € o in BTC;scrivi la cifra in € o in BTC;write the amount in € or in BTC
+955;Scrivi le <b>parole</b> (SEED) di questo portafoglio, quelle del foglio. Se sono giuste, scegli un PIN nuovo.;Scrivi le <b>parole</b> (SEED) de sto portafojo, quele del foglio. Se le xe giuste, te sielgi un PIN novo.;Write the <b>words</b> (SEED) of this wallet, the ones on the paper. If they are right, you choose a new PIN.
+956;Scrivile su carta in stampatello;Scrivile su la carta in stampatelo;Write them on paper in block capitals
+957;SCRIVI ANCHE QUESTO, SOTTO LE PAROLE;SCRIVI ANCA QUESTO, SOTO LE PAROLE;WRITE THIS TOO, UNDER THE WORDS
+958;Scrivi le tue 12 parole (SEED);Scrivi le to 12 parole (SEED);Write your 12 words (SEED)
+959;Scrivi le tue parole (SEED);Scrivi le to parole (SEED);Write your words (SEED)
+960;PIN sbagliato, riprova.;PIN sbaglià, riprova.;Wrong PIN, try again.
+961;anno;ano;year
+962;anni;ani;years
+963;Sì;Sì;Yes
+964;Sì, annullala;Sì, scancelala;Yes, cancel it
+965;Sì, continua lo stesso;Sì, va vanti istesso;Yes, continue anyway
+966;Sì, cancellali;Sì, scancelali;Yes, delete them
+967;Sì, è giusto: avanti;Sì, el xe giusto: avanti;Yes, it is right: next
+968;Sì, facciamola;Sì, femola;Yes, let's make it
+969;Sì, rinnova;Sì, rinova;Yes, renew
+970;Ieri;Jeri;Yesterday
+971;ieri %1;ieri %1;yesterday %1
+972;tu;ti;you
+973;Hai già 7 portafogli, il massimo.;Te ghe zà 7 portafoji, el massimo.;You already have 7 wallets, the maximum.
+974;Stai chiedendo %1;Te sì drio domandar %1;You are asking %1
+975;Stai mescolando monete;Te stà missiando monede;You are mixing coins
+976;Puoi cambiare livello quando vuoi.;Te pol cambiar liveo quando che te vol.;You can change level whenever you want.
+977;Scegli tu fra quanto tempo consegnare l'eredità: 1, 2, 3 o 5 anni (consigliamo 2). Quando si avvicina la consegna, ogni volta che apri Schȅi ti chiede: <b>«Sei ancora qui?»</b> Un esempio: se hai scelto 2 anni, la domanda comincia quando manca 1 anno. Se rispondi sì, il tempo riparte da capo: altri 2 anni interi da quel giorno. Se scegli «Più tardi», te lo richiede la prossima volta che apri Schȅi: non arrivano avvisi sul telefono, quindi aprilo ogni tanto. Il rinnovo costa una piccola spesa di rete e unisce tutte le monete in una sola. In Impostazioni › «Quando avvisarti» puoi far cominciare la domanda più tardi: quando manca un terzo o un quarto del periodo.;Te sielzi ti fra quanto tempo consegnar l'eredità: 1, 2, 3 o 5 ani (consiliemo 2). Co se svissina la consegna, ogni volta che te verzi Schȅi el te domanda: <b>«Sito ancora qua?»</b> Un esempio: se te ghe sielto 2 ani, la domanda la scominsia quando manca 1 ano. Se te rispondi sì, el tempo el riparte da capo: altri 2 ani interi da quel dì. Se te sielzi «Più tardi», el te lo domanda da novo la prossima volta che te verzi Schȅi: no riva avisi sul telefono, quindi verzilo ogni tanto. El rinovo el costa na picola spesa de rete e el mete insieme tute le monede in una sola. In Impostazioni › «Quando avisarte» te pol far scominsiar la domanda più tardi: quando manca un terzo o un quarto del periodo.;"You choose how long from now to deliver the inheritance: 1, 2, 3 or 5 years (we suggest 2). When the delivery gets close, every time you open Schȅi it asks you: <b>""Are you still here?""</b> An example: if you chose 2 years, the question starts when 1 year is left. If you say yes, the time starts again from the beginning: 2 more whole years from that day. If you choose ""Later"", it asks you again the next time you open Schȅi: no alerts arrive on the phone, so open it now and then. The renewal costs a small network fee and joins all the coins into one. In Settings › ""When to remind you"" you can make the question start later: when a third or a quarter of the period is left."
+978;Hai scelto;Te ghe sielto;You chose
+979;Non hai abbastanza fondi on-chain per proteggere i tuoi canali Lightning.;No te ghe bastansa schei on-chain par protejar i to canai Lightning.;You do not have enough on-chain funds to protect your Lightning channels.
+980;Non hai abbastanza schei;No te ghe basta schei;You do not have enough schei
+981;"Lo trovi nell'app ""Electrs"" o ""Fulcrum"" del tuo nodo. "":s"" vuol dire collegamento protetto.";"Te lo cati ne l'app ""Electrs"" o ""Fulcrum"" del to nodo. "":s"" vol dir colegamento protèto.";"You find it in the ""Electrs"" or ""Fulcrum"" app of your node. "":s"" means protected connection."
+982;Lo trovi nel suo portafoglio, alla voce «Ricevi».;Te lo trovi nel so portafojo, a la vose «Ricevi».;"You find it in their wallet, under ""Receive""."
+983;Ritrovi le voci di questo livello come le avevi lasciate.;Te ritrovi le vosi de sto liveo come che te le gavevi lassà.;You find the switches of this level as you left them.
+984;"le trovi nel pagamento (""Monete usate"") e in ""bloccati ›"" sul portafoglio";"te le cati nel pagamento (""Monede doparà"") e in ""blocà ›"" sul portafojo";"you find them in the payment (""Coins used"") and in ""blocked ›"" on the wallet"
+985;HAI;TE GHE;YOU HAVE
+986;Hai %1;Te ghe %1;You have %1
+987;Hai %1 monete bloccate: l'app non le usa per pagare. Senza monete d'oro non le vedi più. Le sblocco tutte?;Te ghe %1 monede blocae: l'app no le dopra par pagar. Sensa monede d'oro no te le vedi più. Le sbloco tute?;You have %1 blocked coins: the app does not use them to pay. Without gold coins you do not see them any more. Unblock them all?
+988;hai %1 portafogli: resta acceso, così li vedi tutti;te ghe %1 portafoji: el resta inpissà, cussì te li vedi tuti;you have %1 wallets: it stays on, so you see them all
+989;Hai fatto un pagamento.<br>Aggiorno l'eredità con quello che resta?;Te ghe fato un pagamento.<br>Agiorno l'eredità co quel che resta?;You made a payment.<br>Do I update the inheritance with what is left?
+990;Servono per riavere i soldi se perdi il telefono.;Le serve par riavere i schei se te perdi el telefonin.;You need them to get your money back if you lose your phone.
+991;HAI INCOLLATO QUESTO INDIRIZZO;TE GHE INCOLÀ STO INDIRISSO;YOU PASTED THIS ADDRESS
+992;Ti sono arrivati;Te ze rivà;You received
+993;Hai ricevuto <b>%1</b>.<br>Aggiorno l'eredità perché valga anche per loro?;Te ghe ricevù <b>%1</b>.<br>Agiorno l'eredità parché la vaga anca par lori?;You received <b>%1</b>.<br>Do I update the inheritance so it covers them too?
+994;Hai ricevuto {};Te ghe ricevùo {};You received {}
+995;Mandi;Te mandi;You send
+996;Mandi <b>tutto quello che hai</b>. Il costo dell'invio è già tolto: il portafoglio resterà a zero.;Te mandi <b>tuto quel che te ghe</b>. El costo de l'invio el xe zà cavà: el portafojo el restarà a zero.;You send <b>everything you have</b>. The sending cost is already taken off: the wallet will be left at zero.
+997;Hai mandato {};Te ghe mandà {};You sent {}
+998;Dovresti avere almeno %1 on-chain per poter recuperare le uscite dei canali.;Te gavarissi da aver almanco %1 on-chain par poder recuperar le uscite dei canai.;You should have at least %1 on-chain in order to be able to sweep channel outputs.
+999;"Usavi un tuo nodo o Tor. In BASE la loro voce è nascosta: con ""Sì"" Schȅi si collega da solo ai server pubblici, come all'inizio.";"Te dopravi un to nodo o Tor. In BASE la so vose la xe sconta: col ""Sì"" Schȅi el se colega da solo ai server publici, come a l'inizio.";"You were using your own node or Tor. In BASE their row is hidden: with ""Yes"" Schȅi connects by itself to the public servers, as at the start."
+1000;Scrivi gli importi in %1 o in bitcoin;Te scrivi i importi in %1 o in bitcoin;You write the amounts in %1 or in bitcoin
+1001;Hai scritto %1 parole, ma hai scelto %2. Cancella quelle in più o scegli un altro numero.;Te ghe scrito %1 parole, ma te ghe sielto %2. Scancela quele in pì o sielgi n'altro numero.;You wrote %1 words, but you chose %2. Delete the extra words or choose another number.
+1002;Le tue %1 parole (SEED);Le to %1 parole (SEED);Your %1 words (SEED)
+1003;Le tue 12 parole (SEED);Le to 12 parole (SEED);Your 12 words (SEED)
+1004;I tuoi indirizzi;I to indirissi;Your addresses
+1005;Il saldo è fatto di più <b>monete d'oro</b>: ognuna è un pagamento che hai ricevuto e vale quanto c'è dentro. Puoi <b>bloccarne</b> una: l'app non la userà per pagare.;El saldo el xe fato de più <b>monede de oro</b>: ognuna la xe un pagamento che te ghe ricevùo e la val quel che ghe xe drento. Te pol <b>blocarghene</b> una: l'app no la la doparà par pagar.;Your balance is made of several <b>gold coins</b>: each one is a payment you received, and it is worth what is inside. You can <b>block</b> one: the app will not use it to pay.
+1006;IL TUO INDIRIZZO BITCOIN;EL TO INDIRISSO BITCOIN;YOUR BITCOIN ADDRESS
+1007;Le tue scelte (modalità esperto, colori) torneranno come all'inizio.;Le to sielte (modalità esperto, colori) le tornarà come a l'inizio.;Your choices (expert mode, colours) will go back to how they were at the start.
+1008;A proteggere le tue monete sono le 12 parole (SEED).;A proteger le to monede xe le 12 parole (SEED).;Your coins are protected by the 12 words (SEED).
+1009;A proteggere le tue monete sono le parole (SEED).;A proteger le to monede xe le parole (SEED).;Your coins are protected by the words (SEED).
+1010;Le tue monete nelle tasche;Le to monede ne le scarsele;Your coins in the pockets
+1011;La tua eredità attuale;La to eredità atuale;Your current inheritance
+1012;La tua eredità attuale ha la consegna il <b>%1</b>.<br>Se vai avanti, la consegna diventa il <b>%2</b> (%3 da oggi). <b>Non costa niente: è un aggiornamento gratis.</b>;La to eredità atuale la ga la consegna el <b>%1</b>.<br>Se te vè avanti, la consegna la deventa el <b>%2</b> (%3 da ancuo). <b>No la costa gnente: el xe un agiornamento gratis.</b>;Your current inheritance has its delivery on <b>%1</b>.<br>If you go on, the delivery becomes <b>%2</b> (%3 from today). <b>It costs nothing: it is a free update.</b>
+1013;La tua eredità attuale ha la consegna il <b>%1</b>.<br>Se vai avanti, la consegna diventa il <b>%2</b> (%3 da oggi). È un rinnovo: lo paghi come un pagamento.;La to eredità atuale la ga la consegna el <b>%1</b>.<br>Se te vè avanti, la consegna la deventa el <b>%2</b> (%3 da ancuo). El xe un rinovo: te lo paghi come un pagamento.;Your current inheritance has its delivery on <b>%1</b>.<br>If you go on, the delivery becomes <b>%2</b> (%3 from today). It is a renewal: you pay it like a payment.
+1014;Il tuo PIN attuale;El to PIN de desso;Your current PIN
+1015;Le tue monete bitcoin;Le to monede bitcoin;Your gold coins
+1016;Le tue monete bitcoin e gli indirizzi;Le to monede bitcoin e i indirissi;Your gold coins and addresses
+1017;I tuoi eredi;I to eredi;Your heirs
+1018;I tuoi eredi restano salvati, pronti per una nuova eredità.;I to eredi i resta salvai, pronti par na eredità nova.;Your heirs are still saved, ready for a new inheritance.
+1019;La tua eredità;La to eredità;Your inheritance
+1020;I tuoi custodi;I to custodi;Your keepers
+1021;Il tuo gruzzoletto;El to gruzoleto;Your little stash
+1022;I tuoi schȅi;I to schȅi;Your money
+1023;I tuoi soldi sono in più posti;I to schȅi i xe in pì posti;Your money is in more places
+1024;I tuoi soldi non sono persi;I to schȅi no i xe persi;Your money is not lost
+1025;<b>I tuoi soldi restano tuoi</b>: ricevi e paghi come sempre. Se arrivano soldi nuovi o fai un pagamento, Schȅi ti chiede di aggiornare la busta. Basta il PIN e non devi pagare nulla.;<b>I to schei i resta tui</b>: te ricevi e te paghi come sempre. Se riva schei novi o te fa un pagamento, Schȅi el te domanda de agiornar la busta. Basta el PIN e no te ghe da pagar gnente.;<b>Your money stays yours</b>: you receive and pay as always. If new money arrives or you make a payment, Schȅi asks you to update the envelope. The PIN is enough and you pay nothing.
+1026;I tuoi soldi, le 12 parole (SEED) e il PIN non cambiano.;I to schei, le 12 parole (SEED) e el PIN no i cambia.;Your money, the 12 words (SEED) and the PIN do not change.
+1027;I tuoi soldi, i portafogli, le 12 parole (SEED), il PIN, il nome e la lingua non cambiano.;I to schei, i portafoji, le 12 parole (SEED), el PIN, el nome e la lengua no i cambia.;Your money, the wallets, the 12 words (SEED), the PIN, the name and the language do not change.
+1028;I tuoi soldi, i portafogli, le parole (SEED), il PIN, il nome e la lingua non cambiano.;I to schei, i portafoji, le parole (SEED), el PIN, el nome e la lengua no i cambia.;Your money, the wallets, the words (SEED), the PIN, the name and the language do not change.
+1029;I tuoi soldi, le parole (SEED) e il PIN non cambiano.;I to schei, le parole (SEED) e el PIN no i cambia.;Your money, the words (SEED) and the PIN do not change.
+1030;Il tuo PIN;El to PIN;Your PIN
+1031;IL TUO PORTAFOGLIO;EL TO PORTAFOJO;YOUR WALLET
+1032;Il tuo portafoglio è pronto;El to portafojo el xe pronto;Your wallet is ready
+1033;Le tue parole (SEED);Le to parole (SEED);Your words (SEED)
+1034;{} movimenti nuovi;{} movimenti novi;{} new movements
+1035;· tocca ✎ per scriverlo;· tocca ✎ par scrivarlo;· tap ✎ to write it
