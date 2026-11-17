@@ -68,6 +68,15 @@ Item {
     // owner 16/11 (Q2): what the confirmation does with the will in force
     readonly property string change: rv && rv.change ? rv.change : ''
     readonly property bool renewing: change === 'renew'
+    // owner 17/11: confirm() of a renewal gets the cost chosen on the row, right before it starts
+    function confirmNow() {
+        if (page.renewing && !cost.commit(page.bal)) {
+            page.error = qsTr('First choose the cost of the operation.')
+            page.failedOp = 'confirm'
+            return
+        }
+        page.bal.confirm()
+    }
     function pinText() {
         if (renewing) return qsTr('Type the PIN to renew the inheritance')
         if (change === 'update') return qsTr('Type the PIN to update the inheritance')
@@ -222,9 +231,8 @@ Item {
                 visible: page.renewing || page.change === 'update'
                 kind: page.renewing ? 'warn' : 'tip'
                 text: page.renewing
-                      ? qsTr('The delivery moves from <b>%1</b> to <b>%2</b>: it is a <b>renewal</b>. Schȅi cancels the envelope of now on the bitcoin network (it costs about <b>%3</b>) and joins all the coins into one.')
+                      ? qsTr('The delivery moves from <b>%1</b> to <b>%2</b>: it is a <b>renewal</b>. Schȅi cancels the envelope of now on the bitcoin network and joins all the coins into one.')
                         .arg(app.ehHeirDate(page.rv ? page.rv.inForceDelivery : 0)).arg(app.ehHeirDate(page.rv ? page.rv.delivery : 0))
-                        .arg(app.ehMoney(page.rv ? page.rv.changeFeeSats : 0).replace(/ /g, '\u00a0'))
                       : qsTr('The delivery moves from <b>%1</b> to <b>%2</b>: it is a <b>free update</b>.')
                         .arg(app.ehHeirDate(page.rv ? page.rv.inForceDelivery : 0)).arg(app.ehHeirDate(page.rv ? page.rv.delivery : 0))
             }
@@ -256,12 +264,19 @@ Item {
             EhCaption { text: qsTr('What it costs'); Layout.topMargin: 4; Layout.bottomMargin: -4 }
             EhSheet {
                 Kv {
+                    visible: !page.renewing
                     key: qsTr('Today you pay')
                     figure: true
-                    about: page.renewing
-                    figColor: page.renewing ? S.wineDark : S.oliveInk
-                    value: page.rv ? app.ehMoney(page.renewing ? (page.rv.changeFeeSats || 0) : 0) : '…'
+                    figColor: S.oliveInk
+                    value: page.rv ? app.ehMoney(0) : '…'
                 }
+                // owner 17/11: a renewal is paid today, chosen like a payment
+                EhHeirCostRow {
+                    id: cost
+                    heirSt: page.st
+                    visible: page.renewing && coins.length > 0
+                }
+                EhDotLine { visible: page.renewing }
                 Kv {
                     key: qsTr('To the keepers, only at the delivery')
                     figure: true
@@ -275,7 +290,7 @@ Item {
                     key: qsTr('Every time you renew')
                     figure: true
                     about: true
-                    value: page.rv ? app.ehMoney(page.rv.renewFeeSats) : '…'
+                    value: page.rv ? (page.rv.renewFeeSats > 0 ? app.ehMoney(page.rv.renewFeeSats) : qsTr('as a payment')) : '…'
                     last: true
                 }
             }
@@ -319,7 +334,7 @@ Item {
                     if (page.failedOp === 'confirm') {
                         page.error = ''
                         page.failedOp = ''
-                        app.ehAskPin(page.pinText(), function() { page.bal.confirm() })
+                        app.ehAskPin(page.pinText(), function() { page.confirmNow() })
                     } else {
                         page.startReview()
                     }
@@ -366,7 +381,8 @@ Item {
             Layout.preferredHeight: 70
             Layout.bottomMargin: 6
             enabled: page.rv !== null && !page.busy && page.error === ''
-            onReached: app.ehAskPin(page.pinText(), function() { page.bal.confirm() },
+            onReached: if (page.renewing && !cost.ensure()) slide.reset()
+                       else app.ehAskPin(page.pinText(), function() { page.confirmNow() },
                                     function() { slide.reset() })   // PIN cancelled: the coin goes back at once
         }
     }

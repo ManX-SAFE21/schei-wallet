@@ -23,6 +23,7 @@ import os
 import shutil
 import sys
 import tempfile
+import math
 import time
 from datetime import datetime, timezone
 from types import SimpleNamespace
@@ -152,7 +153,7 @@ class FakeNetwork:
     def __init__(self):
         self.wallet = None
         self.broadcasts = []
-        self.fee_estimates = SimpleNamespace(eta_target_to_fee=lambda blocks: None)
+        self.fee_estimates = SimpleNamespace(eta_target_to_fee=lambda blocks: 2000)   # 2 sat/vB
 
     def is_connected(self):
         return True
@@ -276,8 +277,13 @@ class Session:
         to_mempool(self.wallet, tx)
         return tx
 
+    auto_fee = True
+
     def call(self, slot, *args, timeout=60):
         """Call a slot, let Qt deliver the worker's answer, return it."""
+        if self.auto_fee and slot in ('cancelWill', 'renew', 'confirm'):
+            # as the page does: the fee chosen like a payment (here 2 sat/vB, by size)
+            self.bal.setInvalidationFee({'sats': 1, 'rate': 2.0, 'coins': []})
         n = len(self.events)
         start = time.monotonic()
         getattr(self.bal, slot)(*args)
@@ -418,7 +424,7 @@ def test_renewal_interrupted_is_unfinished(s, monkeypatch):
     assert ev[:3] == ('failed', 'renew', 'offline')
     assert len(s.network.broadcasts) == 1
     # F4: the new will is built on the unconfirmed change of the invalidation
-    assert s.state['phase'] == 'unfinished', s.state
+    assert s.state["phase"] == "unfinished", (s.state["updateReason"], s.state["detail"], s.state["uncoveredSats"])
     monkeypatch.setattr(bal_qml.QEBal, '_prepare', orig)
     r = s.ok('update')
     assert s.state['phase'] == 'active'
@@ -1073,23 +1079,74 @@ def test_heirs_changed_after_the_will_reads_changed(s):
     assert s.state['updateReason'] == 'changed'
 
 
-# ---- owner 17/11 (controllo-mainnet M7): the renew / cancel fee shown is the one paid ----
+# ---- owner 17/11 (M7 bis): the invalidation pays the fee chosen on the page, never 20 sat/vB ----
 
-def test_renew_fee_shown_uses_the_rate_paid_not_the_network(s):
+def test_cancel_without_a_chosen_fee_does_not_start(s):
+    make_will(s)
+    sent_before = len(s.network.broadcasts)
+    s.auto_fee = False
+    ev, _ = s.call('cancelWill', False)
+    assert ev[0] == 'failed' and ev[2] == 'no_fee', ev
+    assert len(s.network.broadcasts) == sent_before
+    s.ok('refresh')
+    assert s.state['phase'] == 'active'
+
+
+def test_renew_without_a_chosen_fee_does_not_start(s):
+    _due(s)
+    sent_before = len(s.network.broadcasts)
+    s.auto_fee = False
+    ev, _ = s.call('renew')
+    assert ev[0] == 'failed' and ev[2] == 'no_fee', ev
+    assert len(s.network.broadcasts) == sent_before
+
+
+def test_cancel_pays_exactly_the_fee_shown(s):
     make_will(s)
     s.ok('refresh')
-    before = dict(s.state['fees'])
-    assert before['renewSats'] > 0
-    # the network now says 100 sat/vB: the invalidation still pays baltx_fees, so nothing changes
-    s.network.fee_estimates = SimpleNamespace(eta_target_to_fee=lambda blocks: 100_000)
+    coins = s.state['invalidate']['coins']
+    assert coins and s.state['invalidate']['to']
+    s.auto_fee = False
+    s.bal.setInvalidationFee({'sats': 777, 'rate': 5.0, 'coins': coins})
+    out = s.ok('cancelWill', False)
+    assert out['feeSats'] == 777
+
+
+def test_cancel_with_other_coins_pays_the_rate_chosen(s):
+    make_will(s)
+    s.auto_fee = False
+    s.bal.setInvalidationFee({'sats': 1, 'rate': 3.0, 'coins': ['not:0']})
+    out = s.ok('cancelWill', False)
+    tx = s.wallet.adb.get_transaction(out['txid'])
+    vsize = tx.estimated_size()
+    assert 3.0 * vsize - 2 <= out['feeSats'] <= 3.0 * vsize + 8, (out['feeSats'], vsize)
+
+
+def test_the_chosen_fee_is_used_once(s):
+    make_will(s)
+    s.auto_fee = False
+    s.bal.setInvalidationFee({'sats': 1, 'rate': 2.0, 'coins': []})
+    s.ok('refresh')                                     # the fee went with this job
+    ev, _ = s.call('cancelWill', False)
+    assert ev[0] == 'failed' and ev[2] == 'no_fee', ev  # never kept for a later one
+
+
+def test_no_fixed_20_when_the_servers_give_no_estimate(s):
+    make_will(s)
+    s.network.fee_estimates = SimpleNamespace(eta_target_to_fee=lambda blocks: None)
     s.ok('refresh')
-    assert s.state['fees']['renewSats'] == before['renewSats']
-    assert s.state['fees']['cancelSats'] == before['cancelSats'] == before['renewSats']
+    assert s.state['fees']['renewSats'] == 0            # no estimate: nothing invented
+    s.network.fee_estimates = SimpleNamespace(eta_target_to_fee=lambda blocks: 100_000 if blocks <= 2 else 10_000)
+    s.ok('refresh')
+    n = len(s.state['invalidate']['coins'])
+    assert s.state['fees']['renewSats'] == math.ceil((11 + 68 * n + 31) * 100)   # 2 blocks, 100 sat/vB
 
 
-def test_invalidation_rate_is_the_rate_shown():
-    import inspect
-    from electrum.plugins.bal.engine import invalidate
-    assert 'host.will_settings.get("baltx_fees", 1)' in inspect.getsource(invalidate)
-    src = inspect.getsource(bal_qml.QEBal._renew_estimate)
-    assert "show.get('baltx_fees')" in src and 'fee_estimates' not in src
+def test_invalidation_coins_are_the_coins_it_spends(s):
+    make_will(s)
+    s.ok('refresh')
+    coins = s.state['invalidate']['coins']
+    assert coins
+    out = s.ok('cancelWill', False)
+    tx = s.wallet.adb.get_transaction(out['txid'])
+    assert sorted(i.prevout.to_str() for i in tx.inputs()) == coins

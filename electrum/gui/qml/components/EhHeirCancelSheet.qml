@@ -52,6 +52,8 @@ EhBottomSheet {
         app.ehAskPin(qsTr('Type the PIN to cancel the inheritance'), function() {
             if (!root.bal) return
             root.error = ''
+            // owner 17/11: the cost chosen on the row, handed over right before it starts
+            if (!cost.commit(root.bal)) { root.error = qsTr('First choose the cost of the operation.'); return }
             root._mine = true
             root.bal.cancelWill(root.deleteHeirs)
         })
@@ -76,8 +78,13 @@ EhBottomSheet {
     }
     Para {
         visible: root.stage === 'confirm'
-        text: qsTr('The envelope for the heirs is cancelled on the bitcoin network: a small operation that costs about <b>%1</b>.')
-                .arg(app.ehHeirSats(root.st.fees ? (root.st.fees.cancelSats || root.st.fees.renewSats) : 0))
+        text: qsTr('The envelope for the heirs is cancelled on the bitcoin network with a small operation, paid like a payment.')
+    }
+    // owner 17/11: its cost, chosen like a payment (speed, or by hand without an estimate)
+    EhHeirCostRow {
+        id: cost
+        heirSt: root.st
+        visible: root.stage === 'confirm' && coins.length > 0
     }
     EhInfoBox {
         visible: root.stage === 'confirm'
@@ -89,7 +96,7 @@ EhBottomSheet {
         kind: 'wine'
         icon: 'eh_undo_white.svg'
         text: qsTr('Yes, cancel it')
-        onClicked: root.stage = 'heirs'
+        onClicked: if (cost.ensure()) root.stage = 'heirs'
     }
     EhStitchButton {
         visible: root.stage === 'confirm'

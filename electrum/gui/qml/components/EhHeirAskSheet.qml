@@ -54,8 +54,7 @@ EhBottomSheet {
     }
     EhInfoBox {
         kind: 'warn'
-        text: qsTr('The renewal makes a small operation on the bitcoin network: it costs about <b>%1</b>.')
-                .arg(app.ehHeirSats(root.st.fees ? root.st.fees.renewSats : 0))
+        text: qsTr('The renewal makes a small operation on the bitcoin network, paid like a payment.')
         Label {
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
@@ -66,6 +65,9 @@ EhBottomSheet {
             text: qsTr('When you renew, Schȅi joins all the coins into one.')
         }
     }
+
+    // owner 17/11: the cost of the renewal, chosen like a payment
+    EhHeirCostRow { id: cost; heirSt: root.st }
 
     // while it works: one line with the step; a failure: the reason
     Label {
@@ -90,9 +92,10 @@ EhBottomSheet {
         icon: 'eh_check_white.svg'
         text: qsTr('Yes, renew')
         enabled: !(root.bal && root.bal.busy)
-        onClicked: app.ehAskPin(qsTr('Type the PIN to renew the inheritance'), function() {
+        onClicked: if (cost.ensure()) app.ehAskPin(qsTr('Type the PIN to renew the inheritance'), function() {
             if (!root.bal) return
             root.error = ''
+            if (!cost.commit(root.bal)) { root.error = qsTr('First choose the cost of the operation.'); return }
             root._mine = true
             root.bal.renew()
         })

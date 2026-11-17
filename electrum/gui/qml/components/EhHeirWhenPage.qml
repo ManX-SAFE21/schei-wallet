@@ -136,10 +136,9 @@ Item {
                 // owner 16/11 (Q2, approved texts): the delivery in force, the new one, the cost;
                 // right under the choice, so it is seen without scrolling
                 text: page.later
-                      ? qsTr('Your current inheritance has its delivery on <b>%1</b>.<br>If you go on, the delivery becomes <b>%2</b> (%3 from today). It costs about <b>%4</b>.')
+                      ? qsTr('Your current inheritance has its delivery on <b>%1</b>.<br>If you go on, the delivery becomes <b>%2</b> (%3 from today). It is a renewal: you pay it like a payment.')
                         .arg(app.ehHeirDate(page.oldDelivery)).arg(app.ehHeirDate(page.newDelivery))
                         .arg(app.ehHeirYears(page.months))
-                        .arg(app.ehHeirSats(page.st.fees ? page.st.fees.renewSats : 0).replace(/ /g, ' '))
                       : qsTr('Your current inheritance has its delivery on <b>%1</b>.<br>If you go on, the delivery becomes <b>%2</b> (%3 from today). <b>It costs nothing: it is a free update.</b>')
                         .arg(app.ehHeirDate(page.oldDelivery)).arg(app.ehHeirDate(page.newDelivery))
                         .arg(app.ehHeirYears(page.months))

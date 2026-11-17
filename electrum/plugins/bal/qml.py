@@ -33,6 +33,7 @@ normal relative import is enough here (no zip loading on Android).
 
 import asyncio
 import json
+import math
 import threading
 import time
 import traceback
@@ -263,6 +264,7 @@ def _empty_state():
         'updateReason': '', 'uncoveredSats': 0,
         'fees': {'custodianSats': 0, 'custodianMinSats': 0, 'custodianMaxSats': 0,
                  'minerSats': 0, 'renewSats': 0, 'cancelSats': 0},
+            'invalidate': {'coins': [], 'to': ''},
         'detail': '', 'wallet': '',
     }
 
@@ -404,14 +406,17 @@ class QEBal(PluginQObject):
         if wallet is None:
             self.failed.emit(op, 'user', 'no wallet')
             return
+        # owner 17/11: the fee chosen on the page goes to THIS job only (never kept for later)
+        fee, self._inv_fee = getattr(self, '_inv_fee', None), None
         self._set_busy(True)
         self._set_step('check' if op == 'refresh' else '')
-        threading.Thread(target=self._work, args=(op, job, wallet), daemon=True,
+        threading.Thread(target=self._work, args=(op, job, wallet, fee), daemon=True,
                          name='QEBal-' + op).start()
 
-    def _work(self, op, job, wallet):
+    def _work(self, op, job, wallet, fee=None):
         """The worker: the job, then the new state, both sent to the GUI thread."""
         self._local.wallet = wallet
+        self._local.inv_fee = fee
         try:
             outcome = ('done', job() or {})
         except _Fail as f:
@@ -637,6 +642,22 @@ class QEBal(PluginQObject):
     def renew(self):
         self._start('renew', self._job_renew)
 
+    @pyqtSlot('QVariant')
+    def setInvalidationFee(self, fee):
+        """owner 17/11: the miner fee of the NEXT invalidation (renewal / cancellation), chosen on
+        the page as for a payment: ``{sats, rate, coins}`` (rate in sat/vB, coins the "txid:n"
+        the page priced). Set right before ``renew()`` / ``cancelWill()`` / ``confirm()``; used
+        once, valid 10 minutes. Without it the invalidation does not start (``no_fee``)."""
+        try:
+            d = fee.toVariant() if hasattr(fee, 'toVariant') else fee
+            d = dict(d or {})
+            self._inv_fee = {'sats': int(d.get('sats') or 0), 'rate': float(d.get('rate') or 0),
+                             'coins': sorted(str(c) for c in (d.get('coins') or [])),
+                             'at': time.monotonic()}
+        except Exception as e:
+            _logger.error(f'setInvalidationFee: {e!r}')
+            self._inv_fee = None
+
     @pyqtSlot()
     def update(self):
         self._start('update', self._job_update)
@@ -845,7 +866,7 @@ class QEBal(PluginQObject):
         show = self._cmd('bal_delivery_show')
         coins = self._coins(wallet)
         balance = sum(coins.values())
-        renew_fee = self._renew_estimate(len(coins), show)
+        renew_fee = self._renew_estimate(wallet, len(coins))
         if change == 'renew':
             # nothing is prepared now: the will in force is still there (from the day of
             # the reminder its prepare is refused); renew() prepares after the invalidation
@@ -942,14 +963,23 @@ class QEBal(PluginQObject):
         ``on_sent(txid)`` is called right after the broadcast.
         """
         self._step_to('invalidate')
+        fee, self._local.inv_fee = getattr(self._local, 'inv_fee', None), None
         inv = self._cmd('bal_will_invalidate') or {}
         if not inv.get('tx'):
             return None
+        if not fee or fee['sats'] <= 0 or time.monotonic() - fee['at'] > 600:
+            raise _Fail('no_fee', 'Choose the cost of the operation.')
         coins = self._coins(wallet)
-        signed = self._cmd('signtransaction', inv['tx'])
+        unsigned = self._with_fee(wallet, tx_from_any(inv['tx']), coins, fee)
+        signed = self._cmd('signtransaction', unsigned)
         if not signed:
             raise _Fail('user', 'The wallet is locked.')
         tx = tx_from_any(signed)
+        # the chosen fee changed the txid: the label of an invalidation goes on the new one
+        # (as BalController.invalidate_will), so a renewal cut in half reads "unfinished"
+        from .engine.invalidate import INVALIDATION_LABEL
+        if tx.txid():
+            wallet.set_label(tx.txid(), INVALIDATION_LABEL)
         fee = sum(coins.get(i.prevout.to_str(), 0) for i in tx.inputs()) \
             - sum(o.value for o in tx.outputs())
         self._step_to('broadcast')
@@ -961,6 +991,26 @@ class QEBal(PluginQObject):
             on_sent(txid)
         self._step_to('wait')
         return {'txid': txid, 'feeSats': max(0, int(fee)), 'seen': self._wait_seen(wallet, txid)}
+
+    def _with_fee(self, wallet, tx, coins, fee):
+        """The invalidation ``tx`` (all the will coins -> one own address) paying ``fee``:
+        exactly ``fee['sats']`` when it spends the coins the page priced, else ``rate`` x size."""
+        outs = tx.outputs()
+        if len(outs) != 1:
+            raise _Fail('internal', 'Unexpected invalidation transaction.')
+        ins = sorted(i.prevout.to_str() for i in tx.inputs())
+        total = sum(coins.get(i, 0) for i in ins)
+        if ins == fee['coins']:
+            sats = fee['sats']
+        else:
+            for txin in tx.inputs():      # the scripts, or the size misses the signatures
+                wallet.add_input_info(txin)
+            sats = int(math.ceil(tx.estimated_size() * fee['rate']))
+        if sats <= 0 or total - sats < 546:
+            raise _Fail('no_fee', 'The cost is not right for this operation.')
+        outs[0].value = total - sats
+        tx.invalidate_ser_cache()
+        return tx.serialize()
 
     def _job_cancel(self, delete_heirs):
         """Point 7: invalidate the will on the blockchain; then, if asked, delete every heir.
@@ -1172,15 +1222,40 @@ class QEBal(PluginQObject):
                  'sats': left * (_percent(v[1]) or 0) // 100} for n, v in heirs.items()]
         return rows, min(fees), max(fees), miner
 
-    def _renew_estimate(self, n_inputs, show):
-        """The miner fee of a renewal / cancellation (its invalidation), estimated (plan 1.4).
+    def _renew_estimate(self, wallet, n_inputs):
+        """About what a FUTURE renewal costs (plan 1.4), only to be shown in advance.
 
-        owner 17/11 (controllo-mainnet M7): the invalidation pays the will's own rate
-        (``baltx_fees``, engine/invalidate.py), never the network estimate: show that same rate.
+        owner 17/11: the network estimate of the invalidation (Will.get_invalidation_fee_rate,
+        the same blocks), never baltx_fees: 0 when the servers give no estimate. What is
+        really paid is chosen on the page, like a payment (setInvalidationFee).
         """
+        from .core.will import INVALIDATION_FEE_ETA_BLOCKS
+        try:
+            network = self._network()
+            per_kvb = network.fee_estimates.eta_target_to_fee(INVALIDATION_FEE_ETA_BLOCKS) if network else None
+        except Exception:
+            per_kvb = None
+        if not isinstance(per_kvb, int) or isinstance(per_kvb, bool) or per_kvb <= 0:
+            return 0
         vbytes = 11 + 68 * max(1, n_inputs) + 31
-        rate = float(show.get('baltx_fees') or 1)
-        return int(round(vbytes * rate))
+        return int(math.ceil(vbytes * per_kvb / 1000))
+
+    def _invalidate_info(self, wallet, items):
+        """``{coins, to}``: the coins the invalidation would spend (every will input still in the
+        wallet and on the network) and an own address, so the page can price it as a payment."""
+        ins = {i for it in items if it.get('tx') for i in _inputs(it['tx'])}
+        coins = []
+        for c in (self._cmd('listunspent') or []):
+            key = '%s:%s' % (c['prevout_hash'], c['prevout_n'])
+            if key in ins and int(c.get('height') or 0) not in (-2, -3):   # not local / future
+                coins.append(key)
+        to = ''
+        if coins:
+            try:
+                to = wallet.get_change_addresses_for_new_transaction()[0]
+            except Exception:
+                to = ''
+        return {'coins': sorted(coins), 'to': to}
 
     @staticmethod
     def _spender_txid(wallet, outpoint):
@@ -1277,7 +1352,8 @@ class QEBal(PluginQObject):
         s['custodians'] = {'wanted': wanted, 'ok': ok, 'total': len(cust), 'list': cust,
                            'status': keeper_health(ok, len(cust), checks, wanted) if live else ''}
         _rows, fee_min, fee_max, miner_fee = self._split(newest, heirs, coins)
-        renew = self._renew_estimate(len(coins), show)
+        renew = self._renew_estimate(wallet, len(coins))
+        s['invalidate'] = self._invalidate_info(wallet, items)
         s['fees'] = {'custodianSats': fee_max, 'custodianMinSats': fee_min,
                      'custodianMaxSats': fee_max, 'minerSats': miner_fee,
                      'renewSats': renew, 'cancelSats': renew}
