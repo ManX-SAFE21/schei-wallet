@@ -32,7 +32,11 @@ ElDialog {
     readonly property real slowRate: Config.ehFeeRateForBlocks(25)   // about 4 hours
     // owner 12/11: the lowest hand-written tip is what the server accepts (it can be 0.1 sat/vB)
     readonly property real minRate: finalizer ? finalizer.ehMinFeerate() : 1
+    property bool capNote: false
     function setManual(txt) {
+        // owner 17/11: above 1500 sat/vB the number becomes 1500 (EH_MANUAL_FEE_MAX), said
+        capNote = Number(txt.replace(',', '.')) > 1500
+        if (capNote) txt = '1500'
         manualText = txt
         if (!finalizer) return
         if (txt === '') { finalizer.ehBackToSlider(Math.max(minPos, finalizer.sliderPos)); return }

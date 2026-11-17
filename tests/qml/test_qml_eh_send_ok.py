@@ -114,3 +114,20 @@ class TestNeverPaidTwice(TestCase):
         src = open(qetxfinalizer.__file__, encoding='utf-8').read()
         i = src.index('def ehTxCoins(self):')
         self.assertIn('self._tx.inputs()', src[i:i + 300])
+
+
+class TestFeeCeiling(TestCase):
+    # owner 17/11 ("si massimo 1500"): what is shown is what is used
+
+    def test_manual_sheet_caps_at_1500_and_says_it(self):
+        m = _read('EhManualFeeSheet.qml')
+        self.assertIn('readonly property int maxRate: 1500', m)
+        self.assertIn("if (Number(t.replace(',', '.')) > maxRate) { t = '' + maxRate; capNote = true }", m)
+        self.assertIn("qsTr('Maximum %1 sat/vB').arg(root.maxRate)", m)
+
+    def test_speed_page_caps_at_1500(self):
+        self.assertIn("if (capNote) txt = '1500'", _read('EhFeeDialog.qml'))
+
+    def test_ceiling_matches_the_python_one(self):
+        from electrum.gui.qml import qetxfinalizer
+        self.assertEqual(1500, int(qetxfinalizer.EH_MANUAL_FEE_MAX))

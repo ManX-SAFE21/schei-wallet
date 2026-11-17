@@ -38,11 +38,15 @@ EhBottomSheet {
     // little room (e.g. 360x740 with the Android bars): the two buttons side by side
     readonly property bool tight: _room < 700
     readonly property bool slowNote: !tooLow && rateNum < 1
+    // owner 17/11: the ceiling (EH_MANUAL_FEE_MAX); more typed -> the number becomes 1500, said
+    readonly property int maxRate: 1500
+    property bool capNote: false
     function shown(r) { return ('' + r).replace('.', app.ehLocale().decimalPoint) }
     function costText() { return costSats >= 0 ? app.ehBtc(costSats) : '…' }
     function step(up) {
         typed = ''
         askHigh = false
+        capNote = false
         rate = finalizer ? finalizer.ehFeeStep(rate, up) : rate
     }
     function press(k) {
@@ -56,8 +60,10 @@ EhBottomSheet {
             if (t === '0') t = ''
             t += k
         }
-        typed = t
         askHigh = false
+        capNote = false
+        if (Number(t.replace(',', '.')) > maxRate) { t = '' + maxRate; capNote = true }
+        typed = t
         var r = finalizer ? finalizer.ehParseFeerate(t) : ''
         if (r !== '') rate = r
     }
@@ -271,6 +277,15 @@ EhBottomSheet {
                 font.pixelSize: app.ehFsText
                 color: S.waitInk
                 text: qsTr('Under 1 sat/vB it can take a long time to arrive.')
+            }
+            Label {
+                visible: root.capNote
+                width: parent.width
+                wrapMode: Text.WordWrap
+                font.pixelSize: app.ehFsText
+                font.bold: true
+                color: S.wine
+                text: qsTr('Maximum %1 sat/vB').arg(root.maxRate)
             }
         }
     }
