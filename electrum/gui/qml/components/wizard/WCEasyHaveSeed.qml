@@ -108,6 +108,9 @@ WizardComponent {
     function goOn() {
         if (!valid)
             return
+        // phone 17/11: whether more pages follow depends on the choice above (another wallet: the
+        // search page), so ask again now (before: decided when the page opened -> KeyError)
+        checkIsLast()
         if (root.last)
             wizard.pages.finish()
         else

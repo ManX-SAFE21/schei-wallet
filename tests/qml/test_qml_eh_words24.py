@@ -229,6 +229,19 @@ class TestPages(TestCase):
         self.assertNotIn('doneWords >= 12', s)     # no red box after the 12th word of 24
         self.assertIn("[qsTr('12 words'), qsTr('24 words')]", s)
 
+    def test_next_asks_again_whether_more_pages_follow(self):
+        # Samsung 17/11: a PIN already set, Electrum words chosen first, then "another wallet":
+        # the words page stayed "last" and the wallet was created without the search page
+        # (KeyError 'derivation_path'). "Next" must ask again.
+        for name in ('WCEasyHaveSeed.qml', 'WCEasyFindFunds.qml'):
+            s = _read('wizard', name)
+            body = s[s.index('function goOn()'):]
+            body = body[:body.index('wizard.pages.finish()')]
+            self.assertIn('checkIsLast()', body, name)
+
+    def test_welcome_does_not_say_12_words(self):
+        self.assertIn("qsTr('I already have the words (SEED)')", _read('wizard', 'WCEasyWelcome.qml'))
+
     def test_wizard_uses_the_search_page(self):
         src = open(os.path.join(os.path.dirname(qeapp.__file__), 'qewizard.py'), encoding='utf-8').read()
         self.assertIn("'script_and_derivation': {'gui': 'WCEasyFindFunds'}", src)

@@ -131,7 +131,7 @@ WizardComponent {
 
             EhStitchButton {
                 kind: 'paper'
-                text: qsTr('I already have the 12 words (SEED)')
+                text: qsTr('I already have the words (SEED)')
                 icon: 'eh_key_wine.svg'
                 onClicked: root.go('haveseed')
             }

@@ -69,6 +69,7 @@ WizardComponent {
     function goOn() {
         if (!valid)
             return
+        checkIsLast()   // put the choice in wizard_data and ask again if more pages follow
         if (root.last)
             wizard.pages.finish()
         else
