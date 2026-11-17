@@ -38,9 +38,10 @@ ElDialog {
     // pasted address: shown big first, so a wrong paste is seen before going on
     property string pasted: ''
     property bool pasteError: false
+    property bool pasteEmpty: false  // owner 17/11: nothing copied; said until the next paste
     property bool pasteSame: false   // T23: pasted again the address already shown
     function clearPasted() {
-        root.pasted = ''; root.pasteError = false; root.pasteSame = false
+        root.pasted = ''; root.pasteError = false; root.pasteSame = false; root.pasteEmpty = false
         if (camLoader.item) camLoader.item.start()
     }
     function addrOf(s) { return s.replace(/^bitcoin:/i, '').split('?')[0] }
@@ -336,6 +337,16 @@ ElDialog {
             font.pixelSize: app.ehFsText
             font.bold: true
         }
+        Label {
+            visible: root.pasteEmpty
+            Layout.fillWidth: true
+            wrapMode: Text.WordWrap
+            horizontalAlignment: Text.AlignHCenter
+            text: qsTr('There is nothing to paste: copy the address first.')
+            color: S.red
+            font.pixelSize: app.ehFsText
+            font.bold: true
+        }
 
         EhStitchButton {
             visible: root.pasted !== ''
@@ -361,8 +372,9 @@ ElDialog {
             text: root.pasted !== '' ? qsTr('Paste another one') : qsTr('Paste a bitcoin address')
             onClicked: {
                 var cliptext = AppController.clipboardToText().trim()
+                root.pasteEmpty = !cliptext
                 if (!cliptext) {
-                    toaster.show(pasteBtn,qsTr('There is nothing to paste: copy the address first.'))
+                    root.pasteError = false
                     return
                 }
                 if (camLoader.item) camLoader.item.stop()

@@ -33,7 +33,9 @@ EhBottomSheet {
     readonly property int costSats: finalizer ? finalizer.ehCostForRate(rate) : -1
     readonly property real minRate: finalizer ? finalizer.ehServerMinFeerate() : 0
     readonly property bool tooLow: rateNum < minRate - 0.0001
-    readonly property bool isHigh: rateNum > highRate
+    // two reasons for the red question: the number itself, or a cost above a tenth of the amount
+    readonly property bool rateHigh: rateNum > highRate
+    readonly property bool isHigh: rateHigh
                                    || (costSats > 0 && amountSats > 0 && costSats > amountSats * 0.1)
     // little room (e.g. 360x740 with the Android bars): the two buttons side by side
     readonly property bool tight: _room < 700
@@ -298,8 +300,11 @@ EhBottomSheet {
     EhInfoBox {
         visible: root.askHigh
         kind: 'danger'
-        text: qsTr('%1 sat/vB is <b>very high</b>: this sending would cost about %2. Are you sure?')
-              .arg(root.shown(root.rate)).arg(root.costText())
+        text: root.rateHigh
+              ? qsTr('%1 sat/vB is <b>very high</b>: this sending would cost about %2. Are you sure?')
+                .arg(root.shown(root.rate)).arg(root.costText())
+              : qsTr('This sending would cost about %1: <b>more than a tenth</b> of what you send. Are you sure?')
+                .arg(root.costText())
     }
     GridLayout {
         Layout.fillWidth: true
