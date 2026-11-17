@@ -1179,3 +1179,13 @@ def test_two_heirs_on_one_address_share_its_output(monkeypatch):
     rows, *_ = bal_qml.QEBal._split(None, items, heirs, {})
     got = {r["name"]: r["sats"] for r in rows}
     assert got == {"Anna": 6000, "Bruno": 3000, "Carla": 0}
+
+
+# ---- owner 17/11/2026: the dated envelope pays 50 sat/vB (was 20) ----
+
+def test_new_will_envelope_pays_50(s):
+    from electrum.plugins.bal.core import delivery
+    assert delivery.DEFAULT_FEE == 50
+    make_will(s)
+    ws = s.controller().will_settings
+    assert int(float(ws.get("baltx_fees"))) == 50, ws

@@ -90,7 +90,10 @@ WALLET_KEY = "will_settings"
 SCHEMA_VERSION = 2
 #: The lowest ``settings_version`` that :func:`is_current` accepts (#123).
 FIRST_SCHEMA_VERSION = 1
-DEFAULT_FEE = 20
+#: owner 17/11/2026: 50 sat/vB (was 20). The dated envelope must pass also in long busy
+#: periods (2023-2024 stayed above 20 for weeks); it is paid only on the delivery day, and
+#: the keepers do not do CPFP.
+DEFAULT_FEE = 50
 #: The delivery date of a wallet with nothing to migrate from, in calendar
 #: months after today (owner decision 6 of #127, 2026-10-12: 24; it was 12).
 DEFAULT_MONTHS = 24

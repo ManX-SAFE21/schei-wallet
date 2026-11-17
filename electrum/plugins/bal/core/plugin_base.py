@@ -531,7 +531,9 @@ class BalPlugin(BasePlugin):
         decision D14): a fixed date does not follow the delivery when it
         moves. Default: 180 days (about six months) before the delivery.
         """
-        will_settings: dict[str, float | str] = {"baltx_fees": 20}
+        from .delivery import DEFAULT_FEE   # owner 17/11: 50 sat/vB (was 20)
+
+        will_settings: dict[str, float | str] = {"baltx_fees": DEFAULT_FEE}
         will_settings.update(BalPlugin.default_will_settings_absolute())
         will_settings["threshold"] = BalPlugin.default_will_settings_relative()[
             "threshold"
