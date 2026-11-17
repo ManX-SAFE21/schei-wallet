@@ -523,6 +523,7 @@ class QETxFinalizer(TxFeeSlider):
         self._extraFee = QEAmount()
         self._canRbf = False
         self._eh_coins = []      # Easy Heirs: outpoints chosen by hand, [] = automatic
+        self._eh_must = []       # Easy Heirs: coins of a payment that maybe left: always inside this one
         self._eh_no_estimate = False
         self.inputsChanged.connect(self.ehInputCountChanged)
 
@@ -597,6 +598,22 @@ class QETxFinalizer(TxFeeSlider):
     def ehInputCount(self):
         return len(self._inputs) if getattr(self, '_inputs', None) else 0
 
+    # Easy Heirs (Opus review 18/11): the coins of a payment that maybe left ("txid:n").
+    # They are always inside this payment (other coins are added if needed): if that payment
+    # left, this one cannot, so it is never paid twice.
+    ehMustCoinsChanged = pyqtSignal()
+    @pyqtProperty('QVariantList', notify=ehMustCoinsChanged)
+    def ehMustCoins(self):
+        return list(self._eh_must)
+
+    @ehMustCoins.setter
+    def ehMustCoins(self, coins):
+        coins = [str(c) for c in (coins or [])]
+        if coins != self._eh_must:
+            self._eh_must = coins
+            self.ehMustCoinsChanged.emit()
+            self.update()
+
     @pyqtSlot(result='QStringList')
     def ehTxCoins(self):
         """Easy Heirs (owner 17/11): the coins ("txid:n") of the payment made now."""
@@ -644,12 +661,15 @@ class QETxFinalizer(TxFeeSlider):
         else:
             # default impl
             coins = self._wallet.wallet.get_spendable_coins(None)
+            must = set(self._eh_must)
+            inputs = [c for c in coins if c.prevout.to_str() in must] if must else []
             if self._eh_coins:
                 chosen = set(self._eh_coins)
                 coins = [c for c in coins if c.prevout.to_str() in chosen]
             outputs = [PartialTxOutput.from_address_and_value(self.address, amount)]
             tx = self._wallet.wallet.make_unsigned_transaction(
                 coins=coins,
+                inputs=inputs or None,
                 outputs=outputs,
                 fee_policy=self._fee_policy,
                 rbf=self._rbf)

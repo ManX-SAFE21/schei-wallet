@@ -122,5 +122,5 @@ class TestRemoveInThePages(TestCase):
         # Opus review 18/11: a new wallet gets the freed name again (Portafoglio_2): it must not
         # inherit 'inheritance off' of the removed one. '' reads as 'on' in ehHeirEnabled.
         m = _read('main.qml')
-        self.assertIn("var keys = ['name_', 'color_', 'watch_', 'bal_', 'heir_on_']", m)
+        self.assertIn("var keys = ['name_', 'color_', 'watch_', 'bal_', 'heir_on_'", m)
         self.assertIn("return Config.ehGet('heir_on_' + ehWalletKey()) !== false", m)

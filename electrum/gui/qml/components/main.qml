@@ -1252,6 +1252,22 @@ ApplicationWindow
     // he is doing; there "Send all the balance" is on). Never the main one, never with money in it or
     // with an inheritance (first move the money / cancel the inheritance); then the PIN.
     property bool _ehRemoving: false
+    // Opus review 18/11: a payment that maybe left ("I am not sure the payment left"): its coins
+    // stay inside every next payment of this wallet, also after closing the page or the app
+    function ehUnsureSet(txid, coins) {
+        Config.ehSet('unsure_' + ehWalletKey(), JSON.stringify({ 'txid': txid, 'coins': coins }))
+    }
+    function ehUnsureCoins() {
+        var w = Daemon.currentWallet
+        if (!w) return []
+        var s = Config.ehGet('unsure_' + w.name)
+        if (!s) return []
+        var u
+        try { u = JSON.parse(s) } catch (e) { u = null }
+        var left = u ? w.ehUnsureCoins(u.txid || '', u.coins || []) : []
+        if (left.length === 0) Config.ehSet('unsure_' + w.name, '')
+        return left
+    }
     function ehCanRemoveWallet() {
         return ehLevel() === 'esperto' && Daemon.currentWallet !== null && Daemon.availableWallets.rowCount() > 1
                && Daemon.currentWallet.name !== Daemon.ehMainWalletName()
@@ -1301,7 +1317,7 @@ ApplicationWindow
             ehTell(qsTr('The wallet could not be removed. Nothing has changed.'))
             return
         }
-        var keys = ['name_', 'color_', 'watch_', 'bal_', 'heir_on_']
+        var keys = ['name_', 'color_', 'watch_', 'bal_', 'heir_on_', 'unsure_']
         for (var i = 0; i < keys.length; i++) Config.ehSet(keys[i] + name, '')
         ehOptRev++
         Daemon.loadWallet(main)

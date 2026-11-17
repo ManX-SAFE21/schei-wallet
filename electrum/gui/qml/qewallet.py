@@ -934,6 +934,16 @@ class QEWallet(AuthMixin, QObject, QtEventListener):
         except Exception:
             return {}
 
+    @pyqtSlot(str, 'QVariantList', result='QStringList')
+    def ehUnsureCoins(self, txid, coins):
+        """Easy Heirs (Opus review 18/11): the coins of a payment that maybe left, still unspent,
+        while that payment is not in the history yet. [] = nothing to keep (it left, or the coins
+        were spent by something else)."""
+        if txid and self.wallet.db.get_transaction(txid) is not None:
+            return []
+        have = {c.prevout.to_str() for c in self.wallet.get_spendable_coins(None)}
+        return [str(c) for c in (coins or []) if str(c) in have]
+
     @pyqtSlot(str, result=str)
     def ehCoinOrigin(self, outpoint: str) -> str:
         return str(self._eh_origins().get(outpoint, ''))

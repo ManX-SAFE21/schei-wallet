@@ -30,6 +30,7 @@ ElDialog {
     // owner 17/11 (controllo-mainnet 3.4): «not sure it left» -> the next try keeps THE SAME coins
     // (the fee may change). A payment with other coins could arrive as well: never two payments.
     property bool coinsLocked: false
+    property bool unsureLock: false     // the coins of a payment that maybe left are inside this one
     property string sentBtc: ''
     property bool btcMode: app.ehBtcOnly()     // typing in bitcoin (expert toggle, or 'only bitcoin')
     property bool useMax: false      // expert: all the balance
@@ -609,6 +610,14 @@ ElDialog {
                 width: parent.width
                 spacing: 8
 
+                // Opus review 18/11: a payment before maybe left: this one uses its coins too
+                EhInfoBox {
+                    visible: dialog.unsureLock
+                    kind: 'warn'
+                    title: qsTr('The payment before maybe left')
+                    text: qsTr('This payment also uses <b>its coins</b>: if the one before left, this one does not leave. So you never pay twice.')
+                }
+
                 // the receipt: You send / sending cost / Total on one paper sheet
                 EhSheet {
                     visible: !dialog.needsDouble
@@ -717,7 +726,8 @@ ElDialog {
                             icon: 'eh_goldcoin.svg'
                             text: qsTr('Coins used')
                             hint: (finalizer.valid ? finalizer.ehInputCount + ' · ' : '')
-                                  + (dialog.coinsLocked ? qsTr('the same as before')
+                                  + (dialog.unsureLock ? qsTr('also those of before')
+                                     : dialog.coinsLocked ? qsTr('the same as before')
                                      : finalizer.ehCoins.length > 0 ? qsTr('chosen by you') : qsTr('chosen by itself'))
                             last: true
                             onClicked: dialog.chooseCoins()
@@ -978,14 +988,18 @@ ElDialog {
             if (!mine(txid)) return
             if (code !== 'rejected') {
                 var same = finalizer.ehTxCoins()
-                if (same.length > 0) { finalizer.ehCoins = same; dialog.coinsLocked = true }
+                if (same.length > 0) {
+                    finalizer.ehCoins = same; dialog.coinsLocked = true
+                    app.ehUnsureSet(txid, same)     // also for the next payments, after closing this page
+                }
             }
             dialog.resetBars()
             // third review: say only what we know. A rejection: it did not leave. A broken
             // connection: maybe it left, look at the movements before paying again.
             var info = code === 'rejected'
                 ? { pageTitle: qsTr('The payment did not leave'),
-                    bodyText: qsTr('The bitcoin network refused this payment. Your money is still in the wallet.'),
+                    bodyText: qsTr('The bitcoin network refused this payment. Your money is still in the wallet.')
+                              + (dialog.unsureLock ? '<br><br>' + qsTr('Maybe the payment before had left: look at the movements.') : ''),
                     tipText: '<small>' + reason + '</small>' }
                 : { pageTitle: qsTr('I am not sure the payment left'),
                     bodyText: qsTr('The connection broke while the payment was leaving.')
@@ -996,6 +1010,8 @@ ElDialog {
     }
 
     Component.onCompleted: {
+        var u = app.ehUnsureCoins()
+        if (u.length > 0) { finalizer.ehMustCoins = u; unsureLock = true; coinsLocked = true }
         if (invoice && !invoice.amount.isEmpty)
             goReview(invoice.amount)
         else
