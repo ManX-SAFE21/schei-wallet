@@ -141,6 +141,7 @@ Item {
                 readonly property bool waiting: row.model.confirmations < 1
                 readonly property string when: app.ehWhen(row.model.timestamp)
                 readonly property string note: app.ehTxNote(row.model.label)
+                readonly property bool pluginNote: app.ehPluginLabelKind(row.model.label) !== ''
                 readonly property string what: {
                     var s = row.incoming ? qsTr('money received') : qsTr('money sent')
                     return s.charAt(0).toUpperCase() + s.substring(1)
@@ -220,7 +221,7 @@ Item {
                         height: whatL.implicitHeight
                         Image {
                             id: penI
-                            visible: row.note !== ''
+                            visible: row.note !== '' && !row.pluginNote
                             y: 4
                             source: Qt.resolvedUrl('../../../icons/eh_pen_wine.svg')
                             sourceSize.width: 14
@@ -232,13 +233,24 @@ Item {
                             // only bitcoin: the date stays on this line, the amount goes under it
                             width: parent.width - x - (row.btcOnly ? whenBox.width + 6 : 0)
                             // owner 13/11: a long note goes on two lines (then "…")
-                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            // the app's own words ("Annullamento eredità"): never cut inside a word,
+                            // a little smaller if a word does not fit (owner 17/11, phone)
+                            wrapMode: row.pluginNote ? Text.WordWrap : Text.WrapAtWordBoundaryOrAnywhere
                             maximumLineCount: 2
                             lineHeight: 1.05
                             elide: Text.ElideRight
                             text: row.note !== '' ? row.note : row.what
                             font.family: root.body
-                            font.pixelSize: app.ehFsText
+                            font.pixelSize: row.pluginNote
+                                ? Math.max(11, Math.min(app.ehFsText, Math.floor(app.ehFsText * width / Math.max(1, wordTm.advanceWidth + 2))))
+                                : app.ehFsText
+                            TextMetrics {
+                                id: wordTm
+                                font.family: root.body
+                                font.pixelSize: app.ehFsText
+                                font.bold: true
+                                text: row.pluginNote ? row.note.split(' ').reduce(function(a, b) { return b.length > a.length ? b : a }, '') : ''
+                            }
                             font.bold: true
                             color: row.note !== '' ? '#5e1a33' : '#2a2220'
                         }

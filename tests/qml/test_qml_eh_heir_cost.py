@@ -97,3 +97,36 @@ class TestPluginLabelsInMovements(TestCase):
         m = _read('main.qml')
         for l in (wv.INVALIDATION_LABEL,) + wv.OLD_INVALIDATION_LABELS + (build.BACKUP_LABEL,) + build.OLD_BACKUP_LABELS:
             self.assertIn(l.replace("'", "\\'") if False else l, m)
+
+
+class TestSelfSendDetails(TestCase):
+    # owner 17/11 (phone, build58): the cancellation read "+ € 0,00 · received" in the details
+
+    def test_self_send_reads_as_cost_out(self):
+        d = _read('EhTxDetailsPage.qml')
+        self.assertIn("readonly property bool selfSend: tx.amount.satsInt === 0 && !tx.fee.isEmpty && tx.fee.satsInt > 0", d)
+        self.assertIn("readonly property bool incoming: tx.amount.satsInt >= 0 && !selfSend", d)
+        self.assertIn("page.selfSend ? '− ' + app.ehTxAmount(tx.fee, tx.timestamp, false)", d)
+        self.assertIn("qsTr('cost paid')", d)
+
+    def test_self_send_address_is_the_own_one(self):
+        d = _read('EhTxDetailsPage.qml')
+        self.assertIn("if ((incoming || selfSend) ? outs[i].is_mine : !outs[i].is_mine)", d)
+        self.assertIn("(page.incoming || page.selfSend) ? qsTr('ON YOUR ADDRESS')", d)
+
+    def test_plugin_note_has_no_pen_and_no_focus(self):
+        d = _read('EhTxDetailsPage.qml')
+        self.assertIn("Image { visible: !page.pluginNote; source: Qt.resolvedUrl('../../icons/eh_pen_wine.svg')", d)
+        self.assertIn("activeFocusOnPress: !page.pluginNote", d)
+
+    def test_home_row_never_cuts_the_plugin_words(self):
+        h = _read('controls', 'EhHistoryPanel.qml')
+        self.assertIn("visible: row.note !== '' && !row.pluginNote", h)
+        self.assertIn("wrapMode: row.pluginNote ? Text.WordWrap : Text.WrapAtWordBoundaryOrAnywhere", h)
+        self.assertIn("id: wordTm", h)
+
+    def test_cost_paid_translated(self):
+        from electrum import eh_strings
+        src = open(eh_strings.__file__, encoding='utf-8').read()
+        self.assertIn("'cost paid': 'costo pagato'", src)
+        self.assertIn("'cost paid': 'costo pagà'", src)

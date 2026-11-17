@@ -19,11 +19,15 @@ Item {
     Material.foreground: S.ink
     Material.accent: S.wine          // the text cursor of the note
 
-    readonly property bool incoming: tx.amount.satsInt >= 0
+    // coins sent back to the wallet itself (e.g. the inheritance cancellation): nothing comes in,
+    // only the cost goes out, so it reads as money out (owner 17/11)
+    readonly property bool selfSend: tx.amount.satsInt === 0 && !tx.fee.isEmpty && tx.fee.satsInt > 0
+    readonly property bool incoming: tx.amount.satsInt >= 0 && !selfSend
+    readonly property bool pluginNote: app.ehPluginLabelKind(tx.label) !== ''
     readonly property string otherAddress: {
         var outs = tx.outputs
         for (var i = 0; i < outs.length; i++) {
-            if (incoming ? outs[i].is_mine : !outs[i].is_mine) return outs[i].address
+            if ((incoming || selfSend) ? outs[i].is_mine : !outs[i].is_mine) return outs[i].address
         }
         return outs.length ? outs[0].address : ''
     }
@@ -161,7 +165,8 @@ Item {
             id: hero
             Layout.fillWidth: true
             Layout.preferredHeight: heroRow.height
-            readonly property string amount: app.ehTxAmount(tx.amount, tx.timestamp, true)
+            readonly property string amount: page.selfSend ? '− ' + app.ehTxAmount(tx.fee, tx.timestamp, false)
+                                                           : app.ehTxAmount(tx.amount, tx.timestamp, true)
             // the + / − sign is drawn with the body font: in the serif font it is a hairline
             readonly property string sgn: '+−-'.indexOf(amount.charAt(0)) >= 0 ? amount.charAt(0) : ''
             readonly property string rest: sgn !== '' ? amount.substring(1) : amount
@@ -194,7 +199,8 @@ Item {
         Label {
             Layout.alignment: Qt.AlignHCenter
             Layout.topMargin: -6
-            text: app.ehBtc(tx.amount).replace('-', '') + ' · ' + (page.incoming ? qsTr('received') : qsTr('sent'))
+            text: page.selfSend ? app.ehBtc(tx.fee) + ' · ' + qsTr('cost paid')
+                                : app.ehBtc(tx.amount).replace('-', '') + ' · ' + (page.incoming ? qsTr('received') : qsTr('sent'))
             color: S.muted
             font.family: BodyFont ? BodyFont : font.family
             font.pixelSize: app.ehFsText
@@ -225,13 +231,14 @@ Item {
                     anchors.leftMargin: 12
                     anchors.rightMargin: 6
                     spacing: 10
-                    Image { source: Qt.resolvedUrl('../../icons/eh_pen_wine.svg'); sourceSize.width: 24; sourceSize.height: 24 }
+                    Image { visible: !page.pluginNote; source: Qt.resolvedUrl('../../icons/eh_pen_wine.svg'); sourceSize.width: 24; sourceSize.height: 24 }
                     TextField {
                         id: noteField
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         text: app.ehTxNote(tx.label)
                         readOnly: app.ehPluginLabelKind(tx.label) !== ''
+                        activeFocusOnPress: !page.pluginNote     // nothing to write: no frame, no Save
                         placeholderText: ''          // no Material floating label: our own hint below
                         topPadding: 0
                         bottomPadding: 0
@@ -285,7 +292,7 @@ Item {
             KV { k: qsTr('When'); v: tx.timestamp ? new Date(tx.timestamp * 1000).toLocaleString(app.ehLocale(), 'd MMMM yyyy · HH:mm') : qsTr('not yet') }
             // one row only: the cost, and while unconfirmed the speed paid under it
             KV {
-                visible: !page.incoming && !tx.fee.isEmpty
+                visible: !page.incoming && !tx.fee.isEmpty && !(page.selfSend && tx.confirmations > 0)
                 k: qsTr('Sending cost') + ' ' + qsTr('(tip to the miners)')
                 v: app.ehEuro(tx.fee) !== '' ? app.ehEuro(tx.fee) : app.ehBtc(tx.fee)
                 sub: tx.confirmations < 1 ? app.ehFeeRate(tx.feeRateStr) : ''
@@ -313,7 +320,7 @@ Item {
             topPadding: 12
             bottomPadding: 14
             spacing: 8
-            CardCaption { text: page.incoming ? qsTr('ON YOUR ADDRESS') : qsTr('TO THIS ADDRESS') }
+            CardCaption { text: (page.incoming || page.selfSend) ? qsTr('ON YOUR ADDRESS') : qsTr('TO THIS ADDRESS') }
             Label {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
