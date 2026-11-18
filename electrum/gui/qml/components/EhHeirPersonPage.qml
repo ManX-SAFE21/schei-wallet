@@ -288,7 +288,7 @@ Item {
 
             EhCaption {
                 text: qsTr('How much they receive')
-                tail: qsTr('· tap ✎ to write it')
+                tail: qsTr('· tap the pen to write it')   // owner 18/11: the phone font has no ✎
                 Layout.topMargin: 6
                 Layout.bottomMargin: -4
             }

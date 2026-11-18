@@ -95,3 +95,15 @@ class TestWalletStitching:
         assert "radius: root.bottega ? Math.max(0, root.radius - 6) : 12" in c
         assert "lineWidth: 1.6" in c and "lineWidth: root.bottega ? 2" not in c
         assert "    radius: 18\n" in c                          # so the corner is 12
+
+
+def test_no_pencil_symbol_the_font_cannot_draw():
+    # owner 18/11 (phone): «tocca ✎ per scriverlo» showed an empty box: say «la matita» in words
+    p = _read("EhHeirPersonPage.qml")
+    assert "qsTr(\x27· tap the pen to write it\x27)" in p
+    for f in os.listdir(COMP):
+        if f.endswith(".qml"):
+            for t in __import__("re").findall(r"qsTr\(\x27([^\x27]*)\x27\)", _read(f)):
+                assert "✎" not in t, f
+    from electrum.eh_strings import STRINGS
+    assert STRINGS["it_IT"]["· tap the pen to write it"] == "· tocca la matita per scriverlo"

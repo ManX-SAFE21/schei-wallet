@@ -1065,7 +1065,7 @@ STRINGS = {
         'Fine, continue': 'Va bene, continua',
         'Change the number': 'Cambia il numero',
         # owner Q7 (16/11): «Quanto riceve» with the slider, summary «Chi riceve?»
-        '· tap ✎ to write it': '· tocca ✎ per scriverlo',
+        '· tap the pen to write it': '· tocca la matita per scriverlo',
         'Remaining': 'Restano',
         'This is the first heir: they can have up to 100%.': 'È il primo erede: può avere fino al 100%.',
         'The other heirs already have %1: this one can get at most %2.': 'Gli altri eredi hanno già %1: questo può arrivare al massimo a %2.',
@@ -2186,7 +2186,7 @@ STRINGS = {
         'Fine, continue': 'Va ben, va vanti',
         'Change the number': 'Cambia el numaro',
         # owner Q7 (16/11): «Quanto riceve» with the slider, summary «Chi riceve?»
-        '· tap ✎ to write it': '· tocca ✎ par scrivarlo',
+        '· tap the pen to write it': '· tocca la matita par scrivarlo',
         'Remaining': 'Resta',
         'This is the first heir: they can have up to 100%.': "L'è el primo erede: el pol aver fin al 100%.",
         'The other heirs already have %1: this one can get at most %2.': 'Chealtri eredi i ga za %1: questo el pol rivar al massimo a %2.',

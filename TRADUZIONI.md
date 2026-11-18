@@ -1112,4 +1112,4 @@ Tutti i testi dell'app in **italiano**, **veneto** e **inglese**. Questo file si
 | 1100 | Le tue parole (SEED) | Le to parole (SEED) | Your words (SEED) |
 | 1101 | {} movimenti nuovi | {} movimenti novi | {} new movements |
 | 1102 | «%1» è stato tolto da questo telefono. | «%1» el xe sta cavà da sto telefono. | «%1» has been removed from this phone. |
-| 1103 | · tocca ✎ per scriverlo | · tocca ✎ par scrivarlo | · tap ✎ to write it |
+| 1103 | · tocca la matita per scriverlo | · tocca la matita par scrivarlo | · tap the pen to write it |
