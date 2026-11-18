@@ -62,7 +62,7 @@ EhBottomSheet {
                   : root.reason === 'unfinished'
                   ? qsTr('The inheritance is not finished.<br>Do I finish it now?')
                   : root.reason === 'changed'
-                  ? qsTr('Something in the inheritance was changed.<br>Do I update it now?')
+                  ? qsTr('The inheritance must be put in order: for example the heirs changed, or a keeper no longer has the envelope.<br>Do I fix it now?')
                   : qsTr('You made a payment.<br>Do I update the inheritance with what is left?')
         }
     }
@@ -99,8 +99,11 @@ EhBottomSheet {
     }
     EhInfoBox {
         kind: 'tip'
-        // each free update dates the envelope one day earlier (an unfinished one keeps its date)
+        // each free update dates the envelope one day earlier (an unfinished one keeps its date);
+        // owner 18/11: after a payment that spent the envelope's coins the old envelope is already
+        // dead: the new one starts again from today, for the whole period (newDelivery)
         text: qsTr('It costs nothing. The delivery becomes <b>%1</b>.')
-                .arg(app.ehHeirDate((root.st.delivery || 0) - (root.reason === 'unfinished' ? 0 : 86400)))
+                .arg(app.ehHeirDate(root.reason === 'spent' && (root.st.newDelivery || 0) > 0 ? root.st.newDelivery
+                                    : (root.st.delivery || 0) - (root.reason === 'unfinished' ? 0 : 86400)))
     }
 }

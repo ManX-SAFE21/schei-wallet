@@ -58,6 +58,8 @@ Item {
     }
 
     function keeperHint() {
+        // owner 18/11: a payment spent the envelope's coins: it is no longer "safe", it must be made again
+        if (phase === 'needs_update' && page.st.updateReason === 'spent') return qsTr('the envelope must be made again')
         if (kst === 'some' || kst === 'low')
             return lost === 1 ? qsTr('envelope safe, one does not answer') : qsTr('envelope safe, %1 do not answer').arg(lost)
         if (kst === 'none') return qsTr('nobody answers')

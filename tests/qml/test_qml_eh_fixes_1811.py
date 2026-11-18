@@ -1,0 +1,97 @@
+# Schȅi, owner 18/11 evening: the fixes found by the phone test of build63.
+import os
+from types import SimpleNamespace
+
+import pytest
+
+from electrum.gui.qml import qeapp
+
+COMP = os.path.join(os.path.dirname(qeapp.__file__), "components")
+
+
+def _read(*p):
+    return open(os.path.join(COMP, *p), encoding="utf-8").read()
+
+
+def _m():
+    # imported only when a test runs (see test_qml_eh_heir_keeper_price)
+    from electrum.plugins.bal import qml
+    return qml
+
+
+class TestEmptyWallet:
+    """1: an empty wallet says «non bastano», never the generic sentence."""
+
+    def test_build_codes(self):
+        from electrum.util import UserFacingException
+        code = lambda t: _m()._fail_code(UserFacingException(t))
+        base = "The will was not built ({}): check the heirs, the amounts, the delivery date and the will-executors."
+        assert code(base.format("NO_UTXO")) == "too_low"
+        assert code(base.format("FIXED_EXCEEDS_BALANCE")) == "too_low"
+        assert code(base.format("WILLEXECUTOR_FEE")) == "too_low"
+        assert code(base.format("WILLEXECUTOR_FEE_TOO_HIGH")) == "keeper_fee"
+        assert code(base.format("?")) == "user"
+
+    def test_review_stops_before_building_on_an_empty_wallet(self):
+        q = _m()
+        me = SimpleNamespace(_local=SimpleNamespace(wallet=object()))
+        me._need_network = lambda w: None
+        me._kind_ok = lambda w: None
+        me._period_change = lambda w: ("new", 24, 0, 0)
+        me._keepers = lambda: [{"url": "k", "ok": True, "feeSats": 1000}]
+        me._coins = lambda w: {}
+        calls = []
+        me._cmd = lambda name, *a, **k: (calls.append(name) or ({"Carla": ["x", "100%"]} if name == "bal_heirs_list" else {}))
+        me._prepare = lambda: pytest.fail("built with an empty wallet")
+        with pytest.raises(q._Fail) as e:
+            q.QEBal._job_review(me)
+        assert e.value.code == "too_low"
+
+
+class TestTexts:
+
+    def test_keepers_never_say_there_are_no_others(self):
+        s = _read("EhHeirKeeperListSheet.qml")
+        assert "on this network there are no others" not in s
+        assert "qsTr(\x27We use 1 keeper: the one you chose.\x27)" in s
+        assert "app.ehSatsAndEuro(k.feeSats || 0)" in s
+
+    def test_update_after_a_payment_that_spent_the_envelope(self):
+        u = _read("EhHeirUpdateSheet.qml")
+        assert "root.reason === \x27spent\x27 && (root.st.newDelivery || 0) > 0 ? root.st.newDelivery" in u
+        assert "Something in the inheritance was changed." not in u
+        assert "for example the heirs changed, or a keeper no longer has the envelope" in u
+
+    def test_status_after_the_envelope_was_spent(self):
+        s = _read("EhHeirStatusPage.qml")
+        i = s.index("if (phase === \x27needs_update\x27 && page.st.updateReason === \x27spent\x27) return qsTr(\x27the envelope must be made again\x27)")
+        assert i < s.index("return qsTr(\x27envelope safe\x27)")
+
+    def test_back_to_home_is_the_home(self):
+        assert "onClicked: { dialog.doAccept(); app.stack.pop(null) }" in _read("EhInvoiceDialog.qml")
+
+    def test_same_language_does_not_ask_to_reopen(self):
+        m = _read("main.qml")
+        body = m[m.index("    function ehChangeLanguage() {"):]
+        body = body[:body.index("\n    }\n")]
+        assert "if (Config.language !== before)" in body
+
+    def test_italian(self):
+        from electrum.eh_strings import STRINGS
+        it = STRINGS["it_IT"]
+        assert it["the envelope must be made again"] == "la busta va rifatta"
+        assert it["We use 1 keeper: the one you chose."] == "Usiamo 1 custode: quello che hai scelto tu."
+
+
+class TestWalletStitching:
+    """9: the home wallet has the SEND/RECEIVE bar stitching; its corner follows its own edge."""
+
+    def test_same_as_the_bar(self):
+        c = _read("controls", "EhBalanceCard.qml")
+        b = _read("controls", "EhSlideBar.qml")
+        assert "inset: 6" in b and "lineWidth: 1.6" in b and "color: \x27#e3c57e\x27" in b
+        assert "radius: 26" in b and "radius: 20" in b          # bar: 26 - 6
+        assert "inset: root.bottega ? 6 : 7" in c
+        assert "radius: root.bottega ? Math.max(0, root.radius - 6) : 12" in c
+        assert "lineWidth: 1.6" in c and "lineWidth: root.bottega ? 2" not in c
+        assert "    radius: 18\n" in c                          # so the corner is 12

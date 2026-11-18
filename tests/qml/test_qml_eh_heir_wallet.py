@@ -68,7 +68,8 @@ class TestHeirsChangedOutside(TestCase):
         u = _read('EhHeirUpdateSheet.qml')
         i = u.index("root.reason === 'changed'")
         self.assertLess(i, u.index("qsTr('You made a payment."))
-        self.assertIn("qsTr('Something in the inheritance was changed.<br>Do I update it now?')", u)
+        # owner 18/11: the text says what can have changed (the heirs or a keeper)
+        self.assertIn("qsTr('The inheritance must be put in order: for example the heirs changed, or a keeper no longer has the envelope.<br>Do I fix it now?')", u)
 
     def test_percent_error_is_a_clear_sentence(self):
         body = _body(_read('main.qml'), 'function ehHeirErrorText', '\n    }\n')

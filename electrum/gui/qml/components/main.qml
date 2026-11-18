@@ -1363,8 +1363,11 @@ ApplicationWindow
     Component { id: _ehAskAmountDialog; EhAskAmountDialog { onClosed: destroy() } }
     function ehChangeLanguage() {
         var d = languagePicker.createObject(app)
+        var before = Config.language
         d.accepted.connect(function() {
-            ehTell(qsTr('Close and reopen Schȅi to see everything in the new language.'))
+            // owner 18/11: the same language chosen again: nothing to reopen
+            if (Config.language !== before)
+                ehTell(qsTr('Close and reopen Schȅi to see everything in the new language.'))
         })
         d.open()
     }

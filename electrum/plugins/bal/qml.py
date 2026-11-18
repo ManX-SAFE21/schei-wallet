@@ -148,6 +148,12 @@ def _fail_code(e):
         return 'dust'
     if isinstance(c, (heirs_mod.BalanceTooLowException, will_mod.AmountException)):
         return 'too_low'
+    # owner 18/11 (phone test): "The will was not built (CODE)" of the plugin's build
+    text = str(e)
+    if '(WILLEXECUTOR_FEE_TOO_HIGH)' in text:
+        return 'keeper_fee'
+    if any(k in text for k in ('(NO_UTXO)', '(FIXED_EXCEEDS_BALANCE)', '(WILLEXECUTOR_FEE)')):
+        return 'too_low'
     return 'user'
 
 
@@ -968,6 +974,9 @@ class QEBal(PluginQObject):
         show = self._cmd('bal_delivery_show')
         coins = self._coins(wallet)
         balance = sum(coins.values())
+        if balance <= 0:
+            # owner 18/11: an empty wallet: say it in Schȅi's words (not the build's error)
+            raise _Fail('too_low', 'The wallet is empty.')
         renew_fee = self._renew_estimate(wallet, len(coins))
         if change == 'renew':
             # nothing is prepared now: the will in force is still there (from the day of

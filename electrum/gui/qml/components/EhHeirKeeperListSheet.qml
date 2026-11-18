@@ -39,7 +39,7 @@ EhBottomSheet {
                  : n === 1 ? qsTr('Not answering for 1 day') : qsTr('Not answering for %1 days').arg(n)
         }
         var c = checkedText(k.checkedAt || 0)
-        return qsTr('At the delivery it takes about %1').arg(app.ehHeirSats(k.feeSats || 0)) + (c !== '' ? ' · ' + c : '')
+        return qsTr('At the delivery it takes about %1').arg(app.ehSatsAndEuro(k.feeSats || 0)) + (c !== '' ? ' · ' + c : '')
     }
 
     EhTitle {
@@ -122,8 +122,11 @@ EhBottomSheet {
         font.family: BodyFont ? BodyFont : font.family
         font.pixelSize: app.ehFsSmall
         color: S.muted
-        text: root.total === 1 ? qsTr('We use 1 keeper of the %1 chosen: on this network there are no others.').arg(root.wanted)
-            : qsTr('We use %1 keepers of the %2 chosen: on this network there are no others.').arg(root.total).arg(root.wanted)
+        // owner 18/11: never "there are no others" (some may only not answer now, or be chosen by hand)
+        text: (root.st.keepersMine || []).length > 0
+              ? (root.total === 1 ? qsTr('We use 1 keeper: the one you chose.') : qsTr('We use %1 keepers: the ones you chose.').arg(root.total))
+              : root.total === 1 ? qsTr('We use 1 keeper of the %1 chosen: the others do not answer now, or there are no more.').arg(root.wanted)
+              : qsTr('We use %1 keepers of the %2 chosen: the others do not answer now, or there are no more.').arg(root.total).arg(root.wanted)
     }
     EhStitchButton {
         visible: root.lost > 0 && ['low', 'none', 'invalid'].indexOf(root.kst) >= 0

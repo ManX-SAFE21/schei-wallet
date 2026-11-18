@@ -251,12 +251,14 @@ Rectangle {
             c.fill()
         }
     }
-    // leather wallet: stitching all round, 7 px from the edge
+    // leather wallet: stitching all round; owner 18/11: the home wallet has the same stitching as
+    // the SEND/RECEIVE bar (EhSlideBar): 6 px from the edge, line 1.6 (dashes 11/8 px); the corner
+    // follows the wallet's own edge (its radius less the 6 px), as the bar's follows its leather
     EhDashedBorder {
         anchors.fill: parent
-        inset: 7
-        radius: 12
-        lineWidth: root.bottega ? 2 : 1.6
+        inset: root.bottega ? 6 : 7
+        radius: root.bottega ? Math.max(0, root.radius - 6) : 12
+        lineWidth: 1.6
         color: root.watch ? root.tint(root.baseColor, 0.55) : (root.bottega ? '#e3c57e' : Qt.rgba(1, 0.91, 0.77, 0.6))
     }
     // closing strap on the right; its golden button = settings

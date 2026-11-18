@@ -952,7 +952,8 @@ ElDialog {
             kind: 'wine'
             icon: 'eh_home_ivory.svg'
             text: qsTr('Back to home')
-            onClicked: dialog.doAccept()
+            // owner 18/11: also when the payment was opened from a link over another page
+            onClicked: { dialog.doAccept(); app.stack.pop(null) }
         }
     }
     }
