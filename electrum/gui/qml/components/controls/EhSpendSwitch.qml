@@ -41,7 +41,7 @@ Column {
         anchors.horizontalCenter: parent.horizontalCenter
         text: root.spendable ? qsTr('spendable') : root.blockedText
         font.family: BodyFont ? BodyFont : font.family
-        font.pixelSize: 16
+        font.pixelSize: app.ehFsText
         font.bold: true
         color: root.spendable ? S.olive : S.red
     }

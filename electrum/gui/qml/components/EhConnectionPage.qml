@@ -113,9 +113,9 @@ Item {
                 Layout.fillWidth: true
                 spacing: 2
                 Label { Layout.fillWidth: true; text: op.title; color: S.ink; wrapMode: Text.WordWrap
-                        font.family: BodyFont ? BodyFont : font.family; font.pixelSize: 17; font.bold: true }
+                        font.family: BodyFont ? BodyFont : font.family; font.pixelSize: app.ehFsText; font.bold: true }
                 Label { Layout.fillWidth: true; visible: op.hint !== ''; text: op.hint; color: S.muted; wrapMode: Text.WordWrap
-                        font.family: BodyFont ? BodyFont : font.family; font.pixelSize: 16; lineHeight: 1.05 }
+                        font.family: BodyFont ? BodyFont : font.family; font.pixelSize: app.ehFsText; lineHeight: 1.05 }
             }
         }
         EhDotLine {
@@ -129,7 +129,6 @@ Item {
 
     Flickable {
         anchors.fill: parent
-        anchors.bottomMargin: app.navigationBarHeight
         contentHeight: col.implicitHeight + 24
         clip: true
         ColumnLayout {
@@ -178,7 +177,7 @@ Item {
                             wrapMode: Text.WordWrap
                             color: Network.isConnected ? S.oliveInk : S.waitInk
                             font.family: BodyFont ? BodyFont : font.family
-                            font.pixelSize: 17; font.bold: true
+                            font.pixelSize: app.ehFsText; font.bold: true
                             text: !Network.isConnected ? qsTr('Not connected')
                                 : (page.torOn ? qsTr('Connected through Tor') : (page.myNode ? qsTr('Connected to your node') : qsTr('Connected')))
                         }
@@ -187,7 +186,7 @@ Item {
                             elide: Text.ElideMiddle
                             color: S.muted
                             font.family: BodyFont ? BodyFont : font.family
-                            font.pixelSize: 16
+                            font.pixelSize: app.ehFsText
                             text: !Network.isConnected ? (page.torOn && page.torFound === 0 ? qsTr('Tor does not answer') : qsTr('trying to connect…'))
                                 : Network.server + ' · ' + qsTr('block %1').arg(Network.height.toLocaleString(app.ehLocale(), 'f', 0))
                         }
@@ -235,7 +234,7 @@ Item {
                             anchors.rightMargin: 14
                             verticalAlignment: TextInput.AlignVCenter
                             font.family: FixedFont
-                            font.pixelSize: 17
+                            font.pixelSize: app.ehFsText
                             color: S.ink
                             selectionColor: S.highlight
                             selectedTextColor: S.wineDark
@@ -248,7 +247,7 @@ Item {
                                 text: 'umbrel.local:50002:s'
                                 color: S.muted
                                 font.family: FixedFont
-                                font.pixelSize: 17
+                                font.pixelSize: app.ehFsText
                             }
                         }
                     }
@@ -262,7 +261,7 @@ Item {
                         wrapMode: Text.WordWrap
                         textFormat: Text.StyledText
                         font.family: BodyFont ? BodyFont : font.family
-                        font.pixelSize: 16
+                        font.pixelSize: app.ehFsText
                         lineHeight: 1.1
                         color: S.muted
                         text: qsTr('You find it in the "Electrs" or "Fulcrum" app of your node. ":s" means protected connection.')
@@ -295,12 +294,12 @@ Item {
                             Layout.fillWidth: true
                             spacing: 2
                             Label { Layout.fillWidth: true; text: qsTr('Go through Tor'); color: S.ink; wrapMode: Text.WordWrap
-                                    font.family: BodyFont ? BodyFont : font.family; font.pixelSize: 17; font.bold: true }
+                                    font.family: BodyFont ? BodyFont : font.family; font.pixelSize: app.ehFsText; font.bold: true }
                             Label {
                                 Layout.fillWidth: true
                                 wrapMode: Text.WordWrap
                                 font.family: BodyFont ? BodyFont : font.family
-                                font.pixelSize: 16
+                                font.pixelSize: app.ehFsText
                                 lineHeight: 1.05
                                 font.bold: page.torOn && page.torFound >= 0
                                 color: !page.torOn ? S.muted : (page.torFound === 1 ? S.oliveInk : (page.torFound === 0 ? S.red : S.muted))

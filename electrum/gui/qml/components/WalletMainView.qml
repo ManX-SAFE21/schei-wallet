@@ -312,7 +312,7 @@ Item {
 
     ColumnLayout {
         anchors.fill: parent
-        anchors.bottomMargin: 14 + app.navigationBarHeight
+        anchors.bottomMargin: 14
         spacing: 8
 
         // logo "schȅi Wallet" at the top, in the sky
@@ -571,7 +571,7 @@ Item {
                 // third review: a wallet "only to look at" has no keys, it cannot pay
                 app.ehInfoDialog.createObject(app, {
                     pageTitle: qsTr('This wallet can only look'),
-                    bodyText: qsTr('It shows the balance, but it does not have the keys to pay. Open a wallet with its 12 words to pay.')
+                    bodyText: qsTr('It shows the balance, but it does not have the keys to pay. Open a wallet with its words (SEED) to pay.')
                 }).open()
                 return
             }
@@ -627,6 +627,7 @@ Item {
         target: Daemon
         function onWalletLoaded() {
             if (!Daemon.currentWallet) {  // wallet got deleted
+                if (app._ehRemoving) return     // Schȅi removed an added wallet: the main one opens next
                 app.stack.replaceRoot('Wallets.qml')
                 return
             }

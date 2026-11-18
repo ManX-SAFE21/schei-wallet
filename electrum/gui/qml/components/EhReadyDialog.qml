@@ -48,7 +48,7 @@ ElDialog {
             kind: 'tip'
             icon: 'eh_check.svg'
             text: qsTr('Done! Now you can receive and send bitcoin.')
-            fontSize: 18
+            fontSize: app.ehFsText
         }
 
         EhInfoBox {
@@ -56,7 +56,7 @@ ElDialog {
             icon: 'eh_wallet.svg'
             text: '<b>' + qsTr('Schȅi is like the wallet in your pocket:') + '</b> '
                 + qsTr('keep only a few schei in it, the ones for spending. It is not a safe: for big savings use a safer system.')
-            fontSize: 17
+            fontSize: app.ehFsText
         }
 
         Item { Layout.fillHeight: true; Layout.minimumHeight: 8 }

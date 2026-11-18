@@ -43,7 +43,6 @@ Item {
 
     Flickable {
         anchors.fill: parent
-        anchors.bottomMargin: app.navigationBarHeight
         contentHeight: col.implicitHeight + 24
         clip: true
         ColumnLayout {
@@ -78,13 +77,81 @@ Item {
 
             Group { text: qsTr('YOUR WALLET') }
             EhSheet {
-                EhRow { icon: 'eh_palette.svg'; text: qsTr('Name and colour'); last: col.lv < 1
+                id: walletSheet
+                readonly property bool canRemove: app.ehCanRemoveWallet()
+                EhRow { icon: 'eh_palette.svg'; text: qsTr('Name and colour'); last: col.lv < 1 && !walletSheet.canRemove
                         onClicked: app.stack.push(Qt.resolvedUrl('EhNamePage.qml')) }
                 RowSw { visible: col.lv >= 1; tag: 1; icon: 'eh_wallet.svg'; text: qsTr('Manage more wallets'); note: qsTr('up to 7, each with its own colour'); key: 'multi'
                         locked: Daemon.availableWallets.rowCount() > 1
                         lockedHint: qsTr('you have %1 wallets: it stays on, so you see them all').arg(Daemon.availableWallets.rowCount()) }
-                RowSw { visible: col.lv >= 1; tag: 1; icon: 'eh_eye.svg'; text: qsTr('View and receive only'); note: qsTr('a wallet without the 12 words: see the balance and receive, no spending'); key: 'watch'
-                        last: true }
+                RowSw { visible: col.lv >= 1; tag: 1; icon: 'eh_eye.svg'; text: qsTr('View and receive only'); note: qsTr('a wallet without the words (SEED): see the balance and receive, no spending'); key: 'watch'
+                        last: !walletSheet.canRemove }
+                // owner 17/11: only an added wallet (never the main one), only in ESPERTO, with the PIN
+                EhRow { visible: walletSheet.canRemove; icon: 'eh_cross.svg'; text: qsTr('Remove this wallet')
+                        hint: qsTr('only without inheritance'); lock: true; last: true
+                        onClicked: app.ehRemoveWallet() }
+            }
+
+            // the inheritance (Àncòra inside Schȅi), every level; not for a wallet that cannot spend
+            readonly property var bal: AppController.plugin('bal')
+            // only the state of the wallet open (owner 17/11: right after a switch it can be the previous one's)
+            readonly property var heir: bal && bal.state && Daemon.currentWallet
+                                        && bal.state.wallet === Daemon.currentWallet.name ? bal.state : ({})
+            readonly property bool heirOn: bal !== null && Daemon.currentWallet !== null && !Daemon.currentWallet.isWatchOnly
+            readonly property string heirPhase: heir.phase || 'none'
+            Group { visible: col.heirOn; text: qsTr('INHERITANCE') }
+            EhSheet {
+                visible: col.heirOn
+                // owner 17/11: on by default; it cannot be turned off while an inheritance exists
+                // (cancel it first), or it would stay active without being seen
+                EhRow { icon: 'eh_will.svg'; text: qsTr('Use the inheritance')
+                        readonly property bool exists: col.heirPhase !== 'none' && col.heirPhase !== 'draft'
+                        showSwitch: true
+                        checked: app.ehHeirEnabled()
+                        switchEnabled: !exists || !app.ehHeirEnabled()
+                        hint: exists ? qsTr('there is an inheritance: to turn it off, cancel it first')
+                                     : qsTr('the badge on the wallet and the question every 3 months')
+                        last: !app.ehHeirEnabled()
+                        onToggled: (on) => app.ehSetHeirEnabled(on) }
+                EhRow { visible: app.ehHeirEnabled()
+                        icon: 'eh_will.svg'; text: qsTr('Inheritance')
+                        value: col.heirPhase === 'due' || col.heirPhase === 'expired' ? qsTr('to renew')
+                             : (col.heirPhase === 'active' || col.heirPhase === 'needs_update' ? qsTr('Active') : '')
+                        onClicked: app.ehHeirOpen() }
+                EhRow { visible: app.ehHeirEnabled() && col.heirPhase !== 'none' && col.heirPhase !== 'foreign'
+                        icon: 'eh_cal.svg'; text: qsTr('When to remind you')
+                        value: col.heir.warn === 'third' ? qsTr('One third from the end')
+                             : (col.heir.warn === 'quarter' ? qsTr('One quarter from the end') : qsTr('Half way through the period'))
+                        onClicked: app.stack.push(Qt.resolvedUrl('EhHeirWarnPage.qml')) }
+                // owner 15/11 (point 4c): 3 (default), 5, 7 … 19 keepers
+                EhRow { visible: app.ehHeirEnabled() && col.heirPhase !== 'foreign'
+                        icon: 'eh_shield_olive.svg'; iconColor: S.olive; text: qsTr('How many keepers')
+                        hint: qsTr('more keepers, safer')
+                        value: (col.heir.keepersWanted || 3) === 3 ? qsTr('%1 (default)').arg(3) : '' + col.heir.keepersWanted
+                        onClicked: app._ehHeirOpenSheet('EhHeirKeepersSheet.qml') }
+                // owner 18/11: the keepers' maximum price: shown to all, changed only at EXPERT level
+                EhRow { visible: app.ehHeirEnabled() && col.heirPhase !== 'foreign'
+                        icon: 'eh_euro.svg'; iconColor: S.olive; text: qsTr('Maximum price of a keeper')
+                        value: app.ehSatsText(col.heir.keeperMax || 50000)
+                        hint: col.lv >= 2 ? qsTr('who asks more is not used')
+                                          : qsTr('to change it or choose the keepers: EXPERT level')
+                        tag: col.lv >= 2 ? 2 : 0
+                        chevron: col.lv >= 2
+                        onClicked: col.lv >= 2 ? app._ehHeirOpenSheet('EhHeirKeeperMaxSheet.qml')
+                                   : app.ehTell(qsTr('Maximum price of a keeper: %1').arg(app.ehSatsText(col.heir.keeperMax || 50000)),
+                                                qsTr('Schȅi chooses the keepers by itself, only among those who ask at most this price. To change it or to choose the keepers yourself, switch to the EXPERT level.')) }
+                // owner 18/11: the keepers chosen by hand, with their price (EXPERT)
+                EhRow { visible: app.ehHeirEnabled() && col.heirPhase !== 'foreign' && col.lv >= 2
+                        icon: 'eh_shield_olive.svg'; iconColor: S.olive; text: qsTr('Choose the keepers')
+                        tag: 2
+                        value: (col.heir.keepersMine || []).length === 1 ? qsTr('1 chosen')
+                             : (col.heir.keepersMine || []).length > 1 ? qsTr('%1 chosen').arg(col.heir.keepersMine.length) : qsTr('automatic')
+                        onClicked: app.stack.push(Qt.resolvedUrl('EhHeirKeeperChoosePage.qml')) }
+                // owner 15/11 (point 8): "How it works" also while the inheritance is active
+                EhRow { visible: app.ehHeirEnabled()
+                        icon: 'eh_info.svg'; text: qsTr('How it works')
+                        last: true
+                        onClicked: app.stack.push(Qt.resolvedUrl('EhHeirHowPage.qml')) }
             }
 
             Group { text: qsTr('HOW YOU SEE THE APP') }
@@ -145,7 +212,7 @@ Item {
                 // on the card); the crucible is the "i" there
                 RowSw { tag: 1; icon: 'eh_goldcoin.svg'; text: qsTr('Gold coins (UTXO)'); key: 'utxo'
                         last: !app.ehOption('utxo')
-                        note: app.ehOption('utxo') ? qsTr('you find them in the payment ("Coins used") and in "blocked ›" on the wallet card')
+                        note: app.ehOption('utxo') ? qsTr('you find them in the payment ("Coins used") and in "blocked ›" on the wallet')
                                                    : qsTr('choose which coins to spend, block coins and addresses') }
                 RowSw { visible: app.ehOption('utxo'); tag: 1; icon: 'eh_privacy.svg'; text: qsTr('Advanced privacy'); note: qsTr('pockets, origin of the coins and warnings'); key: 'privacy'
                         last: !app.ehOption('privacy') }
@@ -164,7 +231,7 @@ Item {
 
             Group { text: qsTr('SECURITY') }
             EhSheet {
-                EhRow { icon: 'eh_key_wine.svg'; text: qsTr('See the 12 words again'); lock: true; onClicked: app.ehShowSeed() }
+                EhRow { icon: 'eh_key_wine.svg'; text: qsTr('See the words (SEED) again'); lock: true; onClicked: app.ehShowSeed() }
                 EhRow { icon: 'eh_dots.svg'; text: qsTr('Change PIN'); lock: true; last: true; onClicked: app.ehChangePin() }
             }
 
@@ -201,7 +268,7 @@ Item {
                             var d = Qt.createComponent(Qt.resolvedUrl('EhAskDialog.qml')).createObject(app, {
                                 text: qsTr('Are you sure?'),
                                 detail: qsTr('All the settings go back to the standard ones and the level goes back to BASE.') + '\n\n'
-                                        + qsTr('Your money, the wallets, the 12 words, the PIN, the name and the language do not change.')
+                                        + qsTr('Your money, the wallets, the words (SEED), the PIN, the name and the language do not change.')
                             })
                             d.accepted.connect(function() { app.ehResetAndCheck() })
                             d.open()

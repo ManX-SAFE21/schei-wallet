@@ -22,11 +22,25 @@ ApplicationWindow
     readonly property bool ehTest: Network.isTestNet
     readonly property int ehTestBand: ehTest ? 22 : 0
     readonly property int statusBarHeight: (AppController ? AppController.getStatusBarHeight() : 0) + ehTestBand
-    readonly property int navigationBarHeight: AppController ? AppController.getNavigationBarHeight() : 0
+    // a property (not a call): on Android 14 without edge-to-edge the Qt window can end under the
+    // Android keys; AppController measures it once the window is laid out (owner 16/11, Galaxy A15)
+    readonly property int navigationBarHeight: AppController ? AppController.navigationBarHeight : 0
+
+    // Schȅi text sizes (owner 16/11): only these 6, used by every Schȅi page. Measured on a
+    // 412 dp phone (Pixel 7); narrower phones get up to 10% smaller, never under 13.
+    readonly property real ehFs: Math.max(0.9, Math.min(1.0, width / 412))
+    readonly property int ehFsSmall: Math.max(12, Math.round(12 * ehFs))   // label, note
+    readonly property int ehFsText: Math.max(12, Math.round(14 * ehFs))    // text
+    readonly property int ehFsStrong: Math.max(12, Math.round(16 * ehFs))  // text in evidence
+    readonly property int ehFsBox: Math.round(23 * ehFs)                   // box title
+    readonly property int ehFsTitle: Math.round(28 * ehFs)                 // page title
+    readonly property int ehFsFigure: Math.round(37 * ehFs)                // big figure
 
     // dimensions ignored on android
     width: 480
     height: 800
+    // the window changed size (back in the app, keyboard...): measure the Android keys again
+    onHeightChanged: if (AppController) AppController.watchSystemBars()
 
     Material.theme: Material.Dark
     Material.primary: Material.Indigo
@@ -591,7 +605,7 @@ ApplicationWindow
         // second review (W5): at first start the wizard cannot just go away (Back on Welcome):
         // without a wallet the home has nothing to show, so it comes back on the first page
         function ehFirstWizard() {
-            var newww = app.newWalletWizard.createObject(app)
+            var newww = app.newWalletWizard.createObject(app, { ehSeedAllowed: true })   // first wallet
             var created = false
             newww.walletCreated.connect(function() {
                 created = true
@@ -762,7 +776,11 @@ ApplicationWindow
     Timer { interval: 60000; repeat: true; running: true; onTriggered: app.ehToday = new Date().toDateString() }
     Connections {
         target: Qt.application
-        function onStateChanged() { if (Qt.application.state === Qt.ApplicationActive) app.ehToday = new Date().toDateString() }
+        function onStateChanged() {
+            if (Qt.application.state !== Qt.ApplicationActive) return
+            app.ehToday = new Date().toDateString()
+            if (AppController) AppController.watchSystemBars()  // the window may be another size now
+        }
     }
     function ehWhen(timestamp, withTime) {
         ehToday
@@ -778,6 +796,26 @@ ApplicationWindow
         if (d.getFullYear() !== now.getFullYear()) s += ' ' + d.getFullYear()
         if (withTime) s += ', ' + hm
         return s
+    }
+    // owner 17/11: the inheritance plugin writes its own labels on some transactions (the
+    // cancellation, the backup copies, the envelopes kept in the wallet). Shown in the app's words,
+    // in every language; the old "Safe21 Heartbeat" texts too. Never edited (the app reads them).
+    readonly property var ehPluginLabels: ({
+        'Àncòra – annullamento eredità': 'cancel', 'Safe21 Heartbeat invalidation': 'cancel',
+        "Àncòra – copia di riserva dell'eredità": 'backup', 'Safe21 Heartbeat backup transaction': 'backup'
+    })
+    function ehPluginLabelKind(l) {
+        if (!l) return ''
+        if (ehPluginLabels[l]) return ehPluginLabels[l]
+        if (l.indexOf('BitcoinAfterLife inheritance transaction') === 0) return 'envelope'
+        return ''
+    }
+    function ehTxNote(l) {
+        var k = ehPluginLabelKind(l)
+        if (k === 'cancel') return qsTr('Inheritance cancellation')
+        if (k === 'backup') return qsTr('Inheritance backup copy')
+        if (k === 'envelope') return qsTr('Inheritance envelope')
+        return l || ''
     }
     // amount of a history item: historic euro value if known, else today's, else BTC
     function ehTxAmount(amount, timestamp, signed) {
@@ -899,21 +937,26 @@ ApplicationWindow
     // down. Here on the main window, so a window still open after the page is closed works.
     function ehLevelName(to) { return to === 'base' ? qsTr('BASE') : (to === 'medio' ? qsTr('MEDIUM') : qsTr('EXPERT')) }
     function ehLevelLines(to) {
+        // owner 18/11: out of ESPERTO the keepers' price and choice go back to the standard
+        var k = ehLevel() === 'esperto' && to !== 'esperto'
+            ? '\n• ' + qsTr("The keepers' maximum price goes back to 50.000 sats and Schȅi chooses the keepers by itself.") : ''
         if (ehLevelRemembered(to))
-            return qsTr('You find the switches of this level as you left them.')
+            return qsTr('You find the switches of this level as you left them.') + (k !== '' ? '\n' + k : '')
         if (to === 'base')
             return '• ' + qsTr('The standard settings come back: the extra options turn off, the PIN for big payments is on.')
                  + '\n• ' + qsTr('The rows for more choices are hidden.')
-                 + '\n• ' + qsTr('Your money, the 12 words and the PIN do not change.')
+                 + '\n• ' + qsTr('Your money, the words (SEED) and the PIN do not change.') + k
         if (to === 'medio')
             return '• ' + qsTr('You write the amounts in %1 or in bitcoin').arg(ehCcyName())
                  + '\n• ' + qsTr('In Receive you can ask a precise amount')
                  + '\n• ' + qsTr('More wallets, view-only wallets and gold coins turn on')
-                 + '\n• ' + qsTr('Other choices appear, off: privacy, send all, node and Tor')
+                 + '\n• ' + qsTr('Other choices appear, off: privacy, send all, node and Tor') + k
         return '• ' + qsTr('Everything of MEDIUM, and also:')
              + '\n• ' + qsTr('Tip written by hand, advanced privacy and "Send all the balance" turn on')
              + '\n• ' + qsTr('The rows for experts appear: PIN threshold, more addresses')
     }
+    // owner 17/11: a Schȅi message with one button (not Electrum's message box)
+    function ehTell(text, detail) { ehAsk(text, detail || '', null, null, qsTr('OK (go ahead)'), '') }
     function ehAsk(text, detail, onYes, onNo, yesText, noText) {
         var props = { text: text, detail: detail }
         if (yesText) props.yesText = yesText
@@ -994,6 +1037,12 @@ ApplicationWindow
         if (Daemon.availableWallets.rowCount() > 1) Config.ehSet('opt_multi', true)
         // out of ESPERTO the PIN for big payments cannot be seen: it is on again
         if (to !== 'esperto') Config.ehSet('opt_double', true)
+        // owner 18/11: out of ESPERTO the keepers' maximum price goes back to the standard
+        // (50 000 sats) and Schȅi chooses the keepers by itself again
+        if (to !== 'esperto') {
+            var bal = ehBal()
+            if (bal) bal.keepersStandard()      // Opus review 18/11: saved at once, never refused
+        }
         Config.ehSet('opt_show_adv', to !== 'base')
         Config.ehSet('eh_level', to)
         ehOptRev++
@@ -1116,7 +1165,9 @@ ApplicationWindow
     function ehZoomAddress(address, mine) { ehAddressZoom.createObject(app, { address: address, mine: mine }).open() }
 
     // Schȅi testnet4: test coins have no price, always in bitcoin
-    function ehBtcOnly() { ehOptRev; return app.ehTest || Config.ehGet('opt_btc_only') === true }
+    // owner 17/11: the testnet4 app shows euro too, at the real bitcoin price (to try banknotes,
+    // euro amounts...); the striped band says on every page that the test coins are worth nothing
+    function ehBtcOnly() { ehOptRev; return Config.ehGet('opt_btc_only') === true }
     function ehSetBtcOnly(on) {
         ehSetOption('btc_only', on)
         Daemon.fx.enabled = !on
@@ -1180,20 +1231,106 @@ ApplicationWindow
     }
     function ehAddWallet(full) {
         if (full) {
-            app.messageDialog.createObject(app, { text: qsTr('You already have 7 wallets, the maximum.') }).open()
+            ehTell(qsTr('You already have 7 wallets, the maximum.'))
             return
         }
-        var w = app.newWalletWizard.createObject(app)
-        w.walletCreated.connect(function() {
-            Daemon.availableWallets.reload()
-            Daemon.loadWallet(w.path, w.wizard_data['password'])
-        })
-        w.open()
+        // owner 17/11 (controllo-mainnet G2): another wallet WITH words only in ESPERTO, and with the
+        // PIN; in BASE / MEDIO only wallets to watch (they have no words, they cannot spend)
+        var seed = ehLevel() === 'esperto' || Daemon.availableWallets.rowCount() === 0
+        if (!seed && !ehOption('watch')) {
+            ehTell(qsTr('Another wallet with the words (SEED) can be added only at the EXPERT level.'))
+            return
+        }
+        var open = function() {
+            var w = app.newWalletWizard.createObject(app, { ehSeedAllowed: seed })
+            w.walletCreated.connect(function() {
+                Daemon.availableWallets.reload()
+                Daemon.loadWallet(w.path, w.wizard_data['password'])
+            })
+            w.open()
+        }
+        if (seed && Daemon.ehPinIsSet()) ehAskPin(qsTr('Type the PIN to add a wallet'), open)
+        else open()
     }
     function ehSetWalletLook(name, color) {
         Config.ehSet('name_' + ehWalletKey(), name)
         Config.ehSet('color_' + ehWalletKey(), color)
         ehOptRev++
+    }
+    // owner 17/11: an added wallet can be removed (gear page), only at the EXPERT level (who knows what
+    // he is doing). Never the main one, never with an inheritance (first cancel it); owner 18/11: no
+    // balance check, always the words (SEED) warning; then the PIN.
+    property bool _ehRemoving: false
+    // Opus review 18/11: a payment that maybe left ("I am not sure the payment left"): its coins
+    // stay inside every next payment of this wallet, also after closing the page or the app
+    function ehUnsureSet(txid, coins) {
+        Config.ehSet('unsure_' + ehWalletKey(), JSON.stringify({ 'txid': txid, 'coins': coins }))
+    }
+    function ehUnsureCoins() {
+        var w = Daemon.currentWallet
+        if (!w) return []
+        var s = Config.ehGet('unsure_' + w.name)
+        if (!s) return []
+        var u
+        try { u = JSON.parse(s) } catch (e) { u = null }
+        var left = u ? w.ehUnsureCoins(u.txid || '', u.coins || []) : []
+        if (left.length === 0) Config.ehSet('unsure_' + w.name, '')
+        return left
+    }
+    function ehCanRemoveWallet() {
+        return ehLevel() === 'esperto' && Daemon.currentWallet !== null && Daemon.availableWallets.rowCount() > 1
+               && Daemon.currentWallet.name !== Daemon.ehMainWalletName()
+    }
+    function ehRemoveWallet() {
+        var w = Daemon.currentWallet
+        if (!w || !ehCanRemoveWallet()) return
+        var name = w.name
+        var shown = ehWalletNameFor(name)
+        if (!w.isWatchOnly) {
+            var b = ehBal()
+            // Opus review 18/11: the inheritance cannot be checked: never remove it now
+            if (!b) {
+                ehTell(qsTr('I am still checking the inheritance of this wallet. Try again in a moment.'))
+                return
+            }
+            if (b) {
+                var st = ehHeirState(b)
+                if (st.phase === undefined) {
+                    ehTell(qsTr('I am still checking the inheritance of this wallet. Try again in a moment.'))
+                    return
+                }
+                if (st.phase !== 'none' && st.phase !== 'draft') {
+                    ehTell(qsTr('This wallet has an inheritance.'),
+                           qsTr('First cancel the inheritance (Settings › Inheritance), then you can remove the wallet.'))
+                    return
+                }
+            }
+        }
+        // owner 18/11: no balance check (it can be wrong before the sync): always the same warning,
+        // removing a wallet is for who knows that the words (SEED) bring it back
+        var detail = qsTr('If you did not save the words (SEED), the money of this wallet is lost. Do you want to remove it?')
+        ehAsk(qsTr('Remove «%1» from this phone?').arg(shown), detail, function() {
+            ehAskPin(qsTr('Type the PIN to remove the wallet'), function() { app._ehDoRemoveWallet(name, shown) })
+        }, null, qsTr('Yes, remove it'), qsTr('No'))
+    }
+    function _ehDoRemoveWallet(name, shown) {
+        if (!Daemon.currentWallet || Daemon.currentWallet.name !== name) return
+        var main = Daemon.ehWalletPathFor(Daemon.ehMainWalletName())
+        if (main === '') return
+        app.stack.pop(null)
+        _ehRemoving = true
+        var ok = Daemon.ehRemoveWallet(name)
+        _ehRemoving = false
+        if (!ok) {
+            if (!Daemon.currentWallet) Daemon.loadWallet(main)
+            ehTell(qsTr('The wallet could not be removed. Nothing has changed.'))
+            return
+        }
+        var keys = ['name_', 'color_', 'watch_', 'bal_', 'heir_on_', 'unsure_']
+        for (var i = 0; i < keys.length; i++) Config.ehSet(keys[i] + name, '')
+        ehOptRev++
+        Daemon.loadWallet(main)
+        ehTell(qsTr('«%1» has been removed from this phone.').arg(shown))
     }
     function ehResetSettings() {
         var keys = ['euro_btc', 'max', 'request_amount', 'multi', 'watch', 'sign_elsewhere', 'buttons', 'coins', 'no_anim', 'privacy', 'utxo', 'show_adv', 'manual_fee']
@@ -1230,9 +1367,11 @@ ApplicationWindow
     Component { id: _ehAskAmountDialog; EhAskAmountDialog { onClosed: destroy() } }
     function ehChangeLanguage() {
         var d = languagePicker.createObject(app)
+        var before = Config.language
         d.accepted.connect(function() {
-            var m = app.messageDialog.createObject(app, { text: qsTr('Close and reopen Schȅi to see everything in the new language.') })
-            m.open()
+            // owner 18/11: the same language chosen again: nothing to reopen
+            if (Config.language !== before)
+                ehTell(qsTr('Close and reopen Schȅi to see everything in the new language.'))
         })
         d.open()
     }
@@ -1320,6 +1459,7 @@ ApplicationWindow
             }
             var away = app._ehAwaySince > 0 ? Date.now() - app._ehAwaySince : 0
             app._ehAwaySince = 0
+            if (away >= 10 * 60 * 1000) Qt.callLater(app.ehHeirOnOpen)   // inheritance: a new opening
             if (away < 60 * 1000) return
             var prot = false
             for (var i = 0; i < mainStackView.depth; i++) {
@@ -1345,7 +1485,7 @@ ApplicationWindow
         _ehKeyLost = kl
         kl.restoreChosen.connect(function() {
             _ehKeyLost = null
-            var w = app.newWalletWizard.createObject(app)
+            var w = app.newWalletWizard.createObject(app, { ehSeedAllowed: true })   // put back the words
             var created = false
             w.walletCreated.connect(function() {
                 created = true
@@ -1475,6 +1615,7 @@ ApplicationWindow
                 app.ehReadyDialog.createObject(app).open()
             }
             showStartupWarnings()
+            Qt.callLater(app.ehHeirOnOpen)   // inheritance: one question per opening
         }
     }
 
@@ -1558,11 +1699,235 @@ ApplicationWindow
         }
     }
 
-    // PIN pad, then onOk() if the PIN is right (advanced settings...)
-    function ehAskPin(prompt, onOk) {
+    // PIN pad, then onOk() if the PIN is right (advanced settings...); the optional onCancel()
+    // runs when the pad closes without the right PIN (Cancel, back key, any other close)
+    function ehAskPin(prompt, onOk, onCancel) {
         var d = ehPinDialog.createObject(app, { mode: 'verify', prompt: prompt })
-        d.verified.connect(onOk)
+        var ok = false
+        d.verified.connect(function() { ok = true; onOk() })
+        if (onCancel) d.closed.connect(function() { if (!ok) onCancel() })
         d.open()
+    }
+
+    // ---- Inheritance ("Eredità semplice", plugin bal = Àncòra inside Schȅi) ----
+    // The bridge: AppController.plugin('bal') (null when the plugin is not loaded).
+    // At every opening of the app (wallet loaded, or back after 10 minutes away) the state is
+    // refreshed; when it arrives, ehHeirDecide shows AT MOST one sheet over the home:
+    //   due / expired -> "Sei ancora qui?" (once per opening; "Later" just closes it)
+    //   unfinished    -> "finish it now?" (once per opening)
+    //   needs_update  -> "update it?" (once for each new reason / amount)
+    // never while a dialog, a question or another page is open: then it waits and tries again.
+    property var _ehBalObj: null
+    property bool _ehHeirWant: false        // a question may still be asked in this opening
+    property string _ehHeirSeen: ''         // the needs_update already shown (reason:sats)
+    property var _ehHeirSheet: null         // the sheet open now
+    property bool _ehHeirWaiting: false     // a decision waits for the home to be free
+    readonly property Item _ehOverlay: Overlay.overlay   // where the open popups are
+    function ehBal() { return AppController ? AppController.plugin('bal') : null }
+    // owner 17/11 (controllo-mainnet M1): the inheritance state only when it belongs to the wallet
+    // open; right after a switch the bridge still holds the previous wallet's state
+    function ehHeirState(b) {
+        if (!b || !b.state || !Daemon.currentWallet) return ({})
+        return b.state.wallet === Daemon.currentWallet.name ? b.state : ({})
+    }
+    function ehHeirOnOpen() {
+        var b = ehBal()
+        if (!b || !Daemon.currentWallet || Daemon.currentWallet.isWatchOnly) return
+        _ehBalObj = b
+        _ehHeirWant = true
+        if (!b.busy) b.refresh()
+        else ehHeirDecide()
+    }
+    Connections {
+        target: app._ehBalObj
+        ignoreUnknownSignals: true
+        function onStateChanged() { app.ehHeirDecide(); app._ehHeirDropNext() }
+        function onBusyChanged() { app._ehHeirDropNext() }
+        function onFailed(op, code, message) { if (op === 'heirDelete' && code !== 'busy') app._ehHeirDropHeirs = false }
+    }
+    // "Cancel the inheritance" + "delete the heirs too", but the wallet did not see the
+    // cancellation yet (not_synced): the heirs are deleted one by one when the phase is draft
+    property bool _ehHeirDropHeirs: false
+    property string _ehHeirDropWallet: ''
+    function ehHeirDropHeirsLater() {
+        var b = ehBal()
+        if (!b) return
+        _ehBalObj = b
+        _ehHeirDropHeirs = true
+        _ehHeirDropWallet = Daemon.currentWallet ? Daemon.currentWallet.name : ''
+        _ehHeirDropNext()
+    }
+    function _ehHeirDropNext() {
+        var b = _ehBalObj
+        if (!_ehHeirDropHeirs || !b || b.busy) return
+        // M1: never on another wallet (the bridge acts on the wallet open)
+        if (!Daemon.currentWallet || Daemon.currentWallet.name !== _ehHeirDropWallet) return
+        var s = ehHeirState(b)
+        if (!s.phase || s.phase === 'none') { _ehHeirDropHeirs = false; return }
+        if (s.phase !== 'draft') return              // not seen yet: wait
+        var h = s.heirs || []
+        if (h.length === 0) { _ehHeirDropHeirs = false; return }
+        b.heirDelete(h[0].name)
+    }
+    // new money or a payment: look again (debounced), without a new "Sei ancora qui?"
+    Connections {
+        target: Daemon.currentWallet
+        ignoreUnknownSignals: true
+        function onBalanceChanged() { if (app._ehBalObj) _ehHeirBalTimer.restart() }
+    }
+    Timer {
+        id: _ehHeirBalTimer
+        interval: 3000
+        onTriggered: if (app._ehBalObj && !app._ehBalObj.busy && Daemon.currentWallet && !Daemon.currentWallet.isWatchOnly) app._ehBalObj.refresh()
+    }
+    Timer {
+        interval: 1500
+        repeat: true
+        running: app._ehHeirWaiting
+        onTriggered: app.ehHeirDecide()
+    }
+    // something on top of the home: a page, a dialog, a question, a popup
+    function _ehHeirHomeBusy() {
+        if (_ehHeirSheet || activeDialogs.length > 0 || _ehAsks.length > 0) return true
+        if (mainStackView.depth !== 1 || mainStackView.busy) return true
+        var c = _ehOverlay ? _ehOverlay.children : []
+        for (var i = 0; i < c.length; i++)
+            if (c[i] && c[i].visible && c[i].opacity > 0 && String(c[i]).indexOf("PopupItem") >= 0) return true
+        return false
+    }
+    function ehHeirDecide() {
+        var b = _ehBalObj
+        if (!b || !Daemon.currentWallet || Daemon.currentWallet.isWatchOnly) { _ehHeirWaiting = false; return }
+        var s = b.state
+        if (!s || !s.synced || b.busy) { _ehHeirWaiting = false; return }   // a new state will come
+        // owner 17/11: a state of another wallet (just switched): wait for the right one
+        if (s.wallet !== Daemon.currentWallet.name) { _ehHeirWaiting = false; return }
+        var ph = s.phase
+        var ask = (ph === 'due' || ph === 'expired') && _ehHeirWant
+        var finish = ph === 'unfinished' && _ehHeirWant
+        var key = ph === 'needs_update' ? (s.updateReason + ':' + s.uncoveredSats) : ''
+        var update = ph === 'needs_update' && key !== _ehHeirSeen
+        var offer = (ph === 'none' || ph === 'draft') && _ehHeirWant
+        if (!ask && !finish && !update && !offer) { _ehHeirWaiting = false; return }
+        if (_ehHeirHomeBusy()) { _ehHeirWaiting = true; return }
+        if (offer) { _ehHeirWaiting = false; _ehHeirWant = false; ehHeirMaybeOffer(ph); return }
+        _ehHeirWaiting = false
+        if (ask) { _ehHeirWant = false; ehHeirAsk() }
+        else if (finish) { _ehHeirWant = false; ehHeirUpdate('unfinished') }
+        else { _ehHeirSeen = key; ehHeirUpdate(s.updateReason || 'received') }
+    }
+    function _ehHeirOpenSheet(url, props) {
+        if (_ehHeirSheet) return _ehHeirSheet
+        var comp = Qt.createComponent(Qt.resolvedUrl(url))
+        if (comp.status !== Component.Ready) { console.log('heir sheet: ' + comp.errorString()); return null }
+        var d = comp.createObject(app, props || {})
+        _ehHeirSheet = d
+        d.closed.connect(function() { if (app._ehHeirSheet === d) app._ehHeirSheet = null })
+        d.open()
+        return d
+    }
+    function ehHeirAsk() { return _ehHeirOpenSheet('EhHeirAskSheet.qml') }
+    // owner 17/11: Settings › Inheritance switch, per wallet, ON unless turned off
+    function ehHeirEnabled() { ehOptRev; return Config.ehGet('heir_on_' + ehWalletKey()) !== false }
+    function ehSetHeirEnabled(on) { Config.ehSet('heir_on_' + ehWalletKey(), on); ehOptRev++ }
+    // owner 17/11: about every 3 months, on opening, a wallet with money and no inheritance asks once
+    // "do you want to make the inheritance?". Not when turned off, not for a wallet only to look at,
+    // not when empty; the first time 3 months after Schȅi first saw the wallet.
+    readonly property real ehHeirOfferEvery: 90 * 24 * 3600 * 1000
+    function ehHeirMaybeOffer(phase) {
+        var w = Daemon.currentWallet
+        if (!w || w.isWatchOnly || !ehHeirEnabled()) return false
+        if (phase !== 'none' && phase !== 'draft') return false
+        if (w.ehTotal.satsInt <= 0) return false
+        var k = 'heir_offer_next_' + ehWalletKey(), now = Date.now()
+        var next = Number(Config.ehGet(k) || 0)
+        if (!next) { Config.ehSet(k, now + ehHeirOfferEvery); return false }
+        if (now < next) return false
+        Config.ehSet(k, now + ehHeirOfferEvery)
+        _ehHeirOpenSheet('EhHeirOfferSheet.qml')
+        return true
+    }
+    function ehHeirUpdate(reason) { return _ehHeirOpenSheet('EhHeirUpdateSheet.qml', { reason: reason }) }
+    // Settings › Inheritance: the intro while there is none, else its status
+    function ehHeirOpen() {
+        var b = ehBal()
+        if (b) _ehBalObj = b
+        var ph = ehHeirState(b).phase || 'none'
+        if (!ph || ph === 'none' || ph === 'draft') stack.push(Qt.resolvedUrl('EhHeirIntroPage.qml'))
+        else stack.push(Qt.resolvedUrl('EhHeirStatusPage.qml'))
+    }
+    // formats for the inheritance pages: dates are UNIX seconds at midnight UTC, amounts sats
+    function ehHeirDate(ts) {
+        if (!ts) return ''
+        var d = new Date(ts * 1000)
+        var dd = d.getUTCDate(), mm = d.getUTCMonth() + 1
+        return (dd < 10 ? '0' : '') + dd + '/' + (mm < 10 ? '0' : '') + mm + '/' + d.getUTCFullYear()
+    }
+    // owner 18/11: a keeper's price in sats, as people write it (50.000 sat)
+    function ehSatsText(n) {
+        return Number(n || 0).toLocaleString(Qt.locale(Config.language === 'en_UK' ? 'en_GB' : 'it_IT'), 'f', 0) + ' sat'
+    }
+    // owner 18/11: a keeper's price also in the currency ('' when the app shows bitcoin only)
+    function ehHeirEuro(sats) { return ehEuro(Config.unitsToSats((Number(sats || 0) / 100000000).toFixed(8))) }
+    function ehSatsAndEuro(sats) { var e = ehHeirEuro(sats); return ehSatsText(sats) + (e !== '' ? ' · ≈ ' + e : '') }
+    function ehHeirSats(sats) { return ehMoney(Config.unitsToSats((Number(sats || 0) / 100000000).toFixed(8))) }
+    function ehHeirYears(months) {
+        var y = Math.max(1, Math.round((months || 0) / 12))
+        return y + ' ' + (y === 1 ? qsTr('year') : qsTr('years'))
+    }
+    // owner 16/11 (Q1): how far a date is from now, as people say it: "in 2 years",
+    // "in 18 months", "in 40 days" (days below 60, months below 2 years unless whole years)
+    function ehHeirIn(ts, now) {
+        var days = Math.round(((ts || 0) - (now || Math.floor(Date.now() / 1000))) / 86400)
+        if (days <= 0) return qsTr('today')
+        if (days < 60) return days === 1 ? qsTr('in 1 day') : qsTr('in %1 days').arg(days)
+        var m = Math.round(days / 30.4375)
+        if (m < 12 || (m < 24 && m % 12 !== 0)) return qsTr('in %1 months').arg(m)
+        var y = Math.round(m / 12)
+        return y === 1 ? qsTr('in 1 year') : qsTr('in %1 years').arg(y)
+    }
+    // "up to about 10.000 €" (scaled to the currency; 0,15 BTC with amounts only in bitcoin)
+    function ehHeirPocketLimit() {
+        if (ehBtcOnly() || !Daemon.fx.enabled) return ehBtc(Config.unitsToSats('0.15'))
+        return ehSym() + ' ' + ehGroup('' + 10000 * ehCcyMult())
+    }
+    function ehHeirStepText(step) {
+        if (step === 'ping' || step === 'check') return qsTr('I ask the keepers…')
+        if (step === 'prepare') return qsTr('I prepare the envelope…')
+        if (step === 'sign') return qsTr('I sign…')
+        if (step === 'send') return qsTr('I send it to the keepers…')
+        if (step === 'invalidate' || step === 'broadcast' || step === 'wait') return qsTr('I cancel the old envelope…')
+        return ''
+    }
+    function ehHeirErrorText(code, message) {
+        if (code === 'offline') return qsTr('Internet is needed for the inheritance. Try again when you are connected.')
+        if (code === 'custodians') return qsTr('No keeper answered. Your money is safe; try again later.')
+        if (code === 'not_synced') return qsTr('Schȅi is still updating. Try again in a little while.')
+        if (code === 'no_heirs') return qsTr('First add at least one person.')
+        if (code === 'address_kind') return qsTr('This wallet uses addresses that start with 1 or 3: the inheritance works only with addresses that start with bc1. Send the money to a new Schȅi wallet.')
+        if (code === 'no_fee') return qsTr('First choose the cost of the operation.')
+        if (code === 'percent') return qsTr('The shares of the people do not make 100%. Open the people and fix the shares.')
+        if (code === 'needs_renew') return qsTr('First the inheritance must be renewed.')
+        if (code === 'not_sent') return qsTr('The envelope is ready but no keeper took it. Try again in a little while.')
+        if (code === 'internal') return qsTr('Something did not work. Your money is safe; try again later.')
+        if (code === 'busy') return ''
+        // Opus review 18/11: the money errors here too (same words as «All right?»)
+        if (code === 'too_low') return qsTr('In the wallet there is <b>%1</b>: <b>not enough</b> for the inheritance.').arg(
+                Daemon.currentWallet ? ehMoney(Daemon.currentWallet.ehTotal) : '') + ' ' + qsTr('Receive more bitcoin, then try again.')
+        if (code === 'dust') return qsTr("The shares of one or more heirs are <b>too small</b>.") + ' ' + qsTr('Change the percentages or remove someone.')
+        if (code === 'keeper_fee') return ehLevel() === 'esperto'
+                ? qsTr('The keepers ask more than your maximum price (%1). Raise it or choose other keepers in Settings › Inheritance.').arg(ehSatsText(ehHeirState(ehBal()).keeperMax || 50000))
+                : qsTr('The keepers today ask more than Schȅi accepts (%1). Try again later, or choose them yourself at the EXPERT level.').arg(ehSatsText(ehHeirState(ehBal()).keeperMax || 50000))
+        return ehHeirPlainText(message)
+    }
+    // Opus review 18/11: a message of the plugin: translated if Schȅi has its words; shown as it is
+    // when it is a plain sentence (English, or already translated by the plugin); never a technical one
+    function ehHeirPlainText(message) {
+        var m = message || ''
+        var t = m ? qsTr(m) : ''
+        if (t && t !== m) return t
+        if (m && !/[<>=_{}\[\]]|\([A-Z_]{3,}\)|Exception|Error|Traceback|\d\.\d|bal_/.test(m)) return m
+        return qsTr('Something did not work. Your money is safe; try again later.')
     }
 
     // T18: 5 wrong PINs in a row -> no more tries for 1 hour. Counter and end of

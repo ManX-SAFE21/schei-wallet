@@ -71,7 +71,7 @@ Popup {
                 color: S.wine
                 font.family: SerifFont ? SerifFont : font.family
                 font.weight: Font.ExtraBold
-                font.pixelSize: 26
+                font.pixelSize: app.ehFsBox
                 lineHeight: 1.05
             }
             EhRule {}
@@ -85,7 +85,7 @@ Popup {
             text: root.detail
             color: S.ink
             font.family: BodyFont ? BodyFont : font.family
-            font.pixelSize: 17
+            font.pixelSize: app.ehFsText
             lineHeight: 1.15
         }
         // Yes on the left (paper), No on the right (wine leather): the safe answer is in the easy

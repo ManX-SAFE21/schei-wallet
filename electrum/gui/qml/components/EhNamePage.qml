@@ -21,7 +21,6 @@ Item {
     Flickable {
         id: flick
         anchors.fill: parent
-        anchors.bottomMargin: app.navigationBarHeight
         contentHeight: col.height + 16
         boundsBehavior: Flickable.StopAtBounds
         clip: true
@@ -75,7 +74,7 @@ Item {
                             background: null
                             color: S.ink
                             font.family: BodyFont ? BodyFont : font.family
-                            font.pixelSize: 18
+                            font.pixelSize: app.ehFsText
                             font.bold: true
                             maximumLength: 24
                         }

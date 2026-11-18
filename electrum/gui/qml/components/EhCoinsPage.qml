@@ -56,7 +56,7 @@ Item {
             linkText: qsTr('How the crucible works'),
             linkUrl: Qt.resolvedUrl('EhCoinsHowPage.qml'),
             bodyText: qsTr('<b>UTXO</b> is the <b>serial number</b> engraved on the rim of the coin, like the one on a banknote: it tells which payment it comes from. It is not secret and it is not needed to spend the coin.')
-                      + '<br><br>' + qsTr('Your coins are protected by the 12 words.')
+                      + '<br><br>' + qsTr('Your coins are protected by the words (SEED).')
         }).open()
     }
 
@@ -74,7 +74,7 @@ Item {
         anchors.fill: parent
         anchors.leftMargin: 16
         anchors.rightMargin: 16
-        anchors.bottomMargin: 12 + app.navigationBarHeight
+        anchors.bottomMargin: 12
         spacing: 10
 
         EhPageTop { title: ''; Layout.leftMargin: 6; Layout.rightMargin: 6 }
@@ -140,7 +140,7 @@ Item {
                         text: sec.section === 'receive' ? qsTr('TO RECEIVE') : (sec.section === 'change' ? qsTr('CHANGE') : sec.section.toUpperCase())
                         color: S.olive
                         font.family: BodyFont ? BodyFont : font.family
-                        font.pixelSize: 16
+                        font.pixelSize: app.ehFsText
                         font.bold: true
                         font.letterSpacing: 0.5
                         wrapMode: Text.WordWrap
@@ -205,7 +205,7 @@ Item {
                                     text: app.ehMoney(ld.model.amount)
                                     font.family: SerifFont ? SerifFont : font.family
                                     font.weight: Font.ExtraBold
-                                    font.pixelSize: 21
+                                    font.pixelSize: app.ehFsStrong
                                     color: (ld.model.held || ld.model.addr_held) ? S.muted : S.wineDark
                                     wrapMode: Text.WrapAnywhere
                                 }
@@ -224,7 +224,7 @@ Item {
                                         elide: Text.ElideRight
                                         text: ld.model.label
                                         font.family: BodyFont ? BodyFont : font.family
-                                        font.pixelSize: 16
+                                        font.pixelSize: app.ehFsText
                                         font.italic: true
                                         color: S.wine
                                     }
@@ -237,7 +237,7 @@ Item {
                                         verticalAlignment: Text.AlignVCenter
                                         text: 'UTXO'
                                         font.family: BodyFont ? BodyFont : font.family
-                                        font.pixelSize: 16
+                                        font.pixelSize: app.ehFsText
                                         color: S.muted
                                     }
                                     Label {
@@ -245,7 +245,7 @@ Item {
                                         verticalAlignment: Text.AlignVCenter
                                         text: page.shortUtxo(ld.model.outpoint)
                                         font.family: FixedFont
-                                        font.pixelSize: 16
+                                        font.pixelSize: app.ehFsText
                                         font.bold: true
                                         color: S.ink
                                     }
@@ -255,7 +255,7 @@ Item {
                                         color: 'transparent'
                                         border.width: 2.5
                                         border.color: S.olive
-                                        Label { anchors.centerIn: parent; text: 'i'; color: S.olive; font.pixelSize: 18; font.bold: true; font.family: 'serif' }
+                                        Label { anchors.centerIn: parent; text: 'i'; color: S.olive; font.pixelSize: app.ehFsText; font.bold: true; font.family: 'serif' }
                                         MouseArea { anchors.fill: parent; anchors.margins: -10; onClicked: page.showUtxoInfo() }
                                     }
                                 }
@@ -264,7 +264,7 @@ Item {
                                     Layout.fillWidth: true
                                     wrapMode: Text.WordWrap
                                     font.family: BodyFont ? BodyFont : font.family
-                                    font.pixelSize: 16
+                                    font.pixelSize: app.ehFsText
                                     font.bold: true
                                     color: (ld.model.held || ld.model.addr_held) ? S.muted : (ld.model.height > 0 ? S.olive : S.waitInk)
                                     text: ld.model.addr_held ? qsTr('blocked (with the address)')
@@ -329,7 +329,7 @@ Item {
                                     Layout.fillWidth: true
                                     textFormat: Text.RichText
                                     font.family: FixedFont
-                                    font.pixelSize: 17
+                                    font.pixelSize: app.ehFsText
                                     font.bold: true
                                     color: S.ink
                                     wrapMode: Text.WordWrap
@@ -339,7 +339,7 @@ Item {
                                     Layout.fillWidth: true
                                     wrapMode: Text.WordWrap
                                     font.family: BodyFont ? BodyFont : font.family
-                                    font.pixelSize: 16
+                                    font.pixelSize: app.ehFsText
                                     color: S.muted
                                     text: (ld.model.numtx > 0 ? (ld.model.numtx === 1 ? qsTr('1 movement') : qsTr('%1 movements').arg(ld.model.numtx)) : qsTr('no movements'))
                                           + (ld.model.balance && ld.model.balance.satsInt > 0 ? ' · ' + app.ehMoney(ld.model.balance) : '')
@@ -349,7 +349,7 @@ Item {
                             Label {
                                 Layout.alignment: Qt.AlignVCenter
                                 font.family: BodyFont ? BodyFont : font.family
-                                font.pixelSize: 16
+                                font.pixelSize: app.ehFsText
                                 font.bold: true
                                 color: ld.model.numtx > 0 ? S.olive : S.wine
                                 text: ld.model.numtx > 0 ? qsTr('used') : qsTr('new')
@@ -379,7 +379,7 @@ Item {
                     width: parent.width - 8
                     wrapMode: Text.WordWrap
                     font.family: BodyFont ? BodyFont : font.family
-                    font.pixelSize: 16
+                    font.pixelSize: app.ehFsText
                     color: S.muted
                     text: qsTr('"Change": when you pay, what is left over from a coin comes back to you on a new address, like the change at the shop.')
                 }
@@ -405,7 +405,7 @@ Item {
                 wrapMode: Text.WordWrap
                 color: S.muted
                 font.family: BodyFont ? BodyFont : font.family
-                font.pixelSize: 17
+                font.pixelSize: app.ehFsText
                 text: page.showAddresses ? '' : qsTr('No coins yet: they arrive when someone sends you bitcoin.')
             }
         }

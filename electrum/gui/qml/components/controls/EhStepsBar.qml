@@ -110,7 +110,7 @@ Item {
                     anchors.centerIn: parent
                     text: st.modelData.word
                     font.family: BodyFont ? BodyFont : font.family
-                    font.pixelSize: 14
+                    font.pixelSize: app.ehFsSmall
                     font.bold: true
                     color: st.done ? S.oliveInk : (st.now ? S.wine : S.muted)
                 }
@@ -145,8 +145,8 @@ Item {
         }
         contentItem: Column {
             spacing: 2
-            Label { width: bubble.availableWidth; text: bubble.title; color: S.ivory; font.family: BodyFont ? BodyFont : font.family; font.pixelSize: 17; font.bold: true; wrapMode: Text.WordWrap }
-            Label { width: bubble.availableWidth; text: bubble.text; color: S.ivory; font.family: BodyFont ? BodyFont : font.family; font.pixelSize: 16; wrapMode: Text.WordWrap; lineHeight: 1.15 }
+            Label { width: bubble.availableWidth; text: bubble.title; color: S.ivory; font.family: BodyFont ? BodyFont : font.family; font.pixelSize: app.ehFsText; font.bold: true; wrapMode: Text.WordWrap }
+            Label { width: bubble.availableWidth; text: bubble.text; color: S.ivory; font.family: BodyFont ? BodyFont : font.family; font.pixelSize: app.ehFsText; wrapMode: Text.WordWrap; lineHeight: 1.15 }
         }
         function showFor(st) {
             title = st.n + ' · ' + st.modelData.title

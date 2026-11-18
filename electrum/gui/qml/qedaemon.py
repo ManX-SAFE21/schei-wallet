@@ -6,6 +6,29 @@ from PyQt6.QtCore import Qt, QAbstractListModel, QModelIndex
 from PyQt6.QtCore import pyqtProperty, pyqtSignal, pyqtSlot, QObject
 
 from electrum.i18n import _
+
+
+def _eh_has_live_will(wallet) -> bool:
+    """Opus review 18/11: True when the wallet holds an inheritance in force: a signed, sent
+    envelope not invalidated / replaced, whose coins are all still unspent. When in doubt: True."""
+    try:
+        if wallet.is_watching_only():
+            return False
+        from electrum.transaction import tx_from_any
+        coins = {c.prevout.to_str() for c in wallet.get_utxos()}
+        for it in (wallet.db.get('will') or {}).values():
+            if not isinstance(it, dict) or not it.get('tx'):
+                continue
+            if not (it.get('VALID') and it.get('COMPLETE') and it.get('PUSHED')):
+                continue
+            if it.get('INVALIDATED') or it.get('REPLACED'):
+                continue
+            ins = [i.prevout.to_str() for i in tx_from_any(it['tx']).inputs()]
+            if ins and all(i in coins for i in ins):
+                return True
+        return False
+    except Exception:
+        return True
 from electrum.logging import get_logger
 from electrum.util import (
     WalletFileException, standardize_path, InvalidPassword, send_exception_to_crash_reporter, UserFacingException,
@@ -459,6 +482,46 @@ class QEDaemon(AuthMixin, QObject):
             self.requestNewPassword.emit()
         else:
             self.currentWallet.requestNewPassword.emit()
+
+    # ---------- Easy Heirs: remove an added wallet (owner 17/11) ----------
+    @pyqtSlot(str, result=str)
+    def ehWalletPathFor(self, name):
+        for wallet_name, wallet_path in self.availableWallets._wallets:
+            if wallet_name == name:
+                return wallet_path
+        return ''
+
+    @pyqtSlot(result=str)
+    def ehMainWalletName(self):
+        """The main wallet: 'Portafoglio' (the first one Schȅi makes), else the first of the list."""
+        names = [n for n, _ in self.availableWallets._wallets]
+        if 'Portafoglio' in names:
+            return 'Portafoglio'
+        return names[0] if names else ''
+
+    @pyqtSlot(str, result=bool)
+    def ehRemoveWallet(self, name):
+        """Deletes the file of an added wallet. The app asked the PIN and checked the inheritance
+        before; here again: never the main one, never the last one. owner 18/11: no balance check
+        (the app warns that without the words (SEED) the money is lost)."""
+        path = self.ehWalletPathFor(name)
+        if not path or name == self.ehMainWalletName() or len(self.availableWallets._wallets) < 2:
+            return False
+        # Opus review 18/11: never a wallet with an inheritance in force (the app checks it first,
+        # here again: a live, signed and sent envelope whose coins are all still in the wallet)
+        w = self.daemon.get_wallet(path)
+        if w is None or _eh_has_live_will(w):
+            return False
+        if self._current_wallet is not None and \
+                standardize_path(self._current_wallet.wallet.storage.get_path()) == standardize_path(path):
+            self._current_wallet = None
+            self.walletLoaded.emit(None, None)
+        if not self.daemon.delete_wallet(path):
+            self._logger.error(f'eh: cannot remove wallet {name}')
+            return False
+        self.availableWallets.remove_wallet(standardize_path(path))
+        self._logger.info(f'eh: wallet {name} removed')
+        return True
 
     # ---------- Easy Heirs: phone safe + PIN (see qeehvault.py) ----------
     @pyqtSlot(result=bool)

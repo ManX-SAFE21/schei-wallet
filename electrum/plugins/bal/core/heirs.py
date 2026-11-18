@@ -1,0 +1,1461 @@
+"""
+bal.core.heirs
+==============
+
+Heir management and inheritance-transaction building.
+
+This is the heart of the plugin's Bitcoin logic and the most delicate part of
+the whole codebase, so the implementation below is kept byte-for-byte identical
+to the original ``heirs.py``; only the dead commented-out imports were removed
+and documentation was added. Exception (CHANGELOG #166, owner decision): with
+more than one delivery date, ``prepare_transactions`` makes the first delivery
+spend every coin.
+
+An *heir* is stored as a small list addressed by the ``HEIR_*`` column
+constants defined below.  ``Heirs`` is a ``dict`` subclass persisted inside the
+wallet DB under the ``"heirs"`` key.
+
+The ``prepare_transactions`` / ``Heirs.buildTransactions`` functions turn the
+heir list plus the wallet UTXOs into a set of time-locked inheritance
+transactions (optionally including a will-executor fee output).
+
+Will-executor "heirs" are synthetic entries whose key starts with the
+``w!ll3x3c"`` marker; they are skipped by most heir comparisons.
+"""
+
+import asyncio
+import inspect
+import math
+import random
+import re
+import threading
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Dict,
+    Optional,
+    Tuple,
+    cast,
+)
+
+import dns
+from dns.exception import DNSException
+from electrum import (
+    bitcoin,
+    constants,
+    dnssec,
+)
+from electrum.logging import Logger, get_logger
+from electrum.transaction import (
+    PartialTransaction,
+    PartialTxInput,
+    PartialTxOutput,
+    TxOutpoint,
+)
+from electrum.util import (
+    BitcoinException,
+    bfh,
+    read_json_file,
+    to_string,
+    trigger_callback,
+    write_json_file,
+)
+
+from .util import Util, copy_structure
+from .willexecutors import Willexecutors
+
+if TYPE_CHECKING:
+    from electrum.simple_config import SimpleConfig
+
+
+_logger = get_logger(__name__)
+
+
+def _query_txt_records(url: str) -> Tuple[Any, bool]:
+    """Resolve TXT records with DNSSEC validation.
+
+    ``electrum.dnssec.query`` became an ``async`` function in Electrum 4.7.2,
+    so adapt the call for this synchronous context while staying compatible
+    with older synchronous implementations.
+    """
+    query = dnssec.query
+    if inspect.iscoroutinefunction(query):
+        return asyncio.run(query(url, dns.rdatatype.TXT))
+    return cast(Tuple[Any, bool], query(url, dns.rdatatype.TXT))
+
+# Column layout of a stored heir list.  These indices are part of the on-disk
+# wallet format and are relied upon all over the codebase, so they must NEVER
+# be reordered.
+HEIR_ADDRESS = 0       # destination Bitcoin address
+HEIR_AMOUNT = 1        # requested amount (satoshis or "<n>%")
+HEIR_LOCKTIME = 2      # locktime after which the heir may claim the funds
+HEIR_REAL_AMOUNT = 3   # resolved amount once percentages are computed
+HEIR_DUST_AMOUNT = 4   # amount when below dust threshold (marked "DUST: ...")
+TRANSACTION_LABEL = "inheritance transaction"
+
+
+def only_native_segwit(utxos):
+    """True when every coin of ``utxos`` is on a ``bc1`` (native segwit) address.
+
+    #216: an unsigned transaction spending any other coin (addresses starting
+    with ``1`` or ``3``) has no txid before it is signed, and the build needs
+    it to link the copies. Owner's decision: these wallets stay out, they also
+    pay more for each copy.
+    """
+    return all(bitcoin.is_segwit_address(utxo.address or "") for utxo in utxos)
+
+
+OP_RETURN_PREFIX = "OP_RETURN:"
+
+
+class AliasNotFoundException(Exception):
+    pass
+
+
+def reduce_outputs(in_amount, out_amount, fee, outputs):
+    if in_amount < out_amount:
+        for output in outputs:
+            output.value = math.floor((in_amount - fee) / out_amount * output.value)
+
+
+#: The first four characters of the extended keys (BIP32 and SLIP-132:
+#: single-sig and multisig, mainnet and testnet).
+_XPUB_PREFIXES = ("xpub", "ypub", "zpub", "Ypub", "Zpub",
+                  "tpub", "upub", "vpub", "Upub", "Vpub")
+_XPRV_PREFIXES = ("xprv", "yprv", "zprv", "Yprv", "Zprv",
+                  "tprv", "uprv", "vprv", "Uprv", "Vprv")
+
+
+def extended_key_kind(text):
+    """"public", "private" or None: is ``text`` an extended key (#138)?
+
+    Electrum's ``bip32.is_xpub`` / ``is_xprv`` first (they check the
+    whole key, on the current network); then the well-known prefixes of
+    BIP32 / SLIP-132 on a key-sized base58 text, so a mainnet key pasted in
+    a testnet wallet (or a key with a typo) is still recognised. Only used
+    to word the refusal: the text is refused as an address either way.
+    """
+    text = str(text or "").strip()
+    try:
+        from electrum import bip32
+        if bip32.is_xprv(text):
+            return "private"
+        if bip32.is_xpub(text):
+            return "public"
+    except Exception:
+        pass
+    if len(text) >= 100 and text.isalnum():
+        if text.startswith(_XPRV_PREFIXES):
+            return "private"
+        if text.startswith(_XPUB_PREFIXES):
+            return "public"
+    return None
+
+
+def is_op_return_address(address: str) -> bool:
+    return str(address).startswith(OP_RETURN_PREFIX)
+
+
+def get_op_return_hex(address: str) -> Optional[str]:
+    if is_op_return_address(address):
+        return address[len(OP_RETURN_PREFIX):]
+    return None
+
+
+def validate_op_return_hex(data_hex: str) -> None:
+    try:
+        data = bytes.fromhex(data_hex)
+    except ValueError:
+        raise NotAnAddress(f"OP_RETURN data is not valid hex: {data_hex}") from None
+    if len(data) > 80:
+        raise NotAnAddress(
+            f"OP_RETURN data too long ({len(data)} bytes, max 80)"
+        )
+
+
+def create_op_return_script(data_hex: str) -> bytes:
+    """Crea scriptpubkey OP_RETURN in bytes"""
+    data = bytes.fromhex(data_hex)
+
+    if len(data) > 80:
+        raise ValueError("OP_RETURN data too big (max 80 bytes)")
+
+    # Costruzione manuale: OP_RETURN + push data
+    if len(data) <= 75:
+        # Formato più comune: OP_RETURN + 1-byte length + data
+        script = b'\x6a' + bytes([len(data)]) + data
+    else:
+        # Per dati più grandi (fino a 80) si usa OP_PUSHDATA1
+        script = b'\x6a\x4c' + bytes([len(data)]) + data
+
+    return script
+
+def prepare_transactions(locktimes, available_utxos, fees, wallet):
+    available_utxos = sorted(
+        available_utxos,
+        key=lambda x: "{}:{}:{}".format(
+            x.value_sats(), x.prevout.txid, x.prevout.out_idx
+        ),
+    )
+    # total_used_utxos = []
+    txsout = {}
+    locktime, _ = Util.get_lowest_locktimes(locktimes)
+    if not locktime:
+        _logger.info("prepare transactions, no locktime")
+        return
+    locktime = locktime[0]
+
+    heirs = locktimes[locktime]
+    true = True
+    while true:
+        true = False
+        fee = fees.get(locktime, 0)
+        out_amount = fee
+        description = ""
+        outputs = []
+        paid_heirs = {}
+        for name, heir in heirs.items():
+            if len(heir) > HEIR_REAL_AMOUNT and "DUST" not in str(
+                heir[HEIR_REAL_AMOUNT]
+            ):
+                try:
+                    if is_op_return_address(heir[HEIR_ADDRESS]):
+                        data_hex = heir[HEIR_ADDRESS][len(OP_RETURN_PREFIX):]
+                        op_return_script = create_op_return_script(data_hex)
+                        outputs.append(
+                            PartialTxOutput(value=0, scriptpubkey=op_return_script)
+                        )
+                        description += f"{name}\n"
+                    else:
+                        real_amount = heir[HEIR_REAL_AMOUNT]
+                        outputs.append(
+                            PartialTxOutput.from_address_and_value(
+                                heir[HEIR_ADDRESS], real_amount
+                            )
+                        )
+                        out_amount += real_amount
+                        description += f"{name}\n"
+                except BitcoinException as e:
+                    _logger.info("exception decoding output {} - {}".format(type(e), e))
+                    heir[HEIR_REAL_AMOUNT] = e
+
+                except Exception as e:
+                    heir[HEIR_REAL_AMOUNT] = e
+                    _logger.error(f"error preparing transactions: {e}")
+                    pass
+            paid_heirs[name] = heir
+
+        in_amount = 0.0
+        used_utxos = []
+        # CHANGELOG #166 (owner, solution C): with more than one delivery
+        # date (multiverse) the first delivery spends EVERY coin and the
+        # next ones only its change. WHY: a new first delivery must always
+        # spend the coins of the one in force; taking only the coins it
+        # needs, new funds that cover it alone left the old coins to a
+        # later delivery, and the old and the new first delivery could then
+        # both be executed. One date: unchanged (that transaction already
+        # spends every coin).
+        take_all = len(locktimes) > 1
+        try:
+            while utxo := available_utxos.pop():
+                value = utxo.value_sats()
+                in_amount += value
+                used_utxos.append(utxo)
+                if in_amount >= out_amount and not (take_all and available_utxos):
+                    break
+
+        except IndexError as e:
+            _logger.error(
+                f"error preparing transactions index error {e} {in_amount}, {out_amount}"
+            )
+            pass
+        if int(in_amount) < int(out_amount):
+            _logger.error(
+                "error preparing transactions in_amount < out_amount ({} < {})      "
+            )
+            continue
+        heirsvalue = out_amount
+        change = get_change_output(wallet, in_amount, out_amount)
+        if change:
+            outputs.append(change)
+        for _ in range(0, 100):
+            random.shuffle(outputs)
+
+        #op_return_text = "Hello Bal!"
+
+        ## Convert text to hex
+        #op_return_hex = op_return_text.encode('utf-8').hex()
+        #op_return_script = create_op_return_script(op_return_hex)
+        #outputs.append(PartialTxOutput(value=0, scriptpubkey=op_return_script))
+        tx = PartialTransaction.from_io(
+            used_utxos,
+            outputs,
+            locktime=Util.parse_locktime_string(locktime, wallet),
+            version=2,
+        )
+        if len(description) > 0:
+            tx.description = description[:-1]
+        else:
+            tx.description = ""
+        tx.heirsvalue = heirsvalue
+        tx.set_rbf(True)
+        tx.remove_signatures()
+        txid = tx.txid()
+        if txid is None:
+            raise Exception(f"txid is none: {tx}")
+
+        tx.heirs = paid_heirs
+        tx.my_locktime = locktime
+        txsout[txid] = tx
+
+        if change:
+            change_idx = tx.get_output_idxs_from_address(change.address)
+            prevout = TxOutpoint(txid=bfh(tx.txid()), out_idx=change_idx.pop())
+            txin = PartialTxInput(prevout=prevout)
+            txin._trusted_value_sats = change.value
+            txin.script_descriptor = change.script_descriptor
+            txin.is_mine = True
+            txin._TxInput__address = change.address
+            txin._TxInput__scriptpubkey = change.scriptpubkey
+            txin._TxInput__value_sats = change.value
+            txin.utxo = tx
+            available_utxos.append(txin)
+        txsout[txid].available_utxos = available_utxos[:]
+    return txsout
+
+
+def get_utxos_from_inputs(tx_inputs, tx, utxos):
+    for tx_input in tx_inputs:
+        prevoutstr = tx_input.prevout.to_str()
+        utxos[prevoutstr] = utxos.get(prevoutstr, {"input": tx_input, "txs": []})
+        utxos[prevoutstr]["txs"].append(tx)
+    return utxos
+
+
+# TODO calculate de minimum inputs to be invalidated
+def invalidate_inheritance_transactions(wallet):
+    _logger.debug("invalidate tx in heir method")
+    # listids = []
+    utxos = {}
+    dtxs = {}
+    for k, v in wallet.get_all_labels().items():
+        tx = None
+        if TRANSACTION_LABEL == v:
+            tx = wallet.adb.get_transaction(k)
+        if tx:
+            dtxs[tx.txid()] = tx
+            get_utxos_from_inputs(tx.inputs(), tx, utxos)
+
+    for key, utxo in utxos.items():
+        txid = key.split(":")[0]
+        if txid in dtxs:
+            for tx in utxo["txs"]:
+                txid = tx.txid()
+                del dtxs[txid]
+
+    utxos = {}
+    for _, tx in dtxs.items():
+        get_utxos_from_inputs(tx.inputs(), tx, utxos)
+
+    utxos = sorted(utxos.items(), key=lambda item: len(item[1]))
+
+    remaining = {}
+    invalidated = []
+    for key, value in utxos:
+        for tx in value["txs"]:
+            txid = tx.txid()
+            if txid not in invalidated:
+                invalidated.append(tx.txid())
+                remaining[key] = value
+
+
+def get_change_output(wallet, in_amount, out_amount):
+    """The change of a transaction, or ``None`` when it would be dust.
+
+    #211: ``out_amount`` already holds the miner fee (``prepare_transactions``
+    starts it from the fee). Taking the fee off here too made every delivery
+    with change pay it twice, out of what the later deliveries receive.
+    """
+    change_amount = int(in_amount - out_amount)
+    if change_amount > wallet.dust_threshold():
+        change_addresses = wallet.get_change_addresses_for_new_transaction()
+        out = PartialTxOutput.from_address_and_value(change_addresses[0], change_amount)
+        out.is_change = True
+        return out
+
+
+def percent_total(heirs):
+    """The sum of the heirs' percentages, or None (CHANGELOG #134).
+
+    ``heirs``: ``{name: [address, amount, locktime]}`` as stored. The
+    BASIC wizard shows "Total: N% of the wallet balance." under the heirs.
+    The OP_RETURN message rows carry no amount and are skipped. None when
+    an heir has a FIXED amount (or an amount that cannot be read): the
+    percentages are then shared out of what is left after the fixed amounts
+    (``Heirs.fixed_percent_lists_amount``), so "N% of the wallet balance"
+    would not be true and the wizard says nothing. 0 for no heirs.
+
+    The percentages are weights: ``Heirs.normalize_perc`` gives each heir
+    ``balance * share / total``, so a total other than 100 still spends the
+    whole balance; the wizard says so in that case.
+    """
+    total = 0.0
+    for value in heirs.values():
+        try:
+            address, amount = value[HEIR_ADDRESS], value[HEIR_AMOUNT]
+        except (TypeError, IndexError, KeyError):
+            return None
+        if is_op_return_address(str(address)):
+            continue
+        text = str(amount).strip()
+        if not text.endswith("%"):
+            return None
+        try:
+            total += float(text[:-1])
+        except ValueError:
+            return None
+    return total
+
+
+def address_key(address):
+    """The address as two heirs are compared (#135), or None.
+
+    Spaces around are dropped; a bech32 address (``bc1``/``tb1``/``bcrt1``,
+    which is case-insensitive by its standard, BIP173) is compared in lower
+    case; a base58 address is case-sensitive and is compared as written.
+    An OP_RETURN row is a message, not a payee: None (never compared).
+    """
+    text = str(address or "").strip()
+    if not text or is_op_return_address(text):
+        return None
+    if text.lower().startswith(("bc1", "tb1", "bcrt1")):
+        return text.lower()
+    return text
+
+
+def heir_with_address(heirs, address, except_name=None):
+    """The name of ANOTHER heir paid at ``address``, or None (#135).
+
+    ``heirs``: ``{name: [address, ...]}``; ``except_name``: the heir being
+    edited (its own address is allowed). Compared with :func:`address_key`.
+    """
+    key = address_key(address)
+    if key is None:
+        return None
+    for name, value in (heirs or {}).items():
+        if name == except_name:
+            continue
+        try:
+            if address_key(value[0]) == key:
+                return name
+        except (IndexError, TypeError):
+            continue
+    return None
+
+
+def shared_addresses(heirs):
+    """``[(a, b)]``: pairs of heirs on one address (#135), sorted.
+
+    Owner: no two heirs may share an address (the second one takes a second
+    share there). Old wallets may have such pairs: they are shown, never
+    changed. Three names on one address give two pairs.
+    """
+    by_key = {}
+    for name, value in (heirs or {}).items():
+        try:
+            key = address_key(value[0])
+        except (IndexError, TypeError):
+            continue
+        if key is not None:
+            by_key.setdefault(key, []).append(str(name))
+    pairs = []
+    for names in by_key.values():
+        names = sorted(names)
+        pairs.extend((names[0], other) for other in names[1:])
+    return sorted(pairs)
+
+
+def is_own_address(wallet, address):
+    """True when ``address`` belongs to ``wallet`` itself (#197).
+
+    Owner's test of #194/#195: an heir paid at an address copied from the
+    wallet's own Receive list; on the delivery date that heir's bitcoin
+    would stay in this wallet. Compared with :func:`address_key` (a bech32
+    address typed in capitals, as in a QR code, is still found); an
+    OP_RETURN message is never one. Never raises: a wallet that cannot
+    tell gives False, and the heir is saved as before.
+    """
+    key = address_key(address)
+    if key is None:
+        return False
+    try:
+        return bool(wallet.is_mine(key))
+    except Exception as e:
+        _logger.info(f"own address not checked: {e}")
+        return False
+
+
+def own_address_heirs(wallet, heirs, stored=None):
+    """The names of the heirs of ``heirs`` (``{name: [address, ...]}``)
+    paid at an address of ``wallet`` itself (#197), in their order.
+
+    ``stored``: the heirs already saved; a name saved there with the same
+    address is left out (already confirmed, or saved before #197: the
+    owner chose to warn only when an address is entered or changed).
+    """
+    names = []
+    for name, value in (heirs or {}).items():
+        try:
+            address = value[HEIR_ADDRESS]
+        except (IndexError, KeyError, TypeError):
+            continue
+        try:
+            before = (stored or {}).get(name)
+            if before is not None and address_key(before[HEIR_ADDRESS]) == address_key(address):
+                continue
+        except (IndexError, KeyError, TypeError):
+            pass
+        if is_own_address(wallet, address):
+            names.append(name)
+    return names
+
+
+#: The most a will message carries: 80 bytes of UTF-8 text (#140), the
+#: limit of ``validate_op_return_hex`` and of the standard OP_RETURN output.
+MESSAGE_MAX_BYTES = 80
+
+
+def message_names(heirs):
+    """The sorted names of the OP_RETURN message rows of ``heirs`` (#140).
+
+    ``heirs``: ``{name: [address, ...]}``. Owner: one message per will; an
+    old wallet may still have more (shown, never changed by itself).
+    """
+    names = []
+    for name, value in (heirs or {}).items():
+        try:
+            if is_op_return_address(str(value[HEIR_ADDRESS])):
+                names.append(str(name))
+        except (IndexError, TypeError):
+            continue
+    return sorted(names)
+
+
+def message_text(address):
+    """The text of an ``OP_RETURN:<hex>`` address (#140); "" when unreadable."""
+    try:
+        return bytes.fromhex(str(address)[len(OP_RETURN_PREFIX):]).decode(
+            "utf-8", errors="replace")
+    except ValueError:
+        return ""
+
+
+def message_address(text):
+    """The stored address of the message ``text``: ``OP_RETURN:<hex>`` (#140)."""
+    return OP_RETURN_PREFIX + str(text).encode("utf-8").hex()
+
+
+def message_size(text):
+    """How many bytes ``text`` takes in the transaction (UTF-8, #140).
+
+    Owner: the counter counts bytes, not letters: "è" is 2, an emoji 4.
+    """
+    return len(str(text).encode("utf-8"))
+
+
+def fit_message(text, limit=MESSAGE_MAX_BYTES):
+    """``text`` cut to at most ``limit`` UTF-8 bytes, never inside a
+    character (#140: the field never holds more than fits)."""
+    text = str(text)
+    if message_size(text) <= limit:
+        return text
+    return text.encode("utf-8")[:limit].decode("utf-8", errors="ignore")
+
+
+def other_message(heirs, address, except_name=None):
+    """The name of ANOTHER message row when ``address`` is a message, or
+    None (#140, owner: one message per will).
+
+    ``except_name``: the row being edited (it may change its own text).
+    WHY: two OP_RETURN rows give two OP_RETURN outputs in one transaction,
+    which nodes before Bitcoin Core 30 do not relay.
+    """
+    if not is_op_return_address(str(address)):
+        return None
+    for name in message_names(heirs):
+        if name != except_name:
+            return name
+    return None
+
+
+def check_one_message(heirs, name, address):
+    """Raise :class:`SecondMessageNotAllowed` when the row ``name`` at
+    ``address`` would be a second message in ``heirs`` (#140).
+
+    A row that is already a message may always change its text: an edit
+    never adds a message (an old wallet with two keeps working).
+    """
+    try:
+        if is_op_return_address(str((heirs or {})[name][HEIR_ADDRESS])):
+            return
+    except (KeyError, IndexError, TypeError):
+        pass
+    other = other_message(heirs, address, except_name=name)
+    if other is not None:
+        raise SecondMessageNotAllowed(other)
+
+
+def automatic_message_name(heirs, base):
+    """The name the plugin gives a new message (#140, owner).
+
+    ``base``: the translated "OP_RETURN message" (a plain name, no symbol:
+    the ✉ is only drawn by the lists). When a payee already has that name,
+    "base 2", "base 3"... so an heir is never overwritten.
+    """
+    heirs = heirs or {}
+    if base not in heirs:
+        return base
+    number = 2
+    while "{} {}".format(base, number) in heirs:
+        number += 1
+    return "{} {}".format(base, number)
+
+
+def keep_one_message(heirs, incoming):
+    """``(kept, skipped)`` of an import of ``incoming`` into ``heirs`` (#140).
+
+    ``incoming``: ``{name: value}`` already validated, in file order; it is
+    merged with ``dict.update`` (a name of the file replaces the same name).
+    A message of the file is kept only while the heirs have no other
+    message afterwards; the next ones are skipped (their names returned).
+    """
+    remaining = [n for n in message_names(heirs) if n not in incoming]
+    count = len(remaining)
+    kept, skipped = {}, []
+    for name, value in incoming.items():
+        try:
+            is_message = is_op_return_address(str(value[HEIR_ADDRESS]))
+        except (IndexError, TypeError):
+            is_message = False
+        if is_message:
+            if count >= 1:
+                skipped.append(name)
+                continue
+            count += 1
+        kept[name] = value
+    return kept, skipped
+
+
+def _json_safe(value, _path="heirs"):
+    """Backward-compatible alias of :func:`bal.core.util.copy_structure`.
+
+    Kept so call sites that imported ``_json_safe`` directly keep working; the
+    actual implementation (a JSON-safe, deepcopy-free clone) lives in
+    ``bal.core.util`` so every copy path shares one code base.
+    """
+    return copy_structure(value, _path=_path)
+
+
+class Heirs(dict, Logger):
+
+    def __init__(self, wallet):
+        Logger.__init__(self)
+        self.db = wallet.db
+        self.wallet = wallet
+        # Reason code explaining why the last buildTransactions() produced no
+        # transaction (None when the last build succeeded or never ran).  See
+        # buildTransactions for the list of codes and why they exist.
+        self.last_build_error = None
+        d = self.db.get("heirs", {})
+        try:
+            self.update(d)
+        except Exception:
+            return
+
+    def invalidate_transactions(self, wallet):
+        invalidate_inheritance_transactions(wallet)
+
+    def save(self):
+        # Sanitise the heirs mapping before handing it to the wallet DB: this
+        # guarantees only JSON-serializable values are stored and prevents the
+        # "cannot pickle '_thread.RLock' object" failure that aborted the
+        # Build-will task when a runtime object slipped into an heir value.
+        self.db.put("heirs", _json_safe(dict(self)))
+
+    def import_file(self, path, confirm_own=None):
+        """Import the heirs of the JSON file ``path`` (merged by name).
+
+        #140 (owner): one message per will; a message of the file when the
+        heirs already have one is not imported. Returns the names of those
+        skipped messages (the GUI says so).
+
+        #197 (owner): ``confirm_own(names)`` is asked once when heirs of the
+        file are paid at an address of this wallet (not those already
+        saved with that address, :func:`own_address_heirs`); on False
+        nothing is imported and :class:`OwnAddressImportDeclined` is
+        raised. None (the default) asks nothing, as before.
+        """
+        data = read_json_file(path)
+        data = Heirs._validate(data)
+        data, skipped = keep_one_message(self, data)
+        if confirm_own is not None:
+            own = own_address_heirs(self.wallet, data, stored=self)
+            if own and not confirm_own(own):
+                raise OwnAddressImportDeclined(", ".join(own))
+        self.update(data)
+        self.save()
+        return skipped
+
+    def export_file(self, path):
+        write_json_file(path, self)
+
+    def __setitem__(self, key, value):
+        dict.__setitem__(self, key, value)
+        self.save()
+
+    def pop(self, key):
+        if key in self.keys():
+            res = dict.pop(self, key)
+            self.save()
+            return res
+
+    def get_locktimes(self, from_locktime, a=False):
+        locktimes = {}
+        for key in self.keys():
+            locktime = Util.parse_locktime_string(self[key][HEIR_LOCKTIME])
+            if locktime > from_locktime and not a or locktime <= from_locktime and a:
+                locktimes[int(locktime)] = None
+        return list(locktimes.keys())
+
+    def check_locktime(self):
+        return False
+
+    def normalize_perc(
+        self, heir_list, total_balance, relative_balance, wallet, real=False
+    ):
+        amount = 0
+        for key, v in heir_list.items():
+            try:
+                if is_op_return_address(v[HEIR_ADDRESS]):
+                    heir_list[key].insert(HEIR_REAL_AMOUNT, 0)
+                    continue
+                column = HEIR_AMOUNT
+                if real:
+                    column = HEIR_REAL_AMOUNT
+                if "DUST" in str(v[column]):
+                    column = HEIR_DUST_AMOUNT
+                value = int(
+                    math.floor(
+                        total_balance
+                        / relative_balance
+                        * self.amount_to_float(v[column])
+                    )
+                )
+                if value > wallet.dust_threshold():
+                    heir_list[key].insert(HEIR_REAL_AMOUNT, value)
+                    amount += value
+                else:
+                    heir_list[key].insert(HEIR_REAL_AMOUNT, f"DUST: {value}")
+                    heir_list[key].insert(HEIR_DUST_AMOUNT, value)
+                    _logger.info(f"{key}, {value} is dust will be ignored")
+
+            except Exception as e:
+                raise e
+        return amount
+
+    def amount_to_float(self, amount):
+        try:
+            return float(amount)
+        except Exception:
+            try:
+                return float(amount[:-1])
+            except Exception:
+                return 0.0
+
+    def fixed_percent_lists_amount(self, from_locktime, dust_threshold, reverse=False):
+        fixed_heirs = {}
+        fixed_amount = 0.0
+        percent_heirs = {}
+        percent_amount = 0.0
+        fixed_amount_with_dust = 0.0
+        for key in self.keys():
+            try:
+                cmp = (
+                    Util.parse_locktime_string(self[key][HEIR_LOCKTIME]) - from_locktime
+                )
+                if cmp <= 0:
+                    _logger.debug(
+                        "cmp < 0 {} {} {} {}".format(
+                            cmp, key, self[key][HEIR_LOCKTIME], from_locktime
+                        )
+                    )
+                    continue
+                if is_op_return_address(self[key][HEIR_ADDRESS]):
+                    heir = list(self[key])
+                    heir.insert(HEIR_REAL_AMOUNT, 0)
+                    fixed_heirs[key] = heir
+                    _logger.debug(f"OP_RETURN heir {key} excluded from amount calculation")
+                    continue
+                if Util.is_perc(self[key][HEIR_AMOUNT]):
+                    percent_amount += float(self[key][HEIR_AMOUNT][:-1])
+                    percent_heirs[key] = list(self[key])
+                else:
+                    heir_amount = int(math.floor(float(self[key][HEIR_AMOUNT])))
+                    fixed_amount_with_dust += heir_amount
+                    fixed_heirs[key] = list(self[key])
+                    if heir_amount > dust_threshold:
+                        fixed_amount += heir_amount
+                        fixed_heirs[key].insert(HEIR_REAL_AMOUNT, heir_amount)
+                    else:
+                        fixed_heirs[key] = list(self[key])
+                        fixed_heirs[key].insert(
+                            HEIR_REAL_AMOUNT, f"DUST: {heir_amount}"
+                        )
+                        fixed_heirs[key].insert(HEIR_DUST_AMOUNT, heir_amount)
+            except Exception as e:
+                _logger.error(e)
+        return (
+            fixed_heirs,
+            fixed_amount,
+            percent_heirs,
+            percent_amount,
+            fixed_amount_with_dust,
+        )
+
+    def prepare_lists(
+        self, balance, total_fees, wallet, willexecutor: Optional[dict] = None,
+        from_locktime=0, max_fee=None,
+    ):
+        if balance<total_fees or balance < wallet.dust_threshold():
+            raise BalanceTooLowException(balance,wallet.dust_threshold(),total_fees)
+        willexecutors_amount = 0
+        willexecutors = {}
+        heir_list = {}
+        onlyfixed = False
+        newbalance = balance - total_fees
+        locktimes = self.get_locktimes(from_locktime)
+        if willexecutor:
+            for locktime in locktimes:
+                if int(Util.int_locktime(locktime)) > int(from_locktime):
+                    try:
+                        base_fee = int(willexecutor["base_fee"])
+                        if max_fee is not None and base_fee > max_fee:
+                            raise WillExecutorFeeTooHighException(
+                                willexecutor, max_fee
+                            )
+                        willexecutors_amount += base_fee
+                        h: list = [None] * 4
+                        h[HEIR_AMOUNT] = base_fee
+                        h[HEIR_REAL_AMOUNT] = base_fee
+                        h[HEIR_LOCKTIME] = locktime
+                        h[HEIR_ADDRESS] = willexecutor["address"]
+                        willexecutors[
+                            'w!ll3x3c"' + willexecutor["url"] + '"' + str(locktime)
+                        ] = h
+                    except Exception:
+                        return [], False
+                else:
+                    _logger.error(
+                        f"heir excluded from will locktime({locktime}){Util.int_locktime(locktime)}<minimum{from_locktime}"
+                    ),
+            heir_list.update(willexecutors)
+            newbalance -= willexecutors_amount
+            if newbalance < 0:
+                raise WillExecutorFeeException(willexecutor)
+        (
+            fixed_heirs,
+            fixed_amount,
+            percent_heirs,
+            percent_amount,
+            fixed_amount_with_dust,
+        ) = self.fixed_percent_lists_amount(from_locktime, wallet.dust_threshold())
+        # Fixed amounts that do not fit (or that leave nothing for the
+        # percentage heirs) stop the build (CHANGELOG #76, owner decision).
+        # The old code scaled them down here (normalize_perc), which silently
+        # dropped the percentage heirs, or paid fixed-only heirs ~71 % and
+        # returned the rest to the wallet as change.
+        if fixed_amount > newbalance or (percent_heirs and fixed_amount >= newbalance):
+            raise FixedAmountsExceedBalanceException(fixed_amount, newbalance)
+
+        heir_list.update(fixed_heirs)
+
+        newbalance -= fixed_amount
+        if newbalance > 0:
+            perc_amount = self.normalize_perc(
+                percent_heirs, newbalance, percent_amount, wallet
+            )
+            newbalance -= perc_amount
+            heir_list.update(percent_heirs)
+        if newbalance > 0:
+            newbalance += fixed_amount
+            fixed_amount = self.normalize_perc(
+                fixed_heirs, newbalance, fixed_amount_with_dust, wallet, real=True
+            )
+            newbalance -= fixed_amount
+            heir_list.update(fixed_heirs)
+
+        heir_list = sorted(
+            heir_list.items(),
+            key=lambda item: Util.parse_locktime_string(item[1][HEIR_LOCKTIME], wallet),
+        )
+
+        locktimes = {}
+        for key, value in heir_list:
+            locktime = Util.parse_locktime_string(value[HEIR_LOCKTIME])
+            if locktime not in locktimes:
+                locktimes[locktime] = {key: value}
+            else:
+                locktimes[locktime][key] = value
+
+        # ALL-DUST GUARD (owner request, see CHANGELOG / log analysis).
+        #
+        # WHY HERE: ``locktimes`` now contains EVERY heir across EVERY locktime,
+        # with their final resolved amount already computed and dust-marked
+        # ("DUST: <n>" in HEIR_REAL_AMOUNT) by fixed_percent_lists_amount /
+        # normalize_perc above. This is the only place where we can reliably
+        # tell whether *all* heirs are dust, for BOTH fixed and percentage
+        # heirs and across all dates. ``prepare_transactions`` only sees the
+        # single lowest locktime, so checking there would wrongly block a will
+        # whose later locktimes still have valid heirs (false positive).
+        #
+        # WHAT: count the REAL heirs (excluding the internal will-executor
+        # pseudo-heirs, whose names start with the reserved ``w!ll3x3c"``
+        # marker) and how many of them have a valid, non-dust amount. If there
+        # are real heirs but NONE of them is payable, the inheritance would pay
+        # nobody (only the change + the will-executor fee). Previously such an
+        # "empty" will was still built, signed, checked and listed; we now
+        # refuse it and raise HeirAmountIsDustException so the GUI can show a
+        # clear message and stop. A mix of dust + valid heirs keeps building
+        # normally with the valid ones (unchanged behaviour).
+        real_heirs = 0
+        valid_real_heirs = 0
+        for heirs_at_locktime in locktimes.values():
+            for name, heir in heirs_at_locktime.items():
+                if str(name).startswith('w!ll3x3c"'):
+                    continue
+                real_heirs += 1
+                if len(heir) > HEIR_REAL_AMOUNT and "DUST" not in str(
+                    heir[HEIR_REAL_AMOUNT]
+                ):
+                    valid_real_heirs += 1
+                elif len(heir) > HEIR_REAL_AMOUNT and is_op_return_address(heir[HEIR_ADDRESS]):
+                    valid_real_heirs += 1
+        if real_heirs > 0 and valid_real_heirs == 0:
+            raise HeirAmountIsDustException(
+                "All heirs' shares are below the dust limit"
+            )
+
+        return locktimes, onlyfixed
+
+    def is_perc(self, key):
+        return Util.is_perc(self[key][HEIR_AMOUNT])
+
+    def buildTransactions(
+        self, bal_plugin, wallet, tx_fees=None, utxos=None, from_locktime=0,
+        pinned=None,
+    ):
+        """Build the inheritance transactions, one set per will-executor.
+
+        ``pinned`` (#141): ``{url: {"address": ..., "base_fee": ...}}``,
+        the payment data to use for those will-executors instead of the
+        ones in the list (``Will.received_terms``), so a copy they already
+        received is built again unchanged.
+        """
+        # Reset the diagnostic reason at the start of every build attempt.
+        #
+        # WHY: when the build produced nothing, the GUI used to show a fixed
+        # list of three "possible reasons" (low balance / dust shares /
+        # check-alive after the delivery date).  In practice the real cause is
+        # often NONE of those three - several code paths below simply return
+        # an empty result with no explanation at all, so the user was shown
+        # three guesses that were all wrong.  Each such path now records WHY
+        # it gave up, and BalBuildWillDialog names the actual cause.
+        #
+        # Codes: NO_HEIRS, NO_UTXO, NO_WILLEXECUTOR_USABLE, NO_FUTURE_DATE,
+        # WILLEXECUTOR_FEE, WILLEXECUTOR_FEE_TOO_HIGH, TX_BUILD_FAILED,
+        # WILLEXECUTOR_TX_ERROR, FIXED_EXCEEDS_BALANCE (#76),
+        # WALLET_TYPE_NOT_SUPPORTED (#216).
+        self.last_build_error = None
+        _before = list(self.keys())
+        Heirs._validate(self, persist=False)
+        _removed = [k for k in _before if k not in self]
+        if _removed:
+            # The build skips invalid heirs, but they are only dropped in memory
+            # (persist=False): the wallet still keeps them, so the user can fix
+            # or remove them deliberately instead of losing them silently.
+            _logger.warning(
+                "buildTransactions: skipped %d invalid heir(s) (kept in wallet, "
+                "not removed): %s",
+                len(_removed),
+                ", ".join(_removed),
+            )
+        if len(self) <= 0:
+            self.last_build_error = "NO_HEIRS"
+            _logger.info("while building transactions there was no heirs")
+            return
+        balance = 0.0
+        len_utxo_set = 0
+        available_utxos = []
+        if not utxos:
+            utxos = wallet.get_utxos()
+        willexecutors = Willexecutors.get_willexecutors(bal_plugin) or {}
+        self.decimal_point = bal_plugin.get_decimal_point()
+        no_willexecutors = bal_plugin.NO_WILLEXECUTOR.get()
+        for utxo in utxos:
+            if utxo.value_sats() > 0:
+                balance += utxo.value_sats()
+                len_utxo_set += 1
+                available_utxos.append(utxo)
+        if len_utxo_set == 0:
+            self.last_build_error = "NO_UTXO"
+            _logger.info("no usable utxos")
+            return
+        if not only_native_segwit(available_utxos):
+            self.last_build_error = "WALLET_TYPE_NOT_SUPPORTED"
+            _logger.info("coins on addresses that are not native segwit")
+            return
+        j = -2
+        willexecutorsitems = list(willexecutors.items())
+        willexecutorslen = len(willexecutorsitems)
+        alltxs = {}
+        # Counts how many will-executors were actually PROCESSED (i.e. passed
+        # the is_selected/is_valid filter below and reached the build loop).
+        # If it stays 0 the loop silently skipped every single one, which is a
+        # distinct failure from "we tried and the build failed".
+        processed_willexecutors = 0
+        while True:
+            j += 1
+            if j >= willexecutorslen:
+                break
+            elif 0 <= j:
+                url, willexecutor = willexecutorsitems[j]
+                if not (Willexecutors.is_selected(willexecutor) and Willexecutors.is_valid(willexecutor, max_fee=bal_plugin.MAX_WILLEXECUTOR_FEE.get(), dust=wallet.dust_threshold())):
+                    continue
+                else:
+                    willexecutor["url"] = url
+                    if pinned and url in pinned:
+                        # A copy: the list itself keeps the new data.
+                        willexecutor = dict(willexecutor, **pinned[url])
+            elif j == -1:
+                if not no_willexecutors:
+                    continue
+                url = willexecutor = None
+            else:
+                break
+            processed_willexecutors += 1
+            fees = {}
+            i = 0
+            txs = {}
+            while i < 10:
+                txs = {}
+                redo = False
+                i += 1
+                total_fees = 0
+                for fee in fees:
+                    total_fees += int(fees[fee])
+                # newbalance = balance
+                try:
+                    locktimes, onlyfixed = self.prepare_lists(
+                        balance, total_fees, wallet, willexecutor, from_locktime,
+                        max_fee=bal_plugin.MAX_WILLEXECUTOR_FEE.get(),
+                    )
+                except WillExecutorFeeException:
+                    self.last_build_error = "WILLEXECUTOR_FEE"
+                    i = 10
+                    continue
+                except WillExecutorFeeTooHighException:
+                    self.last_build_error = "WILLEXECUTOR_FEE_TOO_HIGH"
+                    i = 10
+                    continue
+                except FixedAmountsExceedBalanceException as e:
+                    # Stop for this executor (#76): the other executors see
+                    # the same amounts, so the build ends with no will.
+                    self.last_build_error = "FIXED_EXCEEDS_BALANCE"
+                    _logger.info(f"build stopped: {e}")
+                    i = 10
+                    continue
+                if locktimes:
+                    try:
+                        txs = prepare_transactions(
+                            locktimes, available_utxos[:], fees, wallet
+                        )
+                        if not txs:
+                            self.last_build_error = "TX_BUILD_FAILED"
+                            return {}
+                    except Exception as e:
+                        # An unexpected failure while assembling the
+                        # transactions for THIS will-executor.
+                        #
+                        # WHY THIS CHANGED: the previous code read
+                        # ``e.heirname`` here, in order to auto-deselect the
+                        # will-executor blamed by the exception.  NOTHING in
+                        # the plugin sets that attribute any more (it is a
+                        # leftover from an older exception design), so the
+                        # lookup itself raised AttributeError, and the inner
+                        # ``except Exception: raise`` re-raised THAT - aborting
+                        # the whole build with a confusing secondary error
+                        # instead of the real one.  We now record the reason,
+                        # log the actual exception together with the
+                        # will-executor it happened on, and simply move on to
+                        # the next one, which is what the original code was
+                        # clearly trying to do.
+                        self.last_build_error = "WILLEXECUTOR_TX_ERROR"
+                        _logger.error(
+                            "build transactions: error preparing transactions "
+                            "for will-executor %s: %r",
+                            (willexecutor or {}).get("url", "(none)"),
+                            e,
+                        )
+                        break
+                    total_fees = 0
+                    total_fees_real = 0
+                    total_in = 0
+                    for txid, tx in txs.items():
+                        tx.willexecutor = willexecutor
+                        fee = Util.real_tx_size(tx, wallet) * tx_fees
+                        txs[txid].tx_fees = tx_fees
+                        total_fees += fee
+                        total_fees_real += tx.get_fee()
+                        total_in += tx.input_value()
+                        rfee = tx.input_value() - tx.output_value()
+                        if rfee < fee or rfee > fee + wallet.dust_threshold():
+                            redo = True
+                        # oldfees = fees.get(tx.my_locktime, 0)
+                        fees[tx.my_locktime] = fee
+
+                    if balance - total_in > wallet.dust_threshold():
+                        redo = True
+                    if not redo:
+                        break
+                    if i >= 10:
+                        break
+                else:
+                    self.last_build_error = "NO_FUTURE_DATE"
+                    _logger.info(
+                        f"no locktimes for willexecutor {willexecutor} skipped"
+                    )
+                    break
+            alltxs.update(txs)
+
+        # Every will-executor was skipped by the is_selected/is_valid filter
+        # (or the list was empty) and no "no will-executor" build was allowed,
+        # so the loop above never even attempted a build.  This path used to
+        # return silently with no log line at all, which is exactly the case
+        # the owner hit: the dialog then blamed balance/dust/check-alive, none
+        # of which was true.
+        if not alltxs and processed_willexecutors == 0:
+            self.last_build_error = "NO_WILLEXECUTOR_USABLE"
+            _logger.info(
+                "no usable will-executor: all %d skipped (not selected or not valid)",
+                willexecutorslen,
+            )
+
+        return alltxs
+
+    def get_transactions(
+        self, bal_plugin, wallet, tx_fees, utxos=None, from_locktime=0,
+        pinned=None,
+    ):
+        """The transactions of the will, with those for the coins left over.
+
+        ``pinned``: see :meth:`buildTransactions` (#141).
+        """
+        txs = self.buildTransactions(
+            bal_plugin, wallet, tx_fees, utxos, from_locktime, pinned=pinned
+        )
+        if txs:
+            temp_txs = {}
+            for txid in txs:
+                if txs[txid].available_utxos:
+                    temp_txs.update(
+                        self.get_transactions(
+                            bal_plugin,
+                            wallet,
+                            tx_fees,
+                            txs[txid].available_utxos,
+                            txs[txid].locktime,
+                            pinned=pinned,
+                        )
+                    )
+            txs.update(temp_txs)
+        return txs
+
+    def resolve(self, k):
+        if bitcoin.is_address(k):
+            return {"address": k, "type": "address"}
+        if k in self.keys():
+            _type, addr = self[k]
+            if _type == "address":
+                return {"address": addr, "type": "heir"}
+        if openalias := self.resolve_openalias(k):
+            return openalias
+        raise AliasNotFoundException("Invalid Bitcoin address or alias", k)
+
+    @classmethod
+    def resolve_openalias(cls, url: str) -> Dict[str, Any]:
+        out = cls._resolve_openalias(url)
+        if out:
+            address, name, validated = out
+            return {
+                "address": address,
+                "name": name,
+                "type": "openalias",
+                "validated": validated,
+            }
+        return {}
+
+    def by_name(self, name):
+        for k in self.keys():
+            _type, addr = self[k]
+            if addr.casefold() == name.casefold():
+                return {"name": addr, "type": _type, "address": k}
+        return None
+
+    def fetch_openalias(self, config: "SimpleConfig"):
+        self.alias_info = None
+        alias = config.OPENALIAS_ID
+        if alias:
+            alias = str(alias)
+
+            def f():
+                self.alias_info = self._resolve_openalias(alias)
+                trigger_callback("alias_received")
+
+            t = threading.Thread(target=f)
+            t.daemon = True
+            t.start()
+
+    @classmethod
+    def _resolve_openalias(cls, url: str) -> Optional[Tuple[str, str, bool]]:
+        # support email-style addresses, per the OA standard
+        url = url.replace("@", ".")
+        try:
+            records, validated = _query_txt_records(url)
+        except DNSException as e:
+            _logger.info(f"Error resolving openalias: {repr(e)}")
+            return None
+        prefix = "btc"
+        for record in records:
+            string = to_string(record.strings[0], "utf8")
+            if string.startswith("oa1:" + prefix):
+                address = cls.find_regex(string, r"recipient_address=([A-Za-z0-9]+)")
+                if not address:
+                    continue
+                name = cls.find_regex(string, r"recipient_name=([^;]+)")
+                if not name:
+                    name = address
+                return address, name, validated
+
+    @staticmethod
+    def find_regex(haystack, needle) -> Optional[str]:
+        regex = re.compile(needle)
+        try:
+            return regex.search(haystack).groups()[0]
+        except AttributeError:
+            return None
+
+    @staticmethod
+    def validate_address(address):
+        """``address`` when it is one bitcoin address of this network (or
+        an ``OP_RETURN:`` message row); raises :class:`NotAnAddress`.
+
+        #138 (owner): an extended key pasted instead of an address gets its
+        own exception: :class:`ExtendedPublicKeyNotAddress` (xpub, zpub...:
+        "copy one address from Receive") or
+        :class:`ExtendedPrivateKeyNotAddress` (xprv...: a strong warning).
+        Neither carries the text: a private key is never put in a message
+        or a log line.
+        """
+        if is_op_return_address(address):
+            data_hex = address[len(OP_RETURN_PREFIX):]
+            validate_op_return_hex(data_hex)
+            return address
+        if not bitcoin.is_address(address, net=constants.net):
+            kind = extended_key_kind(address)
+            if kind == "private":
+                raise ExtendedPrivateKeyNotAddress("extended private key")
+            if kind == "public":
+                raise ExtendedPublicKeyNotAddress("extended public key")
+            raise NotAnAddress(f"not an address,{address}")
+        return address
+
+    @staticmethod
+    def validate_amount(amount):
+        try:
+            famount = float(amount[:-1]) if Util.is_perc(amount) else float(amount)
+            if famount <= 0.00000001:
+                raise AmountNotValid(f"amount have to be positive {famount} < 0")
+        except Exception as e:
+            raise AmountNotValid(f"amount not properly formatted, {e}") from e
+        return amount
+
+    @staticmethod
+    def validate_locktime(locktime, timestamp_to_check=False):
+        try:
+            if timestamp_to_check:
+                if Util.parse_locktime_string(locktime, None) < timestamp_to_check:
+                    raise HeirExpiredException()
+        except Exception as e:
+            raise LocktimeNotValid(f"locktime string not properly formatted, {e}") from e
+        return locktime
+
+    @staticmethod
+    def validate_heir(k, v, timestamp_to_check=False):
+        """Validate the heir ``k`` -> ``v`` (address, amount, locktime).
+
+        Returns ``(address, amount, locktime)`` as they are stored.
+        #139 (owner's ZIP test): a name empty after strip is refused with
+        ``HeirNameNotValid`` before anything is put in the heirs dict
+        (Electrum's ``StoredDict`` asserts on the key "" when saving). The
+        name itself is never changed: an existing name with spaces still
+        matches.
+        """
+        if not str(k if k is not None else "").strip():
+            raise HeirNameNotValid("")
+        address = Heirs.validate_address(v[HEIR_ADDRESS])
+        if is_op_return_address(v[HEIR_ADDRESS]):
+            amount = "0"
+        else:
+            amount = Heirs.validate_amount(v[HEIR_AMOUNT])
+        locktime = Heirs.validate_locktime(v[HEIR_LOCKTIME], timestamp_to_check)
+        return (address, amount, locktime)
+
+    @staticmethod
+    def _validate(data, timestamp_to_check=False, persist=True):
+
+        for k, v in list(data.items()):
+            if k == "heirs":
+                return Heirs._validate(v, timestamp_to_check, persist)
+            try:
+                Heirs.validate_heir(k, v, timestamp_to_check)
+            except Exception as e:
+                _logger.info(f"exception heir removed {e}")
+                if persist:
+                    data.pop(k)
+                else:
+                    # Drop the invalid heir in memory only, so the overridden
+                    # Heirs.pop (which calls save()) is not triggered: a build
+                    # must not silently delete heirs from the wallet.
+                    dict.pop(data, k)
+        return data
+
+
+class NotAnAddress(ValueError):
+    pass
+
+
+class ExtendedPublicKeyNotAddress(NotAnAddress):
+    """An extended PUBLIC key (xpub, zpub...) given as an heir's address
+    (#138). Its text is never kept in the exception."""
+
+
+class ExtendedPrivateKeyNotAddress(NotAnAddress):
+    """An extended PRIVATE key (xprv, zprv...) given as an heir's address
+    (#138). Its text is never kept in the exception, a message or a log."""
+
+
+class AmountNotValid(ValueError):
+    pass
+
+
+class HeirNameNotValid(ValueError):
+    """An heir name empty after strip (#139, owner's ZIP test)."""
+
+
+class SecondMessageNotAllowed(ValueError):
+    """A second OP_RETURN message in the will (#140, owner: one only).
+
+    ``args[0]``: the name of the message already there.
+    """
+
+
+class OwnAddressImportDeclined(Exception):
+    """The owner answered No to importing heirs paid at an address of the
+    wallet itself (#197): nothing was imported.
+
+    ``args[0]``: the names of those heirs, comma separated.
+    """
+
+
+class LocktimeNotValid(ValueError):
+    pass
+
+
+class HeirExpiredException(LocktimeNotValid):
+    pass
+
+
+class HeirAmountIsDustException(Exception):
+    pass
+
+
+class NoHeirsException(Exception):
+    pass
+
+
+class WillExecutorFeeException(Exception):
+    def __init__(self, willexecutor):
+        self.willexecutor = willexecutor
+
+    def __str__(self):
+        return "WillExecutorFeeException: {} fee:{}".format(
+            self.willexecutor["url"], self.willexecutor["base_fee"]
+        )
+
+class FixedAmountsExceedBalanceException(Exception):
+    """The fixed heir amounts do not fit in the balance left for the heirs.
+
+    Raised by :meth:`Heirs.prepare_lists` (CHANGELOG #76, owner decision:
+    stop instead of building). Before, the build scaled the fixed amounts
+    down and then left out the percentage heirs, or, with fixed heirs only,
+    paid them about 71 % and sent the rest back to the owner's wallet as
+    change (verified in the scenario harness).
+    """
+
+    def __init__(self, fixed_amount, available):
+        self.fixed_amount = fixed_amount
+        self.available = available
+
+    def __str__(self):
+        return "fixed amounts {} >= available {}".format(
+            self.fixed_amount, self.available
+        )
+
+
+class WillExecutorFeeTooHighException(Exception):
+    def __init__(self, willexecutor, max_fee):
+        self.willexecutor = willexecutor
+        self.max_fee = max_fee
+
+    def __str__(self):
+        return "WillExecutorFeeTooHighException: {} fee:{} > max:{}".format(
+            self.willexecutor["url"],
+            self.willexecutor["base_fee"],
+            self.max_fee,
+        )
+
+class BalanceTooLowException(Exception):
+    def __init__(self,balance, dust_threshold, fees):
+        self.balance=balance
+        self.dust_threshold = dust_threshold
+        self.fees = fees
+    def __str__(self):
+        return f"Balance too low, balance: {self.balance}, dust threshold: {self.dust_threshold}, fees: {self.fees}"
+
+
+class DeliveriesNotFundedException(BalanceTooLowException):
+    """The funds cannot pay every delivery of a table, with its fees (#211).
+
+    ``balance``: the sats the will can spend; ``deliveries``: how many
+    deliveries the table asks for. A ``BalanceTooLowException``, so a caller
+    that knows only that one still stops. The sentence for the owner is
+    ``bal.core.messages.deliveries_not_funded_message``.
+    """
+
+    def __init__(self, balance, deliveries):
+        """No dust limit or fee figure: they do not say what the owner can do."""
+        super().__init__(balance, 0, 0)
+        self.deliveries = deliveries
+
+    def __str__(self):
+        return f"{self.balance} sat cannot pay {self.deliveries} deliveries"

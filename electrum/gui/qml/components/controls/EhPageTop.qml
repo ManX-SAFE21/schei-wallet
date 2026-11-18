@@ -59,7 +59,7 @@ ColumnLayout {
         text: root.step
         color: S.olive
         font.family: BodyFont ? BodyFont : font.family
-        font.pixelSize: 16
+        font.pixelSize: app.ehFsText
         font.bold: true
         font.letterSpacing: 0.5
         wrapMode: Text.WordWrap

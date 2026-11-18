@@ -54,7 +54,7 @@ ElDialog {
                 textFormat: Text.StyledText
                 wrapMode: Text.WordWrap
                 font.family: BodyFont ? BodyFont : font.family
-                font.pixelSize: 17
+                font.pixelSize: app.ehFsText
                 lineHeight: 1.2
                 color: S.ink
             }
@@ -78,7 +78,7 @@ ElDialog {
                             text: modelData
                             font.family: BodyFont ? BodyFont : font.family
                             font.bold: true
-                            font.pixelSize: 16
+                            font.pixelSize: app.ehFsText
                             color: index === 0 ? '#ffffff' : (modelData === '›' ? S.muted : S.ink)
                         }
                     }
@@ -89,7 +89,7 @@ ElDialog {
                 visible: dialog.tipText !== ''
                 kind: 'tip'
                 text: dialog.tipText
-                fontSize: 17
+                fontSize: app.ehFsText
             }
 
             EhStitchButton {

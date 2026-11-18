@@ -10,7 +10,7 @@ EhStitchButton {
     property color color: '#5e1a33'
     property color textColor: '#ffffff'
     property color arrowColor: '#d9b25a'
-    property real fontSize: 23
+    property real fontSize: app.ehFsStrong
 
     text: qsTr('Next')
     kind: (root.color.g > root.color.r) ? 'olive' : 'wine'

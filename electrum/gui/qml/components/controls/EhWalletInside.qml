@@ -6,6 +6,7 @@ import QtQuick
 Item {
     id: root
     property color baseColor: '#5e1a33'
+    // owner 17/11: every colour from the wallet colour (it was always wine: brown inside a green wallet)
     property real openK: 0          // 0 closed .. 1 open
 
     visible: openK > 0.01
@@ -27,7 +28,7 @@ Item {
         radius: 20
         gradient: Gradient {
             GradientStop { position: 0.0; color: Qt.darker(root.baseColor, 1.15) }
-            GradientStop { position: 1.0; color: '#2a0b18' }
+            GradientStop { position: 1.0; color: Qt.darker(root.baseColor, 2.2) }
         }
     }
     // home "Bottega": gold stitching round the inside too
@@ -47,8 +48,8 @@ Item {
         height: 96
         radius: 14
         gradient: Gradient {
-            GradientStop { position: 0.0; color: '#1a0610' }
-            GradientStop { position: 0.7; color: '#33101f' }
+            GradientStop { position: 0.0; color: Qt.darker(root.baseColor, 3.6) }
+            GradientStop { position: 0.7; color: Qt.darker(root.baseColor, 1.85) }
         }
         // stitching (gold, as on the front)
         EhDashedBorder {

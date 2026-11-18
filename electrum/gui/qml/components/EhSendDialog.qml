@@ -38,9 +38,10 @@ ElDialog {
     // pasted address: shown big first, so a wrong paste is seen before going on
     property string pasted: ''
     property bool pasteError: false
+    property bool pasteEmpty: false  // owner 17/11: nothing copied; said until the next paste
     property bool pasteSame: false   // T23: pasted again the address already shown
     function clearPasted() {
-        root.pasted = ''; root.pasteError = false; root.pasteSame = false
+        root.pasted = ''; root.pasteError = false; root.pasteSame = false; root.pasteEmpty = false
         if (camLoader.item) camLoader.item.start()
     }
     function addrOf(s) { return s.replace(/^bitcoin:/i, '').split('?')[0] }
@@ -109,7 +110,7 @@ ElDialog {
             text: qsTr('STEP %1 OF %2').arg(1).arg(3)
             visible: false   // the steps bar at the top says it now
             color: S.olive
-            font.pixelSize: 16
+            font.pixelSize: app.ehFsText
             font.bold: true
         }
 
@@ -121,7 +122,7 @@ ElDialog {
         Label {
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
-            font.pixelSize: 18
+            font.pixelSize: app.ehFsText
             color: S.ink
             text: qsTr('Scan the bitcoin QR code of the person you have to pay.')
             visible: root.pasted === ''
@@ -151,7 +152,7 @@ ElDialog {
                 anchors.centerIn: parent
                 text: qsTr('the camera is already on')
                 color: '#ffffff'
-                font.pixelSize: 16
+                font.pixelSize: app.ehFsText
             }
             // owner 13/11: a viewfinder, so it is clear where to put the code and how to turn it
             Item {
@@ -163,7 +164,7 @@ ElDialog {
                 readonly property real fy: Math.max(12, (height - side) / 2 - 14)
                 readonly property color ink: found ? '#9cc25a' : S.gold
                 // darker outside the frame (one shape with a hole, with the box's round corners)
-                Canvas {
+                EhCanvas {
                     anchors.fill: parent
                     onWidthChanged: requestPaint()
                     onHeightChanged: requestPaint()
@@ -257,7 +258,7 @@ ElDialog {
                     text: qsTr('Put the QR code inside the frame')
                     color: '#ffffff'
                     font.family: BodyFont ? BodyFont : font.family
-                    font.pixelSize: 16
+                    font.pixelSize: app.ehFsText
                     font.bold: true
                     style: Text.Raised
                     styleColor: Qt.rgba(0, 0, 0, 0.8)
@@ -285,7 +286,7 @@ ElDialog {
                 Layout.fillWidth: true
                 text: qsTr('YOU PASTED THIS ADDRESS')
                 color: S.wine
-                font.pixelSize: 16
+                font.pixelSize: app.ehFsText
                 font.bold: true
                 font.letterSpacing: 0.5
                 wrapMode: Text.WordWrap
@@ -301,7 +302,7 @@ ElDialog {
                                         Math.max(1, Math.floor((width + pFm.averageCharacterWidth) / (pFm.averageCharacterWidth * 5))))
                 font.family: FixedFont
                 font.bold: true
-                font.pixelSize: 18
+                font.pixelSize: app.ehFsText
                 lineHeight: 1.25
                 color: S.ink
                 FontMetrics { id: pFm; font: pAddr.font }
@@ -333,7 +334,17 @@ ElDialog {
             horizontalAlignment: Text.AlignHCenter
             text: qsTr('This is not a bitcoin address. Copy it again and retry.')
             color: S.red
-            font.pixelSize: 16
+            font.pixelSize: app.ehFsText
+            font.bold: true
+        }
+        Label {
+            visible: root.pasteEmpty
+            Layout.fillWidth: true
+            wrapMode: Text.WordWrap
+            horizontalAlignment: Text.AlignHCenter
+            text: qsTr('There is nothing to paste: copy the address first.')
+            color: S.red
+            font.pixelSize: app.ehFsText
             font.bold: true
         }
 
@@ -361,8 +372,9 @@ ElDialog {
             text: root.pasted !== '' ? qsTr('Paste another one') : qsTr('Paste a bitcoin address')
             onClicked: {
                 var cliptext = AppController.clipboardToText().trim()
+                root.pasteEmpty = !cliptext
                 if (!cliptext) {
-                    toaster.show(pasteBtn,qsTr('There is nothing to paste: copy the address first.'))
+                    root.pasteError = false
                     return
                 }
                 if (camLoader.item) camLoader.item.stop()

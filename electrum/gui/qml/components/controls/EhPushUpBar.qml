@@ -51,7 +51,7 @@ Item {
         anchors.topMargin: root.numberInRing ? 4 : 10
         anchors.horizontalCenter: parent.horizontalCenter
         spacing: 2
-        Label { visible: !root.numberInRing; anchors.horizontalCenter: parent.horizontalCenter; text: root.label; font.pixelSize: 17; font.bold: true; color: '#5e1a33' }
+        Label { visible: !root.numberInRing; anchors.horizontalCenter: parent.horizontalCenter; text: root.label; font.pixelSize: app.ehFsText; font.bold: true; color: '#5e1a33' }
         Label { visible: !root.numberInRing || root.busy; anchors.horizontalCenter: parent.horizontalCenter; text: root.busy ? qsTr('Sending…') : root.hint; font.pixelSize: 11; color: '#6b5d55' }
         Rectangle {
             id: ring
@@ -67,7 +67,7 @@ Item {
                 color: Qt.rgba(0.37, 0.10, 0.20, 0.45)
                 font.family: TitleFont ? TitleFont : font.family
                 font.weight: Font.Black
-                font.pixelSize: 28
+                font.pixelSize: app.ehFsBox
             }
         }
     }
@@ -105,7 +105,7 @@ Item {
         spacing: -2
         Repeater {
             model: 3
-            Canvas {
+            EhCanvas {
                 id: arrow
                 required property int index
                 width: 26; height: 15

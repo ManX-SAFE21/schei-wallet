@@ -248,6 +248,9 @@ class SimpleConfig(Logger):
             # Schȅi testnet4: io.safe21.easyheirs.testnet4.electrum
             if android_pkg_name == f"io.safe21.easyheirs.{chain.cli_flag()}.electrum":
                 config_options[chain.cli_flag()] = True
+            # Schȅi Eredità testnet4 (inheritance test app): io.safe21.easyheirs.eredita.testnet4.electrum
+            if android_pkg_name == f"io.safe21.easyheirs.eredita.{chain.cli_flag()}.electrum":
+                config_options[chain.cli_flag()] = True
 
     def get_selected_chain(self) -> Type[constants.AbstractNet]:
         selected_chains = [

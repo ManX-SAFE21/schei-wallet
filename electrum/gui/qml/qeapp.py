@@ -26,6 +26,19 @@ from electrum.util import profiler
 from electrum.lnurl import SUPPORTED_LNURL_SCHEMES
 
 from .qeconfig import QEConfig
+
+# owner 18/11: the package of the «APK PER SCREENSHOT» (mainnet, screens always photographable)
+SCHEI_SCREENSHOT_PACKAGE = 'io.safe21.easyheirs.foto.electrum'
+
+
+def _is_screenshot_app() -> bool:
+    if 'ANDROID_DATA' not in os.environ:
+        return False
+    try:
+        from electrum.util import get_android_package_name
+        return get_android_package_name() == SCHEI_SCREENSHOT_PACKAGE
+    except Exception:
+        return False     # when in doubt the screen stays protected
 from .qedaemon import QEDaemon
 from .qenetwork import QENetwork
 from .qewallet import QEWallet
@@ -46,6 +59,7 @@ from .qeswaphelper import QESwapHelper
 from .qewizard import QENewWalletWizard, QEServerConnectWizard, QETermsOfUseWizard
 from .qemodelfilter import QEFilterProxyModel
 from .qebip39recovery import QEBip39RecoveryListModel
+from .qeehfindfunds import QEEhFindFunds
 from .qebiometrics import QEBiometrics
 
 if TYPE_CHECKING:
@@ -80,6 +94,7 @@ class QEAppController(BaseCrashReporter, QObject):
     wantCloseChanged = pyqtSignal()
     pluginLoaded = pyqtSignal(str)
     startupFinished = pyqtSignal()
+    systemBarsChanged = pyqtSignal()
 
     def __init__(self, qeapp: 'ElectrumQmlApplication', plugins: 'Plugins'):
         BaseCrashReporter.__init__(self, None, None, None)
@@ -114,6 +129,21 @@ class QEAppController(BaseCrashReporter, QObject):
             self.bindIntent()
 
         self._want_close = False
+
+        # Schȅi (owner 16/11, Galaxy A15 = Android 14): without edge-to-edge the Qt window can
+        # still be laid out taller than the visible area, its bottom under the Android keys,
+        # while getNavigationBarHeight() said 0. The Qt window gets its size after main.qml is
+        # loaded, so look again for a while and tell QML (navigationBarHeight) when it changes.
+        # Owner 16/11 (same phone): back in the app, Android shrank the Qt window above the keys
+        # but the old 48 dp stayed (empty strip under the leather wallet): so look again also
+        # every time the window changes size or the app comes back (watchSystemBars).
+        self._navBarDp = None
+        self._barsChecks = 0
+        self._barsTimer = QTimer(self)
+        self._barsTimer.setInterval(500)  # msec
+        self._barsTimer.timeout.connect(self._onBarsTimer)
+        if self.isAndroid() and not self.enforcesEdgeToEdge():
+            self._barsTimer.start()
 
     def on_wallet_loaded(self):
         qewallet = QEDaemon.instance.currentWallet
@@ -487,6 +517,13 @@ class QEAppController(BaseCrashReporter, QObject):
             return
         if self.config.GUI_QML_ALWAYS_ALLOW_SCREENSHOTS:
             return
+        # owner 16/11: the testnet4 app must allow screenshots and screen videos also on the
+        # seed / PIN pages (for presentations of the wallet); test coins have no value
+        if constants.net.TESTNET:
+            return
+        # owner 18/11: the «APK PER SCREENSHOT» (its own package, see contrib/android/make_apk.sh)
+        if _is_screenshot_app():
+            return
         if self._secureWindow != secure:
             jpythonActivity.setSecureWindow(secure)
             self._secureWindow = secure
@@ -501,6 +538,8 @@ class QEAppController(BaseCrashReporter, QObject):
     @profiler(min_threshold=0.02)
     def _getSystemBarHeight(self, bar_type: str) -> int:
         if not self.enforcesEdgeToEdge():
+            if bar_type == 'navigation' and self.isAndroid():
+                return self._qtWindowUnderKeysDp()
             return 0
         assert systemSdkVersion >= 30, \
             f"Android WindowInsets unavailable on {systemSdkVersion=}"
@@ -539,6 +578,63 @@ class QEAppController(BaseCrashReporter, QObject):
     @pyqtSlot(result=int)
     def getNavigationBarHeight(self) -> int:
         return self._getSystemBarHeight('navigation')
+
+    def _qtWindowUnderKeysDp(self) -> int:
+        """Not edge-to-edge (Android < 15): how much of the Qt window is below the visible
+        area, i.e. under the Android keys (dp). Seen on a Galaxy A15 with Android 14: the
+        QtWindow is 2260 px tall inside a QtRootLayout of 2125 px (keys 135 px = 48 dp)."""
+        try:
+            group = 'android.view.ViewGroup'
+            content = jview.findViewById(16908290)  # android.R.id.content
+            if content is None:
+                return 0
+            content = cast(group, content)
+            if content.getChildCount() == 0:
+                return 0
+            root = cast(group, content.getChildAt(0))  # QtRootLayout
+            root_h = root.getHeight()
+            if root_h <= 0:
+                return 0
+            over = 0
+            for i in range(root.getChildCount()):
+                v = root.getChildAt(i)  # QtWindow
+                over = max(over, v.getTop() + v.getHeight() - root_h)
+            if over <= 0:
+                return 0
+            density = jpythonActivity.getResources().getDisplayMetrics().density
+            return max(0, int(over / density + 0.99))
+        except Exception as e:
+            self.logger.debug(f"_qtWindowUnderKeysDp failed: {e!r}")
+            return 0
+
+    @pyqtSlot()
+    def watchSystemBars(self):
+        """Window resized or app back in front: measure now and again for 15 s."""
+        if not self.isAndroid() or self.enforcesEdgeToEdge():
+            return
+        self._barsChecks = 0
+        self.recheckSystemBars()
+        self._barsTimer.start()
+
+    def _onBarsTimer(self):
+        self._barsChecks += 1
+        if self._barsChecks >= 30:  # 15 s after the start: the layout is done
+            self._barsTimer.stop()
+        self.recheckSystemBars()
+
+    @pyqtSlot()
+    def recheckSystemBars(self):
+        nav = self._getSystemBarHeight('navigation')
+        if nav != self._navBarDp:
+            self._navBarDp = nav
+            self.logger.info(f"navigation bar height: {nav} dp")
+            self.systemBarsChanged.emit()
+
+    @pyqtProperty(int, notify=systemBarsChanged)
+    def navigationBarHeight(self) -> int:
+        if self._navBarDp is None:
+            self._navBarDp = self._getSystemBarHeight('navigation')
+        return self._navBarDp
 
 
 class ElectrumQmlApplication(QGuiApplication):
@@ -579,6 +675,7 @@ class ElectrumQmlApplication(QGuiApplication):
         qmlRegisterType(QETxCanceller, 'org.electrum', 1, 0, 'TxCanceller')
         qmlRegisterType(QETxSweepFinalizer, 'org.electrum', 1, 0, 'SweepFinalizer')
         qmlRegisterType(QEBip39RecoveryListModel, 'org.electrum', 1, 0, 'Bip39RecoveryListModel')
+        qmlRegisterType(QEEhFindFunds, 'org.electrum', 1, 0, 'EhFindFunds')  # Easy Heirs, owner 17/11
         qmlRegisterType(FeeSlider, 'org.electrum', 1, 0, 'FeeSlider')
         # TODO QT6: these were declared as uncreatable, but that doesn't seem to work for pyqt6
         # qmlRegisterUncreatableType(QEAmount, 'org.electrum', 1, 0, 'Amount', 'Amount can only be used as property')
@@ -673,6 +770,13 @@ class ElectrumQmlApplication(QGuiApplication):
         })
 
         self.plugins.load_plugin_by_name('trustedcoin')
+        # Schȅi: the inheritance (internal plugin bal, Àncòra) is always on; its
+        # init_qml hook (run after this, see gui/qml/__init__.py) makes the bridge.
+        try:
+            if not config.get('plugins.bal.enabled'):
+                self.plugins.enable('bal')
+        except Exception as e:
+            self.logger.error(f'bal plugin not enabled: {e!r}')
 
         qInstallMessageHandler(self.message_handler)
 

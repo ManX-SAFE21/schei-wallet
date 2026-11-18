@@ -99,7 +99,7 @@ Item {
                     text: r.sym
                     color: S.wine
                     font.family: BodyFont ? BodyFont : font.family
-                    font.pixelSize: r.sym.length > 2 ? 16 : 18
+                    font.pixelSize: r.sym.length > 2 ? app.ehFsText : app.ehFsText
                     font.bold: true
                 }
             }
@@ -111,7 +111,7 @@ Item {
                     text: page.nameOf(r.code)
                     color: r.on ? S.oliveInk : S.ink
                     font.family: BodyFont ? BodyFont : font.family
-                    font.pixelSize: 17
+                    font.pixelSize: app.ehFsText
                     font.bold: true
                     elide: Text.ElideRight
                 }
@@ -119,7 +119,7 @@ Item {
                     text: r.code
                     color: S.muted
                     font.family: BodyFont ? BodyFont : font.family
-                    font.pixelSize: 16
+                    font.pixelSize: app.ehFsText
                 }
             }
             Label {
@@ -127,7 +127,7 @@ Item {
                 text: '✓'
                 color: S.olive
                 font.family: BodyFont ? BodyFont : font.family
-                font.pixelSize: 24
+                font.pixelSize: app.ehFsStrong
                 font.bold: true
             }
         }
@@ -142,7 +142,6 @@ Item {
 
     Flickable {
         anchors.fill: parent
-        anchors.bottomMargin: app.navigationBarHeight
         contentHeight: col.implicitHeight + 24
         clip: true
         ColumnLayout {
@@ -158,7 +157,7 @@ Item {
                 wrapMode: Text.WordWrap
                 color: S.muted
                 font.family: BodyFont ? BodyFont : font.family
-                font.pixelSize: 16
+                font.pixelSize: app.ehFsText
                 text: qsTr('The amounts are shown in this currency, at the price of the day. Banknotes and coins exist for the euro and the dollar.')
             }
             // search field: paper, magnifier on the left, our own hint
@@ -200,7 +199,7 @@ Item {
                             background: null
                             color: S.ink
                             font.family: BodyFont ? BodyFont : font.family
-                            font.pixelSize: 18
+                            font.pixelSize: app.ehFsText
                             onTextChanged: page.query = text
                             inputMethodHints: Qt.ImhNoPredictiveText
                             Label {
@@ -211,7 +210,7 @@ Item {
                                 text: qsTr('Search (e.g. franc, yen…)')
                                 color: S.muted
                                 font.family: BodyFont ? BodyFont : font.family
-                                font.pixelSize: 17
+                                font.pixelSize: app.ehFsText
                             }
                         }
                     }

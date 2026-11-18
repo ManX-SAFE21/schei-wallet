@@ -29,7 +29,6 @@ Item {
     Flickable {
         id: flick
         anchors.fill: parent
-        anchors.bottomMargin: app.navigationBarHeight
         contentHeight: col.height + 16
         boundsBehavior: Flickable.StopAtBounds
         clip: true
@@ -51,7 +50,7 @@ Item {
                 wrapMode: Text.WordWrap
                 color: S.ink
                 font.family: BodyFont ? BodyFont : font.family
-                font.pixelSize: 17
+                font.pixelSize: app.ehFsText
                 text: qsTr('Creates a file with all your movements, to open with Excel or to give to the accountant.')
             }
 
@@ -74,7 +73,7 @@ Item {
                     text: page.csv.split('\n').slice(0, 9).join('\n') + (page.csv.split('\n').length > 10 ? '\n…' : '')
                     color: S.ink
                     font.family: FixedFont
-                    font.pixelSize: 16
+                    font.pixelSize: app.ehFsText
                     wrapMode: Text.NoWrap
                     elide: Text.ElideRight
                 }

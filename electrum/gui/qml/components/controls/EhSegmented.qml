@@ -91,7 +91,7 @@ Item {
                     text: root._txt(it.modelData)
                     color: it.on ? S.wine : S.ink
                     font.family: BodyFont ? BodyFont : font.family
-                    font.pixelSize: 17
+                    font.pixelSize: app.ehFsText
                     font.bold: true
                     elide: Text.ElideRight
                 }
@@ -130,7 +130,7 @@ Item {
                         text: root._txt(it.modelData)
                         color: it.on ? S.ivory : S.wineDark
                         font.family: BodyFont ? BodyFont : font.family
-                        font.pixelSize: 17
+                        font.pixelSize: app.ehFsText
                         font.bold: true
                         wrapMode: Text.WordWrap
                     }
@@ -146,7 +146,7 @@ Item {
                             text: root._sub(it.modelData)
                             color: it.on ? '#ffffff' : S.muted
                             font.family: BodyFont ? BodyFont : font.family
-                            font.pixelSize: 16
+                            font.pixelSize: app.ehFsText
                             elide: Text.ElideRight
                         }
                         Image {

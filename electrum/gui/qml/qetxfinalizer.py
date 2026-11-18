@@ -1,7 +1,7 @@
 import copy
 from enum import IntEnum
 import threading
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from typing import Optional, TYPE_CHECKING, Callable
 from functools import partial
 
@@ -28,6 +28,59 @@ from .qetypes import QEAmount
 
 if TYPE_CHECKING:
     from electrum.simple_config import SimpleConfig
+
+
+# Easy Heirs (owner Q8, 16/11): when the servers give no fee estimate the wallet does not
+# guess (no 150 sat/vB fallback): the user writes the fee by hand, in sat/vB, with one decimal.
+EH_MANUAL_FEE_MIN = Decimal('0.1')     # sat/vB
+EH_MANUAL_FEE_MAX = Decimal('1500')    # = FEERATE_MAX_DYNAMIC
+EH_MANUAL_FEE_START = Decimal('2')
+EH_MANUAL_FEE_SMALL_BELOW = Decimal('2')   # step 0.1 below 2 sat/vB, 1 from 2 up
+
+
+def eh_parse_feerate(text) -> Optional[Decimal]:
+    """«0,7» / '0.7' / 0.7 -> Decimal('0.7') sat/vB, one decimal; None if not a number or under 0.1."""
+    try:
+        rate = Decimal(str(text).strip().replace(',', '.'))
+    except (InvalidOperation, ValueError):
+        return None
+    if not rate.is_finite():
+        return None
+    rate = rate.quantize(Decimal('0.1'), rounding=ROUND_HALF_UP)
+    if rate < EH_MANUAL_FEE_MIN:
+        return None
+    return min(rate, EH_MANUAL_FEE_MAX)
+
+
+def eh_fee_step(rate, up: bool) -> Decimal:
+    """The - / + of the hand-written fee: 0.1 below 2 sat/vB, 1 from 2 up; never under 0.1."""
+    r = eh_parse_feerate(rate) or EH_MANUAL_FEE_START
+    small = EH_MANUAL_FEE_SMALL_BELOW
+    if up:
+        r = min(small, r + Decimal('0.1')) if r < small else r + 1
+    else:
+        r = r - Decimal('0.1') if r <= small else max(small, r - 1)
+    return min(EH_MANUAL_FEE_MAX, max(EH_MANUAL_FEE_MIN, r))
+
+
+def eh_feerate_policy(text) -> Optional[FeePolicy]:
+    """A fixed feerate policy keeping the decimal: «0,7» -> feerate:700 (sat/kvB)."""
+    rate = eh_parse_feerate(text)
+    return FeePolicy(f'feerate:{int(rate * 1000)}') if rate is not None else None
+
+
+def eh_mempool_url(net_name: str) -> str:
+    """mempool.space for this network: only a link the user opens in the browser,
+    the wallet itself never asks mempool.space anything."""
+    path = {'testnet4': 'testnet4', 'testnet': 'testnet', 'signet': 'signet'}.get(net_name, '')
+    return 'https://mempool.space' + ('/' + path if path else '')
+
+
+def eh_feerate_text(rate: Decimal) -> str:
+    """'0.7', '2', '2.5' (with the dot; QML shows the comma in IT/VEC)."""
+    if rate == rate.to_integral_value():
+        return str(int(rate))
+    return str(rate.quantize(Decimal('0.1')))
 
 
 class FeeSlider(QObject):
@@ -156,14 +209,12 @@ class FeeSlider(QObject):
     # Easy Heirs (owner 12/11): the tip written by hand, in sat/vB, and the way back to the slider
     @pyqtSlot(str)
     def ehSetManualFeerate(self, satvb: str):
-        try:
-            rate = Decimal(satvb)
-        except InvalidOperation:
+        # «0,7» or '0.7': a fixed feerate with its decimal (feerate:700 = 0.7 sat/vB, not rounded up)
+        policy = eh_feerate_policy(satvb)
+        if policy is None:
             return
-        if rate <= 0:
-            return
-        self._userFeerate = satvb
-        self._fee_policy = FeePolicy(f'feerate:{int(rate * 1000)}')
+        self._userFeerate = eh_feerate_text(eh_parse_feerate(satvb))
+        self._fee_policy = policy
         self.userFeerateChanged.emit()
         self.isUserFeerateLast = True
         self.update()
@@ -174,6 +225,30 @@ class FeeSlider(QObject):
         if not self._wallet:
             return 1.0
         return self._wallet.wallet.relayfee() / 1000
+
+    # Easy Heirs (owner Q8): the sheet «Quanto pagare al miner?» when the servers give no estimate
+    @pyqtSlot(str, result=str)
+    def ehParseFeerate(self, text: str) -> str:
+        rate = eh_parse_feerate(text)
+        return eh_feerate_text(rate) if rate is not None else ''
+
+    @pyqtSlot(str, bool, result=str)
+    def ehFeeStep(self, rate: str, up: bool) -> str:
+        return eh_feerate_text(eh_fee_step(rate, up))
+
+    @pyqtSlot(result=float)
+    def ehServerMinFeerate(self) -> float:
+        # the relay fee the connected server told us, sat/vB; 0 if it has not told us
+        # (ehMinFeerate then says 1, Electrum default, which would block a real 0.7)
+        net = self._wallet.wallet.network if self._wallet else None
+        if not net or net.relay_fee is None:
+            return 0.0
+        return self._wallet.wallet.relayfee() / 1000
+
+    @pyqtSlot(result=str)
+    def ehMempoolUrl(self) -> str:
+        from electrum import constants
+        return eh_mempool_url(constants.net.NET_NAME)
 
     @pyqtSlot(int)
     def ehBackToSlider(self, pos: int):
@@ -448,6 +523,8 @@ class QETxFinalizer(TxFeeSlider):
         self._extraFee = QEAmount()
         self._canRbf = False
         self._eh_coins = []      # Easy Heirs: outpoints chosen by hand, [] = automatic
+        self._eh_must = []       # Easy Heirs: coins of a payment that maybe left: always inside this one
+        self._eh_no_estimate = False
         self.inputsChanged.connect(self.ehInputCountChanged)
 
     addressChanged = pyqtSignal()
@@ -521,6 +598,60 @@ class QETxFinalizer(TxFeeSlider):
     def ehInputCount(self):
         return len(self._inputs) if getattr(self, '_inputs', None) else 0
 
+    # Easy Heirs (Opus review 18/11): the coins of a payment that maybe left ("txid:n").
+    # They are always inside this payment (other coins are added if needed): if that payment
+    # left, this one cannot, so it is never paid twice.
+    ehMustCoinsChanged = pyqtSignal()
+    @pyqtProperty('QVariantList', notify=ehMustCoinsChanged)
+    def ehMustCoins(self):
+        return list(self._eh_must)
+
+    @ehMustCoins.setter
+    def ehMustCoins(self, coins):
+        coins = [str(c) for c in (coins or [])]
+        if coins != self._eh_must:
+            self._eh_must = coins
+            self.ehMustCoinsChanged.emit()
+            self.update()
+
+    @pyqtSlot(result='QStringList')
+    def ehTxCoins(self):
+        """Easy Heirs (owner 17/11): the coins ("txid:n") of the payment made now."""
+        if not self._tx:
+            return []
+        return [i.prevout.to_str() for i in self._tx.inputs()]
+
+    # Easy Heirs (owner Q8): true when the fee policy in use has no estimate from the servers
+    # (Electrum would raise NoDynamicFeeEstimates or fall back to 150 sat/vB): QML then shows
+    # «Quanto pagare al miner?» and the user writes the fee by hand.
+    ehNoEstimateChanged = pyqtSignal()
+    @pyqtProperty(bool, notify=ehNoEstimateChanged)
+    def ehNoEstimate(self):
+        return self._eh_no_estimate
+
+    @ehNoEstimate.setter
+    def ehNoEstimate(self, value: bool):
+        if self._eh_no_estimate != bool(value):
+            self._eh_no_estimate = bool(value)
+            self.ehNoEstimateChanged.emit()
+
+    @pyqtSlot(str, result=int)
+    def ehCostForRate(self, satvb: str) -> int:
+        """Sats this payment would cost at `satvb` (the real tx size, change included);
+        -1 if it cannot be made (e.g. not enough money). The policy in use is not changed."""
+        policy = eh_feerate_policy(satvb)
+        if policy is None or not self._wallet:
+            return -1
+        saved = self._fee_policy
+        self._fee_policy = policy
+        try:
+            amount = '!' if self._amount.isMax else self._amount.satsInt
+            return int(self.make_tx(amount=amount).get_fee())
+        except Exception:
+            return -1
+        finally:
+            self._fee_policy = saved
+
     @profiler
     def make_tx(self, amount):
         self._logger.debug(f'make_tx amount={amount}')
@@ -530,12 +661,15 @@ class QETxFinalizer(TxFeeSlider):
         else:
             # default impl
             coins = self._wallet.wallet.get_spendable_coins(None)
+            must = set(self._eh_must)
+            inputs = [c for c in coins if c.prevout.to_str() in must] if must else []
             if self._eh_coins:
                 chosen = set(self._eh_coins)
                 coins = [c for c in coins if c.prevout.to_str() in chosen]
             outputs = [PartialTxOutput.from_address_and_value(self.address, amount)]
             tx = self._wallet.wallet.make_unsigned_transaction(
                 coins=coins,
+                inputs=inputs or None,
                 outputs=outputs,
                 fee_policy=self._fee_policy,
                 rbf=self._rbf)
@@ -557,20 +691,24 @@ class QETxFinalizer(TxFeeSlider):
             self.warning = self._wallet.wallet.get_text_not_enough_funds_mentioning_frozen(for_amount=amount)
             self._valid = False
             self.validChanged.emit()
+            self.ehNoEstimate = False
             return
         except NoDynamicFeeEstimates:
             self.warning = _('No dynamic fee estimates available')
             self._valid = False
             self.validChanged.emit()
+            self.ehNoEstimate = True     # Easy Heirs Q8: the QML asks the fee by hand
             return
         except Exception as e:
             self._logger.error(str(e))
             self.warning = repr(e)
             self._valid = False
             self.validChanged.emit()
+            self.ehNoEstimate = False
             return
 
         self._tx = tx
+        self.ehNoEstimate = False
 
         amount = self._amount.satsInt if not self._amount.isMax else tx.output_value()
 

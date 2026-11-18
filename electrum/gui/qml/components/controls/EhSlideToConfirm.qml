@@ -25,7 +25,7 @@ Rectangle {
         anchors.centerIn: parent
         anchors.horizontalCenterOffset: 30
         text: root.busy ? qsTr('Sending…') : root.text + '  ›'
-        font.pixelSize: 19
+        font.pixelSize: app.ehFsStrong
         font.bold: true
         color: '#5e1a33'
         opacity: 1 - knob.x / Math.max(1, root.maxX)

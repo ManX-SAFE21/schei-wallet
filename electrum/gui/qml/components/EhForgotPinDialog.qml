@@ -73,12 +73,12 @@ ElDialog {
         EhTitle { text: qsTr('Forgot the PIN?') }
         Label {
             Layout.fillWidth: true
-            text: qsTr('Write the <b>12 words</b> of this wallet, the ones on the paper. If they are right, you choose a new PIN.')
+            text: qsTr('Write the <b>words</b> (SEED) of this wallet, the ones on the paper. If they are right, you choose a new PIN.')
             textFormat: Text.StyledText
             wrapMode: Text.WordWrap
             color: S.ink
             font.family: BodyFont ? BodyFont : font.family
-            font.pixelSize: 17
+            font.pixelSize: app.ehFsText
             lineHeight: 1.15
         }
 
@@ -128,14 +128,14 @@ ElDialog {
                                     color: S.brassRing
                                     font.family: SerifFont ? SerifFont : font.family
                                     font.weight: Font.ExtraBold
-                                    font.pixelSize: 16
+                                    font.pixelSize: app.ehFsText
                                     anchors.verticalCenter: parent.verticalCenter
                                 }
                                 Label {
                                     text: chip.modelData
                                     color: chip.bad ? S.wine : S.ink
                                     font.family: BodyFont ? BodyFont : font.family
-                                    font.pixelSize: 17
+                                    font.pixelSize: app.ehFsText
                                     font.bold: true
                                     anchors.verticalCenter: parent.verticalCenter
                                 }
@@ -154,7 +154,7 @@ ElDialog {
                 text: qsTr('tap the letters, then the word')
                 color: S.muted
                 font.family: BodyFont ? BodyFont : font.family
-                font.pixelSize: 17
+                font.pixelSize: app.ehFsText
             }
         }
 
@@ -195,7 +195,7 @@ ElDialog {
                             text: sg.modelData
                             color: S.wineDark
                             font.family: BodyFont ? BodyFont : font.family
-                            font.pixelSize: 18
+                            font.pixelSize: app.ehFsText
                             font.bold: true
                         }
                     }
@@ -205,70 +205,22 @@ ElDialog {
             Item { visible: root.suggestions.length === 0; Layout.fillWidth: true; Layout.preferredHeight: 51 }
         }
 
-        // ---- the keyboard: 7 keys per row, alphabetical ----
-        // keys with the EhKey look (paper, hard shadow, letter Lexend bold), 48 high (with the shadow)
-        Rectangle {
-            id: kbd
+        // ---- the keyboard: QWERTY like the phone (owner 17/11), shared control ----
+        EhLetterKeyboard {
             Layout.fillWidth: true
-            readonly property real keyW: Math.floor((width - 6 - 6 * 4) / 7)
-            readonly property real keyH: 48
-            Layout.preferredHeight: 4 * keyH + 3 * 6 + 12
-            radius: 16
-            color: S.sand
-            Column {
-                anchors.centerIn: parent
-                spacing: 6
-                Repeater {
-                    model: ['abcdefg', 'hijklmn', 'opqrstu', 'vwxyz']
-                    delegate: Row {
-                        id: krow
-                        required property string modelData
-                        required property int index
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        spacing: 4
-                        Repeater {
-                            model: krow.modelData.split('')
-                            delegate: EhKey {
-                                id: kk
-                                required property string modelData
-                                width: kbd.keyW
-                                height: kbd.keyH
-                                letter: true
-                                fontSize: 22
-                                keyRadius: 10
-                                text: kk.modelData
-                                onActivated: root.key(kk.modelData)
-                            }
-                        }
-                        // delete key on the last row (a long press clears everything)
-                        Item {
-                            visible: krow.index === 3
-                            width: 2 * kbd.keyW + 4
-                            height: kbd.keyH
-                            Rectangle { visible: !bt.pressed; y: 3; width: parent.width; height: parent.height - 3; radius: 10; color: S.edgeShadow }
-                            Rectangle {
-                                id: delFace
-                                y: bt.pressed ? 2 : 0
-                                width: parent.width
-                                height: parent.height - 3
-                                radius: 10
-                                color: bt.pressed ? Qt.darker(S.sandDel, 1.08) : S.sandDel
-                                border.width: 1.5
-                                border.color: S.edge
-                                EhBackspaceIcon { anchors.centerIn: parent; width: 38; height: 27; ink: S.wine; fill: delFace.color }
-                            }
-                            TapHandler { id: bt; onTapped: root.backspace(); onLongPressed: root.setText('') }
-                        }
-                    }
-                }
-            }
+            Layout.preferredHeight: implicitHeight
+            onLetter: (ch) => root.key(ch)
+            onDeleteOne: root.backspace()
+            onDeleteAll: root.setText('')
         }
 
         EhStitchButton {
             Layout.bottomMargin: 14
             enabled: root.ready
             kind: 'wine'
-            text: enabled ? qsTr('Next') : qsTr('Next (%1 of 12)').arg(Math.min(root.doneWords, 12))
+            // 12 or 24 words: count to 12, then to 24
+            readonly property int target: root.doneWords <= 12 ? 12 : 24   // 15, 18, 21 are accepted too (ready), but rare
+            text: enabled ? qsTr('Next') : qsTr('Next (%1 of %2)').arg(Math.min(root.doneWords, target)).arg(target)
             endIcon: 'next'
             onClicked: root.check()
         }

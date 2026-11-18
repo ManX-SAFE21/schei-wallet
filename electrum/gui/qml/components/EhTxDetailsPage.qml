@@ -19,11 +19,15 @@ Item {
     Material.foreground: S.ink
     Material.accent: S.wine          // the text cursor of the note
 
-    readonly property bool incoming: tx.amount.satsInt >= 0
+    // coins sent back to the wallet itself (e.g. the inheritance cancellation): nothing comes in,
+    // only the cost goes out, so it reads as money out (owner 17/11)
+    readonly property bool selfSend: tx.amount.satsInt === 0 && !tx.fee.isEmpty && tx.fee.satsInt > 0
+    readonly property bool incoming: tx.amount.satsInt >= 0 && !selfSend
+    readonly property bool pluginNote: app.ehPluginLabelKind(tx.label) !== ''
     readonly property string otherAddress: {
         var outs = tx.outputs
         for (var i = 0; i < outs.length; i++) {
-            if (incoming ? outs[i].is_mine : !outs[i].is_mine) return outs[i].address
+            if ((incoming || selfSend) ? outs[i].is_mine : !outs[i].is_mine) return outs[i].address
         }
         return outs.length ? outs[0].address : ''
     }
@@ -49,6 +53,7 @@ Item {
     // the note is saved with the Save button, with Enter, and when the page is left
     function saveNote() {
         var t = noteField.text.trim()
+        if (app.ehPluginLabelKind(tx.label) !== '') return   // the plugin's label stays as it is
         if (t !== tx.label) {
             tx.setLabel(t)
             Daemon.currentWallet.historyModel.updateTxLabel(page.txid, t)
@@ -81,7 +86,7 @@ Item {
                 text: kvl.k
                 color: S.muted
                 font.family: BodyFont ? BodyFont : font.family
-                font.pixelSize: 16
+                font.pixelSize: app.ehFsText
                 lineHeight: 1.1
                 wrapMode: Text.WordWrap
             }
@@ -96,7 +101,7 @@ Item {
                     text: kvl.v
                     color: kvl.vc
                     font.family: BodyFont ? BodyFont : font.family
-                    font.pixelSize: 17
+                    font.pixelSize: app.ehFsText
                     font.bold: true
                     horizontalAlignment: Text.AlignRight
                     wrapMode: Text.WordWrap
@@ -107,7 +112,7 @@ Item {
                     text: kvl.sub
                     color: S.muted
                     font.family: BodyFont ? BodyFont : font.family
-                    font.pixelSize: 16
+                    font.pixelSize: app.ehFsText
                 }
             }
         }
@@ -123,7 +128,7 @@ Item {
             Layout.fillWidth: true
             color: S.muted
             font.family: BodyFont ? BodyFont : font.family
-            font.pixelSize: 16
+            font.pixelSize: app.ehFsText
             font.bold: true
             font.letterSpacing: 0.4
             wrapMode: Text.WordWrap
@@ -135,7 +140,6 @@ Item {
     Flickable {
         id: flick
         anchors.fill: parent
-        anchors.bottomMargin: app.navigationBarHeight
         contentHeight: col.height + 16
         boundsBehavior: Flickable.StopAtBounds
         clip: true
@@ -161,14 +165,15 @@ Item {
             id: hero
             Layout.fillWidth: true
             Layout.preferredHeight: heroRow.height
-            readonly property string amount: app.ehTxAmount(tx.amount, tx.timestamp, true)
+            readonly property string amount: page.selfSend ? '− ' + app.ehTxAmount(tx.fee, tx.timestamp, false)
+                                                           : app.ehTxAmount(tx.amount, tx.timestamp, true)
             // the + / − sign is drawn with the body font: in the serif font it is a hairline
             readonly property string sgn: '+−-'.indexOf(amount.charAt(0)) >= 0 ? amount.charAt(0) : ''
             readonly property string rest: sgn !== '' ? amount.substring(1) : amount
             readonly property color ink: page.incoming ? S.oliveInk : S.wine
             // long bitcoin amounts: smaller, so they stay on one line (from the text: no layout loop)
-            TextMetrics { id: heroTm; font.family: SerifFont ? SerifFont : font.family; font.weight: Font.ExtraBold; font.pixelSize: 42; text: hero.rest }
-            readonly property real size: Math.max(24, Math.min(42, 42 * (col.width - 34) / Math.max(1, heroTm.advanceWidth)))
+            TextMetrics { id: heroTm; font.family: SerifFont ? SerifFont : font.family; font.weight: Font.ExtraBold; font.pixelSize: app.ehFsFigure; text: hero.rest }
+            readonly property real size: Math.max(24, Math.min(app.ehFsFigure, app.ehFsFigure * (col.width - 34) / Math.max(1, heroTm.advanceWidth)))
             Row {
                 id: heroRow
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -194,10 +199,11 @@ Item {
         Label {
             Layout.alignment: Qt.AlignHCenter
             Layout.topMargin: -6
-            text: app.ehBtc(tx.amount).replace('-', '') + ' · ' + (page.incoming ? qsTr('received') : qsTr('sent'))
+            text: page.selfSend ? app.ehBtc(tx.fee) + ' · ' + qsTr('cost paid')
+                                : app.ehBtc(tx.amount).replace('-', '') + ' · ' + (page.incoming ? qsTr('received') : qsTr('sent'))
             color: S.muted
             font.family: BodyFont ? BodyFont : font.family
-            font.pixelSize: 16
+            font.pixelSize: app.ehFsText
         }
 
         // personal note (owner 12/11: taller, the grey hint stays inside, Save button while writing)
@@ -225,12 +231,14 @@ Item {
                     anchors.leftMargin: 12
                     anchors.rightMargin: 6
                     spacing: 10
-                    Image { source: Qt.resolvedUrl('../../icons/eh_pen_wine.svg'); sourceSize.width: 24; sourceSize.height: 24 }
+                    Image { visible: !page.pluginNote; source: Qt.resolvedUrl('../../icons/eh_pen_wine.svg'); sourceSize.width: 24; sourceSize.height: 24 }
                     TextField {
                         id: noteField
                         Layout.fillWidth: true
                         Layout.fillHeight: true
-                        text: tx.label
+                        text: app.ehTxNote(tx.label)
+                        readOnly: app.ehPluginLabelKind(tx.label) !== ''
+                        activeFocusOnPress: !page.pluginNote     // nothing to write: no frame, no Save
                         placeholderText: ''          // no Material floating label: our own hint below
                         topPadding: 0
                         bottomPadding: 0
@@ -238,7 +246,7 @@ Item {
                         rightPadding: 0
                         verticalAlignment: TextInput.AlignVCenter
                         font.family: BodyFont ? BodyFont : font.family
-                        font.pixelSize: 18
+                        font.pixelSize: app.ehFsText
                         font.weight: text !== '' ? Font.DemiBold : Font.Normal
                         color: S.ink
                         background: null
@@ -251,7 +259,7 @@ Item {
                             text: qsTr('Add a note…')
                             color: S.muted
                             font.family: BodyFont ? BodyFont : font.family
-                            font.pixelSize: 17
+                            font.pixelSize: app.ehFsText
                         }
                     }
                     EhStitchButton {
@@ -273,7 +281,7 @@ Item {
             text: '✓ ' + qsTr('Note saved')
             color: S.olive
             font.family: BodyFont ? BodyFont : font.family
-            font.pixelSize: 16
+            font.pixelSize: app.ehFsText
             font.bold: true
         }
 
@@ -284,7 +292,7 @@ Item {
             KV { k: qsTr('When'); v: tx.timestamp ? new Date(tx.timestamp * 1000).toLocaleString(app.ehLocale(), 'd MMMM yyyy · HH:mm') : qsTr('not yet') }
             // one row only: the cost, and while unconfirmed the speed paid under it
             KV {
-                visible: !page.incoming && !tx.fee.isEmpty
+                visible: !page.incoming && !tx.fee.isEmpty && !(page.selfSend && tx.confirmations > 0)
                 k: qsTr('Sending cost') + ' ' + qsTr('(tip to the miners)')
                 v: app.ehEuro(tx.fee) !== '' ? app.ehEuro(tx.fee) : app.ehBtc(tx.fee)
                 sub: tx.confirmations < 1 ? app.ehFeeRate(tx.feeRateStr) : ''
@@ -312,7 +320,7 @@ Item {
             topPadding: 12
             bottomPadding: 14
             spacing: 8
-            CardCaption { text: page.incoming ? qsTr('ON YOUR ADDRESS') : qsTr('TO THIS ADDRESS') }
+            CardCaption { text: (page.incoming || page.selfSend) ? qsTr('ON YOUR ADDRESS') : qsTr('TO THIS ADDRESS') }
             Label {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
@@ -320,7 +328,7 @@ Item {
                 color: S.ink
                 font.family: FixedFont
                 font.bold: true
-                font.pixelSize: 17
+                font.pixelSize: app.ehFsText
                 lineHeight: 1.2
                 wrapMode: Text.WrapAnywhere
             }
@@ -341,7 +349,7 @@ Item {
                 text: page.txid
                 color: S.wineDark
                 font.family: FixedFont
-                font.pixelSize: 14
+                font.pixelSize: app.ehFsSmall
                 lineHeight: 1.15
             }
             RowLayout {

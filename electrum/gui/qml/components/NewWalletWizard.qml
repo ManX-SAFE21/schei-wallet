@@ -14,6 +14,8 @@ Wizard {
     signal walletCreated
 
     property string path
+    // owner 17/11: create / restore with words only when allowed (first wallet, key lost, ESPERTO)
+    property bool ehSeedAllowed: false
 
     wiz: Daemon.newWalletWizard
 

@@ -84,7 +84,7 @@ ElDialog {
                             Layout.fillWidth: true
                             wrapMode: Text.WordWrap
                             text: tile.modelData.k
-                            font.pixelSize: 16
+                            font.pixelSize: app.ehFsText
                             font.bold: true
                             color: S.muted
                         }
@@ -93,7 +93,7 @@ ElDialog {
                             text: dialog.spaced(tile.modelData.v)
                             font.family: FixedFont
                             font.bold: true
-                            font.pixelSize: 46
+                            font.pixelSize: app.ehFsFigure
                             color: S.wineDark
                         }
                     }
@@ -113,7 +113,7 @@ ElDialog {
                 text: app.ehAddressRich(dialog.address, S.wineDark, S.highlight)
                 font.family: FixedFont
                 font.bold: true
-                font.pixelSize: 19
+                font.pixelSize: app.ehFsStrong
                 lineHeight: 1.3
                 color: S.ink
             }

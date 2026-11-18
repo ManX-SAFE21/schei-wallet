@@ -40,6 +40,8 @@ ElDialog {
     closePolicy: canCancel ? Popup.CloseOnEscape : Popup.NoAutoClose
 
     background: Rectangle { color: S.parch }
+    // owner 16/11 + controllo-mainnet: the PIN / the payment are important data: black on mainnet
+    Binding { target: AppController; property: 'secureWindow'; value: true; when: root.visible }
 
     Component.onCompleted: if (mode === 'verify' && app.ehPinLockMessage()) { pad.message = app.ehPinLockMessage(); pad.messageBad = true }
 
@@ -88,7 +90,7 @@ ElDialog {
             anchors.centerIn: parent
             color: S.wine
             font.family: BodyFont ? BodyFont : font.family
-            font.pixelSize: 17
+            font.pixelSize: app.ehFsText
             font.bold: true
             opacity: lkTap.pressed ? 0.6 : 1
         }
@@ -163,7 +165,7 @@ ElDialog {
             wrapMode: Text.WordWrap
             font.family: SerifFont ? SerifFont : font.family
             font.weight: Font.ExtraBold
-            font.pixelSize: 26
+            font.pixelSize: app.ehFsBox
             color: S.wine
             text: root.prompt !== '' ? root.prompt : qsTr('Type your PIN')
         }
@@ -179,7 +181,7 @@ ElDialog {
         // third review: a forgotten PIN can be replaced with the 12 words of this wallet
         PinLink {
             visible: root.mode === 'verify' && Daemon.currentWallet !== null
-                     && Daemon.currentWallet.hasSeed && !Daemon.currentWallet.isWatchOnly
+                     && Daemon.currentWallet.ehCanCheckWords && !Daemon.currentWallet.isWatchOnly
             text: qsTr('I forgot the PIN')
             // the words page opens ABOVE this pad: with the new PIN chosen, the person comes
             // back here, types the new PIN and goes on with what they were doing

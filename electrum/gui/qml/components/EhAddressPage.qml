@@ -45,7 +45,7 @@ Item {
         Layout.fillWidth: true
         color: S.olive
         font.family: BodyFont ? BodyFont : font.family
-        font.pixelSize: 16
+        font.pixelSize: app.ehFsText
         font.bold: true
         font.letterSpacing: 0.5
         wrapMode: Text.WordWrap
@@ -53,7 +53,6 @@ Item {
 
     Flickable {
         anchors.fill: parent
-        anchors.bottomMargin: app.navigationBarHeight
         contentHeight: col.implicitHeight + 24
         clip: true
         ColumnLayout {
@@ -80,7 +79,7 @@ Item {
                     wrapMode: Text.WordWrap
                     textFormat: Text.RichText
                     font.family: FixedFont
-                    font.pixelSize: 18
+                    font.pixelSize: app.ehFsText
                     font.bold: true
                     color: S.ink
                     lineHeight: 1.25
@@ -141,7 +140,7 @@ Item {
                         anchors.rightMargin: 12
                         verticalAlignment: TextInput.AlignVCenter
                         font.family: BodyFont ? BodyFont : font.family
-                        font.pixelSize: 18
+                        font.pixelSize: app.ehFsText
                         color: S.ink
                         clip: true
                         text: page.info.label
@@ -152,7 +151,7 @@ Item {
                             text: qsTr('write a note…')
                             color: S.muted
                             font.family: BodyFont ? BodyFont : font.family
-                            font.pixelSize: 17
+                            font.pixelSize: app.ehFsText
                         }
                     }
                 }
@@ -173,7 +172,7 @@ Item {
                     horizontalAlignment: Text.AlignHCenter
                     color: S.muted
                     font.family: BodyFont ? BodyFont : font.family
-                    font.pixelSize: 17
+                    font.pixelSize: app.ehFsText
                     text: qsTr('No coins on this address.')
                 }
                 Repeater {
@@ -201,14 +200,14 @@ Item {
                                     color: S.wineDark
                                     font.family: SerifFont ? SerifFont : font.family
                                     font.weight: Font.ExtraBold
-                                    font.pixelSize: 21
+                                    font.pixelSize: app.ehFsStrong
                                     wrapMode: Text.WrapAnywhere
                                 }
                                 Label {
                                     Layout.fillWidth: true
                                     wrapMode: Text.WordWrap
                                     font.family: BodyFont ? BodyFont : font.family
-                                    font.pixelSize: 16
+                                    font.pixelSize: app.ehFsText
                                     color: S.muted
                                     text: 'UTXO ' + page.shortUtxo(cr.modelData.outpoint) + ' · '
                                           + (page.info.held ? qsTr('blocked (with the address)')
@@ -255,14 +254,14 @@ Item {
                             wrapMode: Text.WordWrap
                             text: page.info.held ? qsTr('Address blocked') : qsTr('Block the whole address')
                             font.family: BodyFont ? BodyFont : font.family
-                            font.pixelSize: 17; font.bold: true
+                            font.pixelSize: app.ehFsText; font.bold: true
                             color: page.info.held ? S.red : S.ink
                         }
                         Label {
                             Layout.fillWidth: true
                             wrapMode: Text.WordWrap
                             font.family: BodyFont ? BodyFont : font.family
-                            font.pixelSize: 16
+                            font.pixelSize: app.ehFsText
                             color: S.muted
                             text: qsTr('all its coins, also the ones that will arrive here')
                         }
@@ -272,7 +271,7 @@ Item {
                         color: 'transparent'
                         border.width: 2.5
                         border.color: S.olive
-                        Label { anchors.centerIn: parent; text: 'i'; color: S.olive; font.pixelSize: 20; font.bold: true; font.family: 'serif' }
+                        Label { anchors.centerIn: parent; text: 'i'; color: S.olive; font.pixelSize: app.ehFsStrong; font.bold: true; font.family: 'serif' }
                         MouseArea { anchors.fill: parent; anchors.margins: -8; onClicked: page.showBlockInfo() }
                     }
                     EhSpendSwitch {

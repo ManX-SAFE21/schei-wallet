@@ -67,6 +67,31 @@ def eh_pocket_move(wallet, outpoints, aside):
     return addresses
 
 
+
+def eh_bip39_words_match(ks, words) -> bool:
+    """Easy Heirs (owner 17/11, forgot PIN): are these BIP39 words the ones of this keystore?
+    The words are not stored (keystore.from_bip43_rootseed), so the account key is rebuilt from
+    them with the keystore's own path and kind, and compared with its xpub."""
+    import hmac
+    from electrum import keystore as _ks
+    from electrum.bip32 import xpub_type
+    from electrum.mnemonic import normalize_text
+    if not isinstance(ks, _ks.BIP32_KeyStore) or not ks.xpub:
+        return False
+    try:
+        derivation = ks.get_derivation_prefix()
+        if not derivation:
+            return False
+        text = ' '.join(normalize_text(words or '').split())
+        checksum_ok, wordlist_ok = _ks.bip39_is_checksum_valid(text)
+        if not (checksum_ok and wordlist_ok):
+            return False
+        root_seed = _ks.bip39_to_seed(text, passphrase='')
+        k = _ks.from_bip43_rootseed(root_seed, derivation=derivation, xtype=xpub_type(ks.xpub))
+        return hmac.compare_digest(k.xpub.encode(), ks.xpub.encode())
+    except Exception:
+        return False
+
 class QEWallet(AuthMixin, QObject, QtEventListener):
     __instances = []
 
@@ -450,6 +475,21 @@ class QEWallet(AuthMixin, QObject, QtEventListener):
     @pyqtProperty(bool, notify=dataChanged)
     def hasSeed(self):
         return self.wallet.has_seed()
+
+    @pyqtProperty(bool, notify=dataChanged)
+    def ehCanCheckWords(self):
+        """Easy Heirs (Samsung 17/11, forgot PIN): can the words on paper be checked against this
+        wallet? Words kept (Electrum), or words of another wallet (BIP39): the key made from
+        them can be compared with this wallet's (eh_bip39_words_match)."""
+        if self.wallet.has_seed():
+            return True
+        ks = getattr(self.wallet, 'keystore', None)
+        from electrum import keystore as _ks
+        try:
+            return (isinstance(ks, _ks.BIP32_KeyStore) and not ks.is_watching_only()
+                    and bool(ks.get_derivation_prefix()))
+        except Exception:
+            return False
 
     @pyqtProperty(str, notify=dataChanged)
     def seed(self):
@@ -894,6 +934,16 @@ class QEWallet(AuthMixin, QObject, QtEventListener):
         except Exception:
             return {}
 
+    @pyqtSlot(str, 'QVariantList', result='QStringList')
+    def ehUnsureCoins(self, txid, coins):
+        """Easy Heirs (Opus review 18/11): the coins of a payment that maybe left, still unspent,
+        while that payment is not in the history yet. [] = nothing to keep (it left, or the coins
+        were spent by something else)."""
+        if txid and self.wallet.db.get_transaction(txid) is not None:
+            return []
+        have = {c.prevout.to_str() for c in self.wallet.get_spendable_coins(None)}
+        return [str(c) for c in (coins or []) if str(c) in have]
+
     @pyqtSlot(str, result=str)
     def ehCoinOrigin(self, outpoint: str) -> str:
         return str(self._eh_origins().get(outpoint, ''))
@@ -1179,7 +1229,9 @@ class QEWallet(AuthMixin, QObject, QtEventListener):
         """Easy Heirs (third review, forgot PIN): are these the words of this wallet?"""
         try:
             if not self.wallet.has_seed():
-                return False
+                # owner 17/11: words of another wallet (BIP39): Electrum does not keep them, so
+                # rebuild the key from the words and compare it with the one of this wallet
+                return eh_bip39_words_match(getattr(self.wallet, 'keystore', None), words)
             seed = self.wallet.get_seed(self.password)
         except Exception as e:
             self._logger.error(f'ehSeedMatches: {e!r}')
@@ -1238,6 +1290,10 @@ class QEWallet(AuthMixin, QObject, QtEventListener):
         except Exception:
             self._seed = ''
             self._seed_passphrase = ''
+            # Easy Heirs (Samsung 17/11): words of another wallet are not kept by Electrum:
+            # open the page anyway (the PIN was right), it explains that the paper is the only copy
+            if not self.wallet.has_seed():
+                self.seedRetrieved.emit()
 
         self.dataChanged.emit()
 

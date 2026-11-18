@@ -32,7 +32,11 @@ ElDialog {
     readonly property real slowRate: Config.ehFeeRateForBlocks(25)   // about 4 hours
     // owner 12/11: the lowest hand-written tip is what the server accepts (it can be 0.1 sat/vB)
     readonly property real minRate: finalizer ? finalizer.ehMinFeerate() : 1
+    property bool capNote: false
     function setManual(txt) {
+        // owner 17/11: above 1500 sat/vB the number becomes 1500 (EH_MANUAL_FEE_MAX), said
+        capNote = Number(txt.replace(',', '.')) > 1500
+        if (capNote) txt = '1500'
         manualText = txt
         if (!finalizer) return
         if (txt === '') { finalizer.ehBackToSlider(Math.max(minPos, finalizer.sliderPos)); return }
@@ -100,7 +104,7 @@ ElDialog {
                     textFormat: Text.StyledText
                     text: '<b>' + qsTr('SENDING COST') + '</b> ' + qsTr('(tip to the miners)')
                     color: S.muted
-                    font.pixelSize: 16
+                    font.pixelSize: app.ehFsText
                 }
                 Label {
                     Layout.alignment: Qt.AlignHCenter
@@ -108,14 +112,14 @@ ElDialog {
                     color: S.wineDark
                     font.family: SerifFont ? SerifFont : font.family
                     font.weight: Font.ExtraBold
-                    font.pixelSize: 26
+                    font.pixelSize: app.ehFsBox
                 }
                 EhDotLine { Layout.topMargin: 8; Layout.bottomMargin: 6 }
                 Label {
                     Layout.alignment: Qt.AlignHCenter
                     text: qsTr('IT ARRIVES')
                     color: S.muted
-                    font.pixelSize: 16
+                    font.pixelSize: app.ehFsText
                     font.bold: true
                     font.letterSpacing: 0.5
                 }
@@ -126,7 +130,7 @@ ElDialog {
                     color: root.pos <= 2 ? S.waitInk : S.oliveInk
                     font.family: SerifFont ? SerifFont : font.family
                     font.weight: Font.ExtraBold
-                    font.pixelSize: 26
+                    font.pixelSize: app.ehFsBox
                     fontSizeMode: Text.HorizontalFit
                     minimumPixelSize: 18
                 }
@@ -138,13 +142,13 @@ ElDialog {
             ColumnLayout {
                 spacing: 0
                 Image { Layout.alignment: Qt.AlignHCenter; source: Qt.resolvedUrl('../../icons/eh_slow.svg'); sourceSize.width: 54; sourceSize.height: 36 }
-                Label { Layout.alignment: Qt.AlignHCenter; horizontalAlignment: Text.AlignHCenter; text: qsTr('slower\ncosts less'); color: S.oliveInk; font.pixelSize: 16; font.bold: true; lineHeight: 0.95 }
+                Label { Layout.alignment: Qt.AlignHCenter; horizontalAlignment: Text.AlignHCenter; text: qsTr('slower\ncosts less'); color: S.oliveInk; font.pixelSize: app.ehFsText; font.bold: true; lineHeight: 0.95 }
             }
             Item { Layout.fillWidth: true }
             ColumnLayout {
                 spacing: 0
                 Image { Layout.alignment: Qt.AlignHCenter; source: Qt.resolvedUrl('../../icons/eh_fast.svg'); sourceSize.width: 54; sourceSize.height: 36 }
-                Label { Layout.alignment: Qt.AlignHCenter; horizontalAlignment: Text.AlignHCenter; text: qsTr('faster\ncosts more'); color: S.wine; font.pixelSize: 16; font.bold: true; lineHeight: 0.95 }
+                Label { Layout.alignment: Qt.AlignHCenter; horizontalAlignment: Text.AlignHCenter; text: qsTr('faster\ncosts more'); color: S.wine; font.pixelSize: app.ehFsText; font.bold: true; lineHeight: 0.95 }
             }
         }
         Slider {
@@ -213,7 +217,7 @@ ElDialog {
                     x: Math.max(-4, Math.min(parent.width + 4 - implicitWidth,
                                              slider.leftPadding + 22 + k * (slider.availableWidth - 44) - implicitWidth / 2))
                     text: modelData
-                    font.pixelSize: 16
+                    font.pixelSize: app.ehFsText
                     color: root.pos === index + root.minPos ? S.wineDark : S.muted
                     font.bold: root.pos === index + root.minPos
                 }
@@ -236,13 +240,13 @@ ElDialog {
                 anchors.rightMargin: 12
                 spacing: 8
                 Image { source: Qt.resolvedUrl('../../icons/eh_pen_wine.svg'); sourceSize.width: 24; sourceSize.height: 24 }
-                Label { text: qsTr('Tip by hand'); font.pixelSize: 16; font.bold: true; color: S.ink }
+                Label { text: qsTr('Tip by hand'); font.pixelSize: app.ehFsText; font.bold: true; color: S.ink }
                 Label {
                     Layout.fillWidth: true
                     horizontalAlignment: Text.AlignHCenter
                     text: root.manualText !== '' ? root.manualText : (root.padOpen ? '–' : qsTr('tap to write'))
                     font.family: root.manualText !== '' ? FixedFont : font.family
-                    font.pixelSize: root.manualText !== '' || root.padOpen ? 24 : 16
+                    font.pixelSize: root.manualText !== '' || root.padOpen ? app.ehFsStrong : app.ehFsText
                     font.bold: true
                     color: root.manualText !== '' || root.padOpen ? S.wineDark : S.muted
                     wrapMode: Text.WordWrap
@@ -250,7 +254,7 @@ ElDialog {
                     lineHeight: 0.95
                     elide: Text.ElideRight
                 }
-                Label { text: 'sat/vB'; font.pixelSize: 16; color: S.muted }
+                Label { text: 'sat/vB'; font.pixelSize: app.ehFsText; color: S.muted }
             }
         }
         EhInfoBox {
@@ -288,7 +292,7 @@ ElDialog {
             visible: root.finalizer && root.finalizer.valid
             text: qsTr('for experts: %1').arg(root.finalizer ? app.ehFeeRate(root.finalizer.feeRate + ' sat/vB') : '')
             color: S.muted
-            font.pixelSize: 16
+            font.pixelSize: app.ehFsText
         }
         EhStitchButton {
             kind: 'wine'

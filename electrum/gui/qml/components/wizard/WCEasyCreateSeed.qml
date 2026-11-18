@@ -56,7 +56,7 @@ WizardComponent {
             textFormat: Text.StyledText
             color: parent.color
             font.family: BodyFont ? BodyFont : font.family
-            font.pixelSize: 16
+            font.pixelSize: app.ehFsText
             font.bold: parent.strong
             lineHeight: 1.15
         }
@@ -81,7 +81,7 @@ WizardComponent {
 
         EhPageTop {
             step: qsTr('STEP %1 OF %2').arg(1).arg(3)
-            title: qsTr('Your 12 words')
+            title: qsTr('Your 12 words (SEED)')
         }
 
         EhInfoBox {
@@ -101,7 +101,7 @@ WizardComponent {
                 }
                 Hint {
                     iconSource: Qt.resolvedUrl('../../../icons/eh_shield.svg')
-                    text: qsTr('Nobody will ever ask you for the 12 words. Whoever asks is a scammer.')
+                    text: qsTr('Nobody will ever ask you for the 12 words (SEED). Whoever asks is a scammer.')
                     color: S.wine
                     strong: true
                 }
@@ -144,7 +144,7 @@ WizardComponent {
                                 color: S.brassRing
                                 font.family: SerifFont ? SerifFont : font.family
                                 font.weight: Font.ExtraBold
-                                font.pixelSize: 17
+                                font.pixelSize: app.ehFsText
                             }
                             Label {
                                 Layout.fillWidth: true
@@ -152,7 +152,7 @@ WizardComponent {
                                 color: S.ink
                                 font.family: FixedFont
                                 font.bold: true
-                                font.pixelSize: 21
+                                font.pixelSize: app.ehFsStrong
                                 elide: Text.ElideRight
                             }
                         }

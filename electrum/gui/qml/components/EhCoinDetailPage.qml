@@ -46,7 +46,7 @@ Item {
         Layout.fillWidth: true
         color: S.olive
         font.family: BodyFont ? BodyFont : font.family
-        font.pixelSize: 16
+        font.pixelSize: app.ehFsText
         font.bold: true
         font.letterSpacing: 0.5
         wrapMode: Text.WordWrap
@@ -56,13 +56,12 @@ Item {
         wrapMode: Text.WordWrap
         color: S.muted
         font.family: BodyFont ? BodyFont : font.family
-        font.pixelSize: 16
+        font.pixelSize: app.ehFsText
         lineHeight: 1.1
     }
 
     Flickable {
         anchors.fill: parent
-        anchors.bottomMargin: app.navigationBarHeight
         contentHeight: col.implicitHeight + 24
         clip: true
         ColumnLayout {
@@ -89,7 +88,7 @@ Item {
                 color: S.wineDark
                 font.family: SerifFont ? SerifFont : font.family
                 font.weight: Font.ExtraBold
-                font.pixelSize: 42
+                font.pixelSize: app.ehFsFigure
                 wrapMode: Text.WrapAnywhere
             }
             Label {
@@ -99,7 +98,7 @@ Item {
                 text: page.amount ? app.ehBtc(page.amount) : ''
                 color: S.muted
                 font.family: BodyFont ? BodyFont : font.family
-                font.pixelSize: 16
+                font.pixelSize: app.ehFsText
             }
 
             // the coin's note: tap and write
@@ -123,7 +122,7 @@ Item {
                         anchors.rightMargin: 12
                         verticalAlignment: TextInput.AlignVCenter
                         font.family: BodyFont ? BodyFont : font.family
-                        font.pixelSize: 18
+                        font.pixelSize: app.ehFsText
                         color: S.ink
                         clip: true
                         text: page.note
@@ -134,7 +133,7 @@ Item {
                             text: qsTr('write a note…')
                             color: S.muted
                             font.family: BodyFont ? BodyFont : font.family
-                            font.pixelSize: 17
+                            font.pixelSize: app.ehFsText
                         }
                     }
                 }
@@ -152,7 +151,7 @@ Item {
                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                     textFormat: Text.RichText
                     font.family: FixedFont
-                    font.pixelSize: 16
+                    font.pixelSize: app.ehFsText
                     font.bold: true
                     color: S.ink
                     lineHeight: 1.2
@@ -214,7 +213,7 @@ Item {
                             text: page.held || page.addrHeld ? qsTr('Blocked') : qsTr('It can be spent')
                             color: page.held || page.addrHeld ? S.red : S.ink
                             font.family: BodyFont ? BodyFont : font.family
-                            font.pixelSize: 17
+                            font.pixelSize: app.ehFsText
                             font.bold: true
                         }
                         Body {
@@ -259,7 +258,7 @@ Item {
                                 anchors.centerIn: parent
                                 spacing: 7
                                 Rectangle { Layout.preferredWidth: 12; Layout.preferredHeight: 12; radius: 6; color: oc.modelData.color }
-                                Label { text: oc.modelData.name; font.family: BodyFont ? BodyFont : font.family; font.pixelSize: 16; font.bold: true; color: oc.modelData.color }
+                                Label { text: oc.modelData.name; font.family: BodyFont ? BodyFont : font.family; font.pixelSize: app.ehFsText; font.bold: true; color: oc.modelData.color }
                             }
                             MouseArea {
                                 anchors.fill: parent
@@ -282,7 +281,7 @@ Item {
                     Layout.topMargin: 2
                     textFormat: Text.RichText
                     font.family: FixedFont
-                    font.pixelSize: 17
+                    font.pixelSize: app.ehFsText
                     font.bold: true
                     color: S.ink
                     wrapMode: Text.WordWrap

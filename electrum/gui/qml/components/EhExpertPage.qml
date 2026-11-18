@@ -47,7 +47,7 @@ Item {
             id: chL
             anchors.centerIn: parent
             font.family: BodyFont ? BodyFont : font.family
-            font.pixelSize: 17
+            font.pixelSize: app.ehFsText
             font.bold: true
             color: ch.on ? S.ivory : S.ink
         }
@@ -56,7 +56,6 @@ Item {
 
     Flickable {
         anchors.fill: parent
-        anchors.bottomMargin: app.navigationBarHeight  // T9: last button was under the Android keys
         contentHeight: col.implicitHeight + 30
         clip: true
         ColumnLayout {
@@ -97,7 +96,7 @@ Item {
                         wrapMode: Text.WordWrap
                         textFormat: Text.StyledText
                         font.family: BodyFont ? BodyFont : font.family
-                        font.pixelSize: 17
+                        font.pixelSize: app.ehFsText
                         lineHeight: 1.1
                         color: S.ink
                         text: qsTr('<b>20%</b> of the balance (with "Only bitcoin" there is no value in %1).').arg(app.ehCcyName())
@@ -137,7 +136,7 @@ Item {
                                 inputMethodHints: Qt.ImhDigitsOnly
                                 validator: IntValidator { bottom: 1; top: 1000000 }
                                 font.family: BodyFont ? BodyFont : font.family
-                                font.pixelSize: 17
+                                font.pixelSize: app.ehFsText
                                 font.bold: true
                                 color: otherBox.other ? S.ivory : S.ink
                                 onEditingFinished: if (text !== '') app.ehSetDoubleEur(parseInt(text))
@@ -147,7 +146,7 @@ Item {
                                     visible: otherF.text === '' && !otherF.activeFocus
                                     text: qsTr('other amount…')
                                     font.family: BodyFont ? BodyFont : font.family
-                                    font.pixelSize: 17
+                                    font.pixelSize: app.ehFsText
                                     color: S.muted
                                 }
                             }

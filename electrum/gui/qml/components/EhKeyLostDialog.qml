@@ -63,23 +63,23 @@ ElDialog {
                 wrapMode: Text.WordWrap
                 color: S.ink
                 font.family: BodyFont ? BodyFont : font.family
-                font.pixelSize: 17
+                font.pixelSize: app.ehFsText
                 lineHeight: 1.2
             }
             EhInfoBox {
                 kind: 'tip'
                 text: '<b>' + qsTr('Your money is not lost') + '</b>: ' + qsTr('it is on the blockchain.')
-                fontSize: 17
+                fontSize: app.ehFsText
             }
             EhInfoBox {
                 kind: 'warn'
-                text: qsTr('To get it back you need <b>your 12 words</b>, the ones you wrote on the paper when you created the wallet.')
-                fontSize: 17
+                text: qsTr('To get it back you need <b>your words</b> (SEED), the ones you wrote on the paper when you created the wallet.')
+                fontSize: app.ehFsText
             }
             Item { Layout.preferredHeight: 4 }
             EhStitchButton {
                 kind: 'wine'
-                text: qsTr('Put back the 12 words')
+                text: qsTr('Put back the words (SEED)')
                 icon: 'eh_pen_ivory.svg'
                 endIcon: 'next'
                 onClicked: { dialog.restoreChosen(); dialog.doAccept() }

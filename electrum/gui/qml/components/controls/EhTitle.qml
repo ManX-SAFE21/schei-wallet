@@ -14,7 +14,7 @@ ColumnLayout {
     property string text
     property string icon: ''          // file name in gui/icons, or a full URL
     property color color: S.wine
-    property real fontSize: 30
+    property real fontSize: app.ehFsBox
 
     Layout.fillWidth: true
     Layout.bottomMargin: 4

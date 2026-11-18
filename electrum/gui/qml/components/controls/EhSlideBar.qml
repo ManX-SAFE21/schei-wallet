@@ -136,7 +136,7 @@ Item {
             text: qsTr('SEND')
             font.family: root.serif
             font.weight: Font.ExtraBold
-            font.pixelSize: 20
+            font.pixelSize: app.ehFsStrong
             fontSizeMode: Text.HorizontalFit
             minimumPixelSize: 12
             color: '#fbeccb'
@@ -158,7 +158,7 @@ Item {
         opacity: root.sendEnabled ? Math.max(0, 1 - Math.abs(coin.offset) / 40) : 0.5
         text: root.sendEnabled ? qsTr('push up') : qsTr('not available')
         font.family: root.body
-        font.pixelSize: root.sendEnabled ? 16 : 14
+        font.pixelSize: root.sendEnabled ? app.ehFsText : app.ehFsSmall
         wrapMode: root.sendEnabled ? Text.NoWrap : Text.WordWrap
         lineHeight: 0.95
         fontSizeMode: root.sendEnabled ? Text.HorizontalFit : Text.Fit
@@ -177,7 +177,7 @@ Item {
         opacity: Math.max(0, 1 - Math.abs(coin.offset) / 40)
         text: qsTr('pull down')
         font.family: root.body
-        font.pixelSize: 16
+        font.pixelSize: app.ehFsText
         fontSizeMode: Text.HorizontalFit
         minimumPixelSize: 11
         color: '#ffffff'
@@ -200,7 +200,7 @@ Item {
             text: qsTr('RECEIVE')
             font.family: root.serif
             font.weight: Font.ExtraBold
-            font.pixelSize: 20
+            font.pixelSize: app.ehFsStrong
             fontSizeMode: Text.HorizontalFit
             minimumPixelSize: 12
             color: '#fbeccb'
@@ -221,7 +221,7 @@ Item {
         spacing: -2
         Repeater {
             model: 3
-            Canvas {
+            EhCanvas {
                 id: arrow
                 required property int index
                 width: 28; height: 16
@@ -383,7 +383,7 @@ Item {
             wrapMode: Text.WordWrap
             horizontalAlignment: Text.AlignHCenter
             color: '#ffffff'
-            font.pixelSize: 13
+            font.pixelSize: app.ehFsSmall
             text: root.sendEnabled ? qsTr('Hold the coin: up to send, down to receive.')
                                    : qsTr('Hold the coin and pull it down to receive.')
         }

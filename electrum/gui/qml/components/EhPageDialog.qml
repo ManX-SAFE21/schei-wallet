@@ -17,7 +17,8 @@ ElDialog {
     padding: 0
     topPadding: 0
     header: null
-    needsSystemBarPadding: false
+    // the pages inside do not add the Android keys: this window leaves room for them (owner 16/11)
+    needsSystemBarPadding: true
     background: Rectangle { color: S.parch }
 
     StackView {

@@ -1,30 +1,43 @@
-// Easy Heirs (schȅi): dashed rounded outline, drawn (QML borders are solid).
+// Easy Heirs (schȅi): dashed rounded outline (QML borders are solid).
+// Owner 17/11 (Samsung): drawn as a Shape, not a Canvas. A Canvas paints once into an image; on
+// Android that image was lost (app long in the background, the system frees memory) and never
+// painted again: the stitching of a wallet vanished. A Shape is geometry: the scene graph builds it
+// again by itself every time it is needed.
 import QtQuick
+import QtQuick.Shapes
 
-Canvas {
+Shape {
     id: root
     property color color: '#5e1a33'
     property real radius: 24
     property real lineWidth: 2.5
     property real inset: 4
-    onColorChanged: requestPaint()
-    onWidthChanged: requestPaint()
-    onHeightChanged: requestPaint()
-    onPaint: {
-        var c = getContext('2d')
-        c.reset()
-        var i = inset, w = width - 2 * i, h = height - 2 * i, r = Math.min(radius, w / 2, h / 2)
-        if (w <= 0 || h <= 0 || r < 0) return   // not laid out yet
-        c.strokeStyle = root.color
-        c.lineWidth = root.lineWidth
-        c.setLineDash([7, 5])
-        c.beginPath()
-        c.moveTo(i + r, i)
-        c.lineTo(i + w - r, i); c.arcTo(i + w, i, i + w, i + r, r)
-        c.lineTo(i + w, i + h - r); c.arcTo(i + w, i + h, i + w - r, i + h, r)
-        c.lineTo(i + r, i + h); c.arcTo(i, i + h, i, i + h - r, r)
-        c.lineTo(i, i + r); c.arcTo(i, i, i + r, i, r)
-        c.closePath()
-        c.stroke()
+
+    readonly property real i: inset
+    readonly property real w: Math.max(0, width - 2 * inset)
+    readonly property real h: Math.max(0, height - 2 * inset)
+    readonly property real r: Math.max(0, Math.min(radius, w / 2, h / 2))
+
+    visible: w > 0 && h > 0
+    preferredRendererType: Shape.CurveRenderer   // smooth edges without a layer
+
+    ShapePath {
+        strokeColor: root.color
+        strokeWidth: root.lineWidth
+        fillColor: 'transparent'
+        strokeStyle: ShapePath.DashLine
+        // same dashes as the Canvas before: its setLineDash([7, 5]) counts in line widths too
+        dashPattern: [7, 5]
+        capStyle: ShapePath.FlatCap
+        joinStyle: ShapePath.MiterJoin
+        startX: root.i + root.r; startY: root.i
+        PathLine { x: root.i + root.w - root.r; y: root.i }
+        PathArc { x: root.i + root.w; y: root.i + root.r; radiusX: root.r; radiusY: root.r }
+        PathLine { x: root.i + root.w; y: root.i + root.h - root.r }
+        PathArc { x: root.i + root.w - root.r; y: root.i + root.h; radiusX: root.r; radiusY: root.r }
+        PathLine { x: root.i + root.r; y: root.i + root.h }
+        PathArc { x: root.i; y: root.i + root.h - root.r; radiusX: root.r; radiusY: root.r }
+        PathLine { x: root.i; y: root.i + root.r }
+        PathArc { x: root.i + root.r; y: root.i; radiusX: root.r; radiusY: root.r }
     }
 }

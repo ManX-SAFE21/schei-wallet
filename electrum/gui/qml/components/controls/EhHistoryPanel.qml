@@ -13,7 +13,7 @@ Item {
     readonly property string body: BodyFont ? BodyFont : app.font.family
 
     // dotted line between the rows (QML borders are solid)
-    component Dotted: Canvas {
+    component Dotted: EhCanvas {
         property color tint: '#d8c69a'
         height: 2
         onWidthChanged: requestPaint()
@@ -61,7 +61,7 @@ Item {
                 text: qsTr('Movements')
                 font.family: root.serif
                 font.weight: Font.ExtraBold
-                font.pixelSize: 24
+                font.pixelSize: app.ehFsStrong
                 color: '#5e1a33'
             }
             // a small stitched button (owner rule: every button has its stitching)
@@ -83,7 +83,7 @@ Item {
                     anchors.centerIn: parent
                     text: qsTr('See all') + ' ›'
                     font.family: root.body
-                    font.pixelSize: 16
+                    font.pixelSize: app.ehFsText
                     font.bold: true
                     color: '#fbeccb'
                 }
@@ -108,7 +108,7 @@ Item {
             textFormat: Text.StyledText
             color: '#5a4c44'
             font.family: root.body
-            font.pixelSize: 16
+            font.pixelSize: app.ehFsText
             text: '<b>' + qsTr('No movements yet.') + '</b><br>' + (app.ehOption('buttons') ? qsTr('Tap RECEIVE to get your first bitcoin.') : qsTr('Pull the coin down to receive your first bitcoin.'))
         }
 
@@ -140,7 +140,8 @@ Item {
                 readonly property bool euroShown: !btcOnly && main.indexOf(app.ehSym()) >= 0
                 readonly property bool waiting: row.model.confirmations < 1
                 readonly property string when: app.ehWhen(row.model.timestamp)
-                readonly property string note: row.model.label ? row.model.label : ''
+                readonly property string note: app.ehTxNote(row.model.label)
+                readonly property bool pluginNote: app.ehPluginLabelKind(row.model.label) !== ''
                 readonly property string what: {
                     var s = row.incoming ? qsTr('money received') : qsTr('money sent')
                     return s.charAt(0).toUpperCase() + s.substring(1)
@@ -150,8 +151,12 @@ Item {
                 readonly property string sgn: '+−-'.indexOf(main.charAt(0)) >= 0 ? main.charAt(0) : ''
                 readonly property string rest: sgn !== '' ? main.substring(1) : main
                 // only bitcoin: the size that fits the line (from the text, not from the layout: no loop)
-                TextMetrics { id: tm; font.family: root.serif; font.weight: Font.ExtraBold; font.pixelSize: 19; text: row.rest }
-                readonly property real btcSize: Math.max(12, Math.min(19, 19 * (width - 48 - 14) / Math.max(1, tm.advanceWidth)))
+                TextMetrics { id: tm; font.family: root.serif; font.weight: Font.ExtraBold; font.pixelSize: app.ehFsStrong; text: row.rest }
+                readonly property real btcSize: Math.max(12, Math.min(app.ehFsStrong, app.ehFsStrong * (width - 48 - 14) / Math.max(1, tm.advanceWidth)))
+                // euro: the amount gets smaller rather than squeezing «Mandati» onto two lines
+                // (owner 17/11, −€ 1.227.181,61 on the Samsung); room: the row minus icon, words, gap
+                TextMetrics { id: tmE; font.family: root.serif; font.weight: Font.ExtraBold; font.pixelSize: app.ehFsStrong; text: row.sgn + row.rest }
+                readonly property real amtSize: Math.max(11, Math.min(app.ehFsStrong, app.ehFsStrong * (width - 48 - 72 - 8) / Math.max(1, tmE.advanceWidth)))
 
                 Dotted {
                     visible: row.index < list.count - 1
@@ -183,13 +188,13 @@ Item {
                     Row {
                         anchors.right: parent.right
                         spacing: 1
-                        Label { anchors.baseline: amtL.baseline; text: row.sgn; font.family: root.body; font.bold: true; font.pixelSize: 21; color: row.ink }
+                        Label { anchors.baseline: amtL.baseline; text: row.sgn; font.family: root.body; font.bold: true; font.pixelSize: row.amtSize; color: row.ink }
                         Label {
                             id: amtL
                             text: row.rest
                             font.family: root.serif
                             font.weight: Font.ExtraBold
-                            font.pixelSize: 21
+                            font.pixelSize: row.amtSize
                             color: row.ink
                         }
                     }
@@ -198,7 +203,7 @@ Item {
                         anchors.right: parent.right
                         text: app.ehBtc(row.model.value).replace('-', '')
                         font.family: root.body
-                        font.pixelSize: 13
+                        font.pixelSize: app.ehFsSmall
                         color: '#5a4c44'
                     }
                 }
@@ -216,7 +221,7 @@ Item {
                         height: whatL.implicitHeight
                         Image {
                             id: penI
-                            visible: row.note !== ''
+                            visible: row.note !== '' && !row.pluginNote
                             y: 4
                             source: Qt.resolvedUrl('../../../icons/eh_pen_wine.svg')
                             sourceSize.width: 14
@@ -228,13 +233,24 @@ Item {
                             // only bitcoin: the date stays on this line, the amount goes under it
                             width: parent.width - x - (row.btcOnly ? whenBox.width + 6 : 0)
                             // owner 13/11: a long note goes on two lines (then "…")
-                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            // the app's own words ("Annullamento eredità"): never cut inside a word,
+                            // a little smaller if a word does not fit (owner 17/11, phone)
+                            wrapMode: row.pluginNote ? Text.WordWrap : Text.WrapAtWordBoundaryOrAnywhere
                             maximumLineCount: 2
                             lineHeight: 1.05
                             elide: Text.ElideRight
                             text: row.note !== '' ? row.note : row.what
                             font.family: root.body
-                            font.pixelSize: 16
+                            font.pixelSize: row.pluginNote
+                                ? Math.max(11, Math.min(app.ehFsText, Math.floor(app.ehFsText * width / Math.max(1, wordTm.advanceWidth + 2))))
+                                : app.ehFsText
+                            TextMetrics {
+                                id: wordTm
+                                font.family: root.body
+                                font.pixelSize: app.ehFsText
+                                font.bold: true
+                                text: row.pluginNote ? row.note.split(' ').reduce(function(a, b) { return b.length > a.length ? b : a }, '') : ''
+                            }
                             font.bold: true
                             color: row.note !== '' ? '#5e1a33' : '#2a2220'
                         }
@@ -252,7 +268,7 @@ Item {
                                 anchors.verticalCenter: parent.verticalCenter
                                 text: row.when
                                 font.family: root.body
-                                font.pixelSize: 16
+                                font.pixelSize: app.ehFsText
                                 color: '#5a4c44'
                             }
                             Rectangle {
@@ -266,7 +282,7 @@ Item {
                                 color: '#fbf0d6'
                                 border.width: 1
                                 border.color: '#ecd49a'
-                                Label { id: pl1; anchors.centerIn: parent; text: qsTr('unconf.'); font.family: root.body; font.pixelSize: 13; font.bold: true; color: '#7a4a12' }
+                                Label { id: pl1; anchors.centerIn: parent; text: qsTr('unconf.'); font.family: root.body; font.pixelSize: app.ehFsSmall; font.bold: true; color: '#7a4a12' }
                             }
                         }
                     }
@@ -277,7 +293,7 @@ Item {
                         elide: Text.ElideRight
                         text: row.when
                         font.family: root.body
-                        font.pixelSize: 16
+                        font.pixelSize: app.ehFsText
                         color: '#5a4c44'
                     }
                     Rectangle {
@@ -289,7 +305,7 @@ Item {
                         border.width: 1
                         border.color: '#ecd49a'
                         Label { id: pl2; anchors.centerIn: parent; width: Math.min(implicitWidth, parent.width - 8); elide: Text.ElideRight
-                                text: qsTr('waiting'); font.family: root.body; font.pixelSize: 14; font.bold: true; color: '#7a4a12' }
+                                text: qsTr('waiting'); font.family: root.body; font.pixelSize: app.ehFsSmall; font.bold: true; color: '#7a4a12' }
                     }
                     // only bitcoin: 8 decimals, on its own line on the right (it does not fit next to the words)
                     Item {

@@ -24,7 +24,7 @@ Rectangle {
         anchors.centerIn: parent
         text: root.level === 2 ? qsTr('EXPERT') : qsTr('MEDIUM')
         font.family: BodyFont ? BodyFont : font.family
-        font.pixelSize: 14
+        font.pixelSize: app.ehFsSmall
         font.bold: true
         font.letterSpacing: 0.4
         color: root.ink

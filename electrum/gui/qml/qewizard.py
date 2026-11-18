@@ -73,7 +73,8 @@ class QENewWalletWizard(NewWalletWizard, QEAbstractWizard):
             'confirm_ext': {'gui': 'WCConfirmExt'},
             'have_seed': {'gui': 'WCEasyHaveSeed'},  # Easy Heirs: big choices + our keyboard
             'have_ext': {'gui': 'WCEnterExt'},
-            'script_and_derivation': {'gui': 'WCScriptAndDerivation'},
+            # Easy Heirs (owner 17/11): words of another wallet: Schȅi looks for the money by itself
+            'script_and_derivation': {'gui': 'WCEasyFindFunds'},
             'have_master_key': {'gui': 'WCHaveMasterKey'},
             'multisig': {'gui': 'WCMultisig'},
             'multisig_cosigner_keystore': {'gui': 'WCCosignerKeystore'},

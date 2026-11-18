@@ -132,7 +132,7 @@ Item {
                 text: root.text
                 color: root.ink
                 font.family: BodyFont ? BodyFont : font.family
-                font.pixelSize: 18
+                font.pixelSize: app.ehFsText
                 font.bold: true
                 lineHeight: 1.05
                 horizontalAlignment: (!root._hasIcon && root._endSrc === '') ? Text.AlignHCenter : Text.AlignLeft
@@ -146,7 +146,7 @@ Item {
                 text: root.sub
                 color: root.off ? S.offInk : (root.leather ? '#ffffff' : S.muted)
                 font.family: BodyFont ? BodyFont : font.family
-                font.pixelSize: 16
+                font.pixelSize: app.ehFsText
                 horizontalAlignment: (!root._hasIcon && root._endSrc === '') ? Text.AlignHCenter : Text.AlignLeft
                 elide: Text.ElideRight
             }

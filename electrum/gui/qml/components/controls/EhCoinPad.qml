@@ -148,7 +148,7 @@ Item {
                 text: qsTr('Your little stash')
                 color: S.olive
                 font.family: BodyFont ? BodyFont : font.family
-                font.pixelSize: 16
+                font.pixelSize: app.ehFsText
                 font.bold: true
                 elide: Text.ElideRight
             }
@@ -173,7 +173,7 @@ Item {
                     text: qsTr('tap: take the last one back')
                     color: S.muted
                     font.family: BodyFont ? BodyFont : font.family
-                    font.pixelSize: 16
+                    font.pixelSize: app.ehFsText
                     lineHeight: 0.95
                     wrapMode: Text.WordWrap
                     maximumLineCount: 2
@@ -187,7 +187,7 @@ Item {
                     text: qsTr('the money you put in lands here')
                     color: S.muted
                     font.family: BodyFont ? BodyFont : font.family
-                    font.pixelSize: 16
+                    font.pixelSize: app.ehFsText
                     lineHeight: 1.05
                 }
                 Repeater {
@@ -259,7 +259,7 @@ Item {
                     color: S.wineDark
                     font.family: SerifFont ? SerifFont : font.family
                     font.weight: Font.ExtraBold
-                    font.pixelSize: 30
+                    font.pixelSize: app.ehFsBox
                     fontSizeMode: Text.HorizontalFit
                     minimumPixelSize: 18
                 }
@@ -269,7 +269,7 @@ Item {
                                         : qsTr('tap notes and coins')
                     color: S.muted
                     font.family: BodyFont ? BodyFont : font.family
-                    font.pixelSize: 16
+                    font.pixelSize: app.ehFsText
                     elide: Text.ElideRight
                 }
                 Item {
@@ -304,8 +304,8 @@ Item {
                                         Component { id: miniNote; EhNote { c: chip.modelData; ccy: pad.ccy } }
                                         Component { id: miniCoin; EhCoin { c: chip.modelData; ccy: pad.ccy } }
                                     }
-                                    Label { anchors.verticalCenter: parent.verticalCenter; text: '×' + (pad.counts[chip.modelData] || 0); color: S.ink; font.family: BodyFont ? BodyFont : font.family; font.pixelSize: 16; font.bold: true }
-                                    Label { anchors.verticalCenter: parent.verticalCenter; text: '−'; color: S.wine; font.family: BodyFont ? BodyFont : font.family; font.pixelSize: 16; font.bold: true }
+                                    Label { anchors.verticalCenter: parent.verticalCenter; text: '×' + (pad.counts[chip.modelData] || 0); color: S.ink; font.family: BodyFont ? BodyFont : font.family; font.pixelSize: app.ehFsText; font.bold: true }
+                                    Label { anchors.verticalCenter: parent.verticalCenter; text: '−'; color: S.wine; font.family: BodyFont ? BodyFont : font.family; font.pixelSize: app.ehFsText; font.bold: true }
                                 }
                                 TapHandler { id: chipTap; margin: 3; onTapped: pad.removeOne(chip.modelData) }
                             }
@@ -330,7 +330,7 @@ Item {
                     anchors.centerIn: parent
                     spacing: 6
                     Image { anchors.verticalCenter: parent.verticalCenter; source: Qt.resolvedUrl('../../../icons/eh_undo.svg'); sourceSize.width: 18; sourceSize.height: 18 }
-                    Label { anchors.verticalCenter: parent.verticalCenter; text: qsTr('Clear'); color: S.wine; font.family: BodyFont ? BodyFont : font.family; font.pixelSize: 16; font.bold: true }
+                    Label { anchors.verticalCenter: parent.verticalCenter; text: qsTr('Clear'); color: S.wine; font.family: BodyFont ? BodyFont : font.family; font.pixelSize: app.ehFsText; font.bold: true }
                 }
                 TapHandler { id: clrTap; margin: 8; onTapped: pad.clear() }
             }

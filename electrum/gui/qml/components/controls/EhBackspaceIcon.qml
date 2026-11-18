@@ -3,7 +3,7 @@
 // shows as an empty box, so we never use it.
 import QtQuick
 
-Canvas {
+EhCanvas {
     id: root
     property color ink: '#5e1a33'       // "Bottega": wine stroke on the sand delete key
     property color fill: '#ead9b0'

@@ -26,6 +26,11 @@ ElDialog {
     property string euroInput: ''   // digits typed, e.g. "25,5"
     property var chosen: null       // QEAmount to send
     property string sentEuro: ''
+    property string sentTxid: ''    // the payment this page sent (its answer only, not another one's)
+    // owner 17/11 (controllo-mainnet 3.4): «not sure it left» -> the next try keeps THE SAME coins
+    // (the fee may change). A payment with other coins could arrive as well: never two payments.
+    property bool coinsLocked: false
+    property bool unsureLock: false     // the coins of a payment that maybe left are inside this one
     property string sentBtc: ''
     property bool btcMode: app.ehBtcOnly()     // typing in bitcoin (expert toggle, or 'only bitcoin')
     property bool useMax: false      // expert: all the balance
@@ -48,6 +53,8 @@ ElDialog {
     header: null
     needsSystemBarPadding: false
     background: Rectangle { color: S.parch }
+    // owner 16/11 + controllo-mainnet: the PIN / the payment are important data: black on mainnet
+    Binding { target: AppController; property: 'secureWindow'; value: true; when: dialog.visible }
 
     // ---------- helpers ----------
     // blocked gold coins cannot be spent: "you have" is what can be spent
@@ -70,7 +77,7 @@ ElDialog {
     function satsToAmount(sats) { return Config.unitsToSats((sats / 100000000).toFixed(8)) }
     function euroDisplay() {
         var sym = btcMode ? '' : app.ehSym() + ' '
-        if (euroInput === '') return btcMode ? '0 BTC' : sym + '0'
+        if (euroInput === '') return btcMode ? '0 ' + app.ehBtcUnit() : sym + '0'
         if (btcMode) return euroInput.replace(',', app.ehLocale().decimalPoint) + ' ' + app.ehBtcUnit()
         var parts = euroInput.split(',')
         var intPart = Number(parts[0] || '0').toLocaleString(app.ehLocale(), 'f', 0)
@@ -96,6 +103,7 @@ ElDialog {
         finalizer.amount = amount
         finalizer.doUpdate()
         phase = 'review'
+        Qt.callLater(dialog.maybeAskFee)
     }
     function groupedAddress() {
         var a = invoice ? invoice.address : ''
@@ -163,6 +171,11 @@ ElDialog {
         return n > 1 ? out : []
     }
     function chooseCoins() {
+        if (dialog.coinsLocked) {
+            app.ehTell(qsTr('Same coins as before'),
+                       qsTr('The payment before may have left. I use the same coins, so it can never be paid twice: if the first one left, this one does not.'))
+            return
+        }
         var need = (finalizer.valid ? finalizer.effectiveAmount.satsInt + finalizer.fee.satsInt
                                     : (dialog.reviewAmount ? dialog.reviewAmount.satsInt : 0))
         var d = Qt.createComponent(Qt.resolvedUrl('EhCoinPickerDialog.qml')).createObject(app, { finalizer: finalizer, needSats: need })
@@ -170,9 +183,48 @@ ElDialog {
         d.open()
     }
     function chooseFee() {
+        if (dialog.feeByHand) { dialog.askFee(); return }
         var d = Qt.createComponent(Qt.resolvedUrl('EhFeeDialog.qml')).createObject(app, { finalizer: finalizer })
-        d.closed.connect(function() { d.destroy() })
+        dialog.feeDlgOpen = true
+        d.closed.connect(function() { d.destroy(); dialog.feeDlgOpen = false; Qt.callLater(dialog.maybeAskFee) })
         d.open()
+    }
+    // owner Q8 (16/11): the servers give no fee estimate -> "How much to pay the miner?"
+    // (never Electrum's 150 sat/vB). From then on the cost row opens this sheet again.
+    property bool feeByHand: false       // the fee of this payment was written by hand in the sheet
+    property string feeRateByHand: ''    // sat/vB with the dot, e.g. '0.7'
+    property bool feeDlgOpen: false
+    property var feeSheet: null
+    function maybeAskFee() {
+        if (finalizer.ehNoEstimate && dialog.phase === 'review' && !dialog.feeDlgOpen && dialog.countdown < 0)
+            dialog.askFee()
+    }
+    function askFee() {
+        if (dialog.feeSheet) return
+        var start = dialog.feeRateByHand !== '' ? dialog.feeRateByHand
+                    : (app.ehTest ? '' : (Config.ehGet('manual_feerate') || ''))
+        var amt = Number(dialog.useMax ? dialog.balanceSats() : (dialog.reviewAmount ? dialog.reviewAmount.satsInt : 0)) || 0
+        var d = Qt.createComponent(Qt.resolvedUrl('EhManualFeeSheet.qml')).createObject(app, {
+            finalizer: finalizer, amountSats: amt, startRate: '' + start })
+        dialog.feeSheet = d
+        d.chosen.connect(function(rate) {
+            dialog.feeByHand = true
+            dialog.feeRateByHand = rate
+            if (!app.ehTest) Config.ehSet('manual_feerate', rate)   // mainnet: the next start
+            finalizer.ehSetManualFeerate(rate)
+        })
+        d.cancelled.connect(function() {
+            if (finalizer.valid) return              // a fee is already there: nothing changes
+            // no fee, the payment cannot leave: back to the amount, or out
+            if (dialog.invoice && dialog.invoice.amount.isEmpty) { dialog.useMax = false; dialog.phase = 'amount' }
+            else dialog.doClose()
+        })
+        d.closed.connect(function() { dialog.feeSheet = null; d.destroy() })
+        d.open()
+    }
+    Connections {
+        target: finalizer
+        function onEhNoEstimateChanged() { if (finalizer.ehNoEstimate) Qt.callLater(dialog.maybeAskFee) }
     }
     function confirmSend() {
         if (!dialog.needsPin) { startCountdown(); return }
@@ -190,8 +242,16 @@ ElDialog {
         sentEuro = app.ehMoney(finalizer.effectiveAmount)
         sentBtc = app.ehBtc(finalizer.effectiveAmount)
         dialog.setBusy(true)
+        dialog.sentTxid = finalizer.finalizedTxid
         app._ehSendOk = true      // our screens (slides, PIN when needed, countdown) were passed
-        finalizer.signAndSend()
+        // owner 17/11 (controllo-mainnet M4): the go-ahead is used up inside this call (the wallet
+        // asks for the signature right away). If signAndSend stops before asking, it must not stay
+        // on for a later signature: always off again here
+        try {
+            finalizer.signAndSend()
+        } finally {
+            app._ehSendOk = false
+        }
     }
 
     // owner 13/11: the middle of "Check carefully" scrolls between the two slides: a soft
@@ -292,7 +352,7 @@ ElDialog {
             visible: false   // the steps bar at the top says it now
             text: qsTr('STEP %1 OF %2').arg(dialog.phase === 'amount' ? 2 : 3).arg(3)
             color: S.olive
-            font.pixelSize: 16
+            font.pixelSize: app.ehFsText
             font.bold: true
         }
 
@@ -304,7 +364,7 @@ ElDialog {
         // ===== amount =====
         EhSegmented {
             visible: dialog.phase === 'amount' && app.ehOption('euro_btc') && !app.ehBtcOnly()
-            model: [ (app.ehSym() !== app.ehCcy() ? app.ehSym() + '  ' : '') + app.ehCcyTitle(), 'Bitcoin (BTC)' ]
+            model: [ (app.ehSym() !== app.ehCcy() ? app.ehSym() + '  ' : '') + app.ehCcyTitle(), 'Bitcoin (' + app.ehBtcUnit() + ')' ]
             currentIndex: dialog.btcMode ? 1 : 0
             onActivated: (i) => {
                 var b = (i === 1)
@@ -312,7 +372,9 @@ ElDialog {
                 // convert what is typed to the other unit
                 var sats = dialog.inputSats()
                 dialog.btcMode = b
-                if (sats <= 0) { dialog.euroInput = ''; return }
+                // owner 17/11 (controllo-mainnet M6): back to euro with the banknotes, the notes start
+                // empty: the amount starts from zero too (never a hidden amount behind EUR 0)
+                if (sats <= 0 || dialog.useCoins) { dialog.euroInput = ''; return }
                 if (dialog.btcMode) {
                     dialog.euroInput = (sats / 100000000).toFixed(8).replace(/0+$/, '').replace(/\.$/, '').replace('.', ',')
                 } else {
@@ -329,7 +391,7 @@ ElDialog {
             color: S.wineDark
             font.family: SerifFont ? SerifFont : font.family
             font.weight: Font.ExtraBold
-            font.pixelSize: 50
+            font.pixelSize: app.ehFsFigure
             fontSizeMode: Text.HorizontalFit   // T13: shrinks instead of pushing the page out
             minimumPixelSize: 22
         }
@@ -340,7 +402,7 @@ ElDialog {
             text: dialog.btcMode ? qsTr('about %1').arg(app.ehEuro(dialog.satsToAmount(dialog.inputSats())))
                                  : qsTr('about %1').arg(app.ehBtc(dialog.satsToAmount(dialog.inputSats())))
             color: S.muted
-            font.pixelSize: 16
+            font.pixelSize: app.ehFsText
         }
         RowLayout {
             visible: dialog.phase === 'amount' && dialog.inputSats() <= dialog.balanceSats()
@@ -349,14 +411,14 @@ ElDialog {
             ColumnLayout {
                 spacing: 0
                 Layout.fillWidth: dialog.btcMode
-                Label { text: qsTr('YOU HAVE'); color: S.olive; font.pixelSize: 16; font.bold: true; font.letterSpacing: 0.5 }
+                Label { text: qsTr('YOU HAVE'); color: S.olive; font.pixelSize: app.ehFsText; font.bold: true; font.letterSpacing: 0.5 }
                 Label {
                     Layout.fillWidth: dialog.btcMode
                     text: app.ehMoney(dialog.satsToAmount(dialog.balanceSats()))
                     color: S.wineDark
                     font.family: SerifFont ? SerifFont : font.family
                     font.weight: Font.ExtraBold
-                    font.pixelSize: 24
+                    font.pixelSize: app.ehFsStrong
                     fontSizeMode: Text.HorizontalFit
                     minimumPixelSize: 16
                 }
@@ -366,14 +428,14 @@ ElDialog {
                 // T13 (owner): typing in bitcoin, "Left" goes away: too many decimals
                 visible: !dialog.btcMode
                 spacing: 0
-                Label { Layout.alignment: Qt.AlignRight; text: qsTr('LEFT'); color: S.olive; font.pixelSize: 16; font.bold: true; font.letterSpacing: 0.5 }
+                Label { Layout.alignment: Qt.AlignRight; text: qsTr('LEFT'); color: S.olive; font.pixelSize: app.ehFsText; font.bold: true; font.letterSpacing: 0.5 }
                 Label {
                     Layout.alignment: Qt.AlignRight
                     text: app.ehMoney(dialog.satsToAmount(Math.max(0, dialog.balanceSats() - dialog.inputSats())))
                     color: S.oliveInk
                     font.family: SerifFont ? SerifFont : font.family
                     font.weight: Font.ExtraBold
-                    font.pixelSize: 24
+                    font.pixelSize: app.ehFsStrong
                 }
             }
         }
@@ -437,7 +499,7 @@ ElDialog {
                 kind: 'paper'
                 text: qsTr('Write in bitcoin')
                 onClicked: { dialog.euroInput = ''; dialog.btcMode = true }
-                Label { anchors.centerIn: parent; text: '₿'; font.pixelSize: 22; font.bold: true; color: S.wine }
+                Label { anchors.centerIn: parent; text: '₿'; font.pixelSize: app.ehFsStrong; font.bold: true; color: S.wine }
             }
         }
         EhStitchButton {
@@ -462,13 +524,13 @@ ElDialog {
                 spacing: 0
                 RowLayout {
                     Layout.fillWidth: true
-                    Label { text: qsTr('You send'); font.pixelSize: 17; color: S.ink }
+                    Label { text: qsTr('You send'); font.pixelSize: app.ehFsText; color: S.ink }
                     Item { Layout.fillWidth: true }
                     Label {
                         text: app.ehMoney(finalizer.valid ? finalizer.effectiveAmount : (dialog.chosen ? dialog.chosen : finalizer.amount))
                         font.family: SerifFont ? SerifFont : font.family
                         font.weight: Font.ExtraBold
-                        font.pixelSize: 24
+                        font.pixelSize: app.ehFsStrong
                         color: S.wine
                     }
                 }
@@ -476,7 +538,7 @@ ElDialog {
                     Layout.fillWidth: true
                     horizontalAlignment: Text.AlignRight
                     wrapMode: Text.WordWrap
-                    font.pixelSize: 16
+                    font.pixelSize: app.ehFsText
                     color: S.muted
                     text: qsTr('Sending cost') + ' ' + (finalizer.valid ? app.ehMoney(finalizer.fee) : '…') + ' · ' + qsTr('Total') + ' '
                           + (finalizer.valid ? app.ehMoney(dialog.satsToAmount(finalizer.effectiveAmount.satsInt + finalizer.fee.satsInt)) : '…')
@@ -495,7 +557,7 @@ ElDialog {
                 RowLayout {
                     Layout.alignment: Qt.AlignHCenter
                     spacing: 6
-                    Label { text: qsTr('TO THIS ADDRESS'); font.pixelSize: 16; font.bold: true; color: S.wine }
+                    Label { text: qsTr('TO THIS ADDRESS'); font.pixelSize: app.ehFsText; font.bold: true; color: S.wine }
                     Image { source: Qt.resolvedUrl('../../icons/eh_zoom.svg'); sourceSize.width: 20; sourceSize.height: 20 }
                 }
                 Label {
@@ -508,7 +570,7 @@ ElDialog {
                                             Math.max(1, Math.floor((width + dFm.averageCharacterWidth) / (dFm.averageCharacterWidth * 5))))
                     font.family: FixedFont
                     font.bold: true
-                    font.pixelSize: 18
+                    font.pixelSize: app.ehFsText
                     color: S.ink
                     lineHeight: 1.2
                     FontMetrics { id: dFm; font: dAddr.font }
@@ -548,6 +610,14 @@ ElDialog {
                 width: parent.width
                 spacing: 8
 
+                // Opus review 18/11: a payment before maybe left: this one uses its coins too
+                EhInfoBox {
+                    visible: dialog.unsureLock
+                    kind: 'warn'
+                    title: qsTr('The payment before maybe left')
+                    text: qsTr('This payment also uses <b>its coins</b>: if the one before left, this one does not leave. So you never pay twice.')
+                }
+
                 // the receipt: You send / sending cost / Total on one paper sheet
                 EhSheet {
                     visible: !dialog.needsDouble
@@ -559,12 +629,12 @@ ElDialog {
                             Layout.fillWidth: true
                             Layout.minimumHeight: 44
                             spacing: 8
-                            Label { Layout.fillWidth: true; text: qsTr('You send'); font.pixelSize: 17; color: S.ink; wrapMode: Text.WordWrap }
+                            Label { Layout.fillWidth: true; text: qsTr('You send'); font.pixelSize: app.ehFsText; color: S.ink; wrapMode: Text.WordWrap }
                             Label {
                                 text: app.ehMoney(finalizer.valid ? finalizer.effectiveAmount : (dialog.chosen ? dialog.chosen : finalizer.amount))
                                 font.family: SerifFont ? SerifFont : font.family
                                 font.weight: Font.ExtraBold
-                                font.pixelSize: 26
+                                font.pixelSize: app.ehFsBox
                                 color: S.wineDark
                             }
                         }
@@ -597,21 +667,30 @@ ElDialog {
                                         wrapMode: Text.WordWrap
                                         textFormat: Text.StyledText
                                         text: qsTr('Sending cost') + ' <font color="' + S.muted + '">' + qsTr('(tip to the miners)') + '</font>'
-                                        font.pixelSize: 16
+                                        font.pixelSize: app.ehFsText
                                         color: S.ink
                                     }
-                                    Label { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: app.ehFeeEta(finalizer.sliderPos); font.pixelSize: 16; color: S.muted }
+                                    Label {
+                                        Layout.fillWidth: true
+                                        wrapMode: Text.WordWrap
+                                        // Q8: written by hand -> the rate, not a time we cannot know
+                                        text: dialog.feeByHand ? app.ehFeeRate(dialog.feeRateByHand + ' sat/vB')
+                                              : finalizer.userFeerate !== '' ? app.ehFeeRate(finalizer.userFeerate + ' sat/vB')
+                                              : app.ehFeeEta(finalizer.sliderPos)
+                                        font.pixelSize: app.ehFsText
+                                        color: S.muted
+                                    }
                                     // T6: the invitation is inside the button, not below it
-                                    Label { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: qsTr('tap to change it'); font.pixelSize: 16; font.bold: true; font.underline: true; color: S.wine }
+                                    Label { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: qsTr('tap to change it'); font.pixelSize: app.ehFsText; font.bold: true; font.underline: true; color: S.wine }
                                 }
                                 Label {
                                     text: finalizer.valid ? app.ehMoney(finalizer.fee) : '…'
                                     font.family: SerifFont ? SerifFont : font.family
                                     font.weight: Font.ExtraBold
-                                    font.pixelSize: 21
+                                    font.pixelSize: app.ehFsStrong
                                     color: S.wineDark
                                 }
-                                Label { text: '›'; font.pixelSize: 30; font.bold: true; color: S.wine }
+                                Label { text: '›'; font.pixelSize: app.ehFsBox; font.bold: true; color: S.wine }
                             }
                             TapHandler { id: costTap; onTapped: dialog.chooseFee() }
                         }
@@ -621,7 +700,7 @@ ElDialog {
                             Layout.bottomMargin: 6
                             wrapMode: Text.WordWrap
                             textFormat: Text.StyledText
-                            font.pixelSize: 16
+                            font.pixelSize: app.ehFsText
                             lineHeight: 1.05
                             color: S.muted
                             text: qsTr('It is the small tip to the "miners" who write your payment on the blockchain.')
@@ -647,7 +726,9 @@ ElDialog {
                             icon: 'eh_goldcoin.svg'
                             text: qsTr('Coins used')
                             hint: (finalizer.valid ? finalizer.ehInputCount + ' · ' : '')
-                                  + (finalizer.ehCoins.length > 0 ? qsTr('chosen by you') : qsTr('chosen by itself'))
+                                  + (dialog.unsureLock ? qsTr('also those of before')
+                                     : dialog.coinsLocked ? qsTr('the same as before')
+                                     : finalizer.ehCoins.length > 0 ? qsTr('chosen by you') : qsTr('chosen by itself'))
                             last: true
                             onClicked: dialog.chooseCoins()
                         }
@@ -668,9 +749,9 @@ ElDialog {
                                     Layout.fillWidth: true
                                     spacing: 6
                                     Image { source: Qt.resolvedUrl('../../icons/eh_goldcoin.svg'); sourceSize.width: 22; sourceSize.height: 22 }
-                                    Label { Layout.fillWidth: true; text: app.ehMoney(dialog.satsToAmount(mx.modelData.sats)); font.pixelSize: 16; font.bold: true; color: S.ink; elide: Text.ElideRight }
+                                    Label { Layout.fillWidth: true; text: app.ehMoney(dialog.satsToAmount(mx.modelData.sats)); font.pixelSize: app.ehFsText; font.bold: true; color: S.ink; elide: Text.ElideRight }
                                     Rectangle { Layout.preferredWidth: 10; Layout.preferredHeight: 10; radius: 5; color: mx.modelData.cat.color }
-                                    Label { Layout.maximumWidth: mixCol.width * 0.4; text: mx.modelData.cat.name; font.pixelSize: 16; font.bold: true; color: mx.modelData.cat.color; elide: Text.ElideRight }
+                                    Label { Layout.maximumWidth: mixCol.width * 0.4; text: mx.modelData.cat.name; font.pixelSize: app.ehFsText; font.bold: true; color: mx.modelData.cat.color; elide: Text.ElideRight }
                                 }
                             }
                             // one under the other: side by side the words do not fit in the box
@@ -693,12 +774,12 @@ ElDialog {
                             Layout.fillWidth: true
                             Layout.minimumHeight: 44
                             spacing: 8
-                            Label { Layout.fillWidth: true; text: qsTr('Total'); font.pixelSize: 18; font.bold: true; color: S.ink; wrapMode: Text.WordWrap }
+                            Label { Layout.fillWidth: true; text: qsTr('Total'); font.pixelSize: app.ehFsText; font.bold: true; color: S.ink; wrapMode: Text.WordWrap }
                             Label {
                                 text: finalizer.valid ? app.ehMoney(dialog.satsToAmount(finalizer.effectiveAmount.satsInt + finalizer.fee.satsInt)) : '…'
                                 font.family: SerifFont ? SerifFont : font.family
                                 font.weight: Font.ExtraBold
-                                font.pixelSize: 24
+                                font.pixelSize: app.ehFsStrong
                                 color: S.wine
                             }
                         }
@@ -717,7 +798,7 @@ ElDialog {
                         Label {
                             Layout.fillWidth: true
                             text: qsTr('TO THIS ADDRESS')
-                            font.pixelSize: 16
+                            font.pixelSize: app.ehFsText
                             font.bold: true
                             font.letterSpacing: 0.5
                             color: S.wine
@@ -734,7 +815,7 @@ ElDialog {
                                                     Math.max(1, Math.floor((width + sFm.averageCharacterWidth) / (sFm.averageCharacterWidth * 5))))
                             font.family: FixedFont
                             font.bold: true
-                            font.pixelSize: 18
+                            font.pixelSize: app.ehFsText
                             color: S.ink
                             lineHeight: 1.25
                             FontMetrics { id: sFm; font: sAddr.font }
@@ -744,7 +825,7 @@ ElDialog {
                             Layout.maximumWidth: addrCol.width
                             spacing: 6
                             Image { source: Qt.resolvedUrl('../../icons/eh_zoom.svg'); sourceSize.width: 20; sourceSize.height: 20 }
-                            Label { Layout.fillWidth: true; text: qsTr('tap to enlarge'); font.pixelSize: 16; font.bold: true; color: S.muted; wrapMode: Text.WordWrap }
+                            Label { Layout.fillWidth: true; text: qsTr('tap to enlarge'); font.pixelSize: app.ehFsText; font.bold: true; color: S.muted; wrapMode: Text.WordWrap }
                         }
                         TapHandler { onTapped: app.ehZoomAddress(dialog.invoice.address, false) }
                     }
@@ -774,7 +855,7 @@ ElDialog {
                     Layout.fillWidth: true
                     wrapMode: Text.WordWrap
                     color: S.wine
-                    font.pixelSize: 16
+                    font.pixelSize: app.ehFsText
                     text: finalizer.warning
                 }
 
@@ -805,7 +886,7 @@ ElDialog {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
                 wrapMode: Text.WordWrap
-                font.pixelSize: 16
+                font.pixelSize: app.ehFsText
                 font.bold: true
                 lineHeight: 1.0
                 color: sl1.locked !== sl2.locked ? S.oliveInk : S.ink
@@ -838,7 +919,7 @@ ElDialog {
                 text: qsTr('Sent!')
                 font.family: SerifFont ? SerifFont : font.family
                 font.weight: Font.ExtraBold
-                font.pixelSize: 26
+                font.pixelSize: app.ehFsBox
                 color: S.wineDark
             }
             Label {
@@ -847,12 +928,12 @@ ElDialog {
                 text: dialog.sentEuro !== '' ? dialog.sentEuro : dialog.sentBtc
                 font.family: SerifFont ? SerifFont : font.family
                 font.weight: Font.ExtraBold
-                font.pixelSize: 44
+                font.pixelSize: app.ehFsFigure
                 fontSizeMode: Text.HorizontalFit
                 minimumPixelSize: 24
                 color: S.wine
             }
-            Label { Layout.alignment: Qt.AlignHCenter; text: qsTr('have left'); font.pixelSize: 16; color: S.muted }
+            Label { Layout.alignment: Qt.AlignHCenter; text: qsTr('have left'); font.pixelSize: app.ehFsText; color: S.muted }
             EhInfoBox {
                 id: sentNote
                 kind: 'warn'
@@ -871,7 +952,8 @@ ElDialog {
             kind: 'wine'
             icon: 'eh_home_ivory.svg'
             text: qsTr('Back to home')
-            onClicked: dialog.doAccept()
+            // owner 18/11: also when the payment was opened from a link over another page
+            onClicked: { dialog.doAccept(); app.stack.pop(null) }
         }
     }
     }
@@ -896,17 +978,29 @@ ElDialog {
 
     Connections {
         target: Daemon.currentWallet
+        // controllo-mainnet 3.5: the answer of THIS payment only (another payment can end meanwhile)
+        function mine(txid) { return dialog.busy && (dialog.sentTxid === '' || txid === dialog.sentTxid) }
         function onBroadcastSucceeded(txid) {
+            if (!mine(txid)) return
             dialog.setBusy(false)
             dialog.phase = 'sent'
         }
         function onBroadcastFailed(txid, code, reason) {
+            if (!mine(txid)) return
+            if (code !== 'rejected') {
+                var same = finalizer.ehTxCoins()
+                if (same.length > 0) {
+                    finalizer.ehCoins = same; dialog.coinsLocked = true
+                    app.ehUnsureSet(txid, same)     // also for the next payments, after closing this page
+                }
+            }
             dialog.resetBars()
             // third review: say only what we know. A rejection: it did not leave. A broken
             // connection: maybe it left, look at the movements before paying again.
             var info = code === 'rejected'
                 ? { pageTitle: qsTr('The payment did not leave'),
-                    bodyText: qsTr('The bitcoin network refused this payment. Your money is still in the wallet.'),
+                    bodyText: qsTr('The bitcoin network refused this payment. Your money is still in the wallet.')
+                              + (dialog.unsureLock ? '<br><br>' + qsTr('Maybe the payment before had left: look at the movements.') : ''),
                     tipText: '<small>' + reason + '</small>' }
                 : { pageTitle: qsTr('I am not sure the payment left'),
                     bodyText: qsTr('The connection broke while the payment was leaving.')
@@ -917,6 +1011,8 @@ ElDialog {
     }
 
     Component.onCompleted: {
+        var u = app.ehUnsureCoins()
+        if (u.length > 0) { finalizer.ehMustCoins = u; unsureLock = true; coinsLocked = true }
         if (invoice && !invoice.amount.isEmpty)
             goReview(invoice.amount)
         else
@@ -960,7 +1056,7 @@ ElDialog {
                 color: S.wineDark
                 font.family: SerifFont ? SerifFont : font.family
                 font.weight: Font.ExtraBold
-                font.pixelSize: 26
+                font.pixelSize: app.ehFsBox
             }
             Label {
                 Layout.alignment: Qt.AlignHCenter
@@ -969,7 +1065,7 @@ ElDialog {
                 color: S.wine
                 font.family: SerifFont ? SerifFont : font.family
                 font.weight: Font.ExtraBold
-                font.pixelSize: 30
+                font.pixelSize: app.ehFsBox
                 fontSizeMode: Text.HorizontalFit
                 minimumPixelSize: 20
             }
@@ -979,7 +1075,7 @@ ElDialog {
                 readonly property var parts: app.ehAddressParts(dialog.invoice ? dialog.invoice.address : '')
                 text: qsTr('to %1').arg((parts.prefix !== '' ? parts.prefix + ' ' : '') + parts.first + ' … ' + parts.last)
                 font.family: FixedFont
-                font.pixelSize: 17
+                font.pixelSize: app.ehFsText
                 font.bold: true
                 color: S.ink
                 wrapMode: Text.WordWrap
@@ -989,7 +1085,7 @@ ElDialog {
                 Layout.alignment: Qt.AlignHCenter
                 Layout.preferredWidth: 190
                 Layout.preferredHeight: 190
-                Canvas {
+                EhCanvas {
                     id: ring
                     anchors.fill: parent
                     property real part: Math.max(0, dialog.countdown) / 5
@@ -1014,7 +1110,7 @@ ElDialog {
                     color: S.bitcoin
                     font.family: SerifFont ? SerifFont : font.family
                     font.weight: Font.ExtraBold
-                    font.pixelSize: 96
+                    font.pixelSize: app.ehFsFigure
                 }
             }
             Label {
@@ -1023,7 +1119,7 @@ ElDialog {
                 wrapMode: Text.WordWrap
                 text: qsTr('Until zero you can still stop it.')
                 color: S.muted
-                font.pixelSize: 17
+                font.pixelSize: app.ehFsText
             }
             EhStitchButton {
                 id: cdCancel

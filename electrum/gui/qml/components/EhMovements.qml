@@ -36,7 +36,7 @@ Item {
         anchors.fill: parent
         anchors.leftMargin: 16
         anchors.rightMargin: 16
-        anchors.bottomMargin: 16 + app.navigationBarHeight
+        anchors.bottomMargin: 16
         spacing: 9
 
         EhPageTop { title: ''; Layout.leftMargin: 6; Layout.rightMargin: 6 }
@@ -102,7 +102,7 @@ Item {
                         text: page.sectionName(section).toUpperCase()
                         color: S.olive
                         font.family: BodyFont ? BodyFont : font.family
-                        font.pixelSize: 16
+                        font.pixelSize: app.ehFsText
                         font.bold: true
                         font.letterSpacing: 0.5
                         elide: Text.ElideRight
@@ -122,8 +122,8 @@ Item {
                     readonly property string rest: sgn !== '' ? amount.substring(1) : amount
                     readonly property color ink: incoming ? S.oliveInk : S.wine
                     // bitcoin amounts are long: 18 instead of 21, and never more than about half the row (from the text, no layout loop)
-                    TextMetrics { id: tm; font.family: SerifFont ? SerifFont : font.family; font.weight: Font.ExtraBold; font.pixelSize: 21; text: row.rest }
-                    readonly property real amtSize: Math.max(16, Math.min(rest.indexOf(app.ehBtcUnit()) >= 0 ? 18 : 21, 21 * (width * 0.46 - 14) / Math.max(1, tm.advanceWidth)))
+                    TextMetrics { id: tm; font.family: SerifFont ? SerifFont : font.family; font.weight: Font.ExtraBold; font.pixelSize: app.ehFsStrong; text: row.rest }
+                    readonly property real amtSize: Math.max(16, Math.min(app.ehFsStrong, app.ehFsStrong * (width * 0.46 - 14) / Math.max(1, tm.advanceWidth)))
                     width: ListView.view.width
                     height: shown ? (waiting ? 84 : 68) : 0
                     visible: shown
@@ -152,10 +152,10 @@ Item {
                             spacing: 1
                             Label {
                                 Layout.fillWidth: true
-                                text: row.model.label !== '' ? row.model.label : (row.incoming ? qsTr('Received') : qsTr('Sent'))
+                                text: row.model.label !== '' ? app.ehTxNote(row.model.label) : (row.incoming ? qsTr('Received') : qsTr('Sent'))
                                 color: S.ink
                                 font.family: BodyFont ? BodyFont : font.family
-                                font.pixelSize: 17
+                                font.pixelSize: app.ehFsText
                                 font.bold: true
                                 elide: Text.ElideRight
                             }
@@ -169,14 +169,14 @@ Item {
                                     text: app.ehWhen(row.model.timestamp, true)
                                     color: S.muted
                                     font.family: BodyFont ? BodyFont : font.family
-                                    font.pixelSize: 16
+                                    font.pixelSize: app.ehFsText
                                 }
                                 Label {
                                     visible: !row.waiting
                                     text: '✓'
                                     color: S.olive
                                     font.family: BodyFont ? BodyFont : font.family
-                                    font.pixelSize: 18
+                                    font.pixelSize: app.ehFsText
                                     font.bold: true
                                 }
                             }
@@ -186,7 +186,7 @@ Item {
                                 text: '⏳ ' + qsTr('Unconfirmed') + (app.ehFeeRate(row.model.date) ? ' · ' + app.ehFeeRate(row.model.date) : '')
                                 color: S.waitInk
                                 font.family: BodyFont ? BodyFont : font.family
-                                font.pixelSize: 16
+                                font.pixelSize: app.ehFsText
                                 font.bold: true
                                 elide: Text.ElideRight
                             }
@@ -249,7 +249,7 @@ Item {
                 color: S.wine
                 font.family: SerifFont ? SerifFont : font.family
                 font.weight: Font.ExtraBold
-                font.pixelSize: 22
+                font.pixelSize: app.ehFsStrong
             }
             Label {
                 Layout.fillWidth: true
@@ -258,7 +258,7 @@ Item {
                 text: qsTr('When you receive or send bitcoin, you find them here.')
                 color: S.muted
                 font.family: BodyFont ? BodyFont : font.family
-                font.pixelSize: 17
+                font.pixelSize: app.ehFsText
             }
             Item { Layout.fillHeight: true }
         }

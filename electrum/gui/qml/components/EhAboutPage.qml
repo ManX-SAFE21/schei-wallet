@@ -23,13 +23,12 @@ Item {
         textFormat: Text.StyledText
         color: S.ink
         font.family: BodyFont ? BodyFont : font.family
-        font.pixelSize: 16
+        font.pixelSize: app.ehFsText
         lineHeight: 1.1
     }
 
     Flickable {
         anchors.fill: parent
-        anchors.bottomMargin: app.navigationBarHeight  // T9
         contentHeight: col.implicitHeight + 30
         clip: true
         ColumnLayout {
@@ -54,7 +53,7 @@ Item {
                 text: 'Bitcoin Wallet · ' + qsTr('version %1').arg('1.0') + ' (Electrum ' + BUILD.electrum_version + ')'
                 color: S.muted
                 font.family: BodyFont ? BodyFont : font.family
-                font.pixelSize: 16
+                font.pixelSize: app.ehFsText
             }
             EhInfoBox {
                 kind: 'warn'
@@ -78,7 +77,7 @@ Item {
                 topPadding: 12
                 bottomPadding: 12
                 Para {
-                    text: qsTr('The code of Schȅi is free and public on GitHub. Nobody, not even who made the app, can see your 12 words or touch your money.')
+                    text: qsTr('The code of Schȅi is free and public on GitHub. Nobody, not even who made the app, can see your words (SEED) or touch your money.')
                 }
             }
 
@@ -92,7 +91,7 @@ Item {
                     text: qsTr('Schȅi is a <b>new look</b> of the Electrum mobile wallet, made simpler for everyone: screens, words, big buttons.')
                 }
                 Para {
-                    text: qsTr('All the parts that protect your money are the <b>original ones of Electrum</b>, not changed: the cryptography, the creation of the 12 words, the signature of the payments, the keys.')
+                    text: qsTr('All the parts that protect your money are the <b>original ones of Electrum</b>, not changed: the cryptography, the creation of the 12 words (SEED), the signature of the payments, the keys.')
                 }
                 Para {
                     color: S.muted
@@ -107,7 +106,7 @@ Item {
                 bottomPadding: 15
                 spacing: 10
                 Para {
-                    text: qsTr('Something does not work, or you have an idea? Write to us. Never send your 12 words or your PIN: nobody will ever ask for them.')
+                    text: qsTr('Something does not work, or you have an idea? Write to us. Never send your words (SEED) or your PIN: nobody will ever ask for them.')
                 }
                 Repeater {
                     model: [

@@ -67,7 +67,7 @@ Item {
         anchors.fill: parent
         anchors.leftMargin: 16
         anchors.rightMargin: 16
-        anchors.bottomMargin: 14 + app.navigationBarHeight
+        anchors.bottomMargin: 14
         spacing: 8
 
         EhPageTop { title: ''; Layout.leftMargin: 6; Layout.rightMargin: 6 }
@@ -82,7 +82,7 @@ Item {
                 color: S.wineDark
                 font.family: SerifFont ? SerifFont : font.family
                 font.weight: Font.ExtraBold
-                font.pixelSize: 36
+                font.pixelSize: app.ehFsTitle
             }
             Label {
                 height: totalL.height - 6
@@ -90,7 +90,7 @@ Item {
                 text: Daemon.currentWallet ? qsTr('about %1').arg(app.ehBtc(Daemon.currentWallet.ehTotal)) : ''
                 color: S.muted
                 font.family: BodyFont ? BodyFont : font.family
-                font.pixelSize: 16
+                font.pixelSize: app.ehFsText
             }
         }
 
@@ -136,7 +136,7 @@ Item {
                                 textFormat: Text.StyledText
                                 color: S.oliveInk
                                 font.family: BodyFont ? BodyFont : font.family
-                                font.pixelSize: 16
+                                font.pixelSize: app.ehFsText
                                 font.bold: true
                                 text: gd.modelData.kind === 'bundle'
                                       ? qsTr('%1 × bundle of %2').arg(gd.modelData.count).arg('1.000 ' + app.ehSym()) + ' <font color="#5a4c44">' + qsTr('(10 notes of 100)') + '</font>'
@@ -238,7 +238,7 @@ Item {
             text: qsTr('The value in %1 changes with the bitcoin price.').arg(app.ehCcyName())
             color: S.muted
             font.family: BodyFont ? BodyFont : font.family
-            font.pixelSize: 16
+            font.pixelSize: app.ehFsText
         }
     }
 
