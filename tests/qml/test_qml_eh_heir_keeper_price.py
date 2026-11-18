@@ -9,12 +9,15 @@ from types import SimpleNamespace
 import pytest
 
 from electrum.gui.qml import qeapp
-from electrum.plugins.bal import qml as bal_qml
-from electrum.plugins.bal.qml import QEBal, _Fail
-
-
 COMP = os.path.join(os.path.dirname(qeapp.__file__), 'components')
-A, B = bal_qml.KEEPERS          # the fixed pair
+A, B = 'https://we.bitcoin-after.life', 'https://we.safe21.io'     # the fixed pair (_m().KEEPERS)
+
+
+def _m():
+    """electrum.plugins.bal.qml, imported only when a test runs: imported while collecting
+    would register the bal_* commands before tests/schei_bridge imports the plugin as `bal`."""
+    from electrum.plugins.bal import qml
+    return qml
 
 
 def _read(*p):
@@ -64,13 +67,13 @@ class _Net:
 def _bridge(net, cap=None, mine=None, wanted=3):
     cfg = _Config()
     if cap is not None:
-        cfg[bal_qml.KEEPER_MAX_KEY] = cap
+        cfg[_m().KEEPER_MAX_KEY] = cap
     if mine is not None:
-        cfg[bal_qml.KEEPERS_MINE_KEY] = mine
+        cfg[_m().KEEPERS_MINE_KEY] = mine
     me = SimpleNamespace(plugin=SimpleNamespace(config=cfg), _cmd=net.cmd,
                          _step_to=lambda s: None, _keepers_wanted=lambda: wanted)
     for f in ('_keeper_max', '_keepers_mine', '_keepers_mine_only'):
-        setattr(me, f, getattr(QEBal, f).__get__(me))
+        setattr(me, f, getattr(_m().QEBal, f).__get__(me))
     return me
 
 
@@ -81,11 +84,11 @@ def _urls(res):
 class TestMaximumPrice:
 
     def test_standard_and_range(self):
-        assert bal_qml.KEEPER_MAX_DEFAULT == 50000
-        assert bal_qml.KEEPER_MAX_CHOICES == (25000, 50000, 100000, 200000)
-        assert (bal_qml.KEEPER_MAX_MIN, bal_qml.KEEPER_MAX_TOP) == (1000, 500000)
-        read = lambda v: QEBal._keeper_max(SimpleNamespace(plugin=SimpleNamespace(config=_Config(
-            {} if v is None else {bal_qml.KEEPER_MAX_KEY: v}))))
+        assert _m().KEEPER_MAX_DEFAULT == 50000
+        assert _m().KEEPER_MAX_CHOICES == (25000, 50000, 100000, 200000)
+        assert (_m().KEEPER_MAX_MIN, _m().KEEPER_MAX_TOP) == (1000, 500000)
+        read = lambda v: _m().QEBal._keeper_max(SimpleNamespace(plugin=SimpleNamespace(config=_Config(
+            {} if v is None else {_m().KEEPER_MAX_KEY: v}))))
         assert read(None) == 50000
         assert [read(v) for v in (1000, 30000, 500000)] == [1000, 30000, 500000]     # typed by hand
         assert [read(v) for v in (999, 500001, 'x', -5)] == [50000] * 4
@@ -94,7 +97,7 @@ class TestMaximumPrice:
         # welist 18/11: 15 000 … 16 000 sats
         net = _Net({A: 15627, B: 16000, 'https://c': 15000, 'https://d': 15000},
                    answering={A, B, 'https://c', 'https://d'}, welist=('https://c', 'https://d'))
-        res = QEBal._keepers(_bridge(net))
+        res = _m().QEBal._keepers(_bridge(net))
         assert _urls(res) == [A, B, 'https://c']
         assert [k['feeSats'] for k in res] == [15627, 16000, 15000]
 
@@ -102,25 +105,25 @@ class TestMaximumPrice:
         # testnet4 18/11: the fixed keeper asks 100 000
         net = _Net({A: 100000, B: 16000, 'https://c': 15000, 'https://d': 90000},
                    answering={A, B, 'https://c', 'https://d'}, welist=('https://d', 'https://c'))
-        res = QEBal._keepers(_bridge(net))
+        res = _m().QEBal._keepers(_bridge(net))
         assert _urls(res) == [B, 'https://c']
         assert net.selected() == sorted([B, 'https://c'])         # the dear ones are not kept
 
     def test_a_higher_maximum_takes_it_back(self):
         net = _Net({A: 100000, B: 16000}, answering={A, B})
-        assert _urls(QEBal._keepers(_bridge(net, cap=100000))) == [A, B]
+        assert _urls(_m().QEBal._keepers(_bridge(net, cap=100000))) == [A, B]
 
     def test_all_too_dear_says_so(self):
         net = _Net({A: 100000, B: 60000}, answering={A, B})
-        with pytest.raises(_Fail) as e:
-            QEBal._keepers(_bridge(net))
+        with pytest.raises(_m()._Fail) as e:
+            _m().QEBal._keepers(_bridge(net))
         assert e.value.code == 'keeper_fee'
         assert net.selected() == []
 
     def test_none_answering_is_still_custodians(self):
         net = _Net({A: 1000, B: 1000}, answering=())
-        with pytest.raises(_Fail) as e:
-            QEBal._keepers(_bridge(net))
+        with pytest.raises(_m()._Fail) as e:
+            _m().QEBal._keepers(_bridge(net))
         assert e.value.code == 'custodians'
 
 
@@ -129,21 +132,21 @@ class TestChosenByHand:
     def test_only_the_chosen_ones(self):
         net = _Net({A: 15627, B: 16000, 'https://c': 15000}, answering={A, B, 'https://c'})
         net.wes[A]['selected'] = True
-        res = QEBal._keepers(_bridge(net, mine=['https://c', B]))
+        res = _m().QEBal._keepers(_bridge(net, mine=['https://c', B]))
         assert _urls(res) == ['https://c', B]
         assert net.selected() == sorted(['https://c', B])        # the fixed pair is not forced
         assert net.pinged == [['https://c', B]]
 
     def test_a_chosen_one_over_the_maximum_is_not_used(self):
         net = _Net({A: 15627, 'https://c': 80000}, answering={A, 'https://c'})
-        assert _urls(QEBal._keepers(_bridge(net, mine=[A, 'https://c']))) == [A]
-        with pytest.raises(_Fail) as e:
-            QEBal._keepers(_bridge(_Net({'https://c': 80000}, answering={'https://c'}), mine=['https://c']))
+        assert _urls(_m().QEBal._keepers(_bridge(net, mine=[A, 'https://c']))) == [A]
+        with pytest.raises(_m()._Fail) as e:
+            _m().QEBal._keepers(_bridge(_Net({'https://c': 80000}, answering={'https://c'}), mine=['https://c']))
         assert e.value.code == 'keeper_fee'
 
     def test_the_chosen_ones_not_answering(self):
-        with pytest.raises(_Fail) as e:
-            QEBal._keepers(_bridge(_Net({'https://c': 1000}, answering=()), mine=['https://c']))
+        with pytest.raises(_m()._Fail) as e:
+            _m().QEBal._keepers(_bridge(_Net({'https://c': 1000}, answering=()), mine=['https://c']))
         assert e.value.code == 'custodians'
 
     def test_the_list_with_the_prices(self, monkeypatch):
@@ -153,9 +156,9 @@ class TestChosenByHand:
                'https://k': {'base_fee': 1000, 'status': 'KO'},
                'http://abc.onion': {'base_fee': 1000, 'welist_rank': 2}}
         monkeypatch.setattr(willexecutors.Willexecutors, 'get_willexecutors', staticmethod(lambda p: wes))
-        me = SimpleNamespace(plugin=SimpleNamespace(config=_Config({bal_qml.KEEPERS_MINE_KEY: ['https://z']})))
-        me._keepers_mine = QEBal._keepers_mine.__get__(me)
-        rows = QEBal.keeperChoices(me)
+        me = SimpleNamespace(plugin=SimpleNamespace(config=_Config({_m().KEEPERS_MINE_KEY: ['https://z']})))
+        me._keepers_mine = _m().QEBal._keepers_mine.__get__(me)
+        rows = _m().QEBal.keeperChoices(me)
         assert [(r['name'], r['feeSats'], r['mine'], r['ok']) for r in rows] == [
             ('y', 80000, False, True), ('z', 15000, True, True), ('k', 1000, False, False)]
 
@@ -165,15 +168,15 @@ def test_the_slots_save_the_settings():
     cfg = _Config()
     me = SimpleNamespace(plugin=SimpleNamespace(config=cfg), ran=[])
     me._start = lambda op, job: me.ran.append((op, job()))
-    QEBal.setKeeperMax(me, 30000)
-    assert me.ran[-1] == ('setKeeperMax', {'keeperMax': 30000}) and cfg[bal_qml.KEEPER_MAX_KEY] == 30000
-    with pytest.raises(_Fail) as e:
-        QEBal.setKeeperMax(me, 700000)
-    assert e.value.code == 'user' and cfg[bal_qml.KEEPER_MAX_KEY] == 30000
-    QEBal.setKeepersMine(me, ['https://c', 'https://c', B, ''])
-    assert cfg[bal_qml.KEEPERS_MINE_KEY] == ['https://c', B]
-    QEBal.keepersStandard(me)
-    assert cfg[bal_qml.KEEPER_MAX_KEY] == 50000 and cfg[bal_qml.KEEPERS_MINE_KEY] == []
+    _m().QEBal.setKeeperMax(me, 30000)
+    assert me.ran[-1] == ('setKeeperMax', {'keeperMax': 30000}) and cfg[_m().KEEPER_MAX_KEY] == 30000
+    with pytest.raises(_m()._Fail) as e:
+        _m().QEBal.setKeeperMax(me, 700000)
+    assert e.value.code == 'user' and cfg[_m().KEEPER_MAX_KEY] == 30000
+    _m().QEBal.setKeepersMine(me, ['https://c', 'https://c', B, ''])
+    assert cfg[_m().KEEPERS_MINE_KEY] == ['https://c', B]
+    _m().QEBal.keepersStandard(me)
+    assert cfg[_m().KEEPER_MAX_KEY] == 50000 and cfg[_m().KEEPERS_MINE_KEY] == []
 
 
 class TestMoneyErrorsInSchèiWords:
@@ -183,7 +186,7 @@ class TestMoneyErrorsInSchèiWords:
         from electrum.util import UserFacingException
         e = UserFacingException('x')
         e.__cause__ = cls.__new__(cls)
-        return bal_qml._fail_code(e)
+        return _m()._fail_code(e)
 
     def test_codes(self):
         from electrum.plugins.bal.core import heirs, will
@@ -193,8 +196,8 @@ class TestMoneyErrorsInSchèiWords:
         assert self._code(will.FixedAmountException) == 'too_low'     # the empty wallet of 18/11
         assert self._code(ValueError) == 'user'
         from electrum.util import UserFacingException
-        assert bal_qml._fail_code(UserFacingException('x')) == 'user'
-        assert "outcome = ('failed', _fail_code(e), str(e))" in open(bal_qml.__file__, encoding='utf-8').read()
+        assert _m()._fail_code(UserFacingException('x')) == 'user'
+        assert "outcome = ('failed', _fail_code(e), str(e))" in open(_m().__file__, encoding='utf-8').read()
 
     def test_texts(self):
         t = _read('controls', 'EhHeirTop.qml')
