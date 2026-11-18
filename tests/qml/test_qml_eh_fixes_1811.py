@@ -138,3 +138,25 @@ class TestOpusReview1811:
         src = open(_m().__file__, encoding="utf-8").read()
         body = src[src.index("    def _start(self, op, job):"):src.index("    def _work(self, op, job, wallet")]
         assert "self._sync_cap()" in body
+
+
+def test_a_job_finishing_late_shows_the_saved_price():
+    # owner 18/11 (phone, build65): back to BASE, then an older check finished with 100.000
+    from types import SimpleNamespace
+    cfg = {_m().KEEPER_MAX_KEY: 50000, _m().KEEPERS_MINE_KEY: []}
+    conf = SimpleNamespace(get=lambda k, d=None: cfg.get(k, d))
+    me = SimpleNamespace(plugin=SimpleNamespace(config=conf), _state={}, emitted=[])
+    me._keeper_max = _m().QEBal._keeper_max.__get__(me)
+    me._keepers_mine = _m().QEBal._keepers_mine.__get__(me)
+    me._set_step = lambda s: None
+    me._set_busy = lambda b: None
+    me.stateChanged = SimpleNamespace(emit=lambda: me.emitted.append("state"))
+    me.done = SimpleNamespace(emit=lambda *a: None)
+    me.failed = SimpleNamespace(emit=lambda *a: None)
+    old = {"phase": "active", "keeperMax": 100000, "keepersMine": ["https://x"]}
+    try:
+        _m().QEBal._on_finished(me, "refresh", (("done", {}), old))
+    except Exception:
+        pass        # what follows the state (signals of other features) is not under test here
+    assert me._state["keeperMax"] == 50000 and me._state["keepersMine"] == []
+    assert old["keeperMax"] == 100000        # the job's own dict is not changed

@@ -475,6 +475,11 @@ class QEBal(PluginQObject):
     def _on_finished(self, op, payload):
         outcome, state = payload
         if state is not None:
+            # owner 18/11 (phone): a job started before a change of the keepers' price or choice
+            # (back to BASE) must not show the old values: always the ones saved now
+            state = dict(state)
+            state['keeperMax'] = self._keeper_max()
+            state['keepersMine'] = self._keepers_mine()
             self._state = state
         self._set_step('')
         self._set_busy(False)
