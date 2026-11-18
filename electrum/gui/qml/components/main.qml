@@ -1034,6 +1034,13 @@ ApplicationWindow
         if (Daemon.availableWallets.rowCount() > 1) Config.ehSet('opt_multi', true)
         // out of ESPERTO the PIN for big payments cannot be seen: it is on again
         if (to !== 'esperto') Config.ehSet('opt_double', true)
+        // owner 18/11: out of ESPERTO the keepers' maximum price goes back to the standard
+        // (50 000 sats) and Schȅi chooses the keepers by itself again
+        if (to !== 'esperto') {
+            var bal = ehBal()
+            if (bal && ((bal.state || {}).keeperMax !== 50000 || ((bal.state || {}).keepersMine || []).length > 0))
+                bal.keepersStandard()
+        }
         Config.ehSet('opt_show_adv', to !== 'base')
         Config.ehSet('eh_level', to)
         ehOptRev++
@@ -1845,6 +1852,10 @@ ApplicationWindow
         var d = new Date(ts * 1000)
         var dd = d.getUTCDate(), mm = d.getUTCMonth() + 1
         return (dd < 10 ? '0' : '') + dd + '/' + (mm < 10 ? '0' : '') + mm + '/' + d.getUTCFullYear()
+    }
+    // owner 18/11: a keeper's price in sats, as people write it (50.000 sat)
+    function ehSatsText(n) {
+        return Number(n || 0).toLocaleString(Qt.locale(Config.language === 'en_UK' ? 'en_GB' : 'it_IT'), 'f', 0) + ' sat'
     }
     function ehHeirSats(sats) { return ehMoney(Config.unitsToSats((Number(sats || 0) / 100000000).toFixed(8))) }
     function ehHeirYears(months) {

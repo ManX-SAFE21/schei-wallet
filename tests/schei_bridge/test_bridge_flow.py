@@ -452,6 +452,10 @@ def test_fee_warning_never_blocks(s):
     old = KEEPER_FEE
     KEEPER_FEE = 300_000
     try:
+        # owner 18/11: over the standard maximum price (50 000) the review stops, in Schȅi's words
+        ev, _ = s.call('review')
+        assert ev[:3] == ('failed', 'review', 'keeper_fee')
+        s.ok('setKeeperMax', 500_000)            # EXPERT level: a higher maximum
         review = s.ok('review')
     finally:
         KEEPER_FEE = old

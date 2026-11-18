@@ -133,6 +133,18 @@ EhBottomSheet {
         enabled: !(root.bal && root.bal.busy)
         onClicked: { root.close(); app._ehHeirOpenSheet('EhHeirReplaceSheet.qml') }
     }
+    // owner 18/11: below EXPERT the keepers are chosen by Schȅi: say where to choose them
+    Label {
+        visible: app.ehLevel() !== 'esperto'
+        Layout.fillWidth: true
+        horizontalAlignment: Text.AlignHCenter
+        wrapMode: Text.WordWrap
+        font.family: BodyFont ? BodyFont : font.family
+        font.pixelSize: app.ehFsSmall
+        color: S.muted
+        text: qsTr('Schȅi chooses them by itself, only among those who ask at most %1. To choose them yourself: EXPERT level.')
+                  .arg(app.ehSatsText(root.st.keeperMax || 50000))
+    }
     EhStitchButton {
         kind: 'paper'
         text: qsTr('Close')

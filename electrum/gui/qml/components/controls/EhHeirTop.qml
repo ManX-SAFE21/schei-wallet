@@ -58,7 +58,23 @@ EhPageTop {
             return qsTr('The envelope is ready but no keeper took it. Try again in a little while.')
         case 'internal':
             return qsTr('Something did not work. Your money is safe; try again later.')
+        // owner 18/11: the money errors of the plugin, in Schȅi's words
+        case 'too_low':
+            return qsTr('In the wallet there is <b>%1</b>: <b>not enough</b> for the inheritance.').arg(
+                       Daemon.currentWallet ? app.ehMoney(Daemon.currentWallet.ehTotal).replace(/\s/g, '&nbsp;') : '')
+                   + '<br><br>' + qsTr('Today you pay nothing. The inheritance is like an envelope with three post-dated cheques: one for the heir, one for the miners and one for the keeper. It opens only on the day you chose.')
+                   + '<br><br>' + qsTr('Receive more bitcoin, then try again.')
+        case 'dust':
+            return qsTr("The shares of one or more heirs are <b>too small</b>.")
+                   + '<br><br>' + qsTr('The bitcoin network does not accept payments of a few hundred sats: they are called «dust», because spending them would cost more than receiving them.')
+                   + '<br><br>' + qsTr('Change the percentages or remove someone.')
+        case 'keeper_fee':
+            return app.ehLevel() === 'esperto'
+                ? qsTr('The keepers ask more than your maximum price (%1). Raise it or choose other keepers in Settings › Inheritance.').arg(app.ehSatsText(app.ehHeirState(app.ehBal()).keeperMax || 50000))
+                : qsTr('The keepers today ask more than Schȅi accepts (%1). Try again later, or choose them yourself at the EXPERT level.').arg(app.ehSatsText(app.ehHeirState(app.ehBal()).keeperMax || 50000))
         }
-        return message || code
+        // owner 18/11: never a technical English text: Schȅi's sentence when there is one, else a plain one
+        var t = message ? qsTr(message) : ''
+        return t && t !== message ? t : qsTr('Something did not work. Your money is safe; try again later.')
     }
 }

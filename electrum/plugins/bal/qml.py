@@ -128,6 +128,29 @@ def _fee_of(we):
     return int((we or {}).get('base_fee') or 0)
 
 
+# owner 18/11: the keepers' maximum price (sats); changed only at the EXPERT level
+KEEPER_MAX_KEY = 'eh_heir_keeper_max'
+KEEPER_MAX_DEFAULT = 50000
+KEEPER_MAX_CHOICES = (25000, 50000, 100000, 200000)   # the buttons; any value can be typed
+KEEPER_MAX_MIN = 1000
+KEEPER_MAX_TOP = 500000     # the plugin's own ceiling (MAX_WILLEXECUTOR_FEE)
+# owner 18/11: the keepers chosen by hand (EXPERT level); [] = automatic
+KEEPERS_MINE_KEY = 'eh_heir_keepers_mine'
+
+
+def _fail_code(e):
+    """owner 18/11: the plugin's money errors get their own code (said in Schȅi's words)."""
+    from .core import heirs as heirs_mod, will as will_mod
+    c = e.__cause__ if e.__cause__ is not None else e
+    if isinstance(c, heirs_mod.WillExecutorFeeTooHighException):
+        return 'keeper_fee'
+    if isinstance(c, heirs_mod.HeirAmountIsDustException):
+        return 'dust'
+    if isinstance(c, (heirs_mod.BalanceTooLowException, will_mod.AmountException)):
+        return 'too_low'
+    return 'user'
+
+
 def _welist_order(wes):
     """Sort key of a keeper's url: its place in the public list (welist), best first.
 
@@ -260,6 +283,7 @@ def _empty_state():
         'daysToWarn': 0, 'monthsToDelivery': 0, 'newDelivery': 0, 'now': int(time.time()),
         'balanceSats': 0,
         'keepersWanted': KEEPERS_DEFAULT, 'keepersChoices': list(KEEPERS_CHOICES),
+        'keeperMax': KEEPER_MAX_DEFAULT, 'keeperMaxChoices': list(KEEPER_MAX_CHOICES), 'keepersMine': [],
         'custodians': {'wanted': KEEPERS_DEFAULT, 'ok': 0, 'total': 0, 'list': [], 'status': ''},
         'updateReason': '', 'uncoveredSats': 0,
         'fees': {'custodianSats': 0, 'custodianMinSats': 0, 'custodianMaxSats': 0,
@@ -422,7 +446,7 @@ class QEBal(PluginQObject):
         except _Fail as f:
             outcome = ('failed', f.code, f.message)
         except UserFacingException as e:
-            outcome = ('failed', 'user', str(e))
+            outcome = ('failed', _fail_code(e), str(e))
         except Exception as e:
             _logger.error('QEBal %s failed:\n%s', op, traceback.format_exc())
             outcome = ('failed', 'internal', repr(e))
@@ -486,6 +510,17 @@ class QEBal(PluginQObject):
         except (TypeError, ValueError):
             return KEEPERS_DEFAULT
         return value if value in KEEPERS_CHOICES else KEEPERS_DEFAULT
+
+    def _keeper_max(self):
+        try:
+            value = int(self.plugin.config.get(KEEPER_MAX_KEY, KEEPER_MAX_DEFAULT))
+        except (TypeError, ValueError):
+            return KEEPER_MAX_DEFAULT
+        return value if KEEPER_MAX_MIN <= value <= KEEPER_MAX_TOP else KEEPER_MAX_DEFAULT
+
+    def _keepers_mine(self):
+        value = self.plugin.config.get(KEEPERS_MINE_KEY, []) or []
+        return [str(u) for u in value if isinstance(u, str)]
 
     def _online_now(self):
         """True when the phone really reaches the internet now (point 4d).
@@ -675,6 +710,49 @@ class QEBal(PluginQObject):
             return {'keepersWanted': int(n)}
         self._start('setKeepers', job)
 
+    # owner 18/11: the keepers' maximum price and the keepers chosen by hand, set at the EXPERT
+    # level (jobs like setKeepers: the new state follows)
+    @pyqtSlot(int)
+    def setKeeperMax(self, n):
+        def job():
+            if not KEEPER_MAX_MIN <= int(n) <= KEEPER_MAX_TOP:
+                raise _Fail('user', 'Write an amount from 1.000 to 500.000 sats.')
+            self.plugin.config.set_key(KEEPER_MAX_KEY, int(n), save=True)
+            return {'keeperMax': int(n)}
+        self._start('setKeeperMax', job)
+
+    @pyqtSlot('QVariantList')
+    def setKeepersMine(self, urls):
+        urls = list(dict.fromkeys(str(u) for u in (urls or []) if str(u)))
+        def job():
+            self.plugin.config.set_key(KEEPERS_MINE_KEY, urls, save=True)
+            return {'keepersMine': urls}
+        self._start('setKeepersMine', job)
+
+    @pyqtSlot()
+    def keepersStandard(self):
+        """owner 18/11: out of the EXPERT level: 50 000 sats, keepers chosen by Schȅi."""
+        def job():
+            self.plugin.config.set_key(KEEPER_MAX_KEY, KEEPER_MAX_DEFAULT, save=True)
+            self.plugin.config.set_key(KEEPERS_MINE_KEY, [], save=True)
+            return {}
+        self._start('keepersStandard', job)
+
+    @pyqtSlot(result='QVariantList')
+    def keeperChoices(self):
+        """owner 18/11: the keepers Schȅi knows (the last list downloaded / pinged, no network
+        now) with their price, best first (welist order): [{url, name, feeSats, mine, ok}]."""
+        try:
+            from .core.willexecutors import Willexecutors
+            wes = Willexecutors.get_willexecutors(self.plugin) or {}
+        except Exception as e:
+            _logger.error(f'keeperChoices: {e!r}')
+            return []
+        mine = set(self._keepers_mine())
+        urls = sorted((u for u, we in wes.items() if _is_keeper_url(u, we)), key=_welist_order(wes))
+        return [{'url': u, 'name': u.split('://')[-1], 'feeSats': _fee_of(wes.get(u)),
+                 'mine': u in mine, 'ok': (wes.get(u) or {}).get('status') != 'KO'} for u in urls]
+
     @pyqtSlot()
     def findKeeper(self):
         self._start('findKeeper', self._job_find_keeper)
@@ -706,8 +784,12 @@ class QEBal(PluginQObject):
         ``[{url, name, ok, feeSats}]``; none answering raises ``custodians``.
         """
         wanted = self._keepers_wanted()
+        cap = self._keeper_max()
         self._step_to('ping')
         wes = self._cmd('bal_willexecutors_list') or {}
+        mine = self._keepers_mine()
+        if mine:
+            return self._keepers_mine_only(mine, cap, wes)
         for url in KEEPERS:
             if url not in wes:
                 self._cmd('bal_willexecutors_add', url)
@@ -721,6 +803,8 @@ class QEBal(PluginQObject):
         ok = [u for u in KEEPERS if (pings.get(u) or {}).get('ok')]
         ok += sorted((u for u in others if (pings.get(u) or {}).get('ok')),
                      key=_welist_order(wes))
+        dear = [u for u in ok if _fee_of(wes.get(u)) > cap]     # owner 18/11: over the maximum price
+        ok = [u for u in ok if u not in dear]
         if len(ok) < wanted:
             try:
                 self._cmd('bal_willexecutors_download')
@@ -733,6 +817,8 @@ class QEBal(PluginQObject):
                 wes = self._cmd('bal_willexecutors_list') or {}
                 good = sorted((u for u in extra if (pings2.get(u) or {}).get('ok')),
                               key=_welist_order(wes))
+                dear += [u for u in good if _fee_of(wes.get(u)) > cap]
+                good = [u for u in good if _fee_of(wes.get(u)) <= cap]
                 for u in good[:wanted - len(ok)]:
                     self._cmd('bal_willexecutors_select', u)
                     ok.append(u)
@@ -741,6 +827,30 @@ class QEBal(PluginQObject):
         for u, we in wes.items():
             if isinstance(we, dict) and we.get('selected') and u not in ok:
                 self._cmd('bal_willexecutors_select', u, value=False)
+        if not ok and dear:
+            raise _Fail('keeper_fee', 'All the keepers ask more than the maximum price.')
+        if not ok:
+            raise _Fail('custodians', 'No keeper answered.')
+        return [{'url': u, 'name': u.split('://')[-1], 'ok': True,
+                 'feeSats': _fee_of(wes.get(u))} for u in ok]
+
+    def _keepers_mine_only(self, mine, cap, wes):
+        """owner 18/11 (EXPERT level): only the keepers chosen by hand, those that answer and
+        ask at most the maximum price; the others are deselected."""
+        for url in mine:
+            if url not in wes:
+                self._cmd('bal_willexecutors_add', url)
+            if not (wes.get(url) or {}).get('selected'):
+                self._cmd('bal_willexecutors_select', url)
+        pings = self._cmd('bal_willexecutors_ping', list(mine)) or {}
+        wes = self._cmd('bal_willexecutors_list') or {}
+        answering = [u for u in mine if (pings.get(u) or {}).get('ok')]
+        ok = [u for u in answering if _fee_of(wes.get(u)) <= cap]
+        for u, we in wes.items():
+            if isinstance(we, dict) and we.get('selected') and u not in ok:
+                self._cmd('bal_willexecutors_select', u, value=False)
+        if not ok and answering:
+            raise _Fail('keeper_fee', 'All the keepers chosen ask more than the maximum price.')
         if not ok:
             raise _Fail('custodians', 'No keeper answered.')
         return [{'url': u, 'name': u.split('://')[-1], 'ok': True,
@@ -1346,6 +1456,8 @@ class QEBal(PluginQObject):
         # keepers: those holding the newest copies of the will in force, else the selected ones
         wanted = self._keepers_wanted()
         s['keepersWanted'] = wanted
+        s['keeperMax'] = self._keeper_max()
+        s['keepersMine'] = self._keepers_mine()
         newest = _in_use(_newest(live), wes)
         checks = self._load_checks(wallet) if live else []
         last = (checks[-1].get('urls') or {}) if checks else {}

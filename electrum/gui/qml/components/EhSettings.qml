@@ -129,6 +129,23 @@ Item {
                         hint: qsTr('more keepers, safer')
                         value: (col.heir.keepersWanted || 3) === 3 ? qsTr('%1 (default)').arg(3) : '' + col.heir.keepersWanted
                         onClicked: app._ehHeirOpenSheet('EhHeirKeepersSheet.qml') }
+                // owner 18/11: the keepers' maximum price: shown to all, changed only at EXPERT level
+                EhRow { visible: app.ehHeirEnabled() && col.heirPhase !== 'foreign'
+                        icon: 'eh_euro.svg'; iconColor: S.olive; text: qsTr('Maximum price of a keeper')
+                        value: app.ehSatsText(col.heir.keeperMax || 50000)
+                        hint: col.lv >= 2 ? qsTr('who asks more is not used')
+                                          : qsTr('to change it or choose the keepers: EXPERT level')
+                        tag: col.lv >= 2 ? 2 : 0
+                        chevron: col.lv >= 2
+                        onClicked: col.lv >= 2 ? app._ehHeirOpenSheet('EhHeirKeeperMaxSheet.qml')
+                                   : app.ehTell(qsTr('Maximum price of a keeper: %1').arg(app.ehSatsText(col.heir.keeperMax || 50000)),
+                                                qsTr('Schȅi chooses the keepers by itself, only among those who ask at most this price. To change it or to choose the keepers yourself, switch to the EXPERT level.')) }
+                // owner 18/11: the keepers chosen by hand, with their price (EXPERT)
+                EhRow { visible: app.ehHeirEnabled() && col.heirPhase !== 'foreign' && col.lv >= 2
+                        icon: 'eh_shield_olive.svg'; iconColor: S.olive; text: qsTr('Choose the keepers')
+                        tag: 2
+                        value: (col.heir.keepersMine || []).length > 0 ? qsTr('%1 chosen').arg(col.heir.keepersMine.length) : qsTr('automatic')
+                        onClicked: app.stack.push(Qt.resolvedUrl('EhHeirKeeperChoosePage.qml')) }
                 // owner 15/11 (point 8): "How it works" also while the inheritance is active
                 EhRow { visible: app.ehHeirEnabled()
                         icon: 'eh_info.svg'; text: qsTr('How it works')
