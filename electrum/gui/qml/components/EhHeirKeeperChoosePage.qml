@@ -1,7 +1,7 @@
 // Easy Heirs (schȅi), owner 18/11: Settings › Inheritance › "Choose the keepers" (EXPERT level).
-// The keepers Schȅi knows (bal.keeperChoices(): last list downloaded, no network now) with their
-// price; the ones turned on get the envelope from the next one (new, update or renewal). None on =
-// automatic. A keeper over the maximum price cannot be turned on.
+// On opening, the keepers are asked now (bal.loadKeeperChoices): only those that answer, with
+// their real price; the ones turned on get the envelope from the next one (new, update or
+// renewal). None on = automatic. A keeper over the maximum price cannot be turned on.
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
@@ -20,8 +20,31 @@ Item {
     readonly property var bal: AppController.plugin('bal')
     readonly property var st: app.ehHeirState(bal)
     readonly property int cap: st.keeperMax || 50000
-    property var rows: bal ? bal.keeperChoices() : []
+    property var rows: []
+    property bool loading: true
+    property string error: ''
     property var mine: (st.keepersMine || []).slice()
+
+    function load() {
+        if (!bal) return
+        loading = true; error = ''
+        bal.loadKeeperChoices()
+    }
+    Component.onCompleted: load()
+    Connections {
+        target: page.bal
+        function onDone(op, result) {
+            if (op !== 'loadKeeperChoices') return
+            page.rows = result.keepers || []
+            page.loading = false
+        }
+        function onFailed(op, code, message) {
+            if (op !== 'loadKeeperChoices') return
+            page.loading = false
+            page.error = code === 'busy' ? qsTr('Schȅi is busy with the inheritance. Try again in a moment.')
+                                         : app.ehHeirErrorText(code, message)
+        }
+    }
 
     function isOn(url) { return mine.indexOf(url) >= 0 }
     function setOn(url, on) {
@@ -61,32 +84,39 @@ Item {
 
             EhCaption { text: qsTr('Price at the delivery'); Layout.topMargin: 2; Layout.bottomMargin: -6 }
             EhSheet {
+                visible: !page.loading && page.rows.length > 0
                 Repeater {
                     model: page.rows
                     delegate: EhRow {
                         required property var modelData
                         required property int index
-                        readonly property bool dear: modelData.feeSats > page.cap
+                        readonly property bool dear: modelData.ok && modelData.feeSats > page.cap
                         icon: 'eh_shield_olive.svg'; iconColor: dear || !modelData.ok ? S.muted : S.olive
                         text: modelData.name
-                        hint: app.ehSatsText(modelData.feeSats) + ' · ≈ ' + app.ehHeirSats(modelData.feeSats)
-                              + (dear ? ' · ' + qsTr('over your maximum') : (!modelData.ok ? ' · ' + qsTr('does not answer') : ''))
+                        hint: !modelData.ok ? qsTr('does not answer now')
+                              : app.ehSatsText(modelData.feeSats) + ' · ≈ ' + app.ehHeirSats(modelData.feeSats)
+                                + (dear ? ' · ' + qsTr('over your maximum') : '')
                         showSwitch: true
                         checked: page.isOn(modelData.url)
-                        switchEnabled: !dear || page.isOn(modelData.url)
+                        switchEnabled: (modelData.ok && !dear) || page.isOn(modelData.url)
                         last: index === page.rows.length - 1
                         onToggled: (on) => page.setOn(modelData.url, on)
                     }
                 }
             }
             Label {
-                visible: page.rows.length === 0
+                visible: page.loading || (page.rows.length === 0 && page.error === '')
                 Layout.fillWidth: true
                 wrapMode: Text.WordWrap
                 color: S.muted
                 font.family: BodyFont ? BodyFont : font.family
                 font.pixelSize: app.ehFsText
-                text: qsTr('Schȅi does not know any keeper yet: they are found at the first inheritance.')
+                text: page.loading ? qsTr('I am asking the keepers their price…') : qsTr('No keeper answered. Try again later.')
+            }
+            EhInfoBox {
+                visible: page.error !== ''
+                kind: 'danger'
+                text: page.error
             }
             EhInfoBox {
                 kind: 'tip'
@@ -98,7 +128,7 @@ Item {
             EhStitchButton {
                 kind: 'olive'
                 icon: 'eh_check_white.svg'
-                enabled: !(page.bal && page.bal.busy)
+                enabled: !(page.bal && page.bal.busy) && !page.loading
                 text: page.mine.length > 0 ? qsTr('Save (%1 chosen)').arg(page.mine.length) : qsTr('Save (automatic)')
                 onClicked: { if (page.bal) page.bal.setKeepersMine(page.mine); app.stack.pop() }
             }

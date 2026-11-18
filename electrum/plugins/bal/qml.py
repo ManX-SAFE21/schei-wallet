@@ -738,20 +738,10 @@ class QEBal(PluginQObject):
             return {}
         self._start('keepersStandard', job)
 
-    @pyqtSlot(result='QVariantList')
-    def keeperChoices(self):
-        """owner 18/11: the keepers Schȅi knows (the last list downloaded / pinged, no network
-        now) with their price, best first (welist order): [{url, name, feeSats, mine, ok}]."""
-        try:
-            from .core.willexecutors import Willexecutors
-            wes = Willexecutors.get_willexecutors(self.plugin) or {}
-        except Exception as e:
-            _logger.error(f'keeperChoices: {e!r}')
-            return []
-        mine = set(self._keepers_mine())
-        urls = sorted((u for u, we in wes.items() if _is_keeper_url(u, we)), key=_welist_order(wes))
-        return [{'url': u, 'name': u.split('://')[-1], 'feeSats': _fee_of(wes.get(u)),
-                 'mine': u in mine, 'ok': (wes.get(u) or {}).get('status') != 'KO'} for u in urls]
+    @pyqtSlot()
+    def loadKeeperChoices(self):
+        """owner 18/11: the keepers for "Choose the keepers", asked now (see _job_keeper_choices)."""
+        self._start('loadKeeperChoices', self._job_keeper_choices)
 
     @pyqtSlot()
     def findKeeper(self):
@@ -1186,6 +1176,30 @@ class QEBal(PluginQObject):
             checks = self._add_check(wallet, ok, len(urls), urls)
         return {'ok': ok, 'total': len(urls),
                 'status': keeper_health(ok, len(urls), checks, self._keepers_wanted())}
+
+    def _job_keeper_choices(self):
+        """owner 18/11: the public list downloaded again and every keeper asked now: only those
+        that answer, with the price they give (never the placeholder of a keeper never contacted),
+        best first (welist order). A keeper chosen before that does not answer is listed too
+        (``ok`` False, no price) so it can be turned off. ``{keepers: [{url, name, feeSats, mine, ok}]}``"""
+        try:
+            self._cmd('bal_willexecutors_download')
+        except Exception as e:
+            _logger.info('welist download failed: %r', e)
+        wes = self._cmd('bal_willexecutors_list') or {}
+        mine = self._keepers_mine()
+        urls = list(dict.fromkeys([u for u, we in wes.items() if _is_keeper_url(u, we)] + mine))
+        pings = (self._cmd('bal_willexecutors_ping', urls) or {}) if urls else {}
+        if not any((p or {}).get('ok') for p in pings.values()) and not self._online_now():
+            raise _Fail('offline', 'Internet is needed.')
+        wes = self._cmd('bal_willexecutors_list') or {}
+        rows = [{'url': u, 'name': u.split('://')[-1], 'feeSats': _fee_of(wes.get(u)),
+                 'mine': u in mine, 'ok': True}
+                for u in urls if (pings.get(u) or {}).get('ok')]
+        rows.sort(key=lambda r: _welist_order(wes)(r['url']))
+        rows += [{'url': u, 'name': u.split('://')[-1], 'feeSats': 0, 'mine': True, 'ok': False}
+                 for u in mine if not (pings.get(u) or {}).get('ok')]
+        return {'keepers': rows}
 
     def _job_find_keeper(self):
         """Points 4d, P6 «Sostituisci quelli che non rispondono», step 1: new keepers.

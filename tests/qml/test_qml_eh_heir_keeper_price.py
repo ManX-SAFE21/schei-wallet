@@ -35,7 +35,8 @@ class _Config(dict):
 class _Net:
     """The keepers' list (bal_willexecutors_*) of the plugin, without network."""
 
-    def __init__(self, fees, answering, welist=()):
+    def __init__(self, fees, answering, welist=(), real=None):
+        self.real = dict(real or {})     # the price a keeper gives when asked
         self.wes = {u: {'base_fee': f, 'selected': False} for u, f in fees.items() if u not in welist}
         self.welist = {u: {'base_fee': fees[u], 'selected': False, 'welist_rank': i}
                        for i, u in enumerate(welist)}
@@ -53,6 +54,9 @@ class _Net:
             return None
         if name == 'bal_willexecutors_ping':
             self.pinged.append(list(args[0]))
+            for u in args[0]:
+                if u in self.answering and u in self.real and u in self.wes:
+                    self.wes[u]['base_fee'] = self.real[u]
             return {u: {'ok': u in self.answering} for u in args[0]}
         if name == 'bal_willexecutors_download':
             for u, we in self.welist.items():
@@ -64,14 +68,15 @@ class _Net:
         return sorted(u for u, we in self.wes.items() if we.get('selected'))
 
 
-def _bridge(net, cap=None, mine=None, wanted=3):
+def _bridge(net, cap=None, mine=None, wanted=3, online=True):
     cfg = _Config()
     if cap is not None:
         cfg[_m().KEEPER_MAX_KEY] = cap
     if mine is not None:
         cfg[_m().KEEPERS_MINE_KEY] = mine
     me = SimpleNamespace(plugin=SimpleNamespace(config=cfg), _cmd=net.cmd,
-                         _step_to=lambda s: None, _keepers_wanted=lambda: wanted)
+                         _step_to=lambda s: None, _keepers_wanted=lambda: wanted,
+                         _online_now=lambda: online)
     for f in ('_keeper_max', '_keepers_mine', '_keepers_mine_only'):
         setattr(me, f, getattr(_m().QEBal, f).__get__(me))
     return me
@@ -149,18 +154,23 @@ class TestChosenByHand:
             _m().QEBal._keepers(_bridge(_Net({'https://c': 1000}, answering=()), mine=['https://c']))
         assert e.value.code == 'custodians'
 
-    def test_the_list_with_the_prices(self, monkeypatch):
-        from electrum.plugins.bal.core import willexecutors
-        wes = {'https://z': {'base_fee': 15000, 'welist_rank': 1, 'status': 'OK'},
-               'https://y': {'base_fee': 80000, 'welist_rank': 0},
-               'https://k': {'base_fee': 1000, 'status': 'KO'},
-               'http://abc.onion': {'base_fee': 1000, 'welist_rank': 2}}
-        monkeypatch.setattr(willexecutors.Willexecutors, 'get_willexecutors', staticmethod(lambda p: wes))
-        me = SimpleNamespace(plugin=SimpleNamespace(config=_Config({_m().KEEPERS_MINE_KEY: ['https://z']})))
-        me._keepers_mine = _m().QEBal._keepers_mine.__get__(me)
-        rows = _m().QEBal.keeperChoices(me)
+    def test_the_list_asks_the_keepers_now(self):
+        # owner 18/11: never the placeholder price (100 000) of a keeper never contacted: the page
+        # shows only the keepers that answer now, with their price; a chosen one that does not
+        # answer is listed without price, to turn it off
+        net = _Net({A: 100000, 'https://c': 15000, 'https://dead': 100000, 'http://abc.onion': 1000},
+                   answering={A, 'https://c', 'http://abc.onion'}, welist=('https://c',), real={A: 1000})
+        rows = _m().QEBal._job_keeper_choices(_bridge(net, mine=[A, 'https://gone']))['keepers']
         assert [(r['name'], r['feeSats'], r['mine'], r['ok']) for r in rows] == [
-            ('y', 80000, False, True), ('z', 15000, True, True), ('k', 1000, False, False)]
+            ('c', 15000, False, True), ('we.bitcoin-after.life', 1000, True, True), ('gone', 0, True, False)]
+        assert 'http://abc.onion' not in net.pinged[0]
+
+    def test_the_list_offline(self):
+        net = _Net({A: 100000}, answering=())
+        with pytest.raises(_m()._Fail) as e:
+            _m().QEBal._job_keeper_choices(_bridge(net, online=False))
+        assert e.value.code == 'offline'
+        assert _m().QEBal._job_keeper_choices(_bridge(_Net({A: 100000}, answering=())))['keepers'] == []
 
 
 def test_the_slots_save_the_settings():
@@ -235,8 +245,10 @@ class TestPages:
 
     def test_choose_page(self):
         c = _read('EhHeirKeeperChoosePage.qml')
-        assert "readonly property bool dear: modelData.feeSats > page.cap" in c
-        assert "switchEnabled: !dear || page.isOn(modelData.url)" in c
+        assert "readonly property bool dear: modelData.ok && modelData.feeSats > page.cap" in c
+        assert "switchEnabled: (modelData.ok && !dear) || page.isOn(modelData.url)" in c
+        assert "Component.onCompleted: load()" in c and "bal.loadKeeperChoices()" in c
+        assert "keeperChoices()" not in c
         assert "page.bal.setKeepersMine(page.mine)" in c
 
     def test_your_keepers_says_where_to_choose(self):
