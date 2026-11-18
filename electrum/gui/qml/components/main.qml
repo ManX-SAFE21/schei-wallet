@@ -937,17 +937,20 @@ ApplicationWindow
     // down. Here on the main window, so a window still open after the page is closed works.
     function ehLevelName(to) { return to === 'base' ? qsTr('BASE') : (to === 'medio' ? qsTr('MEDIUM') : qsTr('EXPERT')) }
     function ehLevelLines(to) {
+        // owner 18/11: out of ESPERTO the keepers' price and choice go back to the standard
+        var k = ehLevel() === 'esperto' && to !== 'esperto'
+            ? '\n• ' + qsTr("The keepers' maximum price goes back to 50.000 sats and Schȅi chooses the keepers by itself.") : ''
         if (ehLevelRemembered(to))
-            return qsTr('You find the switches of this level as you left them.')
+            return qsTr('You find the switches of this level as you left them.') + (k !== '' ? '\n' + k : '')
         if (to === 'base')
             return '• ' + qsTr('The standard settings come back: the extra options turn off, the PIN for big payments is on.')
                  + '\n• ' + qsTr('The rows for more choices are hidden.')
-                 + '\n• ' + qsTr('Your money, the words (SEED) and the PIN do not change.')
+                 + '\n• ' + qsTr('Your money, the words (SEED) and the PIN do not change.') + k
         if (to === 'medio')
             return '• ' + qsTr('You write the amounts in %1 or in bitcoin').arg(ehCcyName())
                  + '\n• ' + qsTr('In Receive you can ask a precise amount')
                  + '\n• ' + qsTr('More wallets, view-only wallets and gold coins turn on')
-                 + '\n• ' + qsTr('Other choices appear, off: privacy, send all, node and Tor')
+                 + '\n• ' + qsTr('Other choices appear, off: privacy, send all, node and Tor') + k
         return '• ' + qsTr('Everything of MEDIUM, and also:')
              + '\n• ' + qsTr('Tip written by hand, advanced privacy and "Send all the balance" turn on')
              + '\n• ' + qsTr('The rows for experts appear: PIN threshold, more addresses')
@@ -1857,6 +1860,9 @@ ApplicationWindow
     function ehSatsText(n) {
         return Number(n || 0).toLocaleString(Qt.locale(Config.language === 'en_UK' ? 'en_GB' : 'it_IT'), 'f', 0) + ' sat'
     }
+    // owner 18/11: a keeper's price also in the currency ('' when the app shows bitcoin only)
+    function ehHeirEuro(sats) { return ehEuro(Config.unitsToSats((Number(sats || 0) / 100000000).toFixed(8))) }
+    function ehSatsAndEuro(sats) { var e = ehHeirEuro(sats); return ehSatsText(sats) + (e !== '' ? ' · ≈ ' + e : '') }
     function ehHeirSats(sats) { return ehMoney(Config.unitsToSats((Number(sats || 0) / 100000000).toFixed(8))) }
     function ehHeirYears(months) {
         var y = Math.max(1, Math.round((months || 0) / 12))

@@ -47,6 +47,9 @@ Item {
         var t = qsTr('The <b>keepers</b> (Will Executor) are servers that keep the sealed envelope and send it on the delivery date.')
         if (!rv) return t
         var n = okKeepers(), w = rv.custodiansWanted || st.keepersWanted || 3
+        // owner 18/11: keepers chosen by hand (ESPERTO): never "there are no others"
+        if ((st.keepersMine || []).length > 0)
+            return t + ' ' + (n <= 1 ? qsTr('We use 1: the one you chose.') : qsTr('We use %1: the ones you chose.').arg(n))
         if (n <= 1) return t + ' ' + qsTr('We use 1: for now there are no others.')
         if (n === 2 && n < w) return t + ' ' + qsTr('We use 2 of the %1 chosen: if one switches off there is the other.').arg(w)
         if (n < w) return t + ' ' + qsTr('We use %1 of the %2 chosen: if one switches off there are the others.').arg(n).arg(w)

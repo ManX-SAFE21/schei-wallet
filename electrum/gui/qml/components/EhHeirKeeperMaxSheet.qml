@@ -65,7 +65,8 @@ EhBottomSheet {
                     }
                     Label {
                         Layout.alignment: Qt.AlignHCenter
-                        text: chip.modelData === 50000 ? qsTr('standard') : '≈ ' + app.ehHeirSats(chip.modelData)
+                        text: chip.modelData === 50000 ? qsTr('standard')
+                              : (app.ehHeirEuro(chip.modelData) !== '' ? '≈ ' + app.ehHeirEuro(chip.modelData) : 'sat')
                         color: chip.on ? S.ivory : S.muted
                         font.family: BodyFont ? BodyFont : font.family
                         font.pixelSize: app.ehFsSmall
@@ -134,7 +135,7 @@ EhBottomSheet {
         font.pixelSize: app.ehFsSmall
         color: root.error !== '' ? S.wine : S.muted
         text: root.error !== '' ? root.error
-              : qsTr('sats; %1 ≈ %2').arg(app.ehSatsText(root.chosen)).arg(app.ehHeirSats(root.chosen))
+              : app.ehSatsAndEuro(root.chosen).replace(' · ', ' ')
     }
     EhStitchButton {
         kind: 'olive'

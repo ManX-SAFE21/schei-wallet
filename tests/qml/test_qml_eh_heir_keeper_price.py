@@ -259,3 +259,33 @@ class TestPages:
         body = m[m.index('    function ehSetLevel(to) {'):]
         body = body[:body.index('\n    }\n')]
         assert "if (to !== 'esperto') {" in body and 'bal.keepersStandard()' in body
+
+
+class TestTextsAfterThePhoneTest:
+    """owner 18/11, phone test of build62: four texts."""
+
+    def test_one_chosen_is_singular(self):
+        from electrum.eh_strings import STRINGS
+        it = STRINGS["it_IT"]
+        assert it["1 chosen"] == "1 scelto" and it["Save (1 chosen)"] == "Salva (1 scelto)"
+        assert "length === 1 ? qsTr(\x271 chosen\x27)" in _read("EhSettings.qml")
+        assert "page.mine.length === 1 ? qsTr(\x27Save (1 chosen)\x27)" in _read("EhHeirKeeperChoosePage.qml")
+
+    def test_all_right_with_keepers_chosen_by_hand(self):
+        c = _read("EhHeirCheckPage.qml")
+        i = c.index("if ((st.keepersMine || []).length > 0)")
+        assert i < c.index("qsTr(\x27We use 1: for now there are no others.\x27)")
+        assert "qsTr(\x27We use 1: the one you chose.\x27)" in c
+
+    def test_prices_never_twice_in_bitcoin(self):
+        m = _read("main.qml")
+        assert "function ehSatsAndEuro(sats) { var e = ehHeirEuro(sats); return ehSatsText(sats) + (e !== \x27\x27 ? \x27 · ≈ \x27 + e : \x27\x27) }" in m
+        for f in ("EhHeirKeeperChoosePage.qml", "EhHeirKeeperMaxSheet.qml"):
+            assert "app.ehHeirSats(" not in _read(f), f
+
+    def test_going_down_from_expert_says_it(self):
+        m = _read("main.qml")
+        body = m[m.index("    function ehLevelLines(to) {"):]
+        body = body[:body.index("\n    }\n")]
+        assert "ehLevel() === \x27esperto\x27 && to !== \x27esperto\x27" in body
+        assert body.count(") + k") == 2 and "(k !== '' ? " in body

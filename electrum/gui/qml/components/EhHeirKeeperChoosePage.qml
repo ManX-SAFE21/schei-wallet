@@ -94,7 +94,7 @@ Item {
                         icon: 'eh_shield_olive.svg'; iconColor: dear || !modelData.ok ? S.muted : S.olive
                         text: modelData.name
                         hint: !modelData.ok ? qsTr('does not answer now')
-                              : app.ehSatsText(modelData.feeSats) + ' · ≈ ' + app.ehHeirSats(modelData.feeSats)
+                              : app.ehSatsAndEuro(modelData.feeSats)
                                 + (dear ? ' · ' + qsTr('over your maximum') : '')
                         showSwitch: true
                         checked: page.isOn(modelData.url)
@@ -129,7 +129,8 @@ Item {
                 kind: 'olive'
                 icon: 'eh_check_white.svg'
                 enabled: !(page.bal && page.bal.busy) && !page.loading
-                text: page.mine.length > 0 ? qsTr('Save (%1 chosen)').arg(page.mine.length) : qsTr('Save (automatic)')
+                text: page.mine.length === 1 ? qsTr('Save (1 chosen)')
+                    : page.mine.length > 1 ? qsTr('Save (%1 chosen)').arg(page.mine.length) : qsTr('Save (automatic)')
                 onClicked: { if (page.bal) page.bal.setKeepersMine(page.mine); app.stack.pop() }
             }
         }

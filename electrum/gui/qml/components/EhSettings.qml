@@ -144,7 +144,8 @@ Item {
                 EhRow { visible: app.ehHeirEnabled() && col.heirPhase !== 'foreign' && col.lv >= 2
                         icon: 'eh_shield_olive.svg'; iconColor: S.olive; text: qsTr('Choose the keepers')
                         tag: 2
-                        value: (col.heir.keepersMine || []).length > 0 ? qsTr('%1 chosen').arg(col.heir.keepersMine.length) : qsTr('automatic')
+                        value: (col.heir.keepersMine || []).length === 1 ? qsTr('1 chosen')
+                             : (col.heir.keepersMine || []).length > 1 ? qsTr('%1 chosen').arg(col.heir.keepersMine.length) : qsTr('automatic')
                         onClicked: app.stack.push(Qt.resolvedUrl('EhHeirKeeperChoosePage.qml')) }
                 // owner 15/11 (point 8): "How it works" also while the inheritance is active
                 EhRow { visible: app.ehHeirEnabled()
