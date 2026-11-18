@@ -1,5 +1,6 @@
 # Schȅi, owner 17/11: "Togli questo portafoglio" (gear page). Only in ESPERTO, never the main
-# wallet, never with money in it or with an inheritance; a yes / no question, then the PIN.
+# wallet, never with an inheritance; a yes / no question, then the PIN. owner 18/11: no balance
+# check, always the warning that without the 12 words the money is lost.
 import os
 import types
 from unittest import TestCase
@@ -71,10 +72,11 @@ class TestRemoveInTheDaemon(TestCase):
         self.assertFalse(f.remove('Casa'))
         self.assertTrue(f.remove('Viaggi'))
 
-    def test_never_with_money(self):
-        f = _Fake(['Portafoglio', 'Portafoglio_2'], money={'Portafoglio_2': 1})
-        self.assertFalse(f.remove('Portafoglio_2'))
-        self.assertEqual(f.deleted, [])
+    def test_with_money_it_goes_too(self):
+        # owner 18/11: the balance is not checked (it can be wrong before the sync); the app warned
+        f = _Fake(['Portafoglio', 'Portafoglio_2'], money={'Portafoglio_2': 1}, current='Portafoglio_2')
+        self.assertTrue(f.remove('Portafoglio_2'))
+        self.assertEqual(f.deleted, ['/w/Portafoglio_2'])
 
     def test_watch_wallet_with_money_can_go(self):
         # a wallet to watch has no words: removing it loses nothing
@@ -93,12 +95,20 @@ class TestRemoveInThePages(TestCase):
         self.assertIn("return ehLevel() === 'esperto' && Daemon.currentWallet !== null && Daemon.availableWallets.rowCount() > 1\n"
                       "               && Daemon.currentWallet.name !== Daemon.ehMainWalletName()", m)
 
-    def test_inheritance_and_money_block_it(self):
+    def test_inheritance_blocks_it_money_does_not(self):
         m = _read('main.qml')
         self.assertIn("if (st.phase !== 'none' && st.phase !== 'draft') {", m)
         self.assertIn("if (st.phase === undefined) {", m)
-        self.assertIn("if (w.ehTotal.satsInt > 0 || w.frozenBalance.satsInt > 0) {", m)
-        self.assertIn("with Send › All the balance", m)
+        body = m[m.index('function ehRemoveWallet()'):m.index('function _ehDoRemoveWallet(')]
+        self.assertNotIn('ehTotal', body)
+        self.assertNotIn('It is empty', body)
+
+    def test_always_the_12_words_warning(self):
+        m = _read('main.qml')
+        self.assertIn("var detail = qsTr('If you did not save the 12 words, the money of this wallet is lost. Do you want to remove it?')", m)
+        from electrum.eh_strings import STRINGS
+        self.assertEqual(STRINGS['it_IT']['If you did not save the 12 words, the money of this wallet is lost. Do you want to remove it?'],
+                         'Se non hai salvato le 12 parole, i soldi di questo portafoglio sono persi. Vuoi toglierlo?')
 
     def test_question_then_pin(self):
         m = _read('main.qml')

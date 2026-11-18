@@ -479,12 +479,10 @@ class QEDaemon(AuthMixin, QObject):
     @pyqtSlot(str, result=bool)
     def ehRemoveWallet(self, name):
         """Deletes the file of an added wallet. The app asked the PIN and checked the inheritance
-        before; here again: never the main one, never the last one, never with money in it."""
+        before; here again: never the main one, never the last one. owner 18/11: no balance check
+        (the app warns that without the 12 words the money is lost)."""
         path = self.ehWalletPathFor(name)
         if not path or name == self.ehMainWalletName() or len(self.availableWallets._wallets) < 2:
-            return False
-        w = self.daemon.get_wallet(path)
-        if w is not None and not w.is_watching_only() and sum(w.get_balance()) > 0:
             return False
         if self._current_wallet is not None and \
                 standardize_path(self._current_wallet.wallet.storage.get_path()) == standardize_path(path):

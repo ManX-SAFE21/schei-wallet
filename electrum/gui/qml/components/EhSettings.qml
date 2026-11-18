@@ -88,7 +88,7 @@ Item {
                         last: !walletSheet.canRemove }
                 // owner 17/11: only an added wallet (never the main one), only in ESPERTO, with the PIN
                 EhRow { visible: walletSheet.canRemove; icon: 'eh_cross.svg'; text: qsTr('Remove this wallet')
-                        hint: qsTr('only if it is empty and without inheritance'); lock: true; last: true
+                        hint: qsTr('only without inheritance'); lock: true; last: true
                         onClicked: app.ehRemoveWallet() }
             }
 
