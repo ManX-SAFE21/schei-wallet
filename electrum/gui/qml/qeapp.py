@@ -26,6 +26,19 @@ from electrum.util import profiler
 from electrum.lnurl import SUPPORTED_LNURL_SCHEMES
 
 from .qeconfig import QEConfig
+
+# owner 18/11: the package of the «APK PER SCREENSHOT» (mainnet, screens always photographable)
+SCHEI_SCREENSHOT_PACKAGE = 'io.safe21.easyheirs.foto.electrum'
+
+
+def _is_screenshot_app() -> bool:
+    if 'ANDROID_DATA' not in os.environ:
+        return False
+    try:
+        from electrum.util import get_android_package_name
+        return get_android_package_name() == SCHEI_SCREENSHOT_PACKAGE
+    except Exception:
+        return False     # when in doubt the screen stays protected
 from .qedaemon import QEDaemon
 from .qenetwork import QENetwork
 from .qewallet import QEWallet
@@ -507,6 +520,9 @@ class QEAppController(BaseCrashReporter, QObject):
         # owner 16/11: the testnet4 app must allow screenshots and screen videos also on the
         # seed / PIN pages (for presentations of the wallet); test coins have no value
         if constants.net.TESTNET:
+            return
+        # owner 18/11: the «APK PER SCREENSHOT» (its own package, see contrib/android/make_apk.sh)
+        if _is_screenshot_app():
             return
         if self._secureWindow != secure:
             jpythonActivity.setSecureWindow(secure)

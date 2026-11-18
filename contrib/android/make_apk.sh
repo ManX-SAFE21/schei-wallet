@@ -78,6 +78,20 @@ if [ "$SCHEI_EREDITA4" = "1" ] ; then
     info "building Schȅi Eredità testnet4 ($APP_PACKAGE_DOMAIN)"
 fi
 
+# owner 18/11: «APK PER SCREENSHOT»: the real network (mainnet), but every screen can be
+# photographed and filmed (also the 12 words and the PIN), for the manual and the videos.
+# A FOURTH app with its own package and name, so it is never confused with the real Schȅi;
+# built only with the debug key, never published, never with real savings.
+if [ "$SCHEI_FOTO" = "1" ] ; then
+    if [ "$SCHEI_TESTNET4" = "1" ] || [ "$SCHEI_EREDITA4" = "1" ] || [[ "$3" == release* ]] ; then
+        echo "SCHEI_FOTO: only a debug mainnet build (no testnet, no release)"
+        exit 1
+    fi
+    export APP_PACKAGE_DOMAIN=io.safe21.easyheirs.foto
+    export APP_TITLE="Schȅi SCREENSHOT"
+    info "building Schȅi SCREENSHOT ($APP_PACKAGE_DOMAIN)"
+fi
+
 if [ $CI ]; then
     # override log level specified in buildozer.spec to "debug":
     export BUILDOZER_LOG_LEVEL=2

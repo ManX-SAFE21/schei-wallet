@@ -76,8 +76,9 @@ class TestScreenshotsBlack(TestCase):
         src = open(qeapp.__file__, encoding='utf-8').read()
         body = src[src.index('def secureWindow(self, secure):'):src.index('def enforcesEdgeToEdge')]
         returns = re.findall(r'if (.+):\n\s+return', body)
+        # owner 18/11: and the «APK PER SCREENSHOT», by its own package name only
         self.assertEqual(['not self.isAndroid()', 'self.config.GUI_QML_ALWAYS_ALLOW_SCREENSHOTS',
-                          'constants.net.TESTNET'], returns)
+                          'constants.net.TESTNET', '_is_screenshot_app()'], returns)
         self.assertIn('jpythonActivity.setSecureWindow(secure)', body)
 
     def test_secure_screens_still_ask_for_black(self):
@@ -97,3 +98,52 @@ class TestScreenshotsBlack(TestCase):
         missing = [n for n in SECURE_WIZARD_PAGES
                    if 'securePage: true' not in open(os.path.join(COMP, 'wizard', n), encoding='utf-8').read()]
         self.assertEqual([], missing)
+
+
+class TestScreenshotApp(TestCase):
+    """owner 18/11: the «APK PER SCREENSHOT»: only its own package allows screenshots on mainnet."""
+
+    def test_package_name(self):
+        self.assertEqual(qeapp.SCHEI_SCREENSHOT_PACKAGE, 'io.safe21.easyheirs.foto.electrum')
+
+    def _run(self, pkg, android=True):
+        env = {'ANDROID_DATA': '/data'} if android else {}
+        with mock.patch.dict(os.environ, env, clear=not android), \
+                mock.patch('electrum.util.get_android_package_name', lambda: pkg):
+            return qeapp._is_screenshot_app()
+
+    def test_only_its_package(self):
+        self.assertTrue(self._run('io.safe21.easyheirs.foto.electrum'))
+        for pkg in ('io.safe21.easyheirs.electrum', 'io.safe21.easyheirs.eredita.testnet4.electrum',
+                    'io.safe21.easyheirs.foto.electrum.x', 'org.electrum.electrum'):
+            self.assertFalse(self._run(pkg), pkg)
+
+    def test_not_on_the_pc(self):
+        self.assertFalse(self._run('io.safe21.easyheirs.foto.electrum', android=False))
+
+    def test_error_keeps_the_screen_protected(self):
+        def boom():
+            raise RuntimeError('no activity')
+        with mock.patch.dict(os.environ, {'ANDROID_DATA': '/data'}), \
+                mock.patch('electrum.util.get_android_package_name', boom):
+            self.assertFalse(qeapp._is_screenshot_app())
+
+    def test_the_normal_schei_still_goes_black(self):
+        me = _controller()
+        with mock.patch.object(qeapp, '_is_screenshot_app', lambda: False):
+            activity = _set_secure(me, True, testnet=False)
+        activity.setSecureWindow.assert_called_once_with(True)
+
+    def test_the_screenshot_app_does_not(self):
+        me = _controller()
+        with mock.patch.object(qeapp, '_is_screenshot_app', lambda: True):
+            activity = _set_secure(me, True, testnet=False)
+        activity.setSecureWindow.assert_not_called()
+
+    def test_build_variant(self):
+        root = os.path.join(os.path.dirname(qeapp.__file__), '..', '..', '..', 'contrib', 'android')
+        mk = open(os.path.join(root, 'make_apk.sh'), encoding='utf-8').read()
+        self.assertIn('export APP_PACKAGE_DOMAIN=io.safe21.easyheirs.foto', mk)
+        self.assertIn('export APP_TITLE="Schȅi SCREENSHOT"', mk)
+        self.assertIn('SCHEI_FOTO: only a debug mainnet build (no testnet, no release)', mk)
+        self.assertIn('-e SCHEI_FOTO', open(os.path.join(root, 'build.sh'), encoding='utf-8').read())
