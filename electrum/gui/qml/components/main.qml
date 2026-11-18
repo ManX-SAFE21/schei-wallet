@@ -1041,8 +1041,7 @@ ApplicationWindow
         // (50 000 sats) and Schȅi chooses the keepers by itself again
         if (to !== 'esperto') {
             var bal = ehBal()
-            if (bal && ((bal.state || {}).keeperMax !== 50000 || ((bal.state || {}).keepersMine || []).length > 0))
-                bal.keepersStandard()
+            if (bal) bal.keepersStandard()      // Opus review 18/11: saved at once, never refused
         }
         Config.ehSet('opt_show_adv', to !== 'base')
         Config.ehSet('eh_level', to)
@@ -1289,6 +1288,11 @@ ApplicationWindow
         var shown = ehWalletNameFor(name)
         if (!w.isWatchOnly) {
             var b = ehBal()
+            // Opus review 18/11: the inheritance cannot be checked: never remove it now
+            if (!b) {
+                ehTell(qsTr('I am still checking the inheritance of this wallet. Try again in a moment.'))
+                return
+            }
             if (b) {
                 var st = ehHeirState(b)
                 if (st.phase === undefined) {
@@ -1907,7 +1911,23 @@ ApplicationWindow
         if (code === 'not_sent') return qsTr('The envelope is ready but no keeper took it. Try again in a little while.')
         if (code === 'internal') return qsTr('Something did not work. Your money is safe; try again later.')
         if (code === 'busy') return ''
-        return message || code
+        // Opus review 18/11: the money errors here too (same words as «All right?»)
+        if (code === 'too_low') return qsTr('In the wallet there is <b>%1</b>: <b>not enough</b> for the inheritance.').arg(
+                Daemon.currentWallet ? ehMoney(Daemon.currentWallet.ehTotal) : '') + ' ' + qsTr('Receive more bitcoin, then try again.')
+        if (code === 'dust') return qsTr("The shares of one or more heirs are <b>too small</b>.") + ' ' + qsTr('Change the percentages or remove someone.')
+        if (code === 'keeper_fee') return ehLevel() === 'esperto'
+                ? qsTr('The keepers ask more than your maximum price (%1). Raise it or choose other keepers in Settings › Inheritance.').arg(ehSatsText(ehHeirState(ehBal()).keeperMax || 50000))
+                : qsTr('The keepers today ask more than Schȅi accepts (%1). Try again later, or choose them yourself at the EXPERT level.').arg(ehSatsText(ehHeirState(ehBal()).keeperMax || 50000))
+        return ehHeirPlainText(message)
+    }
+    // Opus review 18/11: a message of the plugin: translated if Schȅi has its words; shown as it is
+    // when it is a plain sentence (English, or already translated by the plugin); never a technical one
+    function ehHeirPlainText(message) {
+        var m = message || ''
+        var t = m ? qsTr(m) : ''
+        if (t && t !== m) return t
+        if (m && !/[<>=_{}\[\]]|\([A-Z_]{3,}\)|Exception|Error|Traceback|\d\.\d|bal_/.test(m)) return m
+        return qsTr('Something did not work. Your money is safe; try again later.')
     }
 
     // T18: 5 wrong PINs in a row -> no more tries for 1 hour. Counter and end of

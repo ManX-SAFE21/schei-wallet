@@ -74,7 +74,6 @@ EhPageTop {
                 : qsTr('The keepers today ask more than Schȅi accepts (%1). Try again later, or choose them yourself at the EXPERT level.').arg(app.ehSatsText(app.ehHeirState(app.ehBal()).keeperMax || 50000))
         }
         // owner 18/11: never a technical English text: Schȅi's sentence when there is one, else a plain one
-        var t = message ? qsTr(message) : ''
-        return t && t !== message ? t : qsTr('Something did not work. Your money is safe; try again later.')
+        return app.ehHeirPlainText(message)     // Opus review 18/11: see main.qml
     }
 }

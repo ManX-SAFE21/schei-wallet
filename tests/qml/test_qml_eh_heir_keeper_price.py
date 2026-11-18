@@ -173,20 +173,82 @@ class TestChosenByHand:
         assert _m().QEBal._job_keeper_choices(_bridge(_Net({A: 100000}, answering=())))['keepers'] == []
 
 
-def test_the_slots_save_the_settings():
-    # the slots run their job on the worker (_start): here the job is run at once
+def _saver(cfg):
+    plug = SimpleNamespace(v=500000)
+    plug.get = lambda: plug.v
+    plug.set = lambda v, save=True: setattr(plug, "v", v)
+    me = SimpleNamespace(plugin=SimpleNamespace(config=cfg, MAX_WILLEXECUTOR_FEE=plug), _state={}, out=[])
+    me.done = SimpleNamespace(emit=lambda op, r: me.out.append(("done", op)))
+    me.failed = SimpleNamespace(emit=lambda op, c, m: me.out.append(("failed", op, c)))
+    me.stateChanged = SimpleNamespace(emit=lambda: None)
+    for f in ("_keeper_max", "_keepers_mine", "_sync_cap", "_keeper_settings_saved"):
+        setattr(me, f, getattr(_m().QEBal, f).__get__(me))
+    return me
+
+
+def test_the_slots_save_the_settings_at_once():
+    # Opus review 18/11: saved on the spot (never a job refused as busy) and given to the plugin
     cfg = _Config()
-    me = SimpleNamespace(plugin=SimpleNamespace(config=cfg), ran=[])
-    me._start = lambda op, job: me.ran.append((op, job()))
+    me = _saver(cfg)
     _m().QEBal.setKeeperMax(me, 30000)
-    assert me.ran[-1] == ('setKeeperMax', {'keeperMax': 30000}) and cfg[_m().KEEPER_MAX_KEY] == 30000
-    with pytest.raises(_m()._Fail) as e:
-        _m().QEBal.setKeeperMax(me, 700000)
-    assert e.value.code == 'user' and cfg[_m().KEEPER_MAX_KEY] == 30000
-    _m().QEBal.setKeepersMine(me, ['https://c', 'https://c', B, ''])
-    assert cfg[_m().KEEPERS_MINE_KEY] == ['https://c', B]
+    assert cfg[_m().KEEPER_MAX_KEY] == 30000 and me.out[-1] == ("done", "setKeeperMax")
+    assert me.plugin.MAX_WILLEXECUTOR_FEE.v == 30000
+    _m().QEBal.setKeeperMax(me, 700000)
+    assert me.out[-1] == ("failed", "setKeeperMax", "user") and cfg[_m().KEEPER_MAX_KEY] == 30000
+    _m().QEBal.setKeepersMine(me, ["https://c", "https://c", B, ""])
+    assert cfg[_m().KEEPERS_MINE_KEY] == ["https://c", B]
     _m().QEBal.keepersStandard(me)
     assert cfg[_m().KEEPER_MAX_KEY] == 50000 and cfg[_m().KEEPERS_MINE_KEY] == []
+    assert me.plugin.MAX_WILLEXECUTOR_FEE.v == 50000
+    src = open(_m().__file__, encoding="utf-8").read()
+    body = src[src.index("    def keepersStandard(self):"):src.index("    def loadKeeperChoices(self):")]
+    assert "_start(" not in body
+
+
+class TestReplaceKeepers:
+    """Opus review 18/11: «Sostituisci» keeps the maximum price and the keepers chosen by hand."""
+
+    def _me(self, net, cap=None, mine=None):
+        me = _bridge(net, cap=cap, mine=mine)
+        me._local = SimpleNamespace(wallet=object())
+        me._need_network = lambda w: None
+        me._read_state = lambda w: {"custodians": {"total": 2, "ok": 1}, "phase": "active"}
+        me._live_items = lambda w: []
+        me._heirs_ready = lambda: None
+        me.prepared = []
+        me._prepare = lambda: me.prepared.append(1)
+        me._sign_and_send = lambda: None
+        me._min_locktime = lambda live: 0
+        return me
+
+    def test_find_skips_the_dear_ones(self):
+        net = _Net({A: 1000, "https://c": 80000, "https://d": 15000},
+                   answering={A, "https://c", "https://d"}, welist=("https://c", "https://d"))
+        net.wes[A]["selected"] = True
+        res = _m().QEBal._job_find_keeper(self._me(net))
+        assert res["picks"] == ["https://d"]
+
+    def test_find_all_dear(self):
+        net = _Net({A: 1000, "https://c": 80000}, answering={A, "https://c"}, welist=("https://c",))
+        net.wes[A]["selected"] = True
+        with pytest.raises(_m()._Fail) as e:
+            _m().QEBal._job_find_keeper(self._me(net))
+        assert e.value.code == "keeper_fee"
+
+    def test_find_only_the_chosen_ones(self):
+        net = _Net({A: 1000, "https://c": 1000, "https://d": 1000},
+                   answering={A, "https://c", "https://d"}, welist=("https://c", "https://d"))
+        net.wes[A]["selected"] = True
+        res = _m().QEBal._job_find_keeper(self._me(net, mine=[A, "https://d"]))
+        assert res["picks"] == ["https://d"]
+
+    def test_replace_refuses_a_dear_one(self):
+        net = _Net({A: 1000, "https://c": 80000}, answering={A, "https://c"}, welist=("https://c",))
+        net.cmd("bal_willexecutors_download")
+        me = self._me(net)
+        with pytest.raises(_m()._Fail) as e:
+            _m().QEBal._job_replace_keepers(me, ["https://c"])
+        assert e.value.code == "keeper_fee" and me.prepared == []
 
 
 class TestMoneyErrorsInSchèiWords:
@@ -207,7 +269,9 @@ class TestMoneyErrorsInSchèiWords:
         assert self._code(ValueError) == 'user'
         from electrum.util import UserFacingException
         assert _m()._fail_code(UserFacingException('x')) == 'user'
-        assert "outcome = ('failed', _fail_code(e), str(e))" in open(_m().__file__, encoding='utf-8').read()
+        src = open(_m().__file__, encoding='utf-8').read()
+        assert "code = _fail_code(e)" in src and "outcome = ('failed', code, str(e))" in src
+        assert self._code(will.PercAmountException) == 'percent'   # Opus review 18/11
 
     def test_texts(self):
         t = _read('controls', 'EhHeirTop.qml')
@@ -217,7 +281,7 @@ class TestMoneyErrorsInSchèiWords:
         assert 'or choose them yourself at the EXPERT level' in t
         # never an English technical text
         assert 'return message || code' not in t
-        assert "return t && t !== message ? t : qsTr('Something did not work. Your money is safe; try again later.')" in t
+        assert "return app.ehHeirPlainText(message)" in t
 
     def test_italian(self):
         from electrum.eh_strings import STRINGS

@@ -3,10 +3,11 @@
 # check, always the warning that without the words (SEED) the money is lost.
 import os
 import types
-from unittest import TestCase
+from unittest import TestCase, mock
 
 from electrum.gui.qml import qeapp
 from electrum.gui.qml.qedaemon import QEDaemon
+from electrum.gui.qml import qedaemon as qedaemon_mod
 
 COMP = os.path.join(os.path.dirname(qeapp.__file__), 'components')
 
@@ -19,6 +20,11 @@ class _W:
     def __init__(self, path, money=0, watch=False):
         self.path, self.money, self.watch = path, money, watch
         self.storage = types.SimpleNamespace(get_path=lambda: path)
+        self.will = {}
+        self.db = types.SimpleNamespace(get=lambda k, d=None: self.will if k == 'will' else d)
+
+    def get_utxos(self):
+        return []
 
     def is_watching_only(self):
         return self.watch
@@ -134,3 +140,46 @@ class TestRemoveInThePages(TestCase):
         m = _read('main.qml')
         self.assertIn("var keys = ['name_', 'color_', 'watch_', 'bal_', 'heir_on_'", m)
         self.assertIn("return Config.ehGet('heir_on_' + ehWalletKey()) !== false", m)
+
+
+class TestNeverWithAnInheritance(TestCase):
+    """Opus review 18/11: the daemon refuses a wallet with an inheritance in force."""
+
+    def test_live_envelope_blocks_the_daemon(self):
+        f = _Fake(['Portafoglio', 'Portafoglio_2'], current='Portafoglio_2')
+        with mock.patch.object(qedaemon_mod, '_eh_has_live_will', lambda w: True):
+            self.assertFalse(f.remove('Portafoglio_2'))
+        self.assertEqual(f.deleted, [])
+
+    def test_live_will_rule(self):
+        coin = types.SimpleNamespace(prevout=types.SimpleNamespace(to_str=lambda: 'aa:0'))
+        w = _W('/w/x')
+        w.get_utxos = lambda: [coin]
+        tx = types.SimpleNamespace(inputs=lambda: [coin])
+        good = {'tx': 'T', 'VALID': True, 'COMPLETE': True, 'PUSHED': True}
+        with mock.patch('electrum.transaction.tx_from_any', lambda t: tx):
+            w.will = {'1': dict(good)}
+            self.assertTrue(qedaemon_mod._eh_has_live_will(w))
+            for k in ('INVALIDATED', 'REPLACED'):
+                w.will = {'1': dict(good, **{k: True})}
+                self.assertFalse(qedaemon_mod._eh_has_live_will(w), k)
+            w.will = {'1': dict(good, PUSHED=False)}
+            self.assertFalse(qedaemon_mod._eh_has_live_will(w))
+            w.get_utxos = lambda: []          # coins spent: no inheritance in force
+            w.will = {'1': dict(good)}
+            self.assertFalse(qedaemon_mod._eh_has_live_will(w))
+        w.watch = True
+        self.assertFalse(qedaemon_mod._eh_has_live_will(w))
+
+    def test_when_in_doubt_it_is_kept(self):
+        w = _W('/w/x')
+
+        def boom():
+            raise RuntimeError('db')
+        w.get_utxos = boom
+        self.assertTrue(qedaemon_mod._eh_has_live_will(w))
+
+    def test_the_app_never_removes_while_unchecked(self):
+        m = _read('main.qml')
+        body = m[m.index('    function ehRemoveWallet() {'):m.index('    function _ehDoRemoveWallet(')]
+        self.assertIn("if (!b) {", body)

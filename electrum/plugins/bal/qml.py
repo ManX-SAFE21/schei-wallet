@@ -146,6 +146,8 @@ def _fail_code(e):
         return 'keeper_fee'
     if isinstance(c, heirs_mod.HeirAmountIsDustException):
         return 'dust'
+    if isinstance(c, will_mod.PercAmountException):     # Opus review 18/11: shares, not money
+        return 'percent'
     if isinstance(c, (heirs_mod.BalanceTooLowException, will_mod.AmountException)):
         return 'too_low'
     # owner 18/11 (phone test): "The will was not built (CODE)" of the plugin's build
@@ -438,6 +440,7 @@ class QEBal(PluginQObject):
             return
         # owner 17/11: the fee chosen on the page goes to THIS job only (never kept for later)
         fee, self._inv_fee = getattr(self, '_inv_fee', None), None
+        self._sync_cap()
         self._set_busy(True)
         self._set_step('check' if op == 'refresh' else '')
         threading.Thread(target=self._work, args=(op, job, wallet, fee), daemon=True,
@@ -452,7 +455,12 @@ class QEBal(PluginQObject):
         except _Fail as f:
             outcome = ('failed', f.code, f.message)
         except UserFacingException as e:
-            outcome = ('failed', _fail_code(e), str(e))
+            try:
+                code = _fail_code(e)
+            except Exception:       # Opus review 18/11: never stuck on «busy»
+                _logger.error('QEBal _fail_code:\n%s', traceback.format_exc())
+                code = 'user'
+            outcome = ('failed', code, str(e))
         except Exception as e:
             _logger.error('QEBal %s failed:\n%s', op, traceback.format_exc())
             outcome = ('failed', 'internal', repr(e))
@@ -523,6 +531,16 @@ class QEBal(PluginQObject):
         except (TypeError, ValueError):
             return KEEPER_MAX_DEFAULT
         return value if KEEPER_MAX_MIN <= value <= KEEPER_MAX_TOP else KEEPER_MAX_DEFAULT
+
+    def _sync_cap(self):
+        """Opus review 18/11: the plugin's own ceiling (build, check, push) is Schȅi's maximum
+        price, so no path can take a keeper over it."""
+        try:
+            cap = self._keeper_max()
+            if self.plugin.MAX_WILLEXECUTOR_FEE.get() != cap:
+                self.plugin.MAX_WILLEXECUTOR_FEE.set(cap, save=True)
+        except Exception as e:
+            _logger.error(f'keeper cap not synced: {e!r}')
 
     def _keepers_mine(self):
         value = self.plugin.config.get(KEEPERS_MINE_KEY, []) or []
@@ -716,33 +734,39 @@ class QEBal(PluginQObject):
             return {'keepersWanted': int(n)}
         self._start('setKeepers', job)
 
-    # owner 18/11: the keepers' maximum price and the keepers chosen by hand, set at the EXPERT
-    # level (jobs like setKeepers: the new state follows)
+    # owner 18/11: the keepers' maximum price and the keepers chosen by hand (EXPERT level).
+    # Opus review 18/11: saved at once on the GUI thread (set_key is locked), never through a job:
+    # a job refused as «busy» would leave them unchanged without saying it.
+    def _keeper_settings_saved(self, op, cap=None, mine=None):
+        if cap is not None:
+            self.plugin.config.set_key(KEEPER_MAX_KEY, int(cap), save=True)
+        if mine is not None:
+            self.plugin.config.set_key(KEEPERS_MINE_KEY, list(mine), save=True)
+        self._sync_cap()
+        if self._state:
+            st = dict(self._state)
+            st['keeperMax'] = self._keeper_max()
+            st['keepersMine'] = self._keepers_mine()
+            self._state = st
+            self.stateChanged.emit()
+        self.done.emit(op, {'keeperMax': self._keeper_max(), 'keepersMine': self._keepers_mine()})
+
     @pyqtSlot(int)
     def setKeeperMax(self, n):
-        def job():
-            if not KEEPER_MAX_MIN <= int(n) <= KEEPER_MAX_TOP:
-                raise _Fail('user', 'Write an amount from 1.000 to 500.000 sats.')
-            self.plugin.config.set_key(KEEPER_MAX_KEY, int(n), save=True)
-            return {'keeperMax': int(n)}
-        self._start('setKeeperMax', job)
+        if not KEEPER_MAX_MIN <= int(n) <= KEEPER_MAX_TOP:
+            self.failed.emit('setKeeperMax', 'user', 'Write an amount from 1.000 to 500.000 sats.')
+            return
+        self._keeper_settings_saved('setKeeperMax', cap=int(n))
 
     @pyqtSlot('QVariantList')
     def setKeepersMine(self, urls):
         urls = list(dict.fromkeys(str(u) for u in (urls or []) if str(u)))
-        def job():
-            self.plugin.config.set_key(KEEPERS_MINE_KEY, urls, save=True)
-            return {'keepersMine': urls}
-        self._start('setKeepersMine', job)
+        self._keeper_settings_saved('setKeepersMine', mine=urls)
 
     @pyqtSlot()
     def keepersStandard(self):
         """owner 18/11: out of the EXPERT level: 50 000 sats, keepers chosen by Schȅi."""
-        def job():
-            self.plugin.config.set_key(KEEPER_MAX_KEY, KEEPER_MAX_DEFAULT, save=True)
-            self.plugin.config.set_key(KEEPERS_MINE_KEY, [], save=True)
-            return {}
-        self._start('keepersStandard', job)
+        self._keeper_settings_saved('keepersStandard', cap=KEEPER_MAX_DEFAULT, mine=[])
 
     @pyqtSlot()
     def loadKeeperChoices(self):
@@ -1240,7 +1264,12 @@ class QEBal(PluginQObject):
                  'ok': bool((pings.get(u) or {}).get('ok')), 'used': u in used} for u in urls]
         order = _welist_order(wes)
         rows.sort(key=lambda r: (not r['used'], order(r['url'])))
-        free = [r for r in rows if r['ok'] and not r['used']]
+        # Opus review 18/11: the maximum price and the keepers chosen by hand apply here too
+        cap, mine = self._keeper_max(), set(self._keepers_mine())
+        answering = [r for r in rows if r['ok'] and not r['used'] and (not mine or r['url'] in mine)]
+        free = [r for r in answering if r['feeSats'] <= cap]
+        if not free and answering:
+            raise _Fail('keeper_fee', 'The free keepers ask more than the maximum price.')
         if not free:
             raise _Fail('custodians', 'No other keeper is free now.')
         picks = [r['url'] for r in free[:need]]
@@ -1275,6 +1304,14 @@ class QEBal(PluginQObject):
         new = [u for u in new if (pings.get(u) or {}).get('ok')]
         if not new:
             raise _Fail('custodians', 'This keeper does not answer.')
+        # Opus review 18/11: never a keeper over the maximum price, nor one outside the chosen ones
+        wes = self._cmd('bal_willexecutors_list') or {}
+        cap, mine = self._keeper_max(), set(self._keepers_mine())
+        new = [u for u in new if (not mine or u in mine)]
+        if not new:
+            raise _Fail('user', 'This keeper is not among the ones you chose.')
+        if any(_fee_of(wes.get(u)) > cap for u in new):
+            raise _Fail('keeper_fee', 'This keeper asks more than the maximum price.')
         for u in selected:
             if not (pings.get(u) or {}).get('ok'):
                 self._cmd('bal_willexecutors_select', u, value=False)

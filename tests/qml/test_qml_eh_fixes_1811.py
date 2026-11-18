@@ -58,7 +58,7 @@ class TestTexts:
 
     def test_update_after_a_payment_that_spent_the_envelope(self):
         u = _read("EhHeirUpdateSheet.qml")
-        assert "root.reason === \x27spent\x27 && (root.st.newDelivery || 0) > 0 ? root.st.newDelivery" in u
+        assert "? ((root.st.newDelivery || 0) > 0 ? root.st.newDelivery : (root.st.delivery || 0))" in u
         assert "Something in the inheritance was changed." not in u
         assert "for example the heirs changed, or a keeper no longer has the envelope" in u
 
@@ -107,3 +107,34 @@ def test_no_pencil_symbol_the_font_cannot_draw():
                 assert "✎" not in t, f
     from electrum.eh_strings import STRINGS
     assert STRINGS["it_IT"]["· tap the pen to write it"] == "· tocca la matita per scriverlo"
+
+
+class TestOpusReview1811:
+
+    def test_every_sheet_has_the_money_errors(self):
+        m = _read("main.qml")
+        body = m[m.index("    function ehHeirErrorText(code, message) {"):m.index("    function ehHeirPlainText(message) {")]
+        for code in ("too_low", "dust", "keeper_fee"):
+            assert "if (code === '%s')" % code in body
+
+    def test_plain_or_technical(self):
+        import re
+        m = _read("main.qml")
+        rx = m[m.index("if (m && !/") + len("if (m && !/"):]
+        rx = rx[:rx.index("/.test(m))")]
+        tech = re.compile(rx)
+        assert tech.search("Fixed amount(0.0) >= 0")
+        assert tech.search("The will was not built (NO_UTXO): check")
+        assert tech.search("WillExecutorFeeTooHighException")
+        assert not tech.search("Please open Ancora on the computer to finish.")
+        assert not tech.search("Apri Àncòra sul computer per finire.")
+
+    def test_never_stuck_busy(self):
+        src = open(_m().__file__, encoding="utf-8").read()
+        body = src[src.index("    def _work(self, op, job, wallet, fee=None):"):src.index("    @pyqtSlot(str, object)")]
+        assert "try:\n                code = _fail_code(e)\n            except Exception:" in body
+
+    def test_cap_reaches_the_plugin_before_every_job(self):
+        src = open(_m().__file__, encoding="utf-8").read()
+        body = src[src.index("    def _start(self, op, job):"):src.index("    def _work(self, op, job, wallet")]
+        assert "self._sync_cap()" in body

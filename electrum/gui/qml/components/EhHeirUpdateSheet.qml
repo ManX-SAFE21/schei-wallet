@@ -103,7 +103,9 @@ EhBottomSheet {
         // owner 18/11: after a payment that spent the envelope's coins the old envelope is already
         // dead: the new one starts again from today, for the whole period (newDelivery)
         text: qsTr('It costs nothing. The delivery becomes <b>%1</b>.')
-                .arg(app.ehHeirDate(root.reason === 'spent' && (root.st.newDelivery || 0) > 0 ? root.st.newDelivery
+                .arg(app.ehHeirDate(root.reason === 'spent'
+                                    // Opus review 18/11: a fixed-date will (no period) keeps its date
+                                    ? ((root.st.newDelivery || 0) > 0 ? root.st.newDelivery : (root.st.delivery || 0))
                                     : (root.st.delivery || 0) - (root.reason === 'unfinished' ? 0 : 86400)))
     }
 }
