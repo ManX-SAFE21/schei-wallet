@@ -1,6 +1,6 @@
 # Schȅi, owner 17/11: "Togli questo portafoglio" (gear page). Only in ESPERTO, never the main
 # wallet, never with an inheritance; a yes / no question, then the PIN. owner 18/11: no balance
-# check, always the warning that without the 12 words the money is lost.
+# check, always the warning that without the words (SEED) the money is lost.
 import os
 import types
 from unittest import TestCase
@@ -105,10 +105,10 @@ class TestRemoveInThePages(TestCase):
 
     def test_always_the_12_words_warning(self):
         m = _read('main.qml')
-        self.assertIn("var detail = qsTr('If you did not save the 12 words, the money of this wallet is lost. Do you want to remove it?')", m)
+        self.assertIn("var detail = qsTr('If you did not save the words (SEED), the money of this wallet is lost. Do you want to remove it?')", m)
         from electrum.eh_strings import STRINGS
-        self.assertEqual(STRINGS['it_IT']['If you did not save the 12 words, the money of this wallet is lost. Do you want to remove it?'],
-                         'Se non hai salvato le 12 parole, i soldi di questo portafoglio sono persi. Vuoi toglierlo?')
+        self.assertEqual(STRINGS['it_IT']['If you did not save the words (SEED), the money of this wallet is lost. Do you want to remove it?'],
+                         'Se non hai salvato le parole (SEED), i soldi di questo portafoglio sono persi. Vuoi toglierlo?')
 
     def test_question_then_pin(self):
         m = _read('main.qml')

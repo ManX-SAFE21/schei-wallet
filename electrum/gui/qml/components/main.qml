@@ -1257,7 +1257,7 @@ ApplicationWindow
     }
     // owner 17/11: an added wallet can be removed (gear page), only at the EXPERT level (who knows what
     // he is doing). Never the main one, never with an inheritance (first cancel it); owner 18/11: no
-    // balance check, always the 12-words warning; then the PIN.
+    // balance check, always the words (SEED) warning; then the PIN.
     property bool _ehRemoving: false
     // Opus review 18/11: a payment that maybe left ("I am not sure the payment left"): its coins
     // stay inside every next payment of this wallet, also after closing the page or the app
@@ -1300,8 +1300,8 @@ ApplicationWindow
             }
         }
         // owner 18/11: no balance check (it can be wrong before the sync): always the same warning,
-        // removing a wallet is for who knows that the 12 words bring it back
-        var detail = qsTr('If you did not save the 12 words, the money of this wallet is lost. Do you want to remove it?')
+        // removing a wallet is for who knows that the words (SEED) bring it back
+        var detail = qsTr('If you did not save the words (SEED), the money of this wallet is lost. Do you want to remove it?')
         ehAsk(qsTr('Remove «%1» from this phone?').arg(shown), detail, function() {
             ehAskPin(qsTr('Type the PIN to remove the wallet'), function() { app._ehDoRemoveWallet(name, shown) })
         }, null, qsTr('Yes, remove it'), qsTr('No'))

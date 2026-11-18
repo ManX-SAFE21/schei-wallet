@@ -480,7 +480,7 @@ class QEDaemon(AuthMixin, QObject):
     def ehRemoveWallet(self, name):
         """Deletes the file of an added wallet. The app asked the PIN and checked the inheritance
         before; here again: never the main one, never the last one. owner 18/11: no balance check
-        (the app warns that without the 12 words the money is lost)."""
+        (the app warns that without the words (SEED) the money is lost)."""
         path = self.ehWalletPathFor(name)
         if not path or name == self.ehMainWalletName() or len(self.availableWallets._wallets) < 2:
             return False
