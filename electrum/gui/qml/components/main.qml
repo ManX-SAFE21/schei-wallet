@@ -1853,7 +1853,7 @@ ApplicationWindow
     function ehShowHeirDotTip(item, dot, st) {
         var comp = Qt.createComponent(Qt.resolvedUrl('EhHeirDotTip.qml'))
         if (comp.status !== Component.Ready) { console.log('dot tip: ' + comp.errorString()); return null }
-        var d = comp.createObject(app, { dot: dot, st: st, anchorItem: item })
+        var d = comp.createObject(app, { dot: dot, heir: st, anchorItem: item })
         d.open()
         return d
     }
@@ -1863,7 +1863,7 @@ ApplicationWindow
             pageTitle: qsTr('If you do not update the inheritance'),
             bodyText: qsTr('The envelope the keepers hold is <b>signed on the coins you had when you made it</b>. On the delivery date it leaves as it is.'),
             tipTitle: qsTr('New money arrived'),
-            tipText: qsTr('The heirs still receive the inheritance, but <b>without the new money</b>: it stays in the wallet and they can take it only with your 12 words. Nothing is lost: only the last part is missing.'),
+            tipText: qsTr('The heirs still receive the inheritance, but <b>without the new money</b>: it stays in the wallet and they can take it only with your words (SEED). Nothing is lost: only the last part is missing.'),
             dangerTitle: qsTr('You made a payment'),
             dangerText: qsTr('A payment almost always uses coins that are in the envelope. Then <b>the inheritance is no longer valid</b>: on the delivery date <b>the heirs receive nothing</b>.<br>Update at once: the PIN is enough and it costs nothing.'),
             footText: qsTr('The dot on the logo reminds you: <b>yellow</b> = to update, <b>red</b> = the inheritance is no longer valid.')

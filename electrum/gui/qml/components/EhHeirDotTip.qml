@@ -11,12 +11,12 @@ import "controls/EhStyle.js" as S
 Popup {
     id: root
     property string dot: ''              // ok | warn | bad
-    property var st: ({})                // the inheritance state of the wallet open
+    property var heir: ({})              // the state already checked by EhBalanceCard (only the wallet open)
     property Item anchorItem             // the logo + dot, the bubble points at it
 
-    readonly property string phase: st.phase || ''
-    readonly property string why: st.updateReason || ''
-    readonly property string keepers: st.custodians ? (st.custodians.status || '') : ''
+    readonly property string phase: heir.phase || ''
+    readonly property string why: heir.updateReason || ''
+    readonly property string keepers: heir.custodians ? (heir.custodians.status || '') : ''
     readonly property bool canMore: phase === 'needs_update' && (why === 'received' || why === 'spent')
 
     parent: Overlay.overlay

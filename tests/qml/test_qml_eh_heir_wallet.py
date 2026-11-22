@@ -69,7 +69,9 @@ class TestHeirsChangedOutside(TestCase):
         i = u.index("root.reason === 'changed'")
         self.assertLess(i, u.index("qsTr('You made a payment."))
         # owner 18/11: the text says what can have changed (the heirs or a keeper)
-        self.assertIn("qsTr('The inheritance must be put in order: for example the heirs changed, or a keeper no longer has the envelope.<br>Do I fix it now?')", u)
+        # owner 22/11: the sentence and the question are two labels (the question bigger)
+        self.assertIn("qsTr('The inheritance must be put in order: for example the heirs changed, or a keeper no longer has the envelope.')", u)
+        self.assertIn("qsTr('Do I fix it now?')", u)
 
     def test_percent_error_is_a_clear_sentence(self):
         body = _body(_read('main.qml'), 'function ehHeirErrorText', '\n    }\n')
