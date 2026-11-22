@@ -78,10 +78,11 @@ WizardComponent {
         width: ehFlick.width - 44
         height: Math.max(implicitHeight, ehFlick.height)
         // owner 22/11: all on one page, "I wrote them down" included, also on a 360x740 phone
-        spacing: 6
+        spacing: 4
 
         EhPageTop {
             step: qsTr('STEP %1 OF %2').arg(1).arg(3)
+            bandHeight: 44
             title: qsTr('Your 12 words (SEED)')
         }
 
@@ -123,12 +124,12 @@ WizardComponent {
                     required property int index
                     required property string modelData
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 40
+                    Layout.preferredHeight: 36
                     // paper tile with a hard 2 px shadow
-                    Rectangle { y: 2; width: parent.width; height: 38; radius: 12; color: S.edgeShadow }
+                    Rectangle { y: 2; width: parent.width; height: 34; radius: 12; color: S.edgeShadow }
                     Rectangle {
                         width: parent.width
-                        height: 38
+                        height: 34
                         radius: 12
                         color: S.paper
                         border.width: 1.5

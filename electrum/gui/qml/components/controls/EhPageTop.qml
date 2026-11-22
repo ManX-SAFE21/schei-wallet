@@ -16,6 +16,7 @@ ColumnLayout {
     property var steps: []        // steps bar over the hills (EhStepsBar), empty = none
     property int stepNow: 1
     property bool stepsBack: true
+    property int bandHeight: 62   // owner 22/11: lower on the 12-words page (all on one page)
     signal stepClicked(int n)
 
     Layout.fillWidth: true
@@ -28,7 +29,7 @@ ColumnLayout {
         // it has above the hills stay, the rest of the status bar is plain sky
         topInset: Math.max(0, app.statusBarHeight - 24)
         Layout.fillWidth: true
-        Layout.preferredHeight: (root.steps.length > 0 ? 92 : 62) + app.statusBarHeight
+        Layout.preferredHeight: (root.steps.length > 0 ? 92 : root.bandHeight) + app.statusBarHeight
         showSun: root.steps.length === 0
         rays: true
         // T2/T5: fixed small sun right under the status bar (it was sized and placed
