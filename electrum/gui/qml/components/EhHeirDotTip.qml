@@ -1,6 +1,6 @@
 // Easy Heirs (schȅi): the bubble of the inheritance dot on the home wallet (owner 22/11).
-// Tap the dot: it says what the colour means and what to do; it closes by itself after 6 s
-// or with a tap anywhere. Tap the logo instead: the inheritance opens (as before).
+// Tap the dot: it says what the colour means and what to do; it stays open until a tap
+// anywhere else (owner 22/11: 6 s were too short to read it and tap the link). Tap the logo instead: the inheritance opens (as before).
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
@@ -61,8 +61,6 @@ Popup {
     }
     onImplicitHeightChanged: place()
     Component.onCompleted: place()
-
-    Timer { interval: 6000; running: root.opened; onTriggered: root.close() }
 
     background: Item {
         Rectangle { anchors.fill: parent; radius: 14; color: S.paper; border.width: 1.5; border.color: S.edge }
