@@ -77,7 +77,8 @@ WizardComponent {
         x: 22
         width: ehFlick.width - 44
         height: Math.max(implicitHeight, ehFlick.height)
-        spacing: 10
+        // owner 22/11: all on one page, "I wrote them down" included, also on a 360x740 phone
+        spacing: 6
 
         EhPageTop {
             step: qsTr('STEP %1 OF %2').arg(1).arg(3)
@@ -90,7 +91,7 @@ WizardComponent {
             ColumnLayout {
                 id: hints
                 Layout.fillWidth: true
-                spacing: 6
+                spacing: 3
                 Hint {
                     iconSource: Qt.resolvedUrl('../../../icons/eh_paper.svg')
                     text: '<b>' + qsTr('Write them on paper in block capitals') + '</b>' + qsTr(', letter by letter, in order.')
@@ -111,7 +112,7 @@ WizardComponent {
         GridLayout {
             Layout.fillWidth: true
             columns: 2
-            rowSpacing: 8
+            rowSpacing: 6
             columnSpacing: 8
             flow: GridLayout.TopToBottom
             rows: 6
@@ -122,12 +123,12 @@ WizardComponent {
                     required property int index
                     required property string modelData
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 50
+                    Layout.preferredHeight: 40
                     // paper tile with a hard 2 px shadow
-                    Rectangle { y: 2; width: parent.width; height: 48; radius: 12; color: S.edgeShadow }
+                    Rectangle { y: 2; width: parent.width; height: 38; radius: 12; color: S.edgeShadow }
                     Rectangle {
                         width: parent.width
-                        height: 48
+                        height: 38
                         radius: 12
                         color: S.paper
                         border.width: 1.5
@@ -165,6 +166,7 @@ WizardComponent {
         EhSeedTypeBox {
             visible: root.words.length > 0
             kind: wizard_data['seed_type'] === 'standard' ? 'standard' : 'segwit'
+            tight: true
         }
 
         BusyIndicator {

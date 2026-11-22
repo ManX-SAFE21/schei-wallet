@@ -12,12 +12,13 @@ Rectangle {
     id: root
     property bool review: false        // false: creating the wallet, true: "see the 12 words again"
     property string kind: 'segwit'     // Electrum seed type, '' = not an Electrum seed (BIP39)
+    property bool tight: false         // owner 22/11: less padding on the 12-words page (all on one page)
 
     readonly property string label: kind === '' ? 'BIP39'
         : qsTr('Electrum seed') + ' · ' + (kind === 'standard' ? 'standard' : kind) + ' · ' + qsTr('NOT BIP39')
 
     Layout.fillWidth: true
-    Layout.preferredHeight: col.implicitHeight + 20
+    Layout.preferredHeight: col.implicitHeight + (root.tight ? 12 : 20)
     radius: 16
     color: S.ivory
     border.width: 2
@@ -25,9 +26,9 @@ Rectangle {
 
     ColumnLayout {
         id: col
-        x: 12; y: 10
+        x: 12; y: root.tight ? 6 : 10
         width: parent.width - 24
-        spacing: 2
+        spacing: root.tight ? 0 : 2
         Label {
             Layout.fillWidth: true
             wrapMode: Text.WordWrap

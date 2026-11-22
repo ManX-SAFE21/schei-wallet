@@ -17,6 +17,12 @@ ElDialog {
     property string pageTitle
     property string bodyText      // rich text, paragraphs separated by <br><br>
     property string tipText       // rich text, green box at the end
+    // owner 22/11 ("Se non aggiorni l'eredità"): optional titles of the boxes, a red box after the
+    // green one and a closing line
+    property string tipTitle: ''
+    property string dangerTitle: ''
+    property string dangerText: ''
+    property string footText: ''
     property bool showBlocks: false
     // owner 13/11: an optional page to open at the bottom ("How the crucible works" ...)
     property string linkText: ''
@@ -88,8 +94,29 @@ ElDialog {
             EhInfoBox {
                 visible: dialog.tipText !== ''
                 kind: 'tip'
+                title: dialog.tipTitle
                 text: dialog.tipText
                 fontSize: app.ehFsText
+            }
+
+            EhInfoBox {
+                visible: dialog.dangerText !== ''
+                kind: 'danger'
+                title: dialog.dangerTitle
+                text: dialog.dangerText
+                fontSize: app.ehFsText
+            }
+
+            Label {
+                visible: dialog.footText !== ''
+                Layout.fillWidth: true
+                text: dialog.footText
+                textFormat: Text.StyledText
+                wrapMode: Text.WordWrap
+                font.family: BodyFont ? BodyFont : font.family
+                font.pixelSize: app.ehFsText
+                lineHeight: 1.2
+                color: S.ink
             }
 
             EhStitchButton {

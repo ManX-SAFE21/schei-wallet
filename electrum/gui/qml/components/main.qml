@@ -1849,6 +1849,26 @@ ApplicationWindow
     }
     function ehHeirUpdate(reason) { return _ehHeirOpenSheet('EhHeirUpdateSheet.qml', { reason: reason }) }
     // Settings › Inheritance: the intro while there is none, else its status
+    // owner 22/11: the bubble of the inheritance dot (home wallet)
+    function ehShowHeirDotTip(item, dot, st) {
+        var comp = Qt.createComponent(Qt.resolvedUrl('EhHeirDotTip.qml'))
+        if (comp.status !== Component.Ready) { console.log('dot tip: ' + comp.errorString()); return null }
+        var d = comp.createObject(app, { dot: dot, st: st, anchorItem: item })
+        d.open()
+        return d
+    }
+    // owner 22/11: "More information" of the update sheet and of the dot: what happens if you do not update
+    function ehShowHeirUpdateInfo() {
+        ehInfoDialog.createObject(app, {
+            pageTitle: qsTr('If you do not update the inheritance'),
+            bodyText: qsTr('The envelope the keepers hold is <b>signed on the coins you had when you made it</b>. On the delivery date it leaves as it is.'),
+            tipTitle: qsTr('New money arrived'),
+            tipText: qsTr('The heirs still receive the inheritance, but <b>without the new money</b>: it stays in the wallet and they can take it only with your 12 words. Nothing is lost: only the last part is missing.'),
+            dangerTitle: qsTr('You made a payment'),
+            dangerText: qsTr('A payment almost always uses coins that are in the envelope. Then <b>the inheritance is no longer valid</b>: on the delivery date <b>the heirs receive nothing</b>.<br>Update at once: the PIN is enough and it costs nothing.'),
+            footText: qsTr('The dot on the logo reminds you: <b>yellow</b> = to update, <b>red</b> = the inheritance is no longer valid.')
+        }).open()
+    }
     function ehHeirOpen() {
         var b = ehBal()
         if (b) _ehBalObj = b

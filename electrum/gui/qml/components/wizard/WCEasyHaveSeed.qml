@@ -34,6 +34,8 @@ WizardComponent {
     property bool checked: false            // validation ran on the current text
     property string hint: ''                // the words are right, but for the other choice
     property int wantWords: 12              // how many words the person has (12, 15, 18, 21, 24)
+    // owner 22/11: Schȅi and Electrum always make 12 words: no "how many words" for them
+    readonly property bool electrumWords: variant !== 'bip39'
     property bool otherCounts: false        // the small link "I have 15, 18 or 21 words" was used
 
     readonly property var tokens: seedText === '' ? [] : seedText.replace(/ +$/, '').split(' ')
@@ -154,12 +156,17 @@ WizardComponent {
             readonly property var values: ['electrum', 'bip39']
             model: [qsTr('Made with Schȅi or Electrum'), qsTr('Made with another wallet')]
             currentIndex: root.variant === 'bip39' ? 1 : 0
-            onActivated: (i) => { root.variant = values[i]; root.setText(root.seedText) }
+            onActivated: (i) => {
+                root.variant = values[i]
+                if (root.electrumWords) { root.wantWords = 12; root.otherCounts = false }
+                root.setText(root.seedText)
+            }
         }
 
         // ---- how many words (owner 17/11) ----
-        EhCaption { text: qsTr('HOW MANY WORDS DO YOU HAVE?'); Layout.topMargin: 2; Layout.bottomMargin: 0 }
+        EhCaption { visible: !root.electrumWords; text: qsTr('HOW MANY WORDS DO YOU HAVE?'); Layout.topMargin: 2; Layout.bottomMargin: 0 }
         EhSegmented {
+            visible: !root.electrumWords
             look: 'filter'   // lower than the choice above: room for the words on short phones
             readonly property var values: root.otherCounts ? [12, 15, 18, 21, 24] : [12, 24]
             model: root.otherCounts ? ['12', '15', '18', '21', '24'] : [qsTr('12 words'), qsTr('24 words')]
@@ -167,7 +174,7 @@ WizardComponent {
             onActivated: (i) => { root.wantWords = values[i]; root.setText(root.seedText) }
         }
         Label {
-            visible: !root.otherCounts
+            visible: !root.otherCounts && !root.electrumWords
             Layout.alignment: Qt.AlignHCenter
             text: '<u>' + qsTr('I have 15, 18 or 21 words') + '</u>'
             textFormat: Text.StyledText
@@ -175,6 +182,17 @@ WizardComponent {
             font.family: BodyFont ? BodyFont : font.family
             font.pixelSize: app.ehFsSmall
             TapHandler { onTapped: root.otherCounts = true }
+        }
+        // owner 22/11: in place of "how many words", for Schȅi / Electrum words
+        Label {
+            visible: root.electrumWords
+            Layout.fillWidth: true
+            horizontalAlignment: Text.AlignHCenter
+            wrapMode: Text.WordWrap
+            text: qsTr('More than 12 words? Choose "Made with another wallet".')
+            color: S.ink
+            font.family: BodyFont ? BodyFont : font.family
+            font.pixelSize: app.ehFsSmall
         }
 
         // ---- the words, one by one with their number ----
@@ -256,7 +274,9 @@ WizardComponent {
         EhInfoBox {
             visible: !root.typing && (root.tooMany || (root.checked && root.doneWords === root.wantWords && !root.valid))
             kind: 'danger'
-            text: '<b>' + (root.tooMany ? qsTr('You wrote %1 words, but you chose %2. Delete the extra words or choose another number.').arg(root.doneWords).arg(root.wantWords)
+            text: '<b>' + (root.tooMany && root.electrumWords
+                           ? qsTr('Schȅi and Electrum make 12 words. If you have more, choose "Made with another wallet" above.')
+                           : root.tooMany ? qsTr('You wrote %1 words, but you chose %2. Delete the extra words or choose another number.').arg(root.doneWords).arg(root.wantWords)
                           : root.hint !== '' ? root.hint : qsTr('These words are not right. Check them one by one.')) + '</b>'
         }
 

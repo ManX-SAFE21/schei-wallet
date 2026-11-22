@@ -16,6 +16,7 @@ EhBottomSheet {
     readonly property var st: app.ehHeirState(bal)   // M1: only the wallet open
     property string error: ''
     property bool _mine: false
+    readonly property int bigText: Math.round(18 * app.ehFs)
 
     dimOpacity: 0.32
     closable: !(bal && bal.busy && _mine)
@@ -36,35 +37,71 @@ EhBottomSheet {
         }
     }
 
+    // owner 22/11: bigger, with a title; after a payment the risk said at once, in red
+    EhTitle {
+        text: qsTr('Update the inheritance')
+        fontSize: app.ehFsTitle
+        Layout.bottomMargin: 0
+    }
     RowLayout {
         Layout.fillWidth: true
-        spacing: 12
+        spacing: 14
         EhIconRing {
             Layout.alignment: Qt.AlignVCenter
-            implicitWidth: 48
+            implicitWidth: 56
             color: S.paper
             ringColor: root.reason === 'received' ? S.olive : S.wine
-            iconSize: 28
+            iconSize: 32
             icon: root.reason === 'received' ? 'eh_rx_olive.svg'
                 : root.reason === 'spent' ? 'eh_tx_wine.svg' : 'eh_will.svg'
         }
-        Label {
+        ColumnLayout {
             Layout.fillWidth: true
-            wrapMode: Text.WordWrap
-            textFormat: Text.StyledText
-            font.family: BodyFont ? BodyFont : font.family
-            font.pixelSize: app.ehFsText
-            lineHeight: 1.15
-            color: S.ink
-            text: root.reason === 'received'
-                  ? qsTr('You received <b>%1</b>.<br>Do I update the inheritance so it covers them too?')
-                        .arg('<font color="' + S.oliveInk + '">' + app.ehHeirSats(root.st.uncoveredSats || 0) + '</font>')
-                  : root.reason === 'unfinished'
-                  ? qsTr('The inheritance is not finished.<br>Do I finish it now?')
-                  : root.reason === 'changed'
-                  ? qsTr('The inheritance must be put in order: for example the heirs changed, or a keeper no longer has the envelope.<br>Do I fix it now?')
-                  : qsTr('You made a payment.<br>Do I update the inheritance with what is left?')
+            spacing: 0
+            Label {
+                Layout.fillWidth: true
+                wrapMode: Text.WordWrap
+                textFormat: Text.StyledText
+                font.family: BodyFont ? BodyFont : font.family
+                font.pixelSize: root.reason === 'received' ? app.ehFsStrong : root.bigText
+                lineHeight: 1.15
+                color: S.ink
+                text: root.reason === 'received' ? qsTr('You received')
+                      : root.reason === 'unfinished' ? qsTr('The inheritance is not finished.')
+                      : root.reason === 'changed' ? qsTr('The inheritance must be put in order: for example the heirs changed, or a keeper no longer has the envelope.')
+                      : qsTr('You made a payment.')
+            }
+            Label {
+                visible: root.reason === 'received'
+                Layout.fillWidth: true
+                wrapMode: Text.WordWrap
+                font.family: BodyFont ? BodyFont : font.family
+                font.pixelSize: app.ehFsTitle
+                font.bold: true
+                color: S.oliveInk
+                text: app.ehHeirSats(root.st.uncoveredSats || 0)
+            }
         }
+    }
+    Label {
+        visible: root.reason !== 'spent'
+        Layout.fillWidth: true
+        wrapMode: Text.WordWrap
+        textFormat: Text.StyledText
+        font.family: BodyFont ? BodyFont : font.family
+        font.pixelSize: root.bigText
+        lineHeight: 1.15
+        color: S.ink
+        text: root.reason === 'received' ? qsTr('Do I update the inheritance so it covers this money too?')
+              : root.reason === 'unfinished' ? qsTr('Do I finish it now?')
+              : qsTr('Do I fix it now?')
+    }
+    EhInfoBox {
+        visible: root.reason === 'spent'
+        kind: 'danger'
+        showIcon: false
+        fontSize: app.ehFsStrong
+        text: qsTr('<b>The inheritance is no longer valid:</b> if you do not update, the heirs receive nothing.')
     }
 
     Label {
@@ -107,5 +144,17 @@ EhBottomSheet {
                                     // Opus review 18/11: a fixed-date will (no period) keeps its date
                                     ? ((root.st.newDelivery || 0) > 0 ? root.st.newDelivery : (root.st.delivery || 0))
                                     : (root.st.delivery || 0) - (root.reason === 'unfinished' ? 0 : 86400)))
+        fontSize: app.ehFsStrong
+    }
+    Label {
+        Layout.alignment: Qt.AlignHCenter
+        Layout.topMargin: 2
+        text: '<u>' + qsTr('More information') + '</u>'
+        textFormat: Text.StyledText
+        color: S.wine
+        font.family: BodyFont ? BodyFont : font.family
+        font.pixelSize: app.ehFsStrong
+        font.bold: true
+        TapHandler { onTapped: app.ehShowHeirUpdateInfo() }
     }
 }

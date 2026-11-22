@@ -45,7 +45,9 @@ Rectangle {
     readonly property bool heirFaint: root.heirOff || root.heirPhase === ''
     readonly property string heirKeepers: root.heirState.custodians ? (root.heirState.custodians.status || '') : ''
     readonly property string heirDot: root.heirOff || root.heirPhase === '' ? ''
-        : (root.heirPhase === 'expired' || root.heirKeepers === 'none' || root.heirKeepers === 'invalid') ? 'bad'
+        // owner 22/11: after a payment the envelope from before is no longer valid: red, not yellow
+        : (root.heirPhase === 'expired' || root.heirKeepers === 'none' || root.heirKeepers === 'invalid'
+           || (root.heirPhase === 'needs_update' && root.heirState.updateReason === 'spent')) ? 'bad'
         : (root.heirKeepers === 'low' || ['due', 'needs_update', 'unfinished'].indexOf(root.heirPhase) >= 0) ? 'warn'
         : (root.heirPhase === 'active' ? 'ok' : '')
     property bool hasMoney: false
@@ -758,6 +760,7 @@ Rectangle {
         // the dot, with a ring of the dark leather round it: low on the right, above the last
         // letter of EREDITÀ, clear of the logo's leaf and circle (owner 15/11)
         Rectangle {
+            id: heirDotRing
             visible: root.heirDot !== ''
             x: heirBtn.width - 15
             y: 31
@@ -773,7 +776,19 @@ Rectangle {
                 color: root.heirDot === 'ok' ? '#a9c84f' : (root.heirDot === 'warn' ? '#f4c430' : '#e5533d')
             }
         }
-        TapHandler { id: heirTap; gesturePolicy: TapHandler.WithinBounds; onTapped: app.ehHeirOpen() }
+        // owner 22/11: a tap on the dot (a 40 px zone round it) shows what it means; on the logo it opens
+        TapHandler {
+            id: heirTap
+            gesturePolicy: TapHandler.WithinBounds
+            onTapped: (eventPoint) => {
+                var p = eventPoint.position
+                var cx = heirDotRing.x + heirDotRing.width / 2, cy = heirDotRing.y + heirDotRing.height / 2
+                if (heirDotRing.visible && Math.abs(p.x - cx) <= 20 && Math.abs(p.y - cy) <= 20)
+                    app.ehShowHeirDotTip(heirBtn, root.heirDot, root.heirState)
+                else
+                    app.ehHeirOpen()
+            }
+        }
     }
 
     // tap on the card (not on its buttons) shows or covers the balance
